@@ -1,0 +1,13 @@
+*.egg-info
+*.py[co]
+*#*
+*~
+*.swp
+*.cache
+MANIFEST
+dist/
+build/
+docs/_build/
+docs/locale/
+tests/coverage_html/
+tests/.coverage

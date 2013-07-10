@@ -1,0 +1,9 @@
+Welcome to SolveBio!
+
+To install it, make sure you have Python 2.7 or greater installed. Then run
+this command from the command prompt:
+
+    python setup.py install
+
+
+If you're upgrading from a previous version, you might need to remove it first.
