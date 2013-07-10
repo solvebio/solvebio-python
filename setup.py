@@ -4,7 +4,7 @@ from setuptools import setup
 setup(
     name='solve',
     version='0.0.1',
-    description='The SolveBio bioinformatics working environment.',
+    description='The Solve bioinformatics working environment.',
     long_description=open('README.txt').read(),
     author='Solve, Inc.',
     author_email='help@solvebio.com',
@@ -18,7 +18,7 @@ setup(
     },
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Science/Research'
+        'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
