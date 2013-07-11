@@ -1,9 +1,14 @@
 from setuptools import setup
 
+# get the version from version.py
+__version__ = 'undefined'
+with open('solve/version.py') as f:
+    exec(f.read())
+
 
 setup(
     name='solve',
-    version='0.0.1',
+    version=__version__,
     description='The Solve bioinformatics working environment.',
     long_description=open('README.txt').read(),
     author='Solve, Inc.',
