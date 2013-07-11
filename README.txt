@@ -1,5 +1,5 @@
-SolveBio for Python
-===================
+Solve Bioinformatics Python Environment
+=======================================
 
 The ```solve``` Python package and command-line interface (CLI)  are used to work in our bioinformatics environment.
 
@@ -15,11 +15,11 @@ Installation
 Getting Started
 ---------------
 
-```solvebio``` is our command-line tool. It is used to manage your credentials, etc...
+```solve``` is our command-line tool. It is used to manage your credentials, etc...
 
-Run ```solvebio setup``` on your command-line to walk-through the setup process.
+Run ```solve setup``` on your command-line to walk-through the setup process.
 
-    $ solvebio setup
+    $ solve setup
     Enter your credentials.
     Email: curecancer@gmail.com
     Password (your typing will be hidden):
