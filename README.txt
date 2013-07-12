@@ -26,6 +26,3 @@ Run ```solve setup``` on your command-line to walk-through the setup process.
     Authentication failed/successful.
 
 This process generates a new SolveBio API key and stores it in ```~/.solvebio/credentials```
-
-
-See USAGE.md for more details.
