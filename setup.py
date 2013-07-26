@@ -1,10 +1,12 @@
+"""
+Copyright (c) 2013 `Solve, Inc. <http://www.solvebio.com>`_.  All rights reserved.
+"""
 from setuptools import setup
 
-# get the version from version.py
 __version__ = 'undefined'
-with open('solve/version.py') as f:
-    exec(f.read())
-
+for row in open('solve/__init__.py').readlines():
+    if row.startswith('__version__'):
+        exec(row)
 
 setup(
     name='solve',
@@ -15,7 +17,7 @@ setup(
     author_email='help@solvebio.com',
     url='http://www.solvebio.com',
     license='MIT',
-    packages=['solve', 'solve.cli'],
+    packages=['solve'],
     # install_requires=[],
     platforms='any',
     entry_points={

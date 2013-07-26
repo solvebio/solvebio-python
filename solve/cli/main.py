@@ -6,6 +6,7 @@ Copyright (c) 2013 `Solve, Inc. <http://www.solvebio.com>`_.  All rights reserve
 """
 
 import argparse
+import sys
 
 import solve
 
@@ -22,9 +23,13 @@ shell_parser = subcommands.add_parser('shell', help='Open the Solve shell (IPyth
 
 
 def main(args=None):
-    parsed_args = base_parser.parse_args()
-    subcommand_name = getattr(parsed_args, '_subcommand', '')
+    if len(sys.argv) == 1:
+        # If there are no args at all, default to the shell
+        parsed_args = base_parser.parse_args(['shell'])
+    else:
+        parsed_args = base_parser.parse_args()
 
+    subcommand_name = getattr(parsed_args, '_subcommand', '')
     subcommand_mapping = {
         'setup': setup,
         'shell': shell
