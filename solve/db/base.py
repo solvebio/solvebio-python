@@ -1,5 +1,8 @@
 from importlib import import_module
-from solve.help import BaseHelper
+from solve.help import BaseHelp
+
+API_HOST = 'http://api.solvebio.com/db'
+HELP_HOST = 'http://help.solvebio.com'
 
 
 class BaseDatabase(object):
@@ -7,10 +10,12 @@ class BaseDatabase(object):
     namespaces and schemas."""
 
     def __init__(self, namespace, schema=None):
+        self._data_host = API_HOST
+        self._help_host = HELP_HOST
         self._metadata = {}
         self._namespace = namespace
         self._load_schema(schema)
-        self.help = BaseHelper("Help for: %s" % self._namespace)
+        self.help = BaseHelp("Help for: %s" % self._namespace)
 
     def _load_schema(self, schema):
         if not schema:
@@ -42,4 +47,6 @@ class BaseDatabase(object):
 
 
 class RootDatabase(BaseDatabase):
-    pass
+    def __init__(self, namespace='solve.db', schema=None):
+        print "Loading databases..."
+        super(RootDatabase, self).__init__(namespace, schema)

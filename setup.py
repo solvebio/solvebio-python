@@ -21,7 +21,7 @@ setup(
     # install_requires=[],
     platforms='any',
     entry_points={
-        'console_scripts': ['solve = solve.cli.main:main']
+        'console_scripts': ['solve = solve.core.cli.main:main']
     },
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

@@ -3,12 +3,12 @@ Copyright (c) 2013 `Solve, Inc. <http://www.solvebio.com>`_.  All rights reserve
 """
 
 
-class BaseHelper(object):
-    def __init__(self, longhelp):
-        self._longhelp = longhelp
+class BaseHelp(object):
+    def __init__(self, help):
+        self._help = help
 
     def __repr__(self):
-        return self._longhelp
+        return self._help
 
     def __str__(self):
-        return 'BaseHelper'
+        return 'BaseHelp'
