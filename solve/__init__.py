@@ -21,7 +21,7 @@ except NameError:
 
 # Load Root Helper
 import help as _help
-help = _help.BaseHelper("""
+help = _help.BaseHelp("""
 The Solve Shell.
 Help TBD
 """)
