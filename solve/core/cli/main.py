@@ -77,14 +77,17 @@ def shell_subcommand(**kwargs):
 
 
 def auth_subcommand(**kwargs):
-    # Get any existing local credentials
-    existing_creds = auth.get_local_credentials()
+    for cmd, run in kwargs.items():
+        if run:
+            try:
+                getattr(auth, cmd)()
+                sys.exit(0)
+            except KeyboardInterrupt:
+                sys.stderr.write('\nSetup interrupted. Please run "solve auth -%s" to restart.\n' % cmd)
+                sys.exit(1)
+            except AttributeError:
+                # Invalid command
+                pass
 
-    if kwargs.get('login'):
-        auth.login()
-    elif kwargs.get('logout'):
-        auth.logout()
-    elif kwargs.get('signup'):
-        auth.signup()
-    else:
-        return auth_parser.print_help()
+    # No valid commands
+    return auth_parser.print_help()

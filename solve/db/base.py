@@ -1,17 +1,12 @@
 from importlib import import_module
 from solve.help import BaseHelp
 
-API_HOST = 'http://api.solvebio.com/db'
-HELP_HOST = 'http://help.solvebio.com'
-
 
 class BaseDatabase(object):
     """The base Database object which contains the heirarchy of
     namespaces and schemas."""
 
     def __init__(self, namespace, schema=None):
-        self._data_host = API_HOST
-        self._help_host = HELP_HOST
         self._metadata = {}
         self._namespace = namespace
         self._load_schema(schema)
