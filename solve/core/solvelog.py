@@ -1,12 +1,13 @@
 import logging
 import os
 
-LOGLEVEL = os.environ.get('SOLVE_LOGLEVEL', 'ERROR').upper()
+LOGLEVEL_STREAM = os.environ.get('SOLVE_LOGLEVEL_STREAM', None)
+LOGLEVEL_FILE = os.environ.get('SOLVE_LOGLEVEL_FILE', 'WARNING')
 
 
 def _init_logging():
     base_logger = logging.getLogger("solve")
-    base_logger.setLevel(LOGLEVEL)
+    base_logger.setLevel('DEBUG')
 
     #clear handlers if any exist
     handlers = base_logger.handlers[:]
@@ -14,24 +15,27 @@ def _init_logging():
         base_logger.removeHandler(handler)
         handler.close()
 
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(LOGLEVEL)
-    stream_fmt = logging.Formatter('[%(levelname)s] %(message)s')
-    stream_handler.setFormatter(stream_fmt)
-    base_logger.addHandler(stream_handler)
+    if LOGLEVEL_STREAM:
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(LOGLEVEL_STREAM)
+        stream_fmt = logging.Formatter('[%(levelname)s] %(message)s')
+        stream_handler.setFormatter(stream_fmt)
+        base_logger.addHandler(stream_handler)
 
-    # TODO: move this too a generalized config module
-    config_path = os.path.expanduser('~/.solve')
-    if not os.path.exists(config_path):
-        os.makedirs(config_path)
+    if LOGLEVEL_FILE:
+        # TODO: move this too a generalized config module
+        config_path = os.path.expanduser('~/.solve')
+        if not os.path.exists(config_path):
+            os.makedirs(config_path)
 
-    logfile_path = os.path.join(config_path, 'solve.log')
-    file_handler = logging.FileHandler(logfile_path)
-    file_handler.setLevel(LOGLEVEL)
-    file_fmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(file_fmt)
-    base_logger.addHandler(file_handler)
+        logfile_path = os.path.join(config_path, 'solve.log')
+        file_handler = logging.FileHandler(logfile_path)
+        file_handler.setLevel(LOGLEVEL_FILE)
+        file_fmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(file_fmt)
+        base_logger.addHandler(file_handler)
 
+    base_logger.addHandler(logging.NullHandler())
     return base_logger
 
 solvelog = _init_logging()

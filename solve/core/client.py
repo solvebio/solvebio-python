@@ -1,9 +1,11 @@
+import platform
 import requests
 from requests.auth import AuthBase
 
-from .solvelog import solvelog
-from .credentials import get_api_key
-from . import API_HOST
+from solve import __version__
+from solve.core import API_HOST
+from solve.core.solvelog import solvelog
+from solve.core.credentials import get_api_key
 
 
 class SolveAPIError(BaseException):
@@ -26,6 +28,12 @@ class SolveClient(object):
         # self.session = requests.Session()
         self.proto = ('http', 'https')[use_ssl]
         self.api_host = '%s://%s' % (self.proto, API_HOST)
+        self.headers = {
+            'Accept': 'application/json',
+            'User-Agent': 'Solve Client %s [Python %s/%s]' % (
+                __version__, platform.python_implementation(), platform.python_version()
+            )
+        }
 
     def _request(self, method, path, data={}, params={}):
         if not path.startswith('/'):

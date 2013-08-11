@@ -15,7 +15,8 @@ def _get_current_user():
     try:
         return api.get_current_user()
     except SolveAPIError as e:
-        sys.stdout.write(str(e) + '\n')
+        # General error message
+        print str(e)
     return None
 
 
@@ -28,12 +29,12 @@ def ask_for_credentials(double_password=False):
             password_2 = getpass.getpass('Password again: ')
             if password == password_2:
                 break
-            sys.stdout.write('Passwords don\'t match.\n')
+            print 'Passwords don\'t match.'
         else:
             break
 
     if not email or not password:
-        sys.stdout.write('Email and password are both required.\n')
+        print 'Email and password are both required.'
         sys.exit(1)
 
     return email, password
@@ -48,7 +49,7 @@ def signup():
     try:
         response = api.post_signup(email, password)
     except SolveAPIError as e:
-        sys.stdout.write('There was a problem signing you up:\n' + str(e) + '\n')
+        print 'There was a problem signing you up: %s' + str(e)
     else:
         save_credentials(response['email'], response['auth_token'])
         _get_current_user()
@@ -66,24 +67,24 @@ def login():
     try:
         response = api.post_login(email, password)
     except SolveAPIError as e:
-        sys.stdout.write('There was a problem logging you in:\n' + str(e) + '\n')
+        print 'There was a problem logging you in: %s' % str(e)
     else:
         save_credentials(email.lower(), response['token'])
-        sys.stdout.write('You are now logged-in.\n')
+        print 'You are now logged-in.\n'
 
 
 def logout():
     if get_credentials():
         delete_credentials()
-        sys.stdout.write('You have been logged out of the Solve client.\n')
+        print 'You have been logged out of the Solve client.'
     else:
-        sys.stdout.write('You are not logged-in.\n')
+        print 'You are not logged-in.'
 
 
 def whoami():
     if get_credentials():
         response = _get_current_user()
         if response:
-            sys.stdout.write('Logged-in as: %s\n' % response['email'])
+            print response['email']
     else:
-        sys.stdout.write('You are not logged-in.\n')
+        print 'You are not logged-in.'
