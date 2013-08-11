@@ -24,6 +24,7 @@ auth_parser = subcommands.add_parser('auth', help='Manage Solve authentication c
 auth_parser.add_argument('-login', action='store_true', default=False, help='Login and save credentials')
 auth_parser.add_argument('-logout', action='store_true', default=False, help='Logout and delete saved credentials')
 auth_parser.add_argument('-signup', action='store_true', default=False, help='Signup to Solve and save credentials')
+auth_parser.add_argument('-whoami', action='store_true', default=False, help='Show your Solve email address')
 
 
 def main(args=None):
@@ -85,9 +86,6 @@ def auth_subcommand(**kwargs):
             except KeyboardInterrupt:
                 sys.stderr.write('\nSetup interrupted. Please run "solve auth -%s" to restart.\n' % cmd)
                 sys.exit(1)
-            except AttributeError:
-                # Invalid command
-                pass
 
     # No valid commands
     return auth_parser.print_help()

@@ -5,8 +5,9 @@ Copyright (c) 2013 `Solve, Inc. <http://www.solvebio.com>`_.  All rights reserve
 import sys
 import getpass
 
+from solve.core.client import SolveClient
 from solve.core.credentials import (get_credentials, delete_credentials,
-                               save_credentials)
+                                    save_credentials)
 
 
 def verify_credentials():
@@ -15,19 +16,27 @@ def verify_credentials():
     pass
 
 
-def signup():
-    delete_credentials()
+def ask_for_credentials(double_password=False):
     email = raw_input('Email address: ')
 
-    password, password_2 = 'x', 'y'
-    while password != password_2:
+    while True:
         password = getpass.getpass('Password (typing will be hidden): ')
-        password_2 = getpass.getpass('Password again: ')
-        if password != password_2:
+        if double_password:
+            password_2 = getpass.getpass('Password again: ')
+            if password == password_2:
+                break
             sys.stderr.write('Passwords don\'t match\n')
+        else:
+            break
 
-    from solve.connection import SolveConnection
-    api = SolveConnection()
+    return email, password
+
+
+def signup():
+    delete_credentials()
+    email, password = ask_for_credentials(double_password=True)
+
+    api = SolveClient()
 
     try:
         response = api.post_signup(email, password)
@@ -43,18 +52,17 @@ def login():
     Email and password are used to get the user's auth_token key.
     """
     delete_credentials()
-    email = raw_input('Email address: ')
-    password = getpass.getpass('Password (typing will be hidden): ')
+    email, password = ask_for_credentials()
 
-    from solve.connection import SolveConnection
-    api = SolveConnection()
+    api = SolveClient()
 
     try:
         response = api.post_login(email, password)
     except Exception as e:
         sys.stderr.write('There was a problem logging you in:\n' + str(e))
     else:
-        save_credentials(response['email'], response['auth_token'])
+        print response
+        # save_credentials(response['email'], response['auth_token'])
 
 
 def logout():
@@ -63,3 +71,11 @@ def logout():
         print 'You have been logged out of the Solve client.'
     else:
         print 'You are not logged-in.'
+
+
+def whoami():
+    if get_credentials():
+        api = SolveClient()
+        api.get_current_user()
+    else:
+        print 'You are not logged-in'
