@@ -20,6 +20,14 @@ def _get_current_user():
     return None
 
 
+def _report_install(email, action):
+    try:
+        api = SolveClient()
+        api.post_report(email, action)
+    except:
+        pass
+
+
 def ask_for_credentials(double_password=False):
     email = raw_input('Email address: ')
 
@@ -49,14 +57,22 @@ def signup():
     try:
         response = api.post_signup(email, password)
     except SolveAPIError as e:
-        print 'There was a problem signing you up: %s' + str(e)
+        print str(e)
     else:
         save_credentials(response['email'], response['auth_token'])
+        try:
+            api.post_system_report()
+        except:
+            pass
+        print 'Thanks for signing up!'
+        # Verify the user's credentials.
+        # This will show any account messages as well.
         _get_current_user()
 
 
 def login():
-    """Prompt user for login information (email/password).
+    """
+    Prompt user for login information (email/password).
     Email and password are used to get the user's auth_token key.
     """
     delete_credentials()
@@ -67,24 +83,28 @@ def login():
     try:
         response = api.post_login(email, password)
     except SolveAPIError as e:
-        print 'There was a problem logging you in: %s' % str(e)
+        print str(e)
     else:
         save_credentials(email.lower(), response['token'])
-        print 'You are now logged-in.\n'
+        try:
+            api.post_system_report()
+        except:
+            pass
+        print 'You are now logged-in.'
 
 
 def logout():
     if get_credentials():
         delete_credentials()
-        print 'You have been logged out of the Solve client.'
+        print 'You have been logged out.'
     else:
         print 'You are not logged-in.'
 
 
 def whoami():
-    if get_credentials():
-        response = _get_current_user()
-        if response:
-            print response['email']
+    creds = get_credentials()
+    if creds:
+        print creds[0]
+        _get_current_user()
     else:
         print 'You are not logged-in.'

@@ -39,7 +39,7 @@ class SolveClient(object):
         if not path.startswith('/'):
             path = '/%s' % path
 
-        solvelog.debug('API %s Request: %s' % (method.upper(), path))
+        solvelog.debug('API %s Request: %s' % (method.upper(), self.api_host + path))
         resp = requests.request(method=method, url=self.api_host + path,
                                 params=params, data=data,
                                 auth=SolveTokenAuth(),
@@ -56,6 +56,7 @@ class SolveClient(object):
             body = response.json()
         except:
             solvelog.error('API Error: no JSON response.')
+            return 'No response from server.'
         else:
             if u'non_field_errors' in body:
                 return '\n'.join(body['non_field_errors'])
@@ -63,8 +64,7 @@ class SolveClient(object):
                 return body['detail']
             else:
                 solvelog.error('API Error response: ' + str(body))
-
-        return ''
+                return ''
 
     def post_login(self, email, password):
         """Get a auth token for the given user credentials"""
@@ -85,3 +85,15 @@ class SolveClient(object):
 
     def get_current_user(self):
         return self._request('GET', '/user/current/')
+
+    def post_install_report(self):
+        data = {
+            'hostname': platform.node(),
+            'python_version': platform.python_version(),
+            'python_implementation': platform.python_implementation(),
+            'platform': platform.platform(),
+            'architecture': platform.machine(),
+            'processor': platform.processor(),
+            'pyexe_build': platform.architecture()[0]
+        }
+        self._request('POST', '/report/install', data=data)
