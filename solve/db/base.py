@@ -1,4 +1,6 @@
 from importlib import import_module
+
+from solve.core.solvelog import solvelog
 from solve.help import BaseHelp
 
 
@@ -43,5 +45,5 @@ class BaseDatabase(object):
 
 class RootDatabase(BaseDatabase):
     def __init__(self, namespace='solve.db', schema=None):
-        print "Loading databases..."
+        solvelog.debug('Initializing RootDatabase')
         super(RootDatabase, self).__init__(namespace, schema)

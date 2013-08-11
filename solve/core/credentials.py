@@ -39,6 +39,14 @@ class CredentialsError(BaseException):
     pass
 
 
+def get_api_key():
+    """Helper function to get the current user's API key or None."""
+    creds = get_credentials()
+    if creds:
+        return creds[1]
+    return None
+
+
 def get_credentials():
     """
     Returns the tuple user / password given a path for the .netrc file.
