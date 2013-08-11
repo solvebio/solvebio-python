@@ -10,12 +10,13 @@ from solve.core.credentials import (get_credentials, delete_credentials,
                                     save_credentials)
 
 
-def verify_credentials():
+def _get_current_user():
     api = SolveClient()
     try:
-        api.get_current_user()
+        return api.get_current_user()
     except SolveAPIError as e:
         sys.stdout.write(str(e) + '\n')
+    return None
 
 
 def ask_for_credentials(double_password=False):
@@ -50,7 +51,7 @@ def signup():
         sys.stdout.write('There was a problem signing you up:\n' + str(e) + '\n')
     else:
         save_credentials(response['email'], response['auth_token'])
-        verify_credentials()
+        _get_current_user()
 
 
 def login():
@@ -81,8 +82,8 @@ def logout():
 
 def whoami():
     if get_credentials():
-        api = SolveClient()
-        response = api.get_current_user()
-        sys.stdout.write('Logged-in as: %s\n' % response['email'])
+        response = _get_current_user()
+        if response:
+            sys.stdout.write('Logged-in as: %s\n' % response['email'])
     else:
         sys.stdout.write('You are not logged-in.\n')
