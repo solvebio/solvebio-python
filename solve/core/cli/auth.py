@@ -5,6 +5,7 @@ Copyright (c) 2013 `Solve, Inc. <http://www.solvebio.com>`_.  All rights reserve
 import sys
 import getpass
 
+from solve.core.solvelog import solvelog
 from solve.core.client import SolveClient, SolveAPIError
 from solve.core.credentials import (get_credentials, delete_credentials,
                                     save_credentials)
@@ -61,9 +62,9 @@ def signup():
     else:
         save_credentials(response['email'], response['auth_token'])
         try:
-            api.post_system_report()
-        except:
-            pass
+            api.post_install_report()
+        except Exception as e:
+            solvelog.error(str(e))
         print 'Thanks for signing up!'
         # Verify the user's credentials.
         # This will show any account messages as well.
@@ -87,9 +88,9 @@ def login():
     else:
         save_credentials(email.lower(), response['token'])
         try:
-            api.post_system_report()
-        except:
-            pass
+            api.post_install_report()
+        except Exception as e:
+            solvelog.error(str(e))
         print 'You are now logged-in.'
 
 

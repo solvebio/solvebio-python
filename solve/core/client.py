@@ -96,4 +96,4 @@ class SolveClient(object):
             'processor': platform.processor(),
             'pyexe_build': platform.architecture()[0]
         }
-        self._request('POST', '/report/install', data=data)
+        self._request('POST', '/report/install/', data=data)
