@@ -26,7 +26,7 @@ def _report_install(email, action):
         pass
 
 
-def ask_for_credentials():
+def _ask_for_credentials():
     while True:
         email = raw_input('Email address: ')
         password = getpass.getpass('Password (typing will be hidden): ')
@@ -36,13 +36,13 @@ def ask_for_credentials():
             print 'Email and password are both required.'
 
 
-def login():
+def login(args):
     """
     Prompt user for login information (email/password).
     Email and password are used to get the user's auth_token key.
     """
     delete_credentials()
-    email, password = ask_for_credentials()
+    email, password = _ask_for_credentials()
 
     api = SolveClient()
 
@@ -59,7 +59,7 @@ def login():
         print 'You are now logged-in.'
 
 
-def logout():
+def logout(args):
     if get_credentials():
         delete_credentials()
         print 'You have been logged out.'
@@ -67,7 +67,7 @@ def logout():
         print 'You are not logged-in.'
 
 
-def whoami():
+def whoami(args):
     creds = get_credentials()
     if creds:
         print creds[0]

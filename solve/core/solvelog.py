@@ -18,7 +18,7 @@ def _init_logging():
     if LOGLEVEL_STREAM:
         stream_handler = logging.StreamHandler()
         stream_handler.setLevel(LOGLEVEL_STREAM)
-        stream_fmt = logging.Formatter('(Solve) %(message)s')
+        stream_fmt = logging.Formatter('[Solve] %(message)s')
         stream_handler.setFormatter(stream_fmt)
         base_logger.addHandler(stream_handler)
 

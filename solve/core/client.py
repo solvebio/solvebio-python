@@ -27,7 +27,6 @@ class SolveAPIError(BaseException):
                     solvelog.error(i)
 
             # TODO: standardize this into 'field_errors' key
-            # error messages per field
             for i, msg in body.items():
                 if i not in ['detail', 'non_field_errors']:
                     for j in msg:
@@ -53,7 +52,9 @@ class SolveClient(object):
         self.headers = {
             'Accept': 'application/json',
             'User-Agent': 'Solve Client %s [Python %s/%s]' % (
-                __version__, platform.python_implementation(), platform.python_version()
+                __version__,
+                platform.python_implementation(),
+                platform.python_version()
             )
         }
 
@@ -81,7 +82,6 @@ class SolveClient(object):
             'email': email,
             'password': password
         }
-
         return self._request('POST', '/auth/token/', data=data)
 
     def get_current_user(self):
