@@ -2,10 +2,8 @@
 """
 Copyright (c) 2013 `Solve, Inc. <http://www.solvebio.com>`_.  All rights reserved.
 """
-import sys
 import getpass
 
-from solve.core.solvelog import solvelog
 from solve.core.client import SolveClient, SolveAPIError
 from solve.core.credentials import (get_credentials, delete_credentials,
                                     save_credentials)
@@ -28,46 +26,14 @@ def _report_install(email, action):
         pass
 
 
-def ask_for_credentials(double_password=False):
-    email = raw_input('Email address: ')
-
+def ask_for_credentials():
     while True:
+        email = raw_input('Email address: ')
         password = getpass.getpass('Password (typing will be hidden): ')
-        if double_password:
-            password_2 = getpass.getpass('Password again: ')
-            if password == password_2:
-                break
-            print 'Passwords don\'t match.'
+        if email and password:
+            return (email, password)
         else:
-            break
-
-    if not email or not password:
-        print 'Email and password are both required.'
-        sys.exit(1)
-
-    return email, password
-
-
-def signup():
-    delete_credentials()
-    email, password = ask_for_credentials(double_password=True)
-
-    api = SolveClient()
-
-    try:
-        response = api.post_signup(email, password)
-    except SolveAPIError:
-        pass
-    else:
-        save_credentials(response['email'], response['auth_token'])
-        try:
-            api.post_install_report()
-        except Exception:
-            pass
-        print 'Thanks for signing up!'
-        # Verify the user's credentials.
-        # This will show any account messages as well.
-        _get_current_user()
+            print 'Email and password are both required.'
 
 
 def login():

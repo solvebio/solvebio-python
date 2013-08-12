@@ -84,14 +84,6 @@ class SolveClient(object):
 
         return self._request('POST', '/auth/token/', data=data)
 
-    def post_signup(self, email, password):
-        data = {
-            'email': email,
-            'password': password
-        }
-
-        return self._request('POST', '/user/signup/', data=data)
-
     def get_current_user(self):
         return self._request('GET', '/user/current/')
 

@@ -23,7 +23,6 @@ shell_parser = subcommands.add_parser('shell', help='Open the Solve shell')
 auth_parser = subcommands.add_parser('auth', help='Manage Solve authentication credentials')
 auth_parser.add_argument('-login', action='store_true', default=False, help='Login and save credentials')
 auth_parser.add_argument('-logout', action='store_true', default=False, help='Logout and delete saved credentials')
-auth_parser.add_argument('-signup', action='store_true', default=False, help='Signup to Solve and save credentials')
 auth_parser.add_argument('-whoami', action='store_true', default=False, help='Show your Solve email address')
 
 
