@@ -9,7 +9,29 @@ from solve.core.credentials import get_api_key
 
 
 class SolveAPIError(BaseException):
-    pass
+    error_message_fields = ['detail', 'non_field_errors']
+
+    def __init__(self, response):
+        self.response = response
+
+        try:
+            body = response.json()
+        except:
+            solvelog.error('API Response (%d): No content.' % self.response.status_code)
+        else:
+            # log general errors before field errors
+            if 'detail' in body:
+                solvelog.error(body['detail'])
+            if 'non_field_errors' in body:
+                for i in body['non_field_errors']:
+                    solvelog.error(i)
+
+            # TODO: standardize this into 'field_errors' key
+            # error messages per field
+            for i, msg in body.items():
+                if i not in ['detail', 'non_field_errors']:
+                    for j in msg:
+                        solvelog.error('%s error: %s' % (i, j))
 
 
 class SolveTokenAuth(AuthBase):
@@ -45,26 +67,13 @@ class SolveClient(object):
                                 auth=SolveTokenAuth(),
                                 stream=False, verify=True)
 
-        solvelog.debug('API Response: %d' % resp.status_code)
-        if resp.status_code not in range(200, 210):
-            raise SolveAPIError(self._get_error_message(resp))
-
-        return resp.json()
-
-    def _get_error_message(self, response):
-        try:
-            body = response.json()
-        except:
-            solvelog.error('API Error: no JSON response.')
-            return 'No response from server.'
+        if 200 <= resp.status_code < 300:
+            solvelog.debug('API Response: %d' % resp.status_code)
+            # All success responses are JSON
+            return resp.json()
         else:
-            if u'non_field_errors' in body:
-                return '\n'.join(body['non_field_errors'])
-            elif u'detail' in body:
-                return body['detail']
-            else:
-                solvelog.error('API Error response: ' + str(body))
-                return ''
+            solvelog.debug('API Error: %d' % resp.status_code)
+            raise SolveAPIError(resp)
 
     def post_login(self, email, password):
         """Get a auth token for the given user credentials"""

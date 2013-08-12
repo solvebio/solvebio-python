@@ -15,9 +15,8 @@ def _get_current_user():
     api = SolveClient()
     try:
         return api.get_current_user()
-    except SolveAPIError as e:
-        # General error message
-        print str(e)
+    except SolveAPIError:
+        pass
     return None
 
 
@@ -57,14 +56,14 @@ def signup():
 
     try:
         response = api.post_signup(email, password)
-    except SolveAPIError as e:
-        print str(e)
+    except SolveAPIError:
+        pass
     else:
         save_credentials(response['email'], response['auth_token'])
         try:
             api.post_install_report()
-        except Exception as e:
-            solvelog.error(str(e))
+        except Exception:
+            pass
         print 'Thanks for signing up!'
         # Verify the user's credentials.
         # This will show any account messages as well.
@@ -83,14 +82,14 @@ def login():
 
     try:
         response = api.post_login(email, password)
-    except SolveAPIError as e:
-        print str(e)
+    except SolveAPIError:
+        pass
     else:
         save_credentials(email.lower(), response['token'])
         try:
             api.post_install_report()
-        except Exception as e:
-            solvelog.error(str(e))
+        except Exception:
+            pass
         print 'You are now logged-in.'
 
 

@@ -1,7 +1,7 @@
 import logging
 import os
 
-LOGLEVEL_STREAM = os.environ.get('SOLVE_LOGLEVEL_STREAM', None)
+LOGLEVEL_STREAM = os.environ.get('SOLVE_LOGLEVEL_STREAM', 'WARNING')
 LOGLEVEL_FILE = os.environ.get('SOLVE_LOGLEVEL_FILE', 'WARNING')
 
 
@@ -18,7 +18,7 @@ def _init_logging():
     if LOGLEVEL_STREAM:
         stream_handler = logging.StreamHandler()
         stream_handler.setLevel(LOGLEVEL_STREAM)
-        stream_fmt = logging.Formatter('[%(levelname)s] %(message)s')
+        stream_fmt = logging.Formatter('(Solve) %(message)s')
         stream_handler.setFormatter(stream_fmt)
         base_logger.addHandler(stream_handler)
 
