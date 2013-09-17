@@ -12,12 +12,11 @@ Copyright (c) 2013 `Solve, Inc. <http://www.solvebio.com>`_.  All rights reserve
 __author__ = 'David Caplan <dcaplan@solvebio.com>'
 __version__ = '0.0.1'
 
-# Load databases
 try:
-    db
+    data
 except NameError:
-    import db as _db
-    db = _db.root_db
+    from .core.dataset import root as data
+
 
 # Load Root Helper
 import help as _help
@@ -26,4 +25,4 @@ The Solve Shell.
 Help TBD
 """)
 
-__all__ = ['__version__', 'db', 'help']
+__all__ = ['__version__', 'data', 'help']

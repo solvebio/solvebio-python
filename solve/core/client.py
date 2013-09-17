@@ -46,7 +46,7 @@ class SolveTokenAuth(AuthBase):
 
 class SolveClient(object):
     def __init__(self, use_ssl=False):
-        # self.session = requests.Session()
+        self.auth = SolveTokenAuth()
         self.proto = ('http', 'https')[use_ssl]
         self.api_host = '%s://%s' % (self.proto, API_HOST)
         self.headers = {
@@ -65,7 +65,7 @@ class SolveClient(object):
         solvelog.debug('API %s Request: %s' % (method.upper(), self.api_host + path))
         resp = requests.request(method=method, url=self.api_host + path,
                                 params=params, data=data,
-                                auth=SolveTokenAuth(),
+                                auth=self.auth,
                                 stream=False, verify=True)
 
         if 200 <= resp.status_code < 300:
@@ -75,6 +75,9 @@ class SolveClient(object):
         else:
             solvelog.debug('API Error: %d' % resp.status_code)
             raise SolveAPIError(resp)
+
+    def post_dataset_select(self, dataset, query):
+        return self._request('POST', '/dataset/%s', data=query)
 
     def post_login(self, email, password):
         """Get a auth token for the given user credentials"""
@@ -98,3 +101,6 @@ class SolveClient(object):
             'pyexe_build': platform.architecture()[0]
         }
         self._request('POST', '/report/install/', data=data)
+
+
+client = SolveClient()
