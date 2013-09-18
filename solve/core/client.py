@@ -3,16 +3,17 @@ import requests
 from requests.auth import AuthBase
 
 from solve import __version__
-from solve.core import API_HOST
-from solve.core.solvelog import solvelog
-from solve.core.credentials import get_api_key
+from . import API_HOST
+from .solvelog import solvelog
+from .credentials import get_api_key
 
 
 class SolveAPIError(BaseException):
-    error_message_fields = ['detail', 'non_field_errors']
-
     def __init__(self, response):
         self.response = response
+        self.detail = None
+        self.non_field_errors = []
+        self.field_errors = {}
 
         try:
             body = response.json()
@@ -21,16 +22,20 @@ class SolveAPIError(BaseException):
         else:
             # log general errors before field errors
             if 'detail' in body:
-                solvelog.error(body['detail'])
-            if 'non_field_errors' in body:
-                for i in body['non_field_errors']:
-                    solvelog.error(i)
+                solvelog.error(self.detail)
+                self.detail = body.pop('detail')
 
-            # TODO: standardize this into 'field_errors' key
-            for i, msg in body.items():
-                if i not in ['detail', 'non_field_errors']:
-                    for j in msg:
-                        solvelog.error('%s error: %s' % (i, j))
+            if 'non_field_errors' in body:
+                [solvelog.error(i) for i in body['non_field_errors']]
+                self.non_field_errors = body.pop('non_field_errors')
+
+            # Any remaining content are field-related errors
+            self.field_errors = body
+
+    def log_field_errors(self, fields):
+        for f in fields:
+            if f in self.field_errors:
+                solvelog.error('Field %s: %s' % (f, self.field_errors[f]))
 
 
 class SolveTokenAuth(AuthBase):
@@ -58,6 +63,9 @@ class SolveClient(object):
             )
         }
 
+    def reset_auth(self, token=None):
+        self.auth = SolveTokenAuth(token)
+
     def _request(self, method, path, data={}, params={}):
         if not path.startswith('/'):
             path = '/%s' % path
@@ -69,15 +77,19 @@ class SolveClient(object):
                                 stream=False, verify=True)
 
         if 200 <= resp.status_code < 300:
-            solvelog.debug('API Response: %d' % resp.status_code)
             # All success responses are JSON
+            solvelog.debug('API Response: %d' % resp.status_code)
             return resp.json()
         else:
+            # a fatal error! :-(
             solvelog.debug('API Error: %d' % resp.status_code)
             raise SolveAPIError(resp)
 
-    def post_dataset_select(self, dataset, query):
-        return self._request('POST', '/dataset/%s', data=query)
+    def get_namespaces(self, root=''):
+        return self._request('GET', '/dataset/%s' % root)
+
+    def post_dataset_select(self, namespace, query):
+        return self._request('POST', '/dataset/%s' % namespace, data=query)
 
     def post_login(self, email, password):
         """Get a auth token for the given user credentials"""
@@ -85,10 +97,17 @@ class SolveClient(object):
             'email': email,
             'password': password
         }
-        return self._request('POST', '/auth/token/', data=data)
+        try:
+            return self._request('POST', '/auth/token/', data=data)
+        except SolveAPIError as exc:
+            exc.log_field_errors(data.keys())
+            return None
 
     def get_current_user(self):
-        return self._request('GET', '/user/current/')
+        try:
+            return self._request('GET', '/user/current/')
+        except SolveAPIError:
+            return None
 
     def post_install_report(self):
         data = {
