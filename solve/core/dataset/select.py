@@ -8,6 +8,7 @@ class-based query builder that can generate a JSON query string.
 """
 from .filters import Filter
 from ..client import client
+from ..solvelog import solvelog
 
 
 class SolveSelectError(Exception):
@@ -52,7 +53,14 @@ class Select(object):
         self.filters = []
 
     def filter(self, *filters, **kwargs):
-        self.filters = list(filters)
+        self.filters = []
+
+        for f in list(filters):
+            if not isinstance(f, Filter):
+                solvelog.warning('Filter non-keyword arguments must be Filter objects.')
+            else:
+                self.filters.append(f)
+
         if kwargs:
             self.filters += [Filter(**kwargs)]
         return self

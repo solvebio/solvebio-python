@@ -85,8 +85,12 @@ class SolveClient(object):
             solvelog.debug('API Error: %d' % resp.status_code)
             raise SolveAPIError(resp)
 
-    def get_namespaces(self, root=''):
-        return self._request('GET', '/dataset/%s' % root)
+    def get_namespaces(self):
+        # TODO: handle paginated namespace list
+        namespaces = []
+        response = self._request('GET', '/dataset/')
+        namespaces += response['results']
+        return namespaces
 
     def post_dataset_select(self, namespace, query):
         return self._request('POST', '/dataset/%s' % namespace, data=query)
