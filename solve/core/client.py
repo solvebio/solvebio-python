@@ -93,7 +93,7 @@ class SolveClient(object):
         return namespaces
 
     def post_dataset_select(self, namespace, query):
-        return self._request('POST', '/dataset/%s' % namespace, data=query)
+        return self._request('POST', '/dataset/%s/select' % namespace, data=query)
 
     def post_login(self, email, password):
         """Get a auth token for the given user credentials"""

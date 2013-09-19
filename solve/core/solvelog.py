@@ -23,12 +23,9 @@ def _init_logging():
         base_logger.addHandler(stream_handler)
 
     if LOGLEVEL_FILE:
-        # TODO: move this too a generalized config module
-        config_path = os.path.expanduser('~/.solve')
-        if not os.path.exists(config_path):
-            os.makedirs(config_path)
+        from .solveconfig import solveconfig
+        logfile_path = solveconfig.get_path('solve.log')
 
-        logfile_path = os.path.join(config_path, 'solve.log')
         file_handler = logging.FileHandler(logfile_path)
         file_handler.setLevel(LOGLEVEL_FILE)
         file_fmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')

@@ -6,6 +6,7 @@ By default Solve `select` arguments filters data with the AND boolean operator.
 
 """
 from solve.core.solvelog import solvelog
+from solve.core.solveconfig import solveconfig
 from solve.core.client import client
 from solve.help import BaseHelp
 from .select import Select
@@ -43,6 +44,42 @@ class Namespace(object):
         return self._name
 
 
+class RootNamespace(Namespace):
+    """The RootNamespace is a singleton used to contain all Namespaces."""
+
+    # The complete set of Namespaces is cached locally using solveconfig
+    _solveconfig_cache = 'root_namespace.json'
+
+    def __init__(self, name):
+        self._name = name
+        cached_namespaces = solveconfig.load_json(self._solveconfig_cache)
+        if cached_namespaces:
+            self._add_namespaces(cached_namespaces)
+        else:
+            self.refresh()
+        self.help = BaseHelp("Help for %s" % name)
+
+    def _flush_namespaces(self):
+        """Clear namespaces from RootNamespace and local cache"""
+        for k in self.__dict__.keys():
+            if k not in ['help', '_name']:
+                del self.__dict__[k]
+
+        solveconfig.save_json(self._solveconfig_cache, [])
+
+    def _add_namespaces(self, namespaces):
+        solveconfig.save_json(self._solveconfig_cache, namespaces)
+
+        for namespace in namespaces:
+            self.__dict__[namespace['name']] = Namespace(**namespace)
+
+    def refresh(self):
+        """Load datasets from API and save in a local cache"""
+        solvelog.info('Updating Datasets...')
+        self._flush_namespaces()
+        self._add_namespaces(client.get_namespaces())
+
+
 class Dataset(object):
     _meta_fields = ['name', 'full_name', 'title', 'description', 'url']
 
@@ -66,14 +103,4 @@ class Dataset(object):
         return self._name
 
 
-class RootNamespace(Namespace):
-    def __init__(self, name, namespaces):
-        self._name = name
-        for namespace in namespaces:
-            self.__dict__[namespace['name']] = Namespace(**namespace)
-        self.help = BaseHelp("Help for solve.data")
-
-
-solvelog.debug('Initializing Namespaces & Datasets...')
-# TODO: Get schema from local cache
-root = RootNamespace('solve.data', client.get_namespaces())
+root = RootNamespace('solve.data')
