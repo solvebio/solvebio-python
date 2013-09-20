@@ -11,30 +11,23 @@ from .credentials import get_api_key
 class SolveAPIError(BaseException):
     def __init__(self, response):
         self.response = response
-        self.detail = None
-        self.non_field_errors = []
-        self.field_errors = {}
+        self.body = None
 
         try:
-            body = response.json()
+            self.body = response.json()
         except:
             solvelog.error('API Response (%d): No content.' % self.response.status_code)
         else:
             # log general errors before field errors
-            if 'detail' in body:
-                solvelog.error(self.detail)
-                self.detail = body.pop('detail')
+            if 'detail' in self.body:
+                solvelog.error('API Response (%d): %s' % (self.response.status_code, self.body['detail']))
 
-            if 'non_field_errors' in body:
-                [solvelog.error(i) for i in body['non_field_errors']]
-                self.non_field_errors = body.pop('non_field_errors')
-
-            # Any remaining content are field-related errors
-            self.field_errors = body
+            if 'non_field_errors' in self.body:
+                [solvelog.error(i) for i in self.body['non_field_errors']]
 
     def log_field_errors(self, fields):
         for f in fields:
-            if f in self.field_errors:
+            if f in self.body:
                 solvelog.error('Field %s: %s' % (f, self.field_errors[f]))
 
 
@@ -71,19 +64,19 @@ class SolveClient(object):
             path = '/%s' % path
 
         solvelog.debug('API %s Request: %s' % (method.upper(), self.api_host + path))
-        resp = requests.request(method=method, url=self.api_host + path,
+        response = requests.request(method=method, url=self.api_host + path,
                                 params=params, data=data,
                                 auth=self.auth,
                                 stream=False, verify=True)
 
-        if 200 <= resp.status_code < 300:
+        if 200 <= response.status_code < 300:
             # All success responses are JSON
-            solvelog.debug('API Response: %d' % resp.status_code)
-            return resp.json()
+            solvelog.debug('API Response: %d' % response.status_code)
+            return response.json()
         else:
             # a fatal error! :-(
-            solvelog.debug('API Error: %d' % resp.status_code)
-            raise SolveAPIError(resp)
+            solvelog.debug('API Error: %d' % response.status_code)
+            raise SolveAPIError(response)
 
     def get_namespaces(self):
         # TODO: handle paginated namespace list

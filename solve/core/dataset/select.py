@@ -10,6 +10,8 @@ from .filters import Filter
 from ..client import client
 from ..solvelog import solvelog
 
+import json
+
 
 class SolveSelectError(Exception):
     """Base class for errors with Solve Select requests."""
@@ -47,10 +49,14 @@ class Select(object):
         ``&`` (and), ``|`` (or) and ``~`` (not) operators. Then call
         filter once with the resulting F instance.
         """
-        self._results_cache = None
         self._namespace = namespace
         self._path = self._path_from_namespace(namespace)
         self.filters = []
+        self.rewind()
+
+    def rewind(self):
+        self._rows_returned = 0
+        self._response_cache = None
 
     def filter(self, *filters, **kwargs):
         self.filters = []
@@ -81,20 +87,22 @@ class Select(object):
 
     def _build_query(self):
         qs = {}
-        if not self.filters:
-            return qs
 
-        filters = self._process_filters(self.filters)
-        if len(filters) > 1:
-            qs['filter'] = {'and': filters}
-        else:
-            qs['filter'] = filters[0]
+        # If there's a cached response and scroll_id, attempt to use it
+        # TODO: handle expired scrolls
+        if self._response_cache and self._response_cache.scroll_id:
+            qs = {'scroll_id': self._response_cache.scroll_id}
 
-        # if self.start:
-        #     qs['from'] = self.start
-        # if self.stop is not None:
-        #     qs['size'] = self.stop - self.start
-        # print qs
+        if self.filters:
+            filters = self._process_filters(self.filters)
+            if len(filters) > 1:
+                qs['filter'] = {'and': filters}
+            else:
+                qs['filter'] = filters[0]
+
+            # Always JSONify the filters for the API, otherwise shit breaks.
+            qs['filter'] = json.dumps(qs['filter'])
+
         return qs
 
     def _split_field_action(self, s):
@@ -186,37 +194,46 @@ class Select(object):
         return rv
 
     def __iter__(self):
-        pass
+        """
+        Execute a search and iterate through the result set.
+        Once the cached result set is exhausted, repeat search.
+        """
+        if not self._response_cache:
+            self._request()
+        return self
+
+    def next(self):
+        if self._rows_returned == self._response_cache.total:
+            raise StopIteration
+
+        # If result cache is empty, request more
+        if not self._response_cache.has_next():
+            self._request()
+
+        self._rows_returned += 1
+        return self._response_cache.next()
+
+    def __next__(self):
+        return self.next()
 
     def __len__(self):
         """
-        Executes search and returns the number of results you'd get.
-
-        Executes search and returns number of results as an integer.
+        Executes search and returns number of cached results.
 
         :returns: integer
-
-        For example:
-
-        >>> s = Select().query(name__prefix='Jimmy')
-        >>> count = len(s)
-        >>> results = s().execute()
-        >>> count = len(results)
-        True
 
         .. Note::
 
            This is very different than calling ``.count()``. If you
            call ``.count()`` you get the total number of results
-           that Elasticsearch thinks matches your search. If you call
-           ``len(s)``, then you get the number of results you'd get
-           if you executed the search. This factors in slices and
-           default from and size values.
-
+           that will be returned via iteration.
         """
-        return len(self._do_search())
+        if not self._response_cache:
+            self._request()
 
-    def count(self):
+        return len(self._response_cache)
+
+    def total(self):
         """
         Executes search and returns number of results as an integer.
 
@@ -225,13 +242,68 @@ class Select(object):
         For example:
 
         >>> s = Select().query(name__prefix='Jimmy')
-        >>> count = s.count()
+        >>> count = s.total()
 
         """
-        if self._results_cache:
-            return self._results_cache.count
-        else:
-            return self[:0]._request()['hits']['total']
+        if not self._response_cache:
+            self._request()
+
+        return self._response_cache.total
+
+    def _request(self):
+        """
+        Executes select and returns a `SelectResponse` object.
+
+        Always sends a query, regardless of state.
+
+        :returns: `SelectResponse` instance
+        """
+        response = client.post_dataset_select(self._path,
+                                              self._build_query())
+        self._response_cache = SelectResponse(response)
+        return self._response_cache
+
+
+class SelectResponse(object):
+    """
+    After executing a search, this is the class that manages the
+    response.
+
+    :property total: the total results
+    :property response: the raw search response
+    :property results: the search results from the response if any
+
+    When you iterate over this object, it returns the individual
+    search results in the shape you asked for (object, tuple, dict,
+    etc) in the order returned by Elasticsearch.
+
+    Example::
+
+        s = Select(chromosome='1')
+        results = s.execute()
+
+        # Shows the raw response
+        print results.results
+
+    """
+
+    def __init__(self, response):
+        self.response = response
+        self.scroll_id = self.response.get('scroll_id', None)
+        self.total = self.response.get('total', 0)
+        self.results = self.to_python(response.get('results', []))
+        self.results.reverse()
+        # an object cache which we pop() from when iterating
+        self.objects = [DictResult(r) for r in self.results]
+
+    def __iter__(self):
+        return iter([DictResult(r) for r in self.results])
+
+    def has_next(self):
+        return len(self.objects) > 0
+
+    def next(self):
+        return self.objects.pop()
 
     def to_python(self, obj):
         """Converts strings in a data structure to Python types
@@ -257,90 +329,9 @@ class Select(object):
             return [self.to_python(item) for item in obj]
         return obj
 
-    def _request(self):
-        """
-        Executes select and returns a `SelectResult` object.
-
-        :returns: `SelectResult` instance
-
-        For example:
-
-        >>> s = Select(chromosome='1')
-        >>> results = s.execute()
-        """
-        if not self._results_cache:
-            response = client.post_dataset_select(self._path, self._build_query())
-            results = self.to_python(response.json().get('hits', {}).get('hits', []))
-            self._results_cache = SelectResult(response, results)
-        return self._results_cache
-
-
-class SelectResult(object):
-    """
-    After executing a search, this is the class that manages the
-    results.
-
-    :property took: the amount of time the search took
-    :property count: the total results
-    :property response: the raw search response
-    :property results: the search results from the response if any
-
-    When you iterate over this object, it returns the individual
-    search results in the shape you asked for (object, tuple, dict,
-    etc) in the order returned by Elasticsearch.
-
-    Example::
-
-        s = Select(chromosome='1')
-        results = s.execute()
-
-        # Shows how long the select took
-        print results.took
-
-        # Shows the raw response
-        print results.results
-
-    """
-
-    def __init__(self, response, results):
-        self.response = response.json()
-        self.took = self.response.get('took', 0)
-        self.count = self.response.get('hits', {}).get('total', 0)
-        self.results = results
-        self.set_objects(self.results)
-
-    def set_objects(self, results):
-        # key = 'fields' if self.fields else '_source'
-        key = '_source'
-        self.objects = [decorate_with_metadata(DictResult(r[key]), r)
-                        for r in results]
-
-    def __iter__(self):
-        return iter(self.objects)
-
-    def __len__(self):
-        return len(self.objects)
-
 
 class DictResult(dict):
     pass
-
-
-def decorate_with_metadata(obj, result):
-    """Return obj decorated with result-scope metadata."""
-    # Elasticsearch id
-    obj._id = result.get('_id', 0)
-    # Source data
-    obj._source = result.get('_source', {})
-    # The search result score
-    obj._score = result.get('_score')
-    # The document type
-    obj._type = result.get('_type')
-    # Explanation structure
-    obj._explanation = result.get('_explanation', {})
-    # Highlight bits
-    obj._highlight = result.get('highlight', {})
-    return obj
 
 
 class SelectProcessor(object):
