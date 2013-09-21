@@ -10,8 +10,6 @@ from .filters import Filter
 from ..client import client
 from ..solvelog import solvelog
 
-import json
-
 
 class SolveSelectError(Exception):
     """Base class for errors with Solve Select requests."""
@@ -24,10 +22,7 @@ class InvalidFieldActionError(SolveSelectError):
 
 
 class Select(object):
-    """A lazy Select API request.
-
-    Does not get evaluated until forced to by iterating or doing a len().
-
+    """Select API request wrapper.
     Generates JSON for the API call.
     """
     RANGE_ACTIONS = ['gt', 'gte', 'lt', 'lte']
@@ -99,9 +94,6 @@ class Select(object):
                 qs['filter'] = {'and': filters}
             else:
                 qs['filter'] = filters[0]
-
-            # Always JSONify the filters for the API, otherwise shit breaks.
-            qs['filter'] = json.dumps(qs['filter'])
 
         return qs
 
@@ -199,22 +191,22 @@ class Select(object):
         Once the cached result set is exhausted, repeat search.
         """
         if not self._response_cache:
-            self._request()
+            self.execute()
         return self
 
     def next(self):
+        """
+        Allows the Select object to be an iterable.
+        """
         if self._rows_returned == self._response_cache.total:
             raise StopIteration
 
         # If result cache is empty, request more
         if not self._response_cache.has_next():
-            self._request()
+            self.execute()
 
         self._rows_returned += 1
         return self._response_cache.next()
-
-    def __next__(self):
-        return self.next()
 
     def __len__(self):
         """
@@ -229,7 +221,7 @@ class Select(object):
            that will be returned via iteration.
         """
         if not self._response_cache:
-            self._request()
+            self.execute()
 
         return len(self._response_cache)
 
@@ -246,22 +238,22 @@ class Select(object):
 
         """
         if not self._response_cache:
-            self._request()
+            self.execute()
 
         return self._response_cache.total
 
-    def _request(self):
+    def execute(self):
         """
-        Executes select and returns a `SelectResponse` object.
+        Executes select and returns the resulting object.
 
         Always sends a query, regardless of state.
 
-        :returns: `SelectResponse` instance
+        :returns: the resulting row objects
         """
         response = client.post_dataset_select(self._path,
                                               self._build_query())
         self._response_cache = SelectResponse(response)
-        return self._response_cache
+        return self._response_cache.objects
 
 
 class SelectResponse(object):
@@ -332,8 +324,3 @@ class SelectResponse(object):
 
 class DictResult(dict):
     pass
-
-
-class SelectProcessor(object):
-    def __init__(self, json):
-        pass

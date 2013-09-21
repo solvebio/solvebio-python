@@ -1,6 +1,7 @@
 import platform
 import requests
 from requests.auth import AuthBase
+import json
 
 from solve import __version__
 from . import API_HOST
@@ -65,9 +66,12 @@ class SolveClient(object):
 
         solvelog.debug('API %s Request: %s' % (method.upper(), self.api_host + path))
         response = requests.request(method=method, url=self.api_host + path,
-                                params=params, data=data,
+                                params=params,
+                                data=json.dumps(data),
                                 auth=self.auth,
-                                stream=False, verify=True)
+                                stream=False,
+                                verify=True,
+                                headers={'Content-Type': 'application/json'})
 
         if 200 <= response.status_code < 300:
             # All success responses are JSON
@@ -85,8 +89,8 @@ class SolveClient(object):
         namespaces += response['results']
         return namespaces
 
-    def post_dataset_select(self, namespace, query):
-        return self._request('POST', '/dataset/%s/select' % namespace, data=query)
+    def post_dataset_select(self, namespace, data):
+        return self._request('POST', '/dataset/%s/select' % namespace, data=data)
 
     def post_login(self, email, password):
         """Get a auth token for the given user credentials"""
