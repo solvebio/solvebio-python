@@ -4,7 +4,7 @@ from requests.auth import AuthBase
 import json
 
 from solve import __version__
-from . import API_HOST
+from . import API_HOST, USE_SSL
 from .solvelog import solvelog
 from .credentials import get_api_key
 
@@ -42,13 +42,17 @@ class SolveTokenAuth(AuthBase):
             r.headers['Authorization'] = 'Token %s' % self.token
         return r
 
+    def __repr__(self):
+        return u'<SolveTokenAuth %s>' % self.token
+
 
 class SolveClient(object):
-    def __init__(self, use_ssl=False):
+    def __init__(self, api_host=API_HOST, ssl=USE_SSL):
         self.auth = SolveTokenAuth()
-        self.proto = ('http', 'https')[use_ssl]
-        self.api_host = '%s://%s' % (self.proto, API_HOST)
+        self.proto = ('http', 'https')[ssl]
+        self.api_host = '%s://%s' % (self.proto, api_host)
         self.headers = {
+            'Content-Type': 'application/json',
             'Accept': 'application/json',
             'User-Agent': 'Solve Client %s [Python %s/%s]' % (
                 __version__,
@@ -60,22 +64,29 @@ class SolveClient(object):
     def reset_auth(self, token=None):
         self.auth = SolveTokenAuth(token)
 
-    def _request(self, method, path, data={}, params={}):
+    def _request(self, method, path, params={}, data=None):
         if not path.startswith('/'):
             path = '/%s' % path
 
+        if method in ('POST', 'PUT'):
+            data = json.dumps(data)
+        else:
+            data = None
+
         solvelog.debug('API %s Request: %s' % (method.upper(), self.api_host + path))
-        response = requests.request(method=method, url=self.api_host + path,
-                                params=params,
-                                data=json.dumps(data),
-                                auth=self.auth,
-                                stream=False,
-                                verify=True,
-                                headers={'Content-Type': 'application/json'})
+        response = requests.request(method=method.upper(),
+                                    url=self.api_host + path,
+                                    params=params,
+                                    data=data,
+                                    auth=self.auth,
+                                    stream=False,
+                                    verify=True,
+                                    headers=self.headers)
 
         if 200 <= response.status_code < 300:
             # All success responses are JSON
             solvelog.debug('API Response: %d' % response.status_code)
+            #import pdb; pdb.set_trace();
             return response.json()
         else:
             # a fatal error! :-(
@@ -108,6 +119,7 @@ class SolveClient(object):
         try:
             return self._request('GET', '/user/current/')
         except SolveAPIError:
+            # TODO: handle invalid token
             return None
 
     def post_install_report(self):

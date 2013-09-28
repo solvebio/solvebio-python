@@ -36,6 +36,9 @@ def login(args):
             client.post_install_report()
         except Exception:
             pass
+        print 'Loading datasets...'
+        from ..dataset import root
+        root.refresh()
         print 'You are now logged-in.'
     else:
         print 'Login failed.'

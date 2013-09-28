@@ -18,7 +18,7 @@ setup(
     url='http://www.solvebio.com',
     license='MIT',
     packages=['solve'],
-    # install_requires=[],
+    install_requires=['requests'],
     platforms='any',
     entry_points={
         'console_scripts': ['solve = solve.core.cli.main:main']
