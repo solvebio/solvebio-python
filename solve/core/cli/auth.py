@@ -30,12 +30,14 @@ def login(args):
 
     if response:
         save_credentials(email.lower(), response['token'])
-        client.reset_auth(token=response['token'])
+        # reset the default client's auth token
+        client.auth = None
 
         try:
             client.post_install_report()
         except Exception:
             pass
+
         print 'Loading datasets...'
         from ..dataset import root
         root.refresh()
@@ -47,7 +49,7 @@ def login(args):
 def logout(args):
     if get_credentials():
         delete_credentials()
-        client.reset_auth()
+        client.auth = None
         print 'You have been logged out.'
     else:
         print 'You are not logged-in.'

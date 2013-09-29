@@ -1,12 +1,15 @@
+import json
 import platform
 import requests
 from requests.auth import AuthBase
-import json
 
 from solve import __version__
-from . import API_HOST, USE_SSL
 from .solvelog import solvelog
 from .credentials import get_api_key
+
+from .solveconfig import config
+config.set_default('API_HOST', 'api.solvebio.com')
+config.set_default('API_SSL', True)
 
 
 class SolveAPIError(BaseException):
@@ -47,10 +50,14 @@ class SolveTokenAuth(AuthBase):
 
 
 class SolveClient(object):
-    def __init__(self, api_host=API_HOST, ssl=USE_SSL):
-        self.auth = SolveTokenAuth()
-        self.proto = ('http', 'https')[ssl]
-        self.api_host = '%s://%s' % (self.proto, api_host)
+
+    def __init__(self, token=None):
+        self.host = None
+        if token:
+            self.auth = SolveTokenAuth(token)
+        else:
+            self.auth = None
+
         self.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -61,21 +68,27 @@ class SolveClient(object):
             )
         }
 
-    def reset_auth(self, token=None):
-        self.auth = SolveTokenAuth(token)
+    def _build_url(self, path):
+        # TODO: not sure if this is the best way :-S
+        if not path.startswith('/'):
+            path = '/' + path
+        return u'%s://%s' % (('http', 'https')[bool(config.API_SSL)],
+                             config.API_HOST) + path
 
     def _request(self, method, path, params={}, data=None):
-        if not path.startswith('/'):
-            path = '/%s' % path
+        url = self._build_url(path)
+
+        if self.auth is None:
+            self.auth = SolveTokenAuth()
 
         if method in ('POST', 'PUT'):
             data = json.dumps(data)
         else:
             data = None
 
-        solvelog.debug('API %s Request: %s' % (method.upper(), self.api_host + path))
+        solvelog.debug('API %s Request: %s' % (method.upper(), url))
         response = requests.request(method=method.upper(),
-                                    url=self.api_host + path,
+                                    url=url,
                                     params=params,
                                     data=data,
                                     auth=self.auth,

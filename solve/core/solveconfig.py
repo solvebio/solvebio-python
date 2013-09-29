@@ -2,34 +2,44 @@
 Solve Config Management
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Manages the ~/.solve directory config files.
+Lazy-loaded config management.
 
 """
 import os
-import json
 
 
 class SolveConfig(object):
-    base_path = os.path.expanduser('~/.solve')
+    _environ = ['API_HOST', 'API_SSL', 'LOGLEVEL_STREAM', 'LOGLEVEL_FILE']
+    _defaults = {}
 
     def __init__(self):
-        if not os.path.isdir(self.base_path):
-            os.makedirs(self.base_path)
+        """Set defaults from valid environment variables"""
+        for name in self._environ:
+            if ('SOLVE_' + name) in os.environ:
+                self.set_default(name, os.environ.get(name))
 
-    def get_path(self, name):
-        return os.path.join(self.base_path, name)
+    def set_default(self, key, value):
+        self._defaults[key] = value
 
-    def load_json(self, name):
-        config_file_path = self.get_path(name)
-        if os.path.exists(config_file_path):
-            fp = open(config_file_path, 'r')
-            return json.load(fp)
-        return None
+    def __setattr__(self, name, value):
+        if name.upper() == name:
+            # If it's a valid SolveConfig name
+            self.__dict__[name] = value
+        else:
+            self.__dict__[name] = value
 
-    def save_json(self, name, data):
-        fp = open(self.get_path(name), 'w')
-        json.dump(data, fp, sort_keys=True, indent=4)
-        fp.close()
+    def __getattr__(self, name):
+        if name.upper() == name:
+            if name in self.__dict__:
+                return self.__dict__[name]
+            elif name in self._defaults:
+                # Set the value from the default
+                self.__dict__[name] = self._defaults[name]
+                return self._defaults[name]
+            else:
+                return None
+        else:
+            return self.__dict__[name]
 
 
-solveconfig = SolveConfig()
+config = SolveConfig()

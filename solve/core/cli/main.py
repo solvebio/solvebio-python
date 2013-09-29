@@ -4,12 +4,11 @@ The SolveBio command-line interface (CLI)
 
 Copyright (c) 2013 `Solve, Inc. <http://www.solvebio.com>`_.  All rights reserved.
 """
+import solve
+from solve.core.solveconfig import config
 
 import argparse
 import sys
-
-from . import auth
-import solve
 
 
 class SolveArgumentParser(argparse.ArgumentParser):
@@ -55,7 +54,8 @@ def shell(args):
 
 # CLI argument parsers
 base_parser = SolveArgumentParser(description='The Solve bioinformatics environment.')
-base_parser.add_argument('--version', action='version', version='solve %s' % (solve.__version__))
+base_parser.add_argument('--version', action='version', version='solve %s' % solve.__version__)
+base_parser.add_argument('--api-host', help='Override the default Solve API host')
 
 subcommands = base_parser.add_subparsers(title='subcommands',
     description="""Subcommands of the Solve CLI""",
@@ -66,23 +66,30 @@ shell_parser = subcommands.add_parser('shell', help='Open the Solve shell')
 shell_parser.set_defaults(func=shell)
 
 # auth parsers
+from .auth import (login as auth_login,
+                   logout as auth_logout,
+                   whoami as auth_whoami)
+
 login_parser = subcommands.add_parser('login', help='Login and save credentials')
-login_parser.set_defaults(func=auth.login)
+login_parser.set_defaults(func=auth_login)
 
 logout_parser = subcommands.add_parser('logout', help='Logout and delete saved credentials')
-logout_parser.set_defaults(func=auth.logout)
+logout_parser.set_defaults(func=auth_logout)
 
 whoami_parser = subcommands.add_parser('whoami', help='Show your Solve email address')
-whoami_parser.set_defaults(func=auth.whoami)
+whoami_parser.set_defaults(func=auth_whoami)
 
 
 def main(args=None):
-    # TODO: set any env vars
     # TODO: set interactive output colors if possible
+
     if len(sys.argv) == 1:
         # If there are no args at all, default to the shell
         args = base_parser.parse_args(['shell'])
     else:
         args = base_parser.parse_args()
+
+    if args.api_host:
+        config.API_HOST = args.api_host
 
     args.func(args)

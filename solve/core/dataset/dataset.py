@@ -6,11 +6,12 @@ By default Solve `select` arguments filters data with the AND boolean operator.
 
 """
 from solve.core.solvelog import solvelog
-from solve.core.solveconfig import solveconfig
 from solve.core.client import client
 from solve.help import BaseHelp
 from .select import Select
 
+import os
+import json
 import logging
 logger = logging.getLogger('solve')
 
@@ -45,18 +46,19 @@ class Namespace(object):
 
 
 class RootNamespace(Namespace):
-    """The RootNamespace is a singleton used to contain all Namespaces."""
+    """The RootNamespace is a singleton used to contain all Namespaces.
+       Also caches to a file in the user's home directory.
+    """
 
-    # The complete set of Namespaces is cached locally using solveconfig
-    _solveconfig_cache = 'root_namespace.json'
+    # The complete set of Namespaces is cached locally
+    _cache_path = os.path.expanduser('~/.solve/root_namespace.json')
 
     def __init__(self, name):
         self._name = name
-        cached_namespaces = solveconfig.load_json(self._solveconfig_cache)
-        if cached_namespaces:
-            self._add_namespaces(cached_namespaces)
-        else:
+
+        if not self._load_from_cache():
             self.refresh()
+
         self.help = BaseHelp("Help for %s" % name)
 
     def _flush_namespaces(self):
@@ -65,19 +67,35 @@ class RootNamespace(Namespace):
             if k not in ['help', '_name']:
                 del self.__dict__[k]
 
-        solveconfig.save_json(self._solveconfig_cache, [])
+        self._save_to_cache([])
 
-    def _add_namespaces(self, namespaces):
-        solveconfig.save_json(self._solveconfig_cache, namespaces)
-
+    def _add_namespaces(self, namespaces, cache=False):
         for namespace in namespaces:
             self.__dict__[namespace['name']] = Namespace(**namespace)
+        if cache:
+            self._save_to_cache(namespaces)
 
     def refresh(self):
         """Load datasets from API and save in a local cache"""
         solvelog.info('Updating Datasets...')
         self._flush_namespaces()
-        self._add_namespaces(client.get_namespaces())
+        self._add_namespaces(client.get_namespaces(), cache=True)
+
+    def _load_from_cache(self):
+        if os.path.exists(self._cache_path):
+            fp = open(self._cache_path, 'r')
+            self._add_namespaces(json.load(fp))
+            return True
+        else:
+            return False
+
+    def _save_to_cache(self, data):
+        if not os.path.isdir(os.path.dirname(self._cache_path)):
+            os.makedirs(os.path.dirname(self._cache_path))
+
+        fp = open(self._cache_path, 'w')
+        json.dump(data, fp, sort_keys=True, indent=4)
+        fp.close()
 
 
 class Dataset(object):

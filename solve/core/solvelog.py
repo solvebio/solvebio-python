@@ -1,6 +1,7 @@
 import logging
 import os
 
+# TODO: put these in SolveConfig
 LOGLEVEL_STREAM = os.environ.get('SOLVE_LOGLEVEL_STREAM', 'WARNING')
 LOGLEVEL_FILE = os.environ.get('SOLVE_LOGLEVEL_FILE', 'WARNING')
 
@@ -23,8 +24,9 @@ def _init_logging():
         base_logger.addHandler(stream_handler)
 
     if LOGLEVEL_FILE:
-        from .solveconfig import solveconfig
-        logfile_path = solveconfig.get_path('solve.log')
+        logfile_path = os.path.expanduser('~/.solve/solve.log')
+        if not os.path.isdir(os.path.dirname(logfile_path)):
+            os.makedirs(os.path.dirname(logfile_path))
 
         file_handler = logging.FileHandler(logfile_path)
         file_handler.setLevel(LOGLEVEL_FILE)

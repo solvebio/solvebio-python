@@ -2,17 +2,28 @@
 """
 Manages the credential information (netrc)
 """
+from .solveconfig import config
+
 from netrc import netrc as _netrc, NetrcParseError
 import os
-
-from . import API_HOST
-NETRC_PATH = os.path.expanduser('~/.netrc')
 
 
 class netrc(_netrc):
     """Add a save() method to netrc"""
 
-    def save(self, path=NETRC_PATH):
+    def __init__(self, file=None):
+        self.file = file
+        if self.file is None:
+            try:
+                self.file = os.path.join(os.environ['HOME'], ".netrc")
+            except KeyError:
+                raise IOError("Could not find .netrc: $HOME is not set")
+        self.hosts = {}
+        self.macros = {}
+        with open(self.file) as fp:
+            self._parse(self.file, fp)
+
+    def save(self):
         """Dump the class data in the format of a .netrc file."""
         rep = u""
         for host in self.hosts.keys():
@@ -27,7 +38,7 @@ class netrc(_netrc):
                 rep = rep + line
             rep = rep + "\n"
 
-        f = open(path, 'w')
+        f = open(self.file, 'w')
         f.write(rep)
         f.close()
 
@@ -53,7 +64,7 @@ def get_credentials():
     Raises CredentialsError if no valid netrc file is found.
     """
     try:
-        auths = netrc(NETRC_PATH).authenticators(API_HOST)
+        auths = netrc().authenticators(config.API_HOST)
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError(
             'Did not find valid netrc file: ' + str(e))
@@ -66,12 +77,12 @@ def get_credentials():
 
 def delete_credentials():
     try:
-        rc = netrc(NETRC_PATH)
+        rc = netrc()
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
     try:
-        del rc.hosts[API_HOST]
+        del rc.hosts[config.API_HOST]
     except KeyError:
         pass
     else:
@@ -80,10 +91,10 @@ def delete_credentials():
 
 def save_credentials(email, api_key):
     try:
-        rc = netrc(NETRC_PATH)
+        rc = netrc()
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
     # Overwrites any existing credentials
-    rc.hosts[API_HOST] = (email, None, api_key)
+    rc.hosts[config.API_HOST] = (email, None, api_key)
     rc.save()
