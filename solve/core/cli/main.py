@@ -90,6 +90,11 @@ def main(args=None):
         args = base_parser.parse_args()
 
     if args.api_host:
-        config.API_HOST = args.api_host
+        if args.api_host.startswith('http://'):
+            config.API_SSL, config.API_HOST = False, args.api_host.replace('http://', '')
+        elif args.api_host.startswith('https://'):
+            config.API_SSL, config.API_HOST = True, args.api_host.replace('https://', '')
+        else:
+            config.API_HOST = args.api_host
 
     args.func(args)
