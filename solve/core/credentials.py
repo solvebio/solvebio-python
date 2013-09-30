@@ -2,7 +2,7 @@
 """
 Manages the credential information (netrc)
 """
-from .solveconfig import config
+from .solveconfig import solveconfig
 
 from netrc import netrc as _netrc, NetrcParseError
 import os
@@ -64,7 +64,7 @@ def get_credentials():
     Raises CredentialsError if no valid netrc file is found.
     """
     try:
-        auths = netrc().authenticators(config.API_HOST)
+        auths = netrc().authenticators(solveconfig.API_HOST)
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError(
             'Did not find valid netrc file: ' + str(e))
@@ -82,7 +82,7 @@ def delete_credentials():
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
     try:
-        del rc.hosts[config.API_HOST]
+        del rc.hosts[solveconfig.API_HOST]
     except KeyError:
         pass
     else:
@@ -96,5 +96,5 @@ def save_credentials(email, api_key):
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
     # Overwrites any existing credentials
-    rc.hosts[config.API_HOST] = (email, None, api_key)
+    rc.hosts[solveconfig.API_HOST] = (email, None, api_key)
     rc.save()

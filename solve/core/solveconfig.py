@@ -36,10 +36,14 @@ class SolveConfig(object):
                 # Set the value from the default
                 self.__dict__[name] = self._defaults[name]
                 return self._defaults[name]
-            else:
-                return None
         else:
             return self.__dict__[name]
 
+    def get(self, name, default):
+        try:
+            self.__getattr__(name)
+        except KeyError:
+            return default
 
-config = SolveConfig()
+
+solveconfig = SolveConfig()

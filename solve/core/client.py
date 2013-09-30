@@ -7,9 +7,9 @@ from solve import __version__
 from .solvelog import solvelog
 from .credentials import get_api_key
 
-from .solveconfig import config
-config.set_default('API_HOST', 'api.solvebio.com')
-config.set_default('API_SSL', True)
+from .solveconfig import solveconfig
+solveconfig.set_default('API_HOST', 'api.solvebio.com')
+solveconfig.set_default('API_SSL', True)
 
 
 class SolveAPIError(BaseException):
@@ -72,8 +72,8 @@ class SolveClient(object):
         # TODO: not sure if this is the best way :-S
         if not path.startswith('/'):
             path = '/' + path
-        return u'%s://%s' % (('http', 'https')[bool(config.API_SSL)],
-                             config.API_HOST) + path
+        return u'%s://%s' % (('http', 'https')[bool(solveconfig.API_SSL)],
+                             solveconfig.API_HOST) + path
 
     def _request(self, method, path, params={}, data=None):
         url = self._build_url(path)

@@ -5,7 +5,7 @@ The SolveBio command-line interface (CLI)
 Copyright (c) 2013 `Solve, Inc. <http://www.solvebio.com>`_.  All rights reserved.
 """
 import solve
-from solve.core.solveconfig import config
+from solve.core.solveconfig import solveconfig
 
 import argparse
 import sys
@@ -91,10 +91,10 @@ def main(args=None):
 
     if args.api_host:
         if args.api_host.startswith('http://'):
-            config.API_SSL, config.API_HOST = False, args.api_host.replace('http://', '')
+            solveconfig.API_SSL, solveconfig.API_HOST = False, args.api_host.replace('http://', '')
         elif args.api_host.startswith('https://'):
-            config.API_SSL, config.API_HOST = True, args.api_host.replace('https://', '')
+            solveconfig.API_SSL, solveconfig.API_HOST = True, args.api_host.replace('https://', '')
         else:
-            config.API_HOST = args.api_host
+            solveconfig.API_HOST = args.api_host
 
     args.func(args)
