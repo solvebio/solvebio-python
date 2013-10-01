@@ -8,8 +8,6 @@ from .solvelog import solvelog
 from .credentials import get_api_key
 
 from .solveconfig import solveconfig
-solveconfig.set_default('API_HOST', 'api.solvebio.com')
-solveconfig.set_default('API_SSL', True)
 
 
 class SolveAPIError(BaseException):

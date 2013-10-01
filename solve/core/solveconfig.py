@@ -47,3 +47,12 @@ class SolveConfig(object):
 
 
 solveconfig = SolveConfig()
+
+# Default settings
+
+solveconfig.set_default('TTY_ROWS', 24)
+solveconfig.set_default('TTY_COLS', 80)
+solveconfig.set_default('TTY_COLORS', True)
+
+solveconfig.set_default('API_HOST', 'api.solvebio.com')
+solveconfig.set_default('API_SSL', True)

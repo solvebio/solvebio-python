@@ -5,10 +5,6 @@ import subprocess
 from solve.core.solvelog import solvelog
 from solve.core.solveconfig import solveconfig
 
-solveconfig.set_default('TTY_ROWS', 24)
-solveconfig.set_default('TTY_COLS', 80)
-solveconfig.set_default('TTY_COLORS', True)
-
 if sys.stdout.isatty():
     try:
         with open(os.devnull, 'w') as fnull:

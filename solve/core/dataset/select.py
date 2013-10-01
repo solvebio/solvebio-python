@@ -11,13 +11,8 @@ from ..client import client
 from ..solvelog import solvelog
 
 
-class SolveSelectError(Exception):
+class SelectError(Exception):
     """Base class for errors with Solve Select requests."""
-    pass
-
-
-class InvalidFieldActionError(SolveSelectError):
-    """Raise this when the field action doesn't exist"""
     pass
 
 
@@ -27,7 +22,18 @@ class Select(object):
     """
     RANGE_ACTIONS = ['gt', 'gte', 'lt', 'lte']
 
-    def __init__(self, namespace):
+    def __init__(self, namespace, *filters, **kwargs):
+        self._namespace = namespace
+        self._path = self._path_from_namespace(namespace)
+        self._filters = []
+        self.filter(*filters, **kwargs)
+
+    def rewind(self):
+        self._rows_received = 0
+        self._scroll_id = None
+        self._row_cache = []
+
+    def filter(self, *filters, **kwargs):
         """
         Returns a new Select instance with the query args combined with
         existing set with AND.
@@ -42,28 +48,19 @@ class Select(object):
 
         If you want something different, use the F class which supports
         ``&`` (and), ``|`` (or) and ``~`` (not) operators. Then call
-        filter once with the resulting F instance.
+        filter once with the resulting Filter instance.
         """
-        self._namespace = namespace
-        self._path = self._path_from_namespace(namespace)
-        self.filters = []
         self.rewind()
-
-    def rewind(self):
-        self._rows_returned = 0
-        self._response_cache = None
-
-    def filter(self, *filters, **kwargs):
-        self.filters = []
 
         for f in list(filters):
             if not isinstance(f, Filter):
                 solvelog.warning('Filter non-keyword arguments must be Filter objects.')
             else:
-                self.filters.append(f)
+                self._filters.append(f)
 
         if kwargs:
-            self.filters += [Filter(**kwargs)]
+            self._filters += [Filter(**kwargs)]
+
         return self
 
     def _path_from_namespace(self, namespace):
@@ -73,23 +70,28 @@ class Select(object):
 
     def __repr__(self):
         try:
+            # TODO: print result summary:
+            # <
+            # SolveSelect 1,300,000 results, 1ms
+            # -------------
+            # First row
+            # -------------
+            # >
             return '<Select {0}>'.format(repr(self._build_query()))
         except RuntimeError:
             # This happens when you're debugging _build_query and try
             # to repr the instance you're calling it on. Then that
             # calls _build_query and ...
-            return repr(self.filters)
+            return repr(self._filters)
 
     def _build_query(self):
         qs = {}
 
-        # If there's a cached response and scroll_id, attempt to use it
-        # TODO: handle expired scrolls
-        if self._response_cache and self._response_cache.scroll_id:
-            qs = {'scroll_id': self._response_cache.scroll_id}
-
-        if self.filters:
-            filters = self._process_filters(self.filters)
+        # If there's a scroll_id, attempt to use it
+        if self._scroll_id:
+            qs = {'scroll_id': self._scroll_id}
+        elif self._filters:
+            filters = self._process_filters(self._filters)
             if len(filters) > 1:
                 qs['filter'] = {'and': filters}
             else:
@@ -133,7 +135,7 @@ class Select(object):
                 key = key.strip('_')
 
                 if key not in ('or', 'and', 'not', 'filter'):
-                    raise InvalidFieldActionError(
+                    raise SelectError(
                         '%s is not a valid connector' % f.keys()[0])
 
                 if 'filter' in val:
@@ -180,50 +182,10 @@ class Select(object):
                     rv.append({'range': {key: {'gte': lower, 'lte': upper}}})
 
                 else:
-                    raise InvalidFieldActionError(
+                    raise SelectError(
                         '%s is not a valid field action' % field_action)
 
         return rv
-
-    def __iter__(self):
-        """
-        Execute a search and iterate through the result set.
-        Once the cached result set is exhausted, repeat search.
-        """
-        if not self._response_cache:
-            self.execute()
-        return self
-
-    def next(self):
-        """
-        Allows the Select object to be an iterable.
-        """
-        if self._rows_returned == self._response_cache.total:
-            raise StopIteration
-
-        # If result cache is empty, request more
-        if not self._response_cache.has_next():
-            self.execute()
-
-        self._rows_returned += 1
-        return self._response_cache.next()
-
-    def __len__(self):
-        """
-        Executes search and returns number of cached results.
-
-        :returns: integer
-
-        .. Note::
-
-           This is very different than calling ``.count()``. If you
-           call ``.count()`` you get the total number of results
-           that will be returned via iteration.
-        """
-        if not self._response_cache:
-            self.execute()
-
-        return len(self._response_cache)
 
     def total(self):
         """
@@ -237,90 +199,73 @@ class Select(object):
         >>> count = s.total()
 
         """
-        if not self._response_cache:
+        if not self._scroll_id:
             self.execute()
+        return self._rows_total
 
-        return self._response_cache.total
+    def __len__(self):
+        """
+        Executes search and returns number of cached results.
+
+        :returns: integer
+
+        .. Note::
+
+           This is very different than calling ``.count()``. If you
+           call ``.count()`` you get the total number of results
+           that will be returned via iteration.
+        """
+        if not self._scroll_id:
+            self.execute()
+        return len(self._row_cache)
+
+    def __iter__(self):
+        """
+        Execute a search and iterate through the result set.
+        Once the cached result set is exhausted, repeat search.
+        """
+        if not self._scroll_id:
+            self.execute()
+        return self
+
+    def next(self):
+        """
+        Allows the Select object to be an iterable.
+        """
+        if len(self._row_cache) == 0:
+            if self._rows_received < self._rows_total:
+                # If result cache is empty, request more
+                self.execute()
+            else:
+                # no more rows to fetch!
+                raise StopIteration
+        else:
+            return SelectResult(self._row_cache.pop())
 
     def execute(self):
         """
-        Executes select and returns the resulting object.
+        Executes select and returns self (Select)
 
         Always sends a query, regardless of state.
 
         :returns: the resulting row objects
         """
-        response = client.post_dataset_select(self._path,
-                                              self._build_query())
-        self._response_cache = SelectResponse(response)
-        return self._response_cache.objects
+        # TODO: handle no scroll_id, no rows...
+        response = client.post_dataset_select(self._path, self._build_query())
+        self._scroll_id = response['scroll_id']
+        self._rows_total = response['total']
+        self._rows_received += len(response['results'])
+        response['results'].reverse()  # setup for pop()ing
+        self._row_cache = response['results'] + self._row_cache
+        return self
 
 
-class SelectResponse(object):
-    """
-    After executing a search, this is the class that manages the
-    response.
+class SelectResult(object):
+    # TODO: pretty printing
 
-    :property total: the total results
-    :property response: the raw search response
-    :property results: the search results from the response if any
+    def __init__(self, obj):
+        for k, v in obj.items():
+            self.__dict__[k] = v
 
-    When you iterate over this object, it returns the individual
-    search results in the shape you asked for (object, tuple, dict,
-    etc) in the order returned by Elasticsearch.
-
-    Example::
-
-        s = Select(chromosome='1')
-        results = s.execute()
-
-        # Shows the raw response
-        print results.results
-
-    """
-
-    def __init__(self, response):
-        self.response = response
-        self.scroll_id = self.response.get('scroll_id', None)
-        self.total = self.response.get('total', 0)
-        self.results = self.to_python(response.get('results', []))
-        self.results.reverse()
-        # an object cache which we pop() from when iterating
-        self.objects = [DictResult(r) for r in self.results]
-
-    def __iter__(self):
-        return iter([DictResult(r) for r in self.results])
-
-    def has_next(self):
-        return len(self.objects) > 0
-
-    def next(self):
-        return self.objects.pop()
-
-    def to_python(self, obj):
-        """Converts strings in a data structure to Python types
-
-        It converts datetime-ish things to Python datetimes.
-
-        Override if you want something different.
-
-        :arg obj: Python datastructure
-
-        :returns: Python datastructure with strings converted to
-            Python types
-
-        .. Note::
-
-           This does the conversion in-place!
-
-        """
-        if isinstance(obj, dict):
-            for key, val in obj.items():
-                obj[key] = self.to_python(val)
-        elif isinstance(obj, list):
-            return [self.to_python(item) for item in obj]
-        return obj
-
-
-class DictResult(dict):
-    pass
+    def __getitem__(self, name):
+        return self.__dict__[name]
