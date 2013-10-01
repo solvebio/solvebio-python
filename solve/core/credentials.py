@@ -18,10 +18,17 @@ class netrc(_netrc):
                 self.file = os.path.join(os.environ['HOME'], ".netrc")
             except KeyError:
                 raise IOError("Could not find .netrc: $HOME is not set")
+
         self.hosts = {}
         self.macros = {}
-        with open(self.file) as fp:
-            self._parse(self.file, fp)
+
+        if os.path.exists(self.file):
+            fp = open(self.file)
+        else:
+            # file doesnt exist yet
+            fp = open(self.file, 'w+')
+
+        self._parse(self.file, fp)
 
     def save(self):
         """Dump the class data in the format of a .netrc file."""
