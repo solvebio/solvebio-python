@@ -78,10 +78,11 @@ class Select(object):
             sample = SelectResult(self._row_cache[0])
         except IndexError:
             # No results
-            return """<Select on %s (empty)>"""
+            return """<Select on %s (empty)>""" % self._namespace
         else:
             return """<Select on %s>
 
+Sample result:
 %s
 
 ... %s more results.""" % (self._namespace,
