@@ -483,7 +483,7 @@ def _format_table(fmt, headers, rows, colwidths, colaligns):
     return "\n".join(lines)
 
 
-def tabulate(tabular_data, headers=[], tablefmt="simple",
+def tabulate(tabular_data, headers=[], tablefmt="orgmode",
              floatfmt="g", numalign="decimal", stralign="left",
              missingval=u""):
     list_of_lists, headers = _normalize_tabular_data(tabular_data, headers)
@@ -521,6 +521,6 @@ def tabulate(tabular_data, headers=[], tablefmt="simple",
         rows = list(zip(*cols))
 
     if not isinstance(tablefmt, TableFormat):
-        tablefmt = _table_formats.get(tablefmt, _table_formats["simple"])
+        tablefmt = _table_formats.get(tablefmt, _table_formats["orgmode"])
 
     return _format_table(tablefmt, headers, rows, minwidths, aligns)

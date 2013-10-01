@@ -1,6 +1,9 @@
 import os
 import sys
 import subprocess
+import locale
+
+locale.setlocale(locale.LC_ALL, 'en_US')
 
 from solve.core.solvelog import solvelog
 from solve.core.solveconfig import solveconfig
@@ -16,6 +19,10 @@ if sys.stdout.isatty():
         solvelog.warn('Cannot detect terminal column width')
 else:
     solveconfig.TTY_COLORS = False
+
+
+def pretty_int(num):
+    return locale.format("%d", int(num), grouping=True)
 
 
 # Basic color support

@@ -9,6 +9,8 @@ class-based query builder that can generate a JSON query string.
 from .filters import Filter
 from ..client import client
 from ..solvelog import solvelog
+from ..utils.printing import red, pretty_int
+from ..utils.tabulate import tabulate
 
 
 class SelectError(Exception):
@@ -69,20 +71,22 @@ class Select(object):
         return namespace.replace('.', '/')
 
     def __repr__(self):
+        """
+        Prints a summary of the Select object.
+        """
         try:
-            # TODO: print result summary:
-            # <
-            # SolveSelect 1,300,000 results, 1ms
-            # -------------
-            # First row
-            # -------------
-            # >
-            return '<Select {0}>'.format(repr(self._build_query()))
-        except RuntimeError:
-            # This happens when you're debugging _build_query and try
-            # to repr the instance you're calling it on. Then that
-            # calls _build_query and ...
-            return repr(self._filters)
+            sample = SelectResult(self._row_cache[0])
+        except IndexError:
+            # No results
+            return """<Select on %s (empty)>"""
+        else:
+            return """<Select on %s>
+
+%s
+
+... %s more results.""" % (self._namespace,
+                        tabulate([sample.values()], sample.keys()),
+                        pretty_int(self._rows_total - 1))
 
     def _build_query(self):
         qs = {}
@@ -224,9 +228,21 @@ class Select(object):
         Execute a search and iterate through the result set.
         Once the cached result set is exhausted, repeat search.
         """
-        if not self._scroll_id:
-            self.execute()
-        return self
+        # TODO: should rewind be optional?
+        self.rewind()
+        return self.execute()
+
+    def __getitem__(self, key):
+        """
+        Handle indexed lookups of cached rows.
+        """
+        try:
+            if type(key) == slice:
+                return [SelectResult(r) for r in self._row_cache[key]]
+            else:
+                return SelectResult(self._row_cache[key])
+        except (KeyError, IndexError):
+            print red('Slicing of Select objects is not fully supported. Please iterate instead.')
 
     def next(self):
         """
@@ -261,11 +277,22 @@ class Select(object):
 
 
 class SelectResult(object):
-    # TODO: pretty printing
+    ignored_fields = ['uuid', 'file_uuid', 'keys', 'values']
 
     def __init__(self, obj):
         for k, v in obj.items():
-            self.__dict__[k] = v
+            if k not in self.ignored_fields:
+                self.__dict__[k] = v
 
     def __getitem__(self, name):
         return self.__dict__[name]
+
+    def __repr__(self):
+        # return tabulate([self.values()], self.keys())
+        return str(self.values())
+
+    def keys(self):
+        return self.__dict__.keys()
+
+    def values(self):
+        return self.__dict__.values()
