@@ -192,37 +192,13 @@ Sample result:
 
         return rv
 
-    def total(self):
+    def __len__(self):
         """
-        Executes search and returns number of results as an integer.
-
-        :returns: integer
-
-        For example:
-
-        >>> s = Select().query(name__prefix='Jimmy')
-        >>> count = s.total()
-
+        Executes search and returns the total number of results
         """
         if not self._scroll_id:
             self.execute()
         return self._rows_total
-
-    def __len__(self):
-        """
-        Executes search and returns number of cached results.
-
-        :returns: integer
-
-        .. Note::
-
-           This is very different than calling ``.count()``. If you
-           call ``.count()`` you get the total number of results
-           that will be returned via iteration.
-        """
-        if not self._scroll_id:
-            self.execute()
-        return len(self._row_cache)
 
     def __iter__(self):
         """
