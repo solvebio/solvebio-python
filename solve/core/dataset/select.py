@@ -6,7 +6,7 @@ The `select` function returns a "lazy" SolveSelect statement which is a
 class-based query builder that can generate a JSON query string.
 
 """
-from .filters import Filter
+from .filters import Filter, Range
 from ..client import client
 from ..solvelog import solvelog
 from ..utils.printing import red, pretty_int
@@ -37,7 +37,7 @@ class Select(object):
 
     def filter(self, *filters, **kwargs):
         """
-        Returns a new Select instance with the query args combined with
+        Returns this Select instance with the query args combined with
         existing set with AND.
 
         kwargs are simply passed to a new Filter object and combined to any
@@ -63,6 +63,17 @@ class Select(object):
         if kwargs:
             self._filters += [Filter(**kwargs)]
 
+        return self
+
+    def range(self, start, end, field_name='coordinate', overlap=True):
+        """
+        Returns this Select instance with a Range filter added.
+        """
+        self.rewind()
+        self._filters += [Range(start, end,
+                                '%s_start' % field_name,
+                                '%s_end' % field_name,
+                                overlap)]
         return self
 
     def _path_from_namespace(self, namespace):
@@ -175,16 +186,14 @@ class Select(object):
                 elif field_action == 'in':
                     rv.append({'in': {key: val}})
 
-                elif field_action in ['gt', 'gte', 'lt', 'lte']:
+                elif field_action in ('gt', 'gte', 'lt', 'lte'):
                     rv.append({'range': {key: {field_action: val}}})
 
-                elif field_action == 'range':
+                elif field_action in ('range', 'between'):
                     if not isinstance(val, list):
-                        raise SelectError('Range actions must be given a list. For example: %s__range=[10, 500]' % key)
-
+                        raise SelectError('Range action must be given a list. For example: %s__between=[10, 500]' % key)
                     # defaults to inclusive
-                    lower, upper = val
-                    rv.append({'range': {key: {'gte': lower, 'lte': upper}}})
+                    rv.append({'range': {key: {'gte': val[0], 'lte': val[1]}}})
 
                 else:
                     raise SelectError(

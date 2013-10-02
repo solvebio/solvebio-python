@@ -142,10 +142,10 @@ class Range(Filter):
         field_end >= start AND field_end <= hi
 
     """
-    def __init__(self, field_start, field_end, start, end, overlaps=True):
+    def __init__(self, start, end, field_start='coordinate_start', field_end='coordinate_end', overlap=True):
         super(Range, self).__init__(
             **{
-                ('and', 'or')[overlaps]: {
+                ('and', 'or')[overlap]: {
                     field_start + '__range': [start, end],
                     field_end + '__range': [start, end]
                 }

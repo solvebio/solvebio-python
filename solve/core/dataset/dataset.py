@@ -97,6 +97,12 @@ class RootNamespace(Namespace):
         json.dump(data, fp, sort_keys=True, indent=4)
         fp.close()
 
+    def __getattr__(self, name):
+        try:
+            super(RootNamespace, self).__getattr__(name)
+        except AttributeError:
+            raise Exception('Could not find the namespace %s.' % name)
+
 
 class Dataset(object):
     _meta_fields = ['name', 'full_name', 'title', 'description', 'url']
