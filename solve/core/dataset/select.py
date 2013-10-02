@@ -32,6 +32,7 @@ class Select(object):
     def rewind(self):
         self._rows_received = None
         self._scroll_id = None
+        self._row_sample = None
         self._row_cache = []
 
     def filter(self, *filters, **kwargs):
@@ -73,20 +74,15 @@ class Select(object):
         """
         Prints a summary of the Select object.
         """
-        try:
-            sample = SelectResult(self._row_cache[0])
-        except IndexError:
-            # No results
-            return """<Select on %s>""" % self._namespace
+
+        if self._rows_received is None:
+            return '<Select on %s (not executed)>' % self._namespace
+        elif self._rows_received == 0:
+            return '<Select on %s (0 results)>' % self._namespace
         else:
-            return """<Select on %s>
-
-Sample result:
-%s
-
-... %s more results.""" % (self._namespace,
-                        tabulate([sample.values()], sample.keys()),
-                        pretty_int(self._rows_total - 1))
+            return '\n%s\n\n... %s more results.' % (
+                    tabulate(self._row_sample.items(), ['Columns', 'Sample']),
+                    pretty_int(self._rows_total - 1))
 
     def _build_query(self):
         qs = {}
@@ -255,10 +251,15 @@ Sample result:
         response['results'].reverse()  # setup for pop()ing
         self._row_cache = response['results'] + self._row_cache
 
+        # count the rows received so far
         if self._rows_received is None:
             self._rows_received = len(response['results'])
         else:
             self._rows_received += len(response['results'])
+
+        # store a sample row
+        if self._row_sample is None and self._rows_received:
+            self._row_sample = SelectResult(self._row_cache[0])
 
         return self
 
@@ -283,3 +284,6 @@ class SelectResult(object):
 
     def values(self):
         return self.__dict__.values()
+
+    def items(self):
+        return self.__dict__.items()
