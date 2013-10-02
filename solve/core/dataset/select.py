@@ -156,6 +156,8 @@ class Select(object):
                 #     rv.append(getattr(self, handler_name)(
                 #             key, val, field_action))
 
+                # TODO: __contains full-text search
+
                 if key.strip('_') in ('or', 'and', 'not'):
                     connector = key.strip('_')
                     rv.append({connector: self._process_filters(val.items())})

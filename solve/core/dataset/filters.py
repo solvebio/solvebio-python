@@ -143,9 +143,10 @@ class Range(Filter):
 
     """
     def __init__(self, field_start, field_end, start, end, overlaps=True):
-        start_filter = Filter({'range': {field_start: {'gte': start, 'lte': end}}})
-        end_filter = Filter({'range': {field_end: {'gte': start, 'lte': end}}})
-        if overlaps:
-            self.filters = [start_filter.__or__(end_filter)]
-        else:
-            self.filters = [start_filter.__and__(end_filter)]
+        super(Range, self).__init__(
+            **{
+                ('and', 'or')[overlaps]: {
+                    field_start + '__range': [start, end],
+                    field_end + '__range': [start, end]
+                }
+            })
