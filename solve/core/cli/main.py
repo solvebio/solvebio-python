@@ -65,6 +65,7 @@ subcommands = base_parser.add_subparsers(title='subcommands',
 shell_parser = subcommands.add_parser('shell', help='Open the Solve shell')
 shell_parser.set_defaults(func=shell)
 
+
 # auth parsers
 from .auth import (login as auth_login,
                    logout as auth_logout,
@@ -78,6 +79,17 @@ logout_parser.set_defaults(func=auth_logout)
 
 whoami_parser = subcommands.add_parser('whoami', help='Show your Solve email address')
 whoami_parser.set_defaults(func=auth_whoami)
+
+
+# dataset parsers
+def dataset_refresh(args=None):
+    print "Refreshing datasets..."
+    solve.data.refresh()
+    # TODO: show dataset update report
+    print "Done."
+
+dataset_refresh_parser = subcommands.add_parser('refresh', help='Refresh the dataset cache')
+dataset_refresh_parser.set_defaults(func=dataset_refresh)
 
 
 def main(args=None):
