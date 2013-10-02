@@ -177,6 +177,9 @@ class Select(object):
                     rv.append({'range': {key: {field_action: val}}})
 
                 elif field_action == 'range':
+                    if not isinstance(val, list):
+                        raise SelectError('Range actions must be given a list. For example: %s__range=[10, 500]' % key)
+
                     # defaults to inclusive
                     lower, upper = val
                     rv.append({'range': {key: {'gte': lower, 'lte': upper}}})
@@ -200,7 +203,7 @@ class Select(object):
         Handle indexed lookups of cached rows.
         """
         try:
-            if type(key) == slice:
+            if isinstance(key, slice):
                 return [SelectResult(r) for r in self._row_cache[key]]
             else:
                 return SelectResult(self._row_cache[key])

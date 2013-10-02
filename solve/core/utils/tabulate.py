@@ -162,6 +162,8 @@ def _type(string, has_invisible=True):
 
     if string is None:
         return _none_type
+    elif type(string) is list:
+        return _text_type
     elif _isint(string):
         return int
     elif _isnumber(string):
