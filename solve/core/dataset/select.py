@@ -22,7 +22,6 @@ class Select(object):
     """Select API request wrapper.
     Generates JSON for the API call.
     """
-    RANGE_ACTIONS = ['gt', 'gte', 'lt', 'lte']
 
     def __init__(self, namespace, *filters, **kwargs):
         self._namespace = namespace
@@ -31,7 +30,7 @@ class Select(object):
         self.filter(*filters, **kwargs)
 
     def rewind(self):
-        self._rows_received = 0
+        self._rows_received = None
         self._scroll_id = None
         self._row_cache = []
 
@@ -78,7 +77,7 @@ class Select(object):
             sample = SelectResult(self._row_cache[0])
         except IndexError:
             # No results
-            return """<Select on %s (empty)>""" % self._namespace
+            return """<Select on %s>""" % self._namespace
         else:
             return """<Select on %s>
 
@@ -172,13 +171,13 @@ Sample result:
                     else:
                         rv.append({'term': {key: val}})
 
-                elif field_action in ('startswith', 'prefix'):
+                elif field_action == 'prefix':
                     rv.append({'prefix': {key: val}})
 
                 elif field_action == 'in':
                     rv.append({'in': {key: val}})
 
-                elif field_action in self.RANGE_ACTIONS:
+                elif field_action in ['gt', 'gte', 'lt', 'lte']:
                     rv.append({'range': {key: {field_action: val}}})
 
                 elif field_action == 'range':
@@ -194,20 +193,11 @@ Sample result:
 
     def __len__(self):
         """
-        Executes search and returns the total number of results
+        Executes select and returns the total number of results
         """
         if not self._scroll_id:
             self.execute()
         return self._rows_total
-
-    def __iter__(self):
-        """
-        Execute a search and iterate through the result set.
-        Once the cached result set is exhausted, repeat search.
-        """
-        # TODO: should rewind be optional?
-        self.rewind()
-        return self.execute()
 
     def __getitem__(self, key):
         """
@@ -221,11 +211,26 @@ Sample result:
         except (KeyError, IndexError):
             print red('Slicing of Select objects is not fully supported. Please iterate instead.')
 
+    def __iter__(self):
+        """
+        Execute a select and iterate through the result set.
+        Once the cached result set is exhausted, repeat select.
+        """
+        # Always rewind on new iteration
+        self.rewind()
+        return self.execute()
+
     def next(self):
         """
         Allows the Select object to be an iterable.
         """
+        if self._rows_received is None:
+            # If next() is called prior to executing the select
+            self.rewind()
+            self.execute()
+
         if len(self._row_cache) == 0:
+            # The select should always have been executed
             if self._rows_received < self._rows_total:
                 # If result cache is empty, request more
                 self.execute()
@@ -247,9 +252,14 @@ Sample result:
         response = client.post_dataset_select(self._path, self._build_query())
         self._scroll_id = response['scroll_id']
         self._rows_total = response['total']
-        self._rows_received += len(response['results'])
         response['results'].reverse()  # setup for pop()ing
         self._row_cache = response['results'] + self._row_cache
+
+        if self._rows_received is None:
+            self._rows_received = len(response['results'])
+        else:
+            self._rows_received += len(response['results'])
+
         return self
 
 
