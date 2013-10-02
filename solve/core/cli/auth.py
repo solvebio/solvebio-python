@@ -40,7 +40,7 @@ def login(args):
 
         print 'Loading datasets...'
         from ..dataset import root
-        root.refresh()
+        root.update()
         print 'You are now logged-in.'
     else:
         print 'Login failed.'

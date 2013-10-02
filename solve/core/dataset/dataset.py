@@ -57,7 +57,7 @@ class RootNamespace(Namespace):
         self._name = name
 
         if not self._load_from_cache():
-            self.refresh()
+            self.update()
 
         self.help = BaseHelp("Help for %s" % name)
 
@@ -75,7 +75,7 @@ class RootNamespace(Namespace):
         if cache:
             self._save_to_cache(namespaces)
 
-    def refresh(self):
+    def update(self):
         """Load datasets from API and save in a local cache"""
         solvelog.info('Updating Datasets...')
         self._flush_namespaces()

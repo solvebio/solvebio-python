@@ -82,14 +82,14 @@ whoami_parser.set_defaults(func=auth_whoami)
 
 
 # dataset parsers
-def dataset_refresh(args=None):
-    print "Refreshing datasets..."
-    solve.data.refresh()
+def dataset_update(args=None):
+    print "Updating datasets..."
+    solve.data.update()
     # TODO: show dataset update report
     print "Done."
 
-dataset_refresh_parser = subcommands.add_parser('refresh', help='Refresh the dataset cache')
-dataset_refresh_parser.set_defaults(func=dataset_refresh)
+dataset_update_parser = subcommands.add_parser('update', help='Update the dataset cache')
+dataset_update_parser.set_defaults(func=dataset_update)
 
 
 def main(args=None):
