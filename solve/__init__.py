@@ -39,7 +39,6 @@ except NameError:
 import help as _help
 help = _help.BaseHelp("""
 The Solve Shell.
-Help TBD
 """)
 
 __all__ = ['__version__', 'data', 'help']

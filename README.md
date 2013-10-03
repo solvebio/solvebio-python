@@ -1,5 +1,5 @@
-Solve Bioinformatics Python Environment
-=======================================
+SolveBio Python Client
+======================
 
 The solve Python package and command-line interface (CLI) are used to work in our bioinformatics environment.
 
