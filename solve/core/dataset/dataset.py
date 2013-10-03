@@ -1,10 +1,22 @@
-"""
-Solve Datasets
-^^^^^^^^^^^^^^
+# -*- coding: utf-8 -*-
+#
+# Copyright © 2013 Solve, Inc. <http://www.solvebio.com>. All rights reserved.
+#
+# email: contact@solvebio.com
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-By default Solve `select` arguments filters data with the AND boolean operator.
 
-"""
 from solve.core.solvelog import solvelog
 from solve.core.client import client
 from solve.help import BaseHelp
@@ -46,8 +58,9 @@ class Namespace(object):
 
 
 class RootNamespace(Namespace):
-    """The RootNamespace is a singleton used to contain all Namespaces.
-       Also caches to a file in the user's home directory.
+    """
+    The RootNamespace is a singleton used to contain all Namespaces.
+    Also caches to a file in the user's home directory.
     """
 
     # The complete set of Namespaces is cached locally

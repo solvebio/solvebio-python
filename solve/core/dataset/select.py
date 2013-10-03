@@ -1,11 +1,22 @@
-"""
-Solve Select
-^^^^^^^^^^^^
+# -*- coding: utf-8 -*-
+#
+# Copyright © 2013 Solve, Inc. <http://www.solvebio.com>. All rights reserved.
+#
+# email: contact@solvebio.com
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-The `select` function returns a "lazy" SolveSelect statement which is a
-class-based query builder that can generate a JSON query string.
 
-"""
 from .filters import Filter, Range
 from ..client import client
 from ..solvelog import solvelog
@@ -14,12 +25,15 @@ from ..utils.tabulate import tabulate
 
 
 class SelectError(Exception):
-    """Base class for errors with Solve Select requests."""
+    """
+    Base class for errors with Solve Select requests.
+    """
     pass
 
 
 class Select(object):
-    """Select API request wrapper.
+    """
+    Select API request wrapper.
     Generates JSON for the API call.
     """
 
@@ -111,7 +125,8 @@ class Select(object):
         return qs
 
     def _split_field_action(self, s):
-        """Takes a string and splits it into field and action
+        """
+        Takes a string and splits it into field and action
 
         Example::
 
@@ -257,6 +272,7 @@ class Select(object):
         Always sends a query, regardless of state.
 
         :returns: the resulting row objects
+
         """
         # TODO: handle no scroll_id, no rows...
         response = client.post_dataset_select(self._path, self._build_query())

@@ -1,57 +1,22 @@
-"""
-Solve Filters
-^^^^^^^^^^^^^
-
-Each set of kwargs in a `Filter` are ANDed together:
-
-* `<field>=''` uses a term filter (exact term)
-* `<field>__in=[]` uses a terms filter (match any)
-
-String terms are not analyzed and are always assumed to be exact matches.
-
-Numeric columns can be selected by range using:
-
-    * `<field>__gt`: greater than
-    * `<field>__gte`: greater than or equal to
-    * `<field>__lt`: less than
-    * `<field>__lte`: less than or equal to
-
-Examples:
-
-    result_set = TCGA.somatic_mutations.select(gene__in=['BRCA', 'GATA3'],
-                                               chr='3',
-                                               start__gt=10000,
-                                               end__lte=20000)
+# -*- coding: utf-8 -*-
+#
+# Copyright © 2013 Solve, Inc. <http://www.solvebio.com>. All rights reserved.
+#
+# email: contact@solvebio.com
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
-Range lookups:
-
-
-SNV lookups (where start == end):
-
-    lo [           *   ] hi
-
-    start_position >= lo AND end_position <= hi
-
-
-CNV lookups (start != end):
-
-We should allow for overlap detection in these cases.
-
-    lo [       ******   ] hi
-       [          ******]***
-    ***[*****           ]
-
-
-    start_position >= lo AND start_position <= hi
-    OR (if allow_overlap... otherwise AND)
-    end_position >= lo AND end_position <= hi
-
-
-The `select` function returns a "lazy" SolveSelect statement which is a
-class-based query builder that can generate a JSON query string.
-
-"""
 import copy
 
 
@@ -70,6 +35,26 @@ class Filter(object):
 
     creates a filter "price = 'Free' or style = 'Mexican'".
 
+    Each set of kwargs in a `Filter` are ANDed together:
+
+        * `<field>=''` uses a term filter (exact term)
+        * `<field>__in=[]` uses a terms filter (match any)
+
+    String terms are not analyzed and are always assumed to be exact matches.
+
+    Numeric columns can be selected by range using:
+
+        * `<field>__gt`: greater than
+        * `<field>__gte`: greater than or equal to
+        * `<field>__lt`: less than
+        * `<field>__lte`: less than or equal to
+
+    Field action examples:
+
+        TCGA.somatic_mutations.select(gene__in=['BRCA', 'GATA3'],
+                                      chr='3',
+                                      start__gt=10000,
+                                      end__lte=20000)
     """
     def __init__(self, **filters):
         """Creates a Filter"""
@@ -129,9 +114,7 @@ class Filter(object):
 
 class Range(Filter):
     """
-    Range objects.
-
-    Makes it easier to do range filters.
+    Range objects make it easier to do range filters.
 
         Range('<field_start>', '<field_end>', start, end, overlaps=True)
 
@@ -140,6 +123,22 @@ class Range(Filter):
         field_start >= start AND field_start <= end
             (overlaps ? OR : AND)
         field_end >= start AND field_end <= hi
+
+    Range lookups:
+
+    Single locus lookups (where start == end):
+
+        lo [           *   ] hi
+
+        start_position >= lo AND end_position <= hi
+
+    Multilocus lookups (start != end):
+
+    We should allow for overlap detection in these cases.
+
+        lo [       ******   ] hi
+           [          ******]***
+        ***[*****           ]
 
     """
     def __init__(self, start, end, field_start='coordinate_start', field_end='coordinate_end', overlap=True):
