@@ -101,11 +101,11 @@ class Select(object):
         """
 
         if self._rows_received is None:
-            return '<Select on %s (not executed)>' % self._namespace
+            return u'<Select on %s (not executed)>' % self._namespace
         elif self._rows_received == 0:
-            return '<Select on %s (0 results)>' % self._namespace
+            return u'<Select on %s (0 results)>' % self._namespace
         else:
-            return '\n%s\n\n... %s more results.' % (
+            return u'\n%s\n\n... %s more results.' % (
                     tabulate(self._row_sample.items(), ['Columns', 'Sample']),
                     pretty_int(self._rows_total - 1))
 
@@ -295,25 +295,24 @@ class Select(object):
 
 
 class SelectResult(object):
-    ignored_fields = ['uuid', 'file_uuid', 'keys', 'values']
-
     def __init__(self, obj):
         for k, v in obj.items():
-            if k not in self.ignored_fields:
-                self.__dict__[k] = v
+            if k == 'metadata':
+                self.metadata = SelectResult(v)
+            else:
+                setattr(self, k, v)
 
     def __getitem__(self, name):
-        return self.__dict__[name]
+        return getattr(self, name)
 
     def __repr__(self):
-        # return tabulate([self.values()], self.keys())
         return str(self.values())
 
     def keys(self):
-        return self.__dict__.keys()
+        return [k for k, v in self.items()]
 
     def values(self):
-        return self.__dict__.values()
+        return [v for k, v in self.items()]
 
     def items(self):
-        return self.__dict__.items()
+        return [(k, v) for k, v in self.__dict__.items() if not k.startswith('_')]

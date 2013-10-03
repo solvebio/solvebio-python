@@ -33,6 +33,7 @@ class SolveAPIError(BaseException):
     def __init__(self, response):
         self.response = response
         self.body = None
+        self.message = 'Server error, please try again later'
 
         try:
             self.body = response.json()
@@ -42,6 +43,7 @@ class SolveAPIError(BaseException):
             # log general errors before field errors
             if 'detail' in self.body:
                 solvelog.error('API Response (%d): %s' % (self.response.status_code, self.body['detail']))
+                self.message = self.body['detail']
 
             if 'non_field_errors' in self.body:
                 [solvelog.error(i) for i in self.body['non_field_errors']]
@@ -50,6 +52,9 @@ class SolveAPIError(BaseException):
         for f in fields:
             if f in self.body:
                 solvelog.error('Field %s: %s' % (f, self.field_errors[f]))
+
+    def __str__(self):
+        return self.message
 
 
 class SolveTokenAuth(AuthBase):

@@ -19,7 +19,6 @@
 
 
 import solve
-from solve.core.solveconfig import solveconfig
 
 import argparse
 import sys
@@ -116,6 +115,8 @@ def main(args=None):
         args = base_parser.parse_args()
 
     if args.api_host:
+        from solve.core.solveconfig import solveconfig
+
         if args.api_host.startswith('http://'):
             solveconfig.API_SSL, solveconfig.API_HOST = False, args.api_host.replace('http://', '')
         elif args.api_host.startswith('https://'):
