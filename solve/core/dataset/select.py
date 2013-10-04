@@ -17,18 +17,11 @@
 # limitations under the License.
 
 
-from .filters import Filter, Range
+from .filters import Filter
 from ..client import client
 from ..solvelog import solvelog
 from ..utils.printing import red, pretty_int
 from ..utils.tabulate import tabulate
-
-
-class SelectError(Exception):
-    """
-    Base class for errors with Solve Select requests.
-    """
-    pass
 
 
 class Select(object):
@@ -67,7 +60,6 @@ class Select(object):
         filter once with the resulting Filter instance.
         """
         self.rewind()
-
         for f in list(filters):
             if not isinstance(f, Filter):
                 solvelog.warning('Filter non-keyword arguments must be Filter objects.')
@@ -77,17 +69,6 @@ class Select(object):
         if kwargs:
             self._filters += [Filter(**kwargs)]
 
-        return self
-
-    def range(self, start, end, field_name='coordinate', overlap=True):
-        """
-        Returns this Select instance with a Range filter added.
-        """
-        self.rewind()
-        self._filters += [Range(start, end,
-                                '%s_start' % field_name,
-                                '%s_end' % field_name,
-                                overlap)]
         return self
 
     def _path_from_namespace(self, namespace):
@@ -108,113 +89,6 @@ class Select(object):
             return u'\n%s\n\n... %s more results.' % (
                     tabulate(self._row_sample.items(), ['Columns', 'Sample']),
                     pretty_int(self._rows_total - 1))
-
-    def _build_query(self):
-        qs = {}
-
-        # If there's a scroll_id, attempt to use it
-        if self._scroll_id:
-            qs = {'scroll_id': self._scroll_id}
-        elif self._filters:
-            filters = self._process_filters(self._filters)
-            if len(filters) > 1:
-                qs['filter'] = {'and': filters}
-            else:
-                qs['filter'] = filters[0]
-
-        return qs
-
-    def _split_field_action(self, s):
-        """
-        Takes a string and splits it into field and action
-
-        Example::
-
-        >>> _split_field_action('foo__bar')
-        'foo', 'bar'
-        >>> _split_field_action('foo')
-        'foo', None
-
-        """
-        if '__' in s:
-            return s.rsplit('__', 1)
-        return s, None
-
-    def _process_filters(self, filters):
-        """Takes a list of filters and returns JSON
-
-        :arg filters: list of Filters, (key, val) tuples, or dicts
-
-        :returns: list of JSON API filters
-
-        """
-        rv = []
-        for f in filters:
-            if isinstance(f, Filter):
-                if f.filters:
-                    rv.extend(self._process_filters(f.filters))
-                    continue
-
-            elif isinstance(f, dict):
-                key = f.keys()[0]
-                val = f[key]
-                key = key.strip('_')
-
-                if key not in ('or', 'and', 'not', 'filter'):
-                    raise SelectError(
-                        '%s is not a valid connector' % f.keys()[0])
-
-                if 'filter' in val:
-                    filter_filters = self._process_filters(val['filter'])
-                    if len(filter_filters) == 1:
-                        filter_filters = filter_filters[0]
-                    rv.append({key: {'filter': filter_filters}})
-                else:
-                    rv.append({key: self._process_filters(val)})
-
-            else:
-                key, val = f
-                key, field_action = self._split_field_action(key)
-
-                # TODO: handle custom filter processing?
-                # handler_name = 'process_filter_{0}'.format(field_action)
-                # if field_action and hasattr(self, handler_name):
-                #     rv.append(getattr(self, handler_name)(
-                #             key, val, field_action))
-
-                # TODO: __contains full-text search
-
-                if key.strip('_') in ('or', 'and', 'not'):
-                    connector = key.strip('_')
-                    rv.append({connector: self._process_filters(val.items())})
-
-                elif field_action is None:
-                    if val is None:
-                        rv.append({'missing': {
-                                    'field': key, "null_value": True}})
-                    else:
-                        rv.append({'term': {key: val}})
-
-                elif field_action == 'prefix':
-                    rv.append({'prefix': {key: val}})
-
-                elif field_action == 'in':
-                    rv.append({'in': {key: val}})
-
-                elif field_action in ('gt', 'gte', 'lt', 'lte'):
-                    rv.append({'range': {key: {field_action: val}}})
-
-                elif field_action in ('range', 'between'):
-                    if not isinstance(val, list):
-                        raise SelectError('Range action must be given a list. For example: %s__between=[10, 500]' % key)
-                    # defaults to inclusive
-                    rv.append({'range': {key: {'gte': val[0], 'lte': val[1]}}})
-
-                else:
-                    raise SelectError(
-                        '%s is not a valid field action' % field_action)
-
-        return rv
 
     def __len__(self):
         """
@@ -265,6 +139,47 @@ class Select(object):
         else:
             return SelectResult(self._row_cache.pop())
 
+    def _build_query(self):
+        qs = {}
+        if self._filters:
+            filters = self._process_filters(self._filters)
+            if len(filters) > 1:
+                qs['filters'] = {'and': filters}
+            else:
+                qs['filters'] = filters
+
+        return qs
+
+    def _process_filters(self, filters):
+        """Takes a list of filters and returns JSON
+
+        :arg filters: list of Filters, (key, val) tuples, or dicts
+
+        :returns: list of JSON API filters
+
+        """
+        rv = []
+        for f in filters:
+            if isinstance(f, Filter):
+                if f.filters:
+                    rv.extend(self._process_filters(f.filters))
+                    continue
+
+            elif isinstance(f, dict):
+                key = f.keys()[0]
+                val = f[key]
+
+                if isinstance(val, dict):
+                    filter_filters = self._process_filters(val)
+                    if len(filter_filters) == 1:
+                        filter_filters = filter_filters[0]
+                    rv.append({key: filter_filters})
+                else:
+                    rv.append({key: self._process_filters(val)})
+            else:
+                rv.extend((f,))
+        return rv
+
     def execute(self):
         """
         Executes select and returns self (Select)
@@ -274,18 +189,20 @@ class Select(object):
         :returns: the resulting row objects
 
         """
-        # TODO: handle no scroll_id, no rows...
-        response = client.post_dataset_select(self._path, self._build_query())
-        self._scroll_id = response['scroll_id']
-        self._rows_total = response['total']
-        response['results'].reverse()  # setup for pop()ing
-        self._row_cache = response['results'] + self._row_cache
 
-        # count the rows received so far
-        if self._rows_received is None:
-            self._rows_received = len(response['results'])
-        else:
+        # If there's a scroll_id, continue scrolling
+        if self._scroll_id:
+            response = client.get_dataset_scroll(self._path, self._scroll_id)
             self._rows_received += len(response['results'])
+        else:
+            # Otherwise, start a new scroll
+            response = client.post_dataset_select(self._path, self._build_query())
+            self._rows_total = response['total']
+            self._rows_received = len(response['results'])
+
+        self._scroll_id = response['scroll_id']
+        self._row_cache = response['results'] + self._row_cache
+        response['results'].reverse()  # setup for pop()ing
 
         # store a sample row
         if self._row_sample is None and self._rows_received:

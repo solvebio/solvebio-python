@@ -105,47 +105,8 @@ class Filter(object):
             f.filters = []
         elif (len(self_filters) == 1
               and isinstance(self_filters[0], dict)
-              and self_filters[0].get('not', {}).get('filter', {})):
-            f.filters = self_filters[0]['not']['filter']
+              and self_filters[0].get('not', {})):
+            f.filters = self_filters[0]['not']
         else:
-            f.filters = [{'not': {'filter': self_filters}}]
+            f.filters = [{'not': self_filters}]
         return f
-
-
-class Range(Filter):
-    """
-    Range objects make it easier to do range filters.
-
-        Range('<field_start>', '<field_end>', start, end, overlaps=True)
-
-    expands to ANDed range filters:
-
-        field_start >= start AND field_start <= end
-            (overlaps ? OR : AND)
-        field_end >= start AND field_end <= hi
-
-    Range lookups:
-
-    Single locus lookups (where start == end):
-
-        lo [           *   ] hi
-
-        start_position >= lo AND end_position <= hi
-
-    Multilocus lookups (start != end):
-
-    We should allow for overlap detection in these cases.
-
-        lo [       ******   ] hi
-           [          ******]***
-        ***[*****           ]
-
-    """
-    def __init__(self, start, end, field_start='coordinate_start', field_end='coordinate_end', overlap=True):
-        super(Range, self).__init__(
-            **{
-                ('and', 'or')[overlap]: {
-                    field_start + '__range': [start, end],
-                    field_end + '__range': [start, end]
-                }
-            })
