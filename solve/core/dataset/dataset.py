@@ -131,7 +131,7 @@ class Dataset(object):
 
     def select(self, *filters, **kwargs):
         # Create and return a new Select object with the set of Filters
-        return Select(self._name, *filters, **kwargs).execute()
+        return Select(self._name, *filters, **kwargs)
 
     def __repr__(self):
         return self.help.__repr__()

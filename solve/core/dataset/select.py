@@ -82,8 +82,9 @@ class Select(object):
         """
 
         if self._rows_received is None:
-            return u'<Select on %s (not executed)>' % self._namespace
-        elif self._rows_received == 0:
+            self.execute()
+
+        if self._rows_total == 0:
             return u'<Select on %s (0 results)>' % self._namespace
         else:
             return u'\n%s\n\n... %s more results.' % (
@@ -123,11 +124,6 @@ class Select(object):
         """
         Allows the Select object to be an iterable.
         """
-        if self._rows_received is None:
-            # If next() is called prior to executing the select
-            self.rewind()
-            self.execute()
-
         if len(self._row_cache) == 0:
             # The select should always have been executed
             if self._rows_received < self._rows_total:
@@ -184,14 +180,16 @@ class Select(object):
         """
         Executes select and returns self (Select)
 
-        Always sends a query, regardless of state.
-
         :returns: the resulting row objects
 
         """
 
         # If there's a scroll_id, continue scrolling
         if self._scroll_id:
+            # If we've received all the rows, don't do anything
+            if self._rows_received == self._rows_total:
+                return self
+
             response = client.get_dataset_select(self._path,
                             {'scroll_id': self._scroll_id})
             self._rows_received += len(response['results'])
@@ -208,6 +206,11 @@ class Select(object):
         # store a sample row
         if self._row_sample is None and self._rows_received:
             self._row_sample = SelectResult(self._row_cache[0])
+
+        if self._rows_total > 0 and self._rows_received == 0:
+            # If this was the first select and no rows were returned
+            # run a follow-up query to get some rows
+            return self.execute()
 
         return self
 
