@@ -36,7 +36,10 @@ class DatasetHelp(BaseHelp):
         self._help = 'Help for %s' % self._dataset
 
     def __repr__(self):
-        mapping = [(k, m['type']) for k, m in self._dataset._meta['mapping'].items()]
+        # Hide hidden fields
+        mapping = [(k, m['type']) for k, m
+                    in self._dataset._meta['mapping'].items()
+                    if not k.startswith('__')]
         return u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
                     self._dataset,
                     self._dataset._meta['title'],
