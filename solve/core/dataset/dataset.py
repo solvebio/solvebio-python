@@ -19,7 +19,7 @@
 
 from solve.core.solvelog import solvelog
 from solve.core.client import client
-from solve.help import BaseHelp
+from solve.core.help import BaseHelp, DatasetHelp
 from .select import Select
 
 import os
@@ -118,7 +118,7 @@ class RootNamespace(Namespace):
 
 
 class Dataset(object):
-    _meta_fields = ['name', 'full_name', 'title', 'description', 'url']
+    _meta_fields = ['name', 'full_name', 'title', 'description', 'url', 'mapping']
 
     def __init__(self, **meta):
         self._name = meta.get('full_name')
@@ -127,7 +127,7 @@ class Dataset(object):
         for f in self._meta_fields:
             self._meta[f] = meta.get(f)
 
-        self.help = BaseHelp("Help for: %s" % self._name)
+        self.help = DatasetHelp(self)
 
     def select(self, *filters, **kwargs):
         # Create and return a new Select object with the set of Filters

@@ -16,6 +16,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .utils.tabulate import tabulate
+
 
 class BaseHelp(object):
     def __init__(self, help):
@@ -26,3 +28,22 @@ class BaseHelp(object):
 
     def __str__(self):
         return 'BaseHelp'
+
+
+class DatasetHelp(BaseHelp):
+    def __init__(self, dataset):
+        self._dataset = dataset
+        self._help = 'Help for %s' % self._dataset
+
+    def __repr__(self):
+        mapping = [(k, m['type']) for k, m in self._dataset._meta['mapping'].items()]
+        return u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
+                    self._dataset,
+                    self._dataset._meta['title'],
+                    self._dataset._meta['description'],
+                    tabulate(mapping, ['Columns', 'Type']))
+
+
+solvehelp = BaseHelp("""
+The Solve Shell.
+""")

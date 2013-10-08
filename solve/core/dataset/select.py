@@ -192,7 +192,8 @@ class Select(object):
 
         # If there's a scroll_id, continue scrolling
         if self._scroll_id:
-            response = client.get_dataset_scroll(self._path, self._scroll_id)
+            response = client.get_dataset_select(self._path,
+                            {'scroll_id': self._scroll_id})
             self._rows_received += len(response['results'])
         else:
             # Otherwise, start a new scroll

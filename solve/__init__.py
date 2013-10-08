@@ -29,16 +29,12 @@ Have questions or comments? email us at: contact@solvebio.com
 __author__ = 'Solve, Inc. <contact@solvebio.com>'
 __version__ = '0.1.0'
 
+from .core.help import solvehelp as help
+
 try:
     data
 except NameError:
     from .core.dataset import root as data
 
-
-# Load Root Helper
-import help as _help
-help = _help.BaseHelp("""
-The Solve Shell.
-""")
 
 __all__ = ['__version__', 'data', 'help']
