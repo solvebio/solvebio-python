@@ -178,7 +178,7 @@ class Dataset(object):
         # Hide hidden fields
         mapping = [(k, m['type']) for k, m
                     in self._meta['mapping'].items()
-                    if not k.startswith('__')]
+                    if not k.startswith('_')]
         return u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
                     self,
                     self._meta['title'],
