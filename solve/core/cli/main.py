@@ -53,7 +53,10 @@ def shell(args):
         banner1 = exit_msg = ''
 
     # First import the embeddable shell class
-    from IPython.frontend.terminal.embed import InteractiveShellEmbed
+    try:
+        from IPython.terminal.embed import InteractiveShellEmbed
+    except ImportError:
+        from IPython.frontend.terminal.embed import InteractiveShellEmbed
 
     # Now create an instance of the embeddable shell. The first argument is a
     # string with options exactly as you would type them if you were starting

@@ -10,8 +10,22 @@ For more information about SolveBio see http://www.solvebio.com
 Installing the latest release
 -----------------------------
 
+You may want to first install `readline` for a better experience:
+
+    easy_install readline
+
+
+Now just install `solve` from PyPI:
+
     pip install solve
 
+
+To log in, type:
+
+    solve login
+
+Enter your credentials and you should be good to go!
+Just type `solve` to enter the Solve shell.
 
 
 Installing from Git
