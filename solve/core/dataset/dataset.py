@@ -55,7 +55,10 @@ class Namespace(object):
         return self._name
 
     def _help_content(self):
-        _content = 'Datasets in %s:\n' % self._name
+        _content = 'Datasets in %s:\n\n' % self._name
+        datasets = sorted([k for k in self.__dict__.iterkeys() if not k.startswith('_')])
+        _content += tabulate([(k, self.__dict__[k])
+                              for k in datasets], ['Dataset', 'Title'])
         return _content
 
     def help(self):
@@ -102,9 +105,12 @@ class RootNamespace(Namespace):
         print self._help_content()
 
     def _help_content(self):
-        _content = 'All available datasets:\n'
-        return _content
+        _content = 'All available datasets:\n\n'
+        datasets = self._flatten_namespaces(self._load_from_cache())
         # show table of all available datasets
+        _content += tabulate([(k, datasets[k])
+                    for k in sorted(datasets.iterkeys())], ['Dataset', 'Title'])
+        return _content
 
     def _flush_namespaces(self):
         """Clear namespaces from RootNamespace and local cache"""
