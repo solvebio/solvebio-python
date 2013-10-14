@@ -19,10 +19,12 @@
 
 from solve.core.solvelog import solvelog
 from solve.core.client import client
-from solve.core.help import BaseHelp, DatasetHelp
+from solve.core.utils.tabulate import tabulate
+
 from .select import Select
 
 import os
+import time
 import json
 import logging
 logger = logging.getLogger('solve')
@@ -34,14 +36,10 @@ class Namespace(object):
 
     def __init__(self, **meta):
         self._name = meta.get('name')
-
         self._meta = {}
         for f in self._meta_fields:
             self._meta[f] = meta.get(f)
-
         self._add_datasets(meta.get('datasets'))
-
-        self.help = BaseHelp("Help for: %s" % self._name)
 
     def _add_datasets(self, datasets):
         if not datasets:
@@ -51,10 +49,17 @@ class Namespace(object):
             self.__dict__[dataset['name']] = Dataset(**dataset)
 
     def __repr__(self):
-        return self.help.__repr__()
+        return '<Namespace: %s>' % self._name
 
     def __str__(self):
         return self._name
+
+    def _help_content(self):
+        _content = 'Datasets in %s:\n' % self._name
+        return _content
+
+    def help(self):
+        print self._help_content()
 
 
 class RootNamespace(Namespace):
@@ -68,15 +73,43 @@ class RootNamespace(Namespace):
 
     def __init__(self, name):
         self._name = name
+        self.update()
 
-        if not self._load_from_cache():
-            self.update()
+    def update(self, force=False):
+        """Load datasets from API and save in a local cache"""
+        cached_namespaces = self._load_from_cache()
 
-        self.help = BaseHelp("Help for %s" % name)
+        if not cached_namespaces or self._needs_update() or force:
+            self._flush_namespaces()
+            # get update from the client
+            new_namespaces = client.get_namespaces()
+            self._add_namespaces(new_namespaces, cache=True)
+            # make dataset update report
+            old_datasets = self._flatten_namespaces(cached_namespaces)
+            new_datasets = {}
+            for new_path, title in self._flatten_namespaces(new_namespaces).items():
+                if new_path not in old_datasets:
+                    new_datasets[new_path] = title
+
+            # return report of new/updated datasets
+            return new_datasets
+        else:
+            # just load from cache
+            self._add_namespaces(cached_namespaces, cache=False)
+            return []
+
+    def help(self):
+        print self._help_content()
+
+    def _help_content(self):
+        _content = 'All available datasets:\n'
+        return _content
+        # show table of all available datasets
 
     def _flush_namespaces(self):
         """Clear namespaces from RootNamespace and local cache"""
         for k in self.__dict__.keys():
+            print k
             if k not in ['help', '_name']:
                 del self.__dict__[k]
 
@@ -88,19 +121,10 @@ class RootNamespace(Namespace):
         if cache:
             self._save_to_cache(namespaces)
 
-    def update(self):
-        """Load datasets from API and save in a local cache"""
-        solvelog.info('Updating Datasets...')
-        self._flush_namespaces()
-        self._add_namespaces(client.get_namespaces(), cache=True)
-
     def _load_from_cache(self):
         if os.path.exists(self._cache_path):
-            fp = open(self._cache_path, 'r')
-            self._add_namespaces(json.load(fp))
-            return True
-        else:
-            return False
+            return json.load(open(self._cache_path, 'r'))
+        return []
 
     def _save_to_cache(self, data):
         if not os.path.isdir(os.path.dirname(self._cache_path)):
@@ -110,11 +134,22 @@ class RootNamespace(Namespace):
         json.dump(data, fp, sort_keys=True, indent=4)
         fp.close()
 
-    def __getattr__(self, name):
-        try:
-            super(RootNamespace, self).__getattr__(name)
-        except AttributeError:
-            raise Exception('Could not find the namespace %s.' % name)
+    def _needs_update(self):
+        return time.time() > self._last_updated() + (60 * 60 * 24 * 5)
+
+    def _last_updated(self):
+        return os.path.getmtime(self._cache_path)
+
+    def _flatten_namespaces(self, namespaces):
+        """
+        For a list namespaces and datasets from the API,
+        flatten to dotted-notation
+        """
+        datasets = {}
+        for n in namespaces:
+            for d in n['datasets']:
+                datasets['.'.join([n['name'], d['name']])] = d['title']
+        return datasets
 
 
 class Dataset(object):
@@ -127,14 +162,26 @@ class Dataset(object):
         for f in self._meta_fields:
             self._meta[f] = meta.get(f)
 
-        self.help = DatasetHelp(self)
-
     def select(self, *filters, **kwargs):
         # Create and return a new Select object with the set of Filters
         return Select(self._name, *filters, **kwargs)
 
+    def help(self):
+        print self._help_content()
+
+    def _help_content(self):
+        # Hide hidden fields
+        mapping = [(k, m['type']) for k, m
+                    in self._meta['mapping'].items()
+                    if not k.startswith('__')]
+        return u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
+                    self,
+                    self._meta['title'],
+                    self._meta['description'],
+                    tabulate(mapping, ['Columns', 'Type']))
+
     def __repr__(self):
-        return self.help.__repr__()
+        return '<Dataset: %s>' % self._name
 
     def __str__(self):
         return self._name

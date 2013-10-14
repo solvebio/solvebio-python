@@ -29,7 +29,29 @@ Have questions or comments? email us at: contact@solvebio.com
 __author__ = 'Solve, Inc. <contact@solvebio.com>'
 __version__ = '0.1.0'
 
-from .core.help import solvehelp as help
+
+def help():
+    # TODO: make fancy with colors!
+    print """
+The Solve Shell.
+
+To list available datasets, type:
+
+    solve.data.help()
+
+
+To get some data, use the select() function, for example:
+
+    solve.data.TCGA.somatic_mutations.select()
+
+
+You may filter on any field in the datset. To see the fields for any dataset,
+use the help() function, for example:
+
+    solve.data.TCGA.somatic_mutations.help()
+
+
+Enjoy using Solve!"""
 
 try:
     data

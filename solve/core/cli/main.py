@@ -96,10 +96,23 @@ whoami_parser.set_defaults(func=auth_whoami)
 
 # dataset parsers
 def dataset_update(args=None):
-    print "Updating datasets..."
-    solve.data.update()
-    # TODO: show dataset update report
-    print "Done."
+    print 'Updating datasets...'
+    report = solve.data.update(force=True)
+    if report:
+        print '\nNew datasets available!\n'
+        for path, title in report.items():
+            print '%s: %s' % (path, title)
+        print ''
+
+    # check for new version on pypi
+    try:
+        import requests
+        r = requests.get('http://pypi.python.org/pypi/%s/json' % 'solve')
+        new_version = r.json()['info']['version']
+        if new_version != solve.__version__:
+            print "A new version of solve (%s) is available! Run 'pip install solve --upgrade' to get it." % new_version
+    except:
+        pass
 
 dataset_update_parser = subcommands.add_parser('update', help='Update the dataset cache')
 dataset_update_parser.set_defaults(func=dataset_update)
