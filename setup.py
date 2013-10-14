@@ -27,7 +27,7 @@ for row in open('solve/__init__.py').readlines():
 setup(
     name='solve',
     version=__version__,
-    description='The SolveBio Python client.',
+    description='The SolveBio Python client',
     long_description=open('README.txt').read(),
     author='Solve, Inc.',
     author_email='help@solvebio.com',
