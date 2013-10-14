@@ -53,10 +53,10 @@ def login(args):
         except Exception:
             pass
 
+        print 'You are now logged-in.'
         print 'Loading datasets...'
         from ..dataset import root
-        root.update(force=True)
-        print 'You are now logged-in.'
+        root.update()
     else:
         print 'Login failed.'
 

@@ -100,7 +100,7 @@ whoami_parser.set_defaults(func=auth_whoami)
 # dataset parsers
 def dataset_update(args=None):
     print 'Updating datasets...'
-    report = solve.data.update(force=True)
+    report = solve.data.update()
     if report:
         print '\nNew datasets available!\n'
         for path, title in report.items():
@@ -122,8 +122,6 @@ dataset_update_parser.set_defaults(func=dataset_update)
 
 
 def main(args=None):
-    # TODO: set interactive output colors if possible
-
     if len(sys.argv) == 1:
         # If there are no args at all, default to the shell
         args = base_parser.parse_args(['shell'])

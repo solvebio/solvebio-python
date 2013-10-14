@@ -20,6 +20,7 @@
 from solve.core.solvelog import solvelog
 from solve.core.client import client
 from solve.core.utils.tabulate import tabulate
+from solve.core.utils.printing import red
 
 from .select import Select
 
@@ -76,30 +77,27 @@ class RootNamespace(Namespace):
 
     def __init__(self, name):
         self._name = name
-        self.update()
+        self._add_namespaces(self._load_from_cache(), cache=False)
+        if self._needs_update():
+            print red("Your datasets are out of date, please run 'solve update' from your terminal, or 'solve.data.update()' from the Python shell to update them")
 
-    def update(self, force=False):
+    def update(self):
         """Load datasets from API and save in a local cache"""
         cached_namespaces = self._load_from_cache()
 
-        if not cached_namespaces or self._needs_update() or force:
-            self._flush_namespaces()
-            # get update from the client
-            new_namespaces = client.get_namespaces()
-            self._add_namespaces(new_namespaces, cache=True)
-            # make dataset update report
-            old_datasets = self._flatten_namespaces(cached_namespaces)
-            new_datasets = {}
-            for new_path, title in self._flatten_namespaces(new_namespaces).items():
-                if new_path not in old_datasets:
-                    new_datasets[new_path] = title
+        self._flush_namespaces()
+        # get update from the client
+        new_namespaces = client.get_namespaces()
+        self._add_namespaces(new_namespaces, cache=True)
+        # make dataset update report
+        old_datasets = self._flatten_namespaces(cached_namespaces)
+        new_datasets = {}
+        for new_path, title in self._flatten_namespaces(new_namespaces).items():
+            if new_path not in old_datasets:
+                new_datasets[new_path] = title
 
-            # return report of new/updated datasets
-            return new_datasets
-        else:
-            # just load from cache
-            self._add_namespaces(cached_namespaces, cache=False)
-            return []
+        # return report of new/updated datasets
+        return new_datasets
 
     def help(self):
         print self._help_content()

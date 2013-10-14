@@ -25,8 +25,23 @@ from requests.auth import AuthBase
 from solve import __version__
 from .solvelog import solvelog
 from .credentials import get_api_key
+from .utils.printing import red
 
 from .solveconfig import solveconfig
+
+LOGIN_REQUIRED_MESSAGE = red("""
+Sorry, your API credentials seem to be invalid.
+
+Solve is currently in private beta.
+Please go to www.solvebio.com to find out more.
+
+If you are a beta user, please log in by typing:
+
+    solve login
+
+
+Enter your credentials and you should be good to go!
+""")
 
 
 class SolveAPIError(BaseException):
@@ -121,8 +136,11 @@ class SolveClient(object):
         if 200 <= response.status_code < 300:
             # All success responses are JSON
             solvelog.debug('API Response: %d' % response.status_code)
-            #import pdb; pdb.set_trace();
             return response.json()
+        elif response.status_code == 401:
+            # not authenticated
+            print LOGIN_REQUIRED_MESSAGE
+            raise SolveAPIError(response)
         else:
             # a fatal error! :-(
             solvelog.debug('API Error: %d' % response.status_code)
