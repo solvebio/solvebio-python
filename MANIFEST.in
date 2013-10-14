@@ -1,3 +1,3 @@
 include *.txt
-recursive-include *.txt *.py
+recursive-include solve *.txt *.py
 prune dist/*
