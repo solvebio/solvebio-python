@@ -27,7 +27,7 @@ Have questions or comments? email us at: contact@solvebio.com
 
 
 __author__ = 'Solve, Inc. <contact@solvebio.com>'
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 
 def help():
