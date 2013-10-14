@@ -115,7 +115,6 @@ class RootNamespace(Namespace):
     def _flush_namespaces(self):
         """Clear namespaces from RootNamespace and local cache"""
         for k in self.__dict__.keys():
-            print k
             if k not in ['help', '_name']:
                 del self.__dict__[k]
 
