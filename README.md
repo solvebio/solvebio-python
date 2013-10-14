@@ -17,14 +17,14 @@ Installing the latest release
 Installing from Git
 -------------------
 
-    pip install -e git+https://github.com/solvebio/solve.git#egg=solve
+    pip install -e git+https://github.com/solvebio/solve-python.git#egg=solve
 
 
 
 Development
 -----------
 
-    git clone https://github.com/solvebio/solve.git
-    cd solve/
+    git clone https://github.com/solvebio/solve-python.git
+    cd solve-python/
     python setup.py develop
 
