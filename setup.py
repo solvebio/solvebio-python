@@ -17,7 +17,7 @@
 # limitations under the License.
 
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 __version__ = 'undefined'
 for row in open('solve/__init__.py').readlines():
@@ -33,7 +33,9 @@ setup(
     author_email='help@solvebio.com',
     url='http://www.solvebio.com',
     license="Apache License, Version 2.0",
-    packages=['solve'],
+    packages=find_packages(),
+    package_dir={"solve": "solve"},
+    #package_data={"solve": []},
     install_requires=['requests>=2.0.0', 'ipython'],
     platforms='any',
     entry_points={
