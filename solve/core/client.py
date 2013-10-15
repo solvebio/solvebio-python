@@ -147,7 +147,7 @@ class SolveClient(object):
     def get_namespaces(self):
         # TODO: handle paginated namespace list
         namespaces = []
-        response = self._request('GET', '/dataset/')
+        response = self._request('GET', '/dataset')
         namespaces += response['results']
         return namespaces
 
@@ -166,14 +166,14 @@ class SolveClient(object):
             'password': password
         }
         try:
-            return self._request('POST', '/auth/token/', data=data)
+            return self._request('POST', '/auth/token', data=data)
         except SolveAPIError as exc:
             exc.log_field_errors(data.keys())
             return None
 
     def get_current_user(self):
         try:
-            return self._request('GET', '/user/current/')
+            return self._request('GET', '/user/current')
         except SolveAPIError:
             # TODO: handle invalid token
             return None
@@ -188,7 +188,7 @@ class SolveClient(object):
             'processor': platform.processor(),
             'pyexe_build': platform.architecture()[0]
         }
-        self._request('POST', '/report/install/', data=data)
+        self._request('POST', '/report/install', data=data)
 
 
 client = SolveClient()
