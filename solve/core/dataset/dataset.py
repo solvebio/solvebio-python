@@ -138,10 +138,10 @@ class RootNamespace(Namespace):
         fp.close()
 
     def _needs_update(self):
-        return time.time() > self._last_updated() + (60 * 60 * 24 * 5)
-
-    def _last_updated(self):
-        return os.path.getmtime(self._cache_path)
+        if not os.path.exists(self._cache_path):
+            return True
+        else:
+            return time.time() > os.path.getmtime(self._cache_path) + (60 * 60 * 24 * 5)
 
     def _flatten_namespaces(self, namespaces):
         """
