@@ -415,7 +415,9 @@ def _normalize_tabular_data(tabular_data, headers):
         headers = list(map(_text_type, rows[0]))  # headers should be strings
         rows = rows[1:]
 
+    
     headers = list(headers)
+
     rows = list(map(list, rows))
 
     # pad with empty headers for initial columns if necessary
@@ -430,9 +432,22 @@ def _normalize_tabular_data(tabular_data, headers):
 
 def _build_row(cells, padding, begin, sep, end):
     "Return a string which represents a row of data cells."
+
     pad = u" " * padding
     padded_cells = [pad + cell + pad for cell in cells]
-    return (begin + sep.join(padded_cells) + end).rstrip()
+
+    # SolveBio: we're only displaying Key-Value tuples (dimension of 2). enforce that we don't wrap lines by setting a max
+    #  limit on row width which is equal to solveconfig.TTY_COLS
+    from solve.core.solveconfig import solveconfig
+    rendered_cells = (begin + sep.join(padded_cells) + end).rstrip()
+    if len(rendered_cells) > solveconfig.TTY_COLS:
+        if not cells[-1].endswith(" ") and not cells[-1].endswith("-"):
+            terminating_str = " ... "
+        else:
+            terminating_str = ""
+        rendered_cells = "{0}{1}{2}".format(rendered_cells[:solveconfig.TTY_COLS - len(terminating_str) - 1], terminating_str, end)
+        
+    return rendered_cells
 
 
 def _build_line(colwidths, padding, begin, fill, sep,  end):
@@ -514,6 +529,7 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
     # enable smart width functions only if a control code is found
     plain_text = u'\n'.join(['\t'.join(map(_text_type, headers))] + \
                             [u'\t'.join(map(_text_type, row)) for row in list_of_lists])
+
     has_invisible = re.search(_invisible_codes, plain_text)
     if has_invisible:
         width_fn = _visible_width
@@ -522,6 +538,7 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
 
     # format rows and columns, convert numeric values to strings
     cols = list(zip(*list_of_lists))
+
     coltypes = list(map(_column_type, cols))
     cols = [[_format(v, ct, floatfmt, missingval) for v in c]
              for c, ct in zip(cols, coltypes)]
