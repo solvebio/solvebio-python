@@ -39,8 +39,6 @@ If you are a beta user, please log in by typing:
 
     solve login
 
-
-Enter your credentials and you should be good to go!
 """)
 
 

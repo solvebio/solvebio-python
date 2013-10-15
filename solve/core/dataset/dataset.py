@@ -78,7 +78,7 @@ class RootNamespace(Namespace):
     def __init__(self, name):
         self._name = name
         self._add_namespaces(self._load_from_cache(), cache=False)
-        if self._needs_update():
+        if self._cache_is_stale():
             print red("Your datasets are out of date, please run 'solve update' from your terminal, or 'solve.data.update()' from the Python shell to update them")
 
     def update(self):
@@ -89,6 +89,7 @@ class RootNamespace(Namespace):
         # get update from the client
         new_namespaces = client.get_namespaces()
         self._add_namespaces(new_namespaces, cache=True)
+
         # make dataset update report
         old_datasets = self._flatten_namespaces(cached_namespaces)
         new_datasets = {}
@@ -137,11 +138,11 @@ class RootNamespace(Namespace):
         json.dump(data, fp, sort_keys=True, indent=4)
         fp.close()
 
-    def _needs_update(self):
-        if not os.path.exists(self._cache_path):
-            return True
-        else:
+    def _cache_is_stale(self):
+        if os.path.exists(self._cache_path):
             return time.time() > os.path.getmtime(self._cache_path) + (60 * 60 * 24 * 5)
+        else:
+            return False
 
     def _flatten_namespaces(self, namespaces):
         """
