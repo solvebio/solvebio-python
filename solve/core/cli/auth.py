@@ -54,7 +54,6 @@ def login(args):
             pass
 
         print 'You are now logged-in.'
-        print 'Loading datasets...'
         from ..dataset import root
         root.update()
     else:
