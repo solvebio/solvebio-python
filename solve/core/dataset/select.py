@@ -236,4 +236,6 @@ class SelectResult(object):
         return [v for k, v in self.items()]
 
     def items(self):
-        return [(k, v) for k, v in self.__dict__.items() if not k.startswith('_')]
+        # alphabetically sorted keys, excluding hidden keys (_*)
+        return [(k, v) for k, v in sorted(self.__dict__.items(), key=lambda k: k[0])
+                if not k.startswith('_')]
