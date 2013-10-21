@@ -115,8 +115,6 @@ class Dataset(object):
         for k, v in meta.items():
             # prefix each field with '_'
             self.__dict__['_' + k] = v
-            if k == 'full_name':
-                self._namespace = v.split('.', 1)[0]
 
     def _get_mapping(self):
         if self._mapping is None:
