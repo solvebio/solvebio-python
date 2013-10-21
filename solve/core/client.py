@@ -151,6 +151,12 @@ class SolveClient(object):
         namespaces += response['results']
         return namespaces
 
+    def get_namespace(self, namespace):
+        return self._request('GET', '/dataset/%s' % namespace)
+
+    def get_dataset(self, namespace, dataset):
+        return self._request('GET', '/dataset/%s/%s' % (namespace, dataset))
+
     def post_dataset_select(self, namespace, data):
         return self._request('POST', '/dataset/%s/select' % namespace,
                              data=data)

@@ -54,8 +54,6 @@ def login(args):
             pass
 
         print 'You are now logged-in.'
-        from ..dataset import root
-        root.update()
     else:
         print 'Login failed.'
 

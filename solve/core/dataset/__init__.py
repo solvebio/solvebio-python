@@ -17,5 +17,5 @@
 # limitations under the License.
 
 
-from .dataset import Dataset, root
+from .dataset import Dataset, directory
 __all__ = ['Dataset']

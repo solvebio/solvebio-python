@@ -20,34 +20,21 @@
 from solve.core.solvelog import solvelog
 from solve.core.client import client
 from solve.core.utils.tabulate import tabulate
-from solve.core.utils.printing import red
 
 from .select import Select
 
-import os
-import time
-import json
 import logging
 logger = logging.getLogger('solve')
 
 
-class Namespace(object):
-    """Namespaces are named-containers of Datasets"""
-    _meta_fields = ['name', 'title', 'description', 'url']
+class NamespaceDirectory(object):
+    """
+    The Directory is a singleton used to contain all Namespaces.
+    """
 
-    def __init__(self, **meta):
-        self._name = meta.get('name')
-        self._meta = {}
-        for f in self._meta_fields:
-            self._meta[f] = meta.get(f)
-        self._add_datasets(meta.get('datasets'))
-
-    def _add_datasets(self, datasets):
-        if not datasets:
-            solvelog.warning('Namespace %s has no datasets!' % self._name)
-
-        for dataset in datasets:
-            self.__dict__[dataset['name']] = Dataset(**dataset)
+    def __init__(self):
+        self._name = 'solve.data'
+        self._namespaces = None  # lazy loaded
 
     def __repr__(self):
         return '<Namespace: %s>' % self._name
@@ -55,140 +42,108 @@ class Namespace(object):
     def __str__(self):
         return self._name
 
-    def _help_content(self):
-        _content = 'Datasets in %s:\n\n' % self._name
-        datasets = sorted([k for k in self.__dict__.iterkeys() if not k.startswith('_')])
-        _content += tabulate([(k, self.__dict__[k])
-                              for k in datasets], ['Dataset', 'Title'])
-        return _content
+    def __dir__(self):
+        return [k['name'] for k in self._get_namespaces()]
+
+    def __getattr__(self, name):
+        self._get_namespaces()
+        return object.__getattribute__(self, name)
 
     def help(self):
-        print self._help_content()
+        _content = 'All Namespaces:\n\n'
+        _content += tabulate([(ns['name'], ns['title'])
+                             for ns in self._get_namespaces()],
+                             ['Namespace', 'Title'])
+        print _content
+
+    def _get_namespaces(self):
+        if self._namespaces is None:
+            # load Namespaces from API store in instance cache
+            self._namespaces = sorted(client.get_namespaces(),
+                                      key=lambda k: k['name'])
+            for namespace in self._namespaces:
+                self.__dict__[namespace['name']] = Namespace(**namespace)
+
+        return self._namespaces
 
 
-class RootNamespace(Namespace):
-    """
-    The RootNamespace is a singleton used to contain all Namespaces.
-    Also caches to a file in the user's home directory.
-    """
-
-    # The complete set of Namespaces is cached locally
-    _cache_path = os.path.expanduser('~/.solve/root_namespace.json')
-
-    def __init__(self, name):
-        self._name = name
-        self._add_namespaces(self._load_from_cache(), cache=False)
-        if self._cache_is_stale():
-            print red("Your datasets are out of date, please run 'solve update' from your terminal, or 'solve.data.update()' from the Python shell to update them")
-
-    def update(self):
-        """Load datasets from API and save in a local cache"""
-        cached_namespaces = self._load_from_cache()
-
-        self._flush_namespaces()
-        # get update from the client
-        new_namespaces = client.get_namespaces()
-        self._add_namespaces(new_namespaces, cache=True)
-
-        # make dataset update report
-        old_datasets = self._flatten_namespaces(cached_namespaces)
-        new_datasets = {}
-        for new_path, title in self._flatten_namespaces(new_namespaces).items():
-            if new_path not in old_datasets:
-                new_datasets[new_path] = title
-
-        # return report of new/updated datasets
-        return new_datasets
-
-    def help(self):
-        print self._help_content()
-
-    def _help_content(self):
-        _content = 'All available datasets:\n\n'
-        datasets = self._flatten_namespaces(self._load_from_cache())
-        # show table of all available datasets
-        _content += tabulate([(k, datasets[k])
-                    for k in sorted(datasets.iterkeys())], ['Dataset', 'Title'])
-        return _content
-
-    def _flush_namespaces(self):
-        """Clear namespaces from RootNamespace and local cache"""
-        for k in self.__dict__.keys():
-            if k not in ['help', '_name']:
-                del self.__dict__[k]
-
-        self._save_to_cache([])
-
-    def _add_namespaces(self, namespaces, cache=False):
-        for namespace in namespaces:
-            self.__dict__[namespace['name']] = Namespace(**namespace)
-        if cache:
-            self._save_to_cache(namespaces)
-
-    def _load_from_cache(self):
-        if os.path.exists(self._cache_path):
-            return json.load(open(self._cache_path, 'r'))
-        return []
-
-    def _save_to_cache(self, data):
-        if not os.path.isdir(os.path.dirname(self._cache_path)):
-            os.makedirs(os.path.dirname(self._cache_path))
-
-        fp = open(self._cache_path, 'w')
-        json.dump(data, fp, sort_keys=True, indent=4)
-        fp.close()
-
-    def _cache_is_stale(self):
-        if os.path.exists(self._cache_path):
-            return time.time() > os.path.getmtime(self._cache_path) + (60 * 60 * 24 * 5)
-        else:
-            return False
-
-    def _flatten_namespaces(self, namespaces):
-        """
-        For a list namespaces and datasets from the API,
-        flatten to dotted-notation
-        """
-        datasets = {}
-        for n in namespaces:
-            for d in n['datasets']:
-                datasets['.'.join([n['name'], d['name']])] = d['title']
-        return datasets
-
-
-class Dataset(object):
-    _meta_fields = ['name', 'full_name', 'title', 'description', 'url', 'mapping']
+class Namespace(object):
+    """Namespaces are named-containers of Datasets"""
 
     def __init__(self, **meta):
-        self._name = meta.get('full_name')
-
-        self._meta = {}
-        for f in self._meta_fields:
-            self._meta[f] = meta.get(f)
-
-    def select(self, *filters, **kwargs):
-        # Create and return a new Select object with the set of Filters
-        return Select(self._name, *filters, **kwargs)
-
-    def help(self):
-        print self._help_content()
-
-    def _help_content(self):
-        # Hide hidden fields
-        mapping = [(k, m['type']) for k, m
-                    in self._meta['mapping'].items()
-                    if not k.startswith('_')]
-        return u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
-                    self,
-                    self._meta['title'],
-                    self._meta['description'],
-                    tabulate(mapping, ['Columns', 'Type']))
+        self._datasets = None  # lazy loaded
+        for k, v in meta.items():
+            self.__dict__['_' + k] = v
 
     def __repr__(self):
-        return '<Dataset: %s>' % self._name
+        return '<Namespace: %s>' % self._name
 
     def __str__(self):
         return self._name
 
+    def __dir__(self):
+        return [k['name'] for k in self._get_datasets()]
 
-root = RootNamespace('solve.data')
+    def __getattr__(self, name):
+        self._get_datasets()
+        return object.__getattribute__(self, name)
+
+    def _get_datasets(self):
+        if self._datasets is None:
+            self._datasets = sorted(client.get_namespace(self._name)['datasets'],
+                                    key=lambda k: k['name'])
+            for dataset in self._datasets:
+                self.__dict__[dataset['name']] = Dataset(**dataset)
+
+        return self._datasets
+
+    def help(self):
+        _content = 'Datasets in %s:\n\n' % self._name
+        _content += tabulate([(d['full_name'], d['title'])
+                              for d in self._get_datasets()],
+                              ['Dataset', 'Title'])
+        print _content
+
+
+class Dataset(object):
+    """
+    Stores a Dataset and its mapping
+    """
+
+    def __init__(self, **meta):
+        self._mapping = None  # lazy loaded
+        for k, v in meta.items():
+            # prefix each field with '_'
+            self.__dict__['_' + k] = v
+            if k == 'full_name':
+                self._namespace = v.split('.', 1)[0]
+
+    def _get_mapping(self):
+        if self._mapping is None:
+            self._mapping = client.get_dataset(self._namespace, self._name)['mapping']
+
+        return self._mapping
+
+    def select(self, *filters, **kwargs):
+        # Create and return a new Select object with the set of Filters
+        return Select(self._full_name, *filters, **kwargs)
+
+    def help(self):
+        # Hide hidden fields
+        mapping = [(k, self._get_mapping()[k]['type']) for k
+                    in sorted(self._get_mapping().iterkeys())
+                    if not k.startswith('_')]
+        print u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
+                    self,
+                    self._title,
+                    self._description,
+                    tabulate(mapping, ['Columns', 'Type']))
+
+    def __repr__(self):
+        return '<Dataset: %s>' % self._full_name
+
+    def __str__(self):
+        return self._full_name
+
+
+directory = NamespaceDirectory()

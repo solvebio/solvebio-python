@@ -56,7 +56,7 @@ Enjoy using Solve!"""
 try:
     data
 except NameError:
-    from .core.dataset import root as data
+    from .core.dataset import directory as data
 
 
 __all__ = ['__version__', 'data', 'help']
