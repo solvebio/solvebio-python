@@ -107,7 +107,7 @@ class Namespace(object):
 
 class Dataset(object):
     """
-    Stores a Dataset and its mapping
+    Stores a Dataset and its fields
     """
 
     def __init__(self, **meta):
