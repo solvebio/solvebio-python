@@ -164,6 +164,7 @@ class Select(object):
 
     def __repr__(self):
         self._fetch_results()
+
         if self._results_total == 0:
             return u'Select on %s returned 0 results' % self._dataset
 
@@ -214,15 +215,13 @@ class Select(object):
         Once the cached result set is exhausted, repeat select.
         """
         # restart a fresh scroll
-        self._scroll_id = None
-        self._fetch_results()
+        self._start_scroll()
 
         # fast-forward the cursor if _start is requested
         if self._start is not None:
             self._cursor = self._start
             while self._results_received < self._cursor:
-                self._results_cache = None  # force a cache fill
-                self._fetch_results()
+                self._scroll()
 
             # slice the results_cache to put _start at 0 in the cache
             self._results_cache = \
@@ -246,7 +245,7 @@ class Select(object):
         cache_index = self._cursor - self._results_received
         if cache_index == 0:
             # If result cache is empty, request more
-            self._fetch_results()
+            self._scroll()
             cache_index = self._cursor - self._results_received
 
         self._cursor += 1
@@ -254,28 +253,34 @@ class Select(object):
 
     def _fetch_results(self):
         """
-        Executes the select request. Returns the number of results received.
+        Starts the scroll process and scrolls if in empty state
         """
         if self._scroll_id is None:
-            response = client.post_dataset_select(self._dataset, self._build_query())
-            self._cursor = 0
-            self._results_cache = None
-            self._results_total = response['total']
-            self._scroll_id = response['scroll_id']
-            # should be 0 results received
-            self._results_received = len(response['results'])
-            if self._results_received:
-                solvelog.warning('%d results from initial scroll ID fetch'
-                                    % len(self._results_cache))
-
-            if self._start is not None and self._start >= self._results_total:
-                raise IndexError('Index out of range, only %d total results(s)'
-                                    % self._results_total)
+            self._start_scroll()
 
         if self._results_cache is None:
-            response = client.get_dataset_select(self._dataset, self._scroll_id)
-            # TODO: handle scroll_id failure
-            self._scroll_id = response['scroll_id']
-            self._results_received += len(response['results'])
-            # always overwrite the cache
-            self._results_cache = [self._result_class(r) for r in response['results']]
+            self._scroll()
+
+    def _start_scroll(self):
+        response = client.post_dataset_select(self._dataset, self._build_query())
+        self._cursor = 0
+        self._results_cache = None
+        self._results_total = response['total']
+        self._scroll_id = response['scroll_id']
+        # should be 0 results received
+        self._results_received = len(response['results'])
+        if self._results_received:
+            solvelog.warning('%d results from initial scroll ID fetch'
+                                % len(self._results_cache))
+
+        if self._start is not None and self._start >= self._results_total:
+            raise IndexError('Index out of range, only %d total results(s)'
+                                % self._results_total)
+
+    def _scroll(self):
+        response = client.get_dataset_select(self._dataset, self._scroll_id)
+        # TODO: handle scroll_id failure
+        self._scroll_id = response['scroll_id']
+        self._results_received += len(response['results'])
+        # always overwrite the cache
+        self._results_cache = [self._result_class(r) for r in response['results']]
