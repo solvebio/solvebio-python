@@ -70,7 +70,6 @@ class Select(object):
         self._results_received = None
         self._results_total = None
         self._results_cache = None
-
         self._cursor = None
         self._start = None
         self._stop = None
@@ -101,85 +100,6 @@ class Select(object):
         filter once with the resulting Filter instance.
         """
         return self._clone(filters=list(filters) + [Filter(**kwargs)])
-
-    def __getstate__(self):
-        """
-        Allows the Select to be pickled.
-        """
-        raise NotImplemented()
-
-    def __len__(self):
-        """
-        Executes select and returns the total number of results
-        """
-        self._fetch_results()
-
-        if self._start is not None:
-            start = self._start
-        else:
-            start = 0
-        if self._stop is not None and self._stop <= self._results_total:
-            stop = self._stop
-        else:
-            stop = self._results_total
-
-        return stop - start
-
-    def __nonzero__(self):
-        self._fetch_results()
-        return bool(self._results_total)
-
-    # def __and__(self, other):
-    #     raise NotImplemented()
-
-    # def __or__(self, other):
-    #     raise NotImplemented()
-
-    def __repr__(self):
-        data = list(self)
-        # if self._results_total > 10:
-        #     data[-1] = "... %s more result(s)" % pretty_int(self._results_total - 1)
-        return repr(data)
-
-        # if self._results_cache is None:
-        #     self._fetch_results()
-        # if self._results_total == 0:
-        #     return u'<Select on %s (0 results)>' % self._dataset
-        # else:
-        #     return u'\n%s\n\n... %s more results.' % (
-        #             tabulate(self._sample_result.items(), ['Columns', 'Sample']),
-        #             pretty_int(self._results_total - 1))
-
-    def __getitem__(self, key):
-        """
-        Retrieve an item or slice from the set of results
-        """
-        if not isinstance(key, (slice, int, long)):
-            raise TypeError
-
-        assert ((not isinstance(key, slice) and (key >= 0))
-                or (isinstance(key, slice) and (key.start is None or key.start >= 0)
-                    and (key.stop is None or key.stop >= 0))), \
-                "Negative indexing is not supported."
-
-        if self._results_cache is not None:
-            # use start/stop and the cursor to determine whether the cache
-            # actually contains the slice... if so, return it!
-            return self._results_cache[key]
-
-        if isinstance(key, slice):
-            new = self._clone()
-            if key.start is not None:
-                new._start = int(key.start)
-            if key.stop is not None:
-                new._stop = int(key.stop)
-            return list(new)[::key.step] if key.step else new
-
-        # not a slice, just an index
-        new = self._clone()
-        new._start = key
-        new._stop = key + 1
-        return list(new)[0]
 
     def _build_query(self):
         q = {}
@@ -221,40 +141,79 @@ class Select(object):
                 rv.extend((f,))
         return rv
 
-    def _fetch_results(self):
+    def __len__(self):
         """
-        Executes the select request. Returns the number of results received.
+        Executes select and returns the total number of results
         """
-        if self._scroll_id is None:
-            # Otherwise, start a new scroll
-            response = client.post_dataset_select(self._dataset, self._build_query())
-            self._cursor = 0
-            self._results_total = response['total']
-            # should be 0
-            self._results_received = len(response['results'])
-            self._scroll_id = response['scroll_id']
-            if self._results_received:
-                solvelog.warning('%d results from initial scroll ID fetch'
-                                    % len(self._results_cache))
+        self._fetch_results()
 
-            if self._start is not None and self._start >= self._results_total:
-                raise IndexError('Index out of range, only %d total results(s)'
-                                    % self._results_total)
+        if self._start is not None:
+            start = self._start
+        else:
+            start = 0
+        if self._stop is not None and self._stop <= self._results_total:
+            stop = self._stop
+        else:
+            stop = self._results_total
 
-        if self._results_cache is None:
-            response = client.get_dataset_select(self._dataset, self._scroll_id)
-            # TODO: handle scroll_id failure
-            self._scroll_id = response['scroll_id']
-            self._results_received += len(response['results'])
-            # always overwrite the cache
-            self._results_cache = [self._result_class(r) for r in response['results']]
+        return stop - start
+
+    def __nonzero__(self):
+        self._fetch_results()
+        return bool(self._results_total)
+
+    def __repr__(self):
+        self._fetch_results()
+        if self._results_total == 0:
+            return u'Select on %s returned 0 results' % self._dataset
+
+        return u'\n%s\n\n... %s more results.' % (
+                tabulate(self[0].items(), ['Columns', 'Sample']),
+                pretty_int(self._results_total - 1))
+
+    def __getitem__(self, key):
+        """
+        Retrieve an item or slice from the set of results
+        """
+        if not isinstance(key, (slice, int, long)):
+            raise TypeError
+
+        assert ((not isinstance(key, slice) and (key >= 0))
+                or (isinstance(key, slice) and (key.start is None or key.start >= 0)
+                    and (key.stop is None or key.stop >= 0))), \
+                "Negative indexing is not supported."
+
+        if self._results_cache:
+            # see if the result is cached already
+            lower = self._results_received - len(self._results_cache)
+            upper = self._results_received
+            if isinstance(key, slice):
+                if key.start is not None and key.start >= lower \
+                    and key.stop is not None and key.stop <= upper:
+                    return self._results_cache[key]
+            elif key >= lower and key <= upper:
+                return self._results_cache[key]
+
+        if isinstance(key, slice):
+            new = self._clone()
+            if key.start is not None:
+                new._start = int(key.start)
+            if key.stop is not None:
+                new._stop = int(key.stop)
+            return list(new)[::key.step] if key.step else new
+
+        # not a slice, just an index
+        new = self._clone()
+        new._start = key
+        new._stop = key + 1
+        return list(new)[0]
 
     def __iter__(self):
         """
         Execute a select and iterate through the result set.
         Once the cached result set is exhausted, repeat select.
         """
-        # restart from nothing
+        # restart a fresh scroll
         self._scroll_id = None
         self._fetch_results()
 
@@ -292,3 +251,31 @@ class Select(object):
 
         self._cursor += 1
         return self._results_cache[cache_index]
+
+    def _fetch_results(self):
+        """
+        Executes the select request. Returns the number of results received.
+        """
+        if self._scroll_id is None:
+            response = client.post_dataset_select(self._dataset, self._build_query())
+            self._cursor = 0
+            self._results_cache = None
+            self._results_total = response['total']
+            self._scroll_id = response['scroll_id']
+            # should be 0 results received
+            self._results_received = len(response['results'])
+            if self._results_received:
+                solvelog.warning('%d results from initial scroll ID fetch'
+                                    % len(self._results_cache))
+
+            if self._start is not None and self._start >= self._results_total:
+                raise IndexError('Index out of range, only %d total results(s)'
+                                    % self._results_total)
+
+        if self._results_cache is None:
+            response = client.get_dataset_select(self._dataset, self._scroll_id)
+            # TODO: handle scroll_id failure
+            self._scroll_id = response['scroll_id']
+            self._results_received += len(response['results'])
+            # always overwrite the cache
+            self._results_cache = [self._result_class(r) for r in response['results']]
