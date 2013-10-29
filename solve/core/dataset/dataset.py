@@ -124,7 +124,7 @@ class Dataset(object):
 
     def select(self, *filters, **kwargs):
         # Create and return a new Select object with the set of Filters
-        return Select(self._full_name, *filters, **kwargs)
+        return Select(self._full_name).filter(*filters, **kwargs)
 
     def help(self):
         # Hide hidden fields

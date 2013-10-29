@@ -24,23 +24,64 @@ from ..utils.printing import red, pretty_int
 from ..utils.tabulate import tabulate
 
 
+class Result(object):
+    """
+    Container for Select result key/value documents
+    """
+    def __init__(self, obj):
+        for k, v in obj.items():
+            if k == 'metadata':
+                self.metadata = Result(v)
+            else:
+                setattr(self, k, v)
+
+    def __getitem__(self, name):
+        return getattr(self, name)
+
+    def __repr__(self):
+        return str(self.values())
+
+    def keys(self):
+        return [k for k, v in self.items()]
+
+    def values(self):
+        return [v for k, v in self.items()]
+
+    def items(self):
+        # alphabetically sorted keys, excluding hidden keys (_*)
+        return [(k, v) for k, v in sorted(self.__dict__.items(), key=lambda k: k[0])
+                if not k.startswith('_')]
+
+
 class Select(object):
     """
-    Select API request wrapper.
-    Generates JSON for the API call.
+    A Select API request wrapper that generates a request from Filter objects,
+    and can iterate through streaming result sets.
     """
 
-    def __init__(self, namespace, *filters, **kwargs):
-        self._namespace = namespace
-        self._path = self._path_from_namespace(namespace)
-        self._filters = []
-        self.filter(*filters, **kwargs)
+    def __init__(self, dataset, result_class=Result):
+        assert len(dataset.split('.')) == 2, "Dataset not valid. " \
+            "Make sure it looks like: 'TCGA.mutations'"
 
-    def rewind(self):
-        self._rows_received = None
+        self._result_class = result_class
+        self._dataset = dataset
+        self._filters = []
         self._scroll_id = None
-        self._row_sample = None
-        self._row_cache = []
+        self._results_received = None
+        self._results_total = None
+        self._results_cache = None
+
+        self._cursor = None
+        self._start = None
+        self._stop = None
+
+    def _clone(self, filters=None):
+        new = self.__class__(self._dataset, self._result_class)
+        new._filters = self._filters
+        if filters is not None:
+            new._filters += filters
+        #new.__dict__.update(kwargs)
+        return new
 
     def filter(self, *filters, **kwargs):
         """
@@ -59,92 +100,97 @@ class Select(object):
         ``&`` (and), ``|`` (or) and ``~`` (not) operators. Then call
         filter once with the resulting Filter instance.
         """
-        self.rewind()
-        for f in list(filters):
-            if not isinstance(f, Filter):
-                solvelog.warning('Filter non-keyword arguments must be Filter objects.')
-            else:
-                self._filters.append(f)
+        return self._clone(filters=list(filters) + [Filter(**kwargs)])
 
-        if kwargs:
-            self._filters += [Filter(**kwargs)]
-
-        return self
-
-    def _path_from_namespace(self, namespace):
-        if namespace.startswith('solve.data.'):
-            namespace = namespace[11:]
-        return namespace.replace('.', '/')
-
-    def __repr__(self):
+    def __getstate__(self):
         """
-        Prints a summary of the Select object.
+        Allows the Select to be pickled.
         """
-
-        if self._rows_received is None:
-            self.execute()
-
-        if self._rows_total == 0:
-            return u'<Select on %s (0 results)>' % self._namespace
-        else:
-            return u'\n%s\n\n... %s more results.' % (
-                    tabulate(self._row_sample.items(), ['Columns', 'Sample']),
-                    pretty_int(self._rows_total - 1))
+        raise NotImplemented()
 
     def __len__(self):
         """
         Executes select and returns the total number of results
         """
-        if not self._scroll_id:
-            self.execute()
-        return self._rows_total
+        self._fetch_results()
+
+        if self._start is not None:
+            start = self._start
+        else:
+            start = 0
+        if self._stop is not None and self._stop <= self._results_total:
+            stop = self._stop
+        else:
+            stop = self._results_total
+
+        return stop - start
+
+    def __nonzero__(self):
+        self._fetch_results()
+        return bool(self._results_total)
+
+    # def __and__(self, other):
+    #     raise NotImplemented()
+
+    # def __or__(self, other):
+    #     raise NotImplemented()
+
+    def __repr__(self):
+        data = list(self)
+        # if self._results_total > 10:
+        #     data[-1] = "... %s more result(s)" % pretty_int(self._results_total - 1)
+        return repr(data)
+
+        # if self._results_cache is None:
+        #     self._fetch_results()
+        # if self._results_total == 0:
+        #     return u'<Select on %s (0 results)>' % self._dataset
+        # else:
+        #     return u'\n%s\n\n... %s more results.' % (
+        #             tabulate(self._sample_result.items(), ['Columns', 'Sample']),
+        #             pretty_int(self._results_total - 1))
 
     def __getitem__(self, key):
         """
-        Handle indexed lookups of cached rows.
+        Retrieve an item or slice from the set of results
         """
-        try:
-            if isinstance(key, slice):
-                return [SelectResult(r) for r in self._row_cache[key]]
-            else:
-                return SelectResult(self._row_cache[key])
-        except (KeyError, IndexError):
-            print red('Slicing of Select objects is not fully supported. Please iterate instead.')
+        if not isinstance(key, (slice, int, long)):
+            raise TypeError
 
-    def __iter__(self):
-        """
-        Execute a select and iterate through the result set.
-        Once the cached result set is exhausted, repeat select.
-        """
-        # Always rewind on new iteration
-        self.rewind()
-        return self.execute()
+        assert ((not isinstance(key, slice) and (key >= 0))
+                or (isinstance(key, slice) and (key.start is None or key.start >= 0)
+                    and (key.stop is None or key.stop >= 0))), \
+                "Negative indexing is not supported."
 
-    def next(self):
-        """
-        Allows the Select object to be an iterable.
-        """
-        if len(self._row_cache) == 0:
-            # The select should always have been executed
-            if self._rows_received < self._rows_total:
-                # If result cache is empty, request more
-                self.execute()
-            else:
-                # no more rows to fetch!
-                raise StopIteration
-        else:
-            return SelectResult(self._row_cache.pop())
+        if self._results_cache is not None:
+            # use start/stop and the cursor to determine whether the cache
+            # actually contains the slice... if so, return it!
+            return self._results_cache[key]
+
+        if isinstance(key, slice):
+            new = self._clone()
+            if key.start is not None:
+                new._start = int(key.start)
+            if key.stop is not None:
+                new._stop = int(key.stop)
+            return list(new)[::key.step] if key.step else new
+
+        # not a slice, just an index
+        new = self._clone()
+        new._start = key
+        new._stop = key + 1
+        return list(new)[0]
 
     def _build_query(self):
-        qs = {}
+        q = {}
         if self._filters:
             filters = self._process_filters(self._filters)
             if len(filters) > 1:
-                qs['filters'] = {'and': filters}
+                q['filters'] = [{'and': filters}]
             else:
-                qs['filters'] = filters
+                q['filters'] = filters
 
-        return qs
+        return q
 
     def _process_filters(self, filters):
         """Takes a list of filters and returns JSON
@@ -152,7 +198,6 @@ class Select(object):
         :arg filters: list of Filters, (key, val) tuples, or dicts
 
         :returns: list of JSON API filters
-
         """
         rv = []
         for f in filters:
@@ -176,66 +221,74 @@ class Select(object):
                 rv.extend((f,))
         return rv
 
-    def execute(self):
+    def _fetch_results(self):
         """
-        Executes select and returns self (Select)
-
-        :returns: the resulting row objects
-
+        Executes the select request. Returns the number of results received.
         """
-
-        # If there's a scroll_id, continue scrolling
-        if self._scroll_id:
-            # If we've received all the rows, don't do anything
-            if self._rows_received == self._rows_total:
-                return self
-
-            response = client.get_dataset_select(self._path,
-                            {'scroll_id': self._scroll_id})
-            self._rows_received += len(response['results'])
-        else:
+        if self._scroll_id is None:
             # Otherwise, start a new scroll
-            response = client.post_dataset_select(self._path, self._build_query())
-            self._rows_total = response['total']
-            self._rows_received = len(response['results'])
+            response = client.post_dataset_select(self._dataset, self._build_query())
+            self._cursor = 0
+            self._results_total = response['total']
+            # should be 0
+            self._results_received = len(response['results'])
+            self._scroll_id = response['scroll_id']
+            if self._results_received:
+                solvelog.warning('%d results from initial scroll ID fetch'
+                                    % len(self._results_cache))
 
-        self._scroll_id = response['scroll_id']
-        self._row_cache = response['results'] + self._row_cache
-        response['results'].reverse()  # setup for pop()ing
+            if self._start is not None and self._start >= self._results_total:
+                raise IndexError('Index out of range, only %d total results(s)'
+                                    % self._results_total)
 
-        # store a sample row
-        if self._row_sample is None and self._rows_received:
-            self._row_sample = SelectResult(self._row_cache[0])
+        if self._results_cache is None:
+            response = client.get_dataset_select(self._dataset, self._scroll_id)
+            # TODO: handle scroll_id failure
+            self._scroll_id = response['scroll_id']
+            self._results_received += len(response['results'])
+            # always overwrite the cache
+            self._results_cache = [self._result_class(r) for r in response['results']]
 
-        if self._rows_total > 0 and self._rows_received == 0:
-            # If this was the first select and no rows were returned
-            # run a follow-up query to get some rows
-            return self.execute()
+    def __iter__(self):
+        """
+        Execute a select and iterate through the result set.
+        Once the cached result set is exhausted, repeat select.
+        """
+        # restart from nothing
+        self._scroll_id = None
+        self._fetch_results()
+
+        # fast-forward the cursor if _start is requested
+        if self._start is not None:
+            self._cursor = self._start
+            while self._results_received < self._cursor:
+                self._results_cache = None  # force a cache fill
+                self._fetch_results()
+
+            # slice the results_cache to put _start at 0 in the cache
+            self._results_cache = \
+                self._results_cache[self._cursor - self._results_received:]
 
         return self
 
+    def next(self):
+        """
+        Allows the Select object to be an iterable.
+        Iterates through the internal cache using a cursor.
+        """
+        # if next() is called on its own, make sure we have some results
+        self._fetch_results()
 
-class SelectResult(object):
-    def __init__(self, obj):
-        for k, v in obj.items():
-            if k == 'metadata':
-                self.metadata = SelectResult(v)
-            else:
-                setattr(self, k, v)
+        # If the cursor has reached the end
+        if (self._stop is not None and self._cursor >= self._stop) \
+            or self._cursor >= self._results_total:
+            raise StopIteration
 
-    def __getitem__(self, name):
-        return getattr(self, name)
+        cache_index = self._cursor - self._results_received
+        if cache_index == 0:
+            # If result cache is empty, request more
+            self._fetch_results()
+            cache_index = self._cursor - self._results_received
 
-    def __repr__(self):
-        return str(self.values())
-
-    def keys(self):
-        return [k for k, v in self.items()]
-
-    def values(self):
-        return [v for k, v in self.items()]
-
-    def items(self):
-        # alphabetically sorted keys, excluding hidden keys (_*)
-        return [(k, v) for k, v in sorted(self.__dict__.items(), key=lambda k: k[0])
-                if not k.startswith('_')]
+        self._cursor += 1
+        return self._results_cache[cache_index]

@@ -161,9 +161,9 @@ class SolveClient(object):
         return self._request('POST', '/dataset/%s/select' % namespace,
                              data=data)
 
-    def get_dataset_select(self, namespace, params):
+    def get_dataset_select(self, namespace, scroll_id):
         return self._request('GET', '/dataset/%s/select' % namespace,
-                             params=params)
+                             params={'scroll_id': scroll_id})
 
     def post_login(self, email, password):
         """Get a auth token for the given user credentials"""
