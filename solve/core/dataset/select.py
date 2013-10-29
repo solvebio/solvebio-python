@@ -82,7 +82,7 @@ class Select(object):
         #new.__dict__.update(kwargs)
         return new
 
-    def filter(self, *filters, **kwargs):
+    def select(self, *filters, **kwargs):
         """
         Returns this Select instance with the query args combined with
         existing set with AND.
