@@ -111,31 +111,29 @@ class Dataset(object):
     """
 
     def __init__(self, **meta):
-        self._mapping = None  # lazy loaded
+        self._dataset = None  # dataset object, lazy loaded
         for k, v in meta.items():
             # prefix each field with '_'
             self.__dict__['_' + k] = v
 
-    def _get_mapping(self):
-        if self._mapping is None:
-            self._mapping = client.get_dataset(self._namespace, self._name)['mapping']
+    def _get_dataset(self):
+        if self._dataset is None:
+            self._dataset = client.get_dataset(self._namespace, self._name)
 
-        return self._mapping
+        return self._dataset
 
     def select(self, *filters, **kwargs):
         # Create and return a new Select object with the set of Filters
         return Select(self._full_name).filter(*filters, **kwargs)
 
     def help(self):
-        # Hide hidden fields
-        mapping = [(k, self._get_mapping()[k]['type']) for k
-                    in sorted(self._get_mapping().iterkeys())
-                    if not k.startswith('_')]
+        fields = [(k['name'], k['data_type'], k['description']) for k
+                    in sorted(self._get_dataset()['fields'], key=lambda k: k['name'])]
         print u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
                     self,
                     self._title,
                     self._description,
-                    tabulate(mapping, ['Columns', 'Type']))
+                    tabulate(fields, ['Field', 'Type', 'Description']))
 
     def __repr__(self):
         return '<Dataset: %s>' % self._full_name
