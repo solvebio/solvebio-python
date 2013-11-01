@@ -21,6 +21,7 @@ from solve.core.solvelog import solvelog
 from solve.core.client import client
 from solve.core.utils.tabulate import tabulate
 
+from .filter import Filter
 from .select import Select
 
 import logging
@@ -134,8 +135,19 @@ class Dataset(object):
         return self._dataset
 
     def select(self, *filters, **kwargs):
-        # Create and return a new Select object with the set of Filters
+        """Create and return a new Select object with the set of Filters"""
         return Select(self._path).select(*filters, **kwargs)
+
+    def range(self, chromosome, start, end, overlap=False):
+        """Shortcut to do a range queries on supported Datasets"""
+        range_filter = Filter(**{
+                        '_coordinate_start__range': [int(start), int(end)],
+                        '_coordinate_end__range': [int(start), int(end)]})
+        chrom_filter = Filter(_chromosome=str(chromosome))
+        if overlap:
+            return Select(self._path).select(chrom_filter | range_filter)
+        else:
+            return Select(self._path).select(chrom_filter & range_filter)
 
     def help(self):
         fields = [(k['name'], k['data_type'], k['description']) for k

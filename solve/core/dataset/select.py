@@ -17,7 +17,7 @@
 # limitations under the License.
 
 
-from .filters import Filter
+from .filter import Filter
 from ..client import client
 from ..solvelog import solvelog
 from ..utils.printing import red, pretty_int
@@ -218,7 +218,7 @@ class Select(object):
         self._start_scroll()
 
         # fast-forward the cursor if _start is requested
-        if self._start is not None:
+        if self._start:  # not None and > 0
             self._cursor = self._start
             while self._results_received < self._cursor:
                 self._scroll()
