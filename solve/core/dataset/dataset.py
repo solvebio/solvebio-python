@@ -110,8 +110,17 @@ class Dataset(object):
     Stores a Dataset and its fields
     """
 
-    def __init__(self, **meta):
-        self._dataset = None  # dataset object, lazy loaded
+    def __init__(self, path, **meta):
+        assert len(path.split('.')) == 2, "Dataset name not valid. " \
+                "Make sure it looks like: 'TCGA.mutations'"
+
+        self._dataset = None
+
+        if not meta:
+            # if no metadata is passed, we'll need to fetch it
+            self._namespace, self._name = path.split('.')
+            meta = self._get_dataset()
+
         for k, v in meta.items():
             # prefix each field with '_'
             self.__dict__['_' + k] = v
