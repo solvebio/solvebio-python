@@ -93,13 +93,14 @@ class Namespace(object):
             self._datasets = sorted(client.get_namespace(self._name)['datasets'],
                                     key=lambda k: k['name'])
             for ds in self._datasets:
-                self.__dict__[ds['name']] = Dataset(ds['path'], **ds)
+                path = '%s.%s' % (ds['namespace'], ds['name'])
+                self.__dict__[ds['name']] = Dataset(path, **ds)
 
         return self._datasets
 
     def help(self):
         _content = 'Datasets in %s:\n\n' % self._name
-        _content += tabulate([(d['path'], d['title'])
+        _content += tabulate([('%s.%s' % (d['namespace'], d['name']), d['title'])
                               for d in self._get_datasets()],
                               ['Dataset', 'Title'])
         print _content
@@ -114,6 +115,7 @@ class Dataset(object):
         assert len(path.split('.')) == 2, "Dataset name not valid. " \
                 "Make sure it looks like: 'TCGA.mutations'"
 
+        self._path = path
         self._dataset = None
 
         if not meta:
