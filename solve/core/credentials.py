@@ -76,10 +76,17 @@ def get_api_key():
     """
     Helper function to get the current user's API key or None.
     """
-    creds = get_credentials()
-    if creds:
-        return creds[1]
-    return None
+    try:
+        # user can manually override the api_key:
+        #   solve.api_key = "API_KEY"
+        from solve import api_key
+        return api_key
+    except ImportError:
+        # otherwise, try to get it from netrc
+        creds = get_credentials()
+        if creds:
+            return creds[1]
+        return None
 
 
 def get_credentials():

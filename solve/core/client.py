@@ -72,27 +72,25 @@ class SolveAPIError(BaseException):
 
 class SolveTokenAuth(AuthBase):
     """Custom auth handler for Solve API token authentication"""
-    def __init__(self, token=None):
-        self.token = token or get_api_key()
+    def __init__(self, api_key=None):
+        self.api_key = api_key or get_api_key()
 
     def __call__(self, r):
-        if self.token:
-            r.headers['Authorization'] = 'Token %s' % self.token
+        if self.api_key:
+            r.headers['Authorization'] = 'Token %s' % self.api_key
         return r
 
     def __repr__(self):
-        return u'<SolveTokenAuth %s>' % self.token
+        return u'<SolveTokenAuth %s>' % self.api_key
 
 
 class SolveClient(object):
 
-    def __init__(self, token=None):
-        self.host = None
-        if token:
-            self.auth = SolveTokenAuth(token)
-        else:
-            self.auth = None
-
+    def __init__(self, api_key=None):
+        # override the netrc credential by passing an api_key
+        self.api_key = api_key
+        # auth is lazy-loaded on first request
+        self.auth = None
         self.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -114,7 +112,7 @@ class SolveClient(object):
         url = self._build_url(path)
 
         if self.auth is None:
-            self.auth = SolveTokenAuth()
+            self.auth = SolveTokenAuth(self.api_key)
 
         if method in ('POST', 'PUT'):
             data = json.dumps(data)
@@ -166,7 +164,7 @@ class SolveClient(object):
                              params={'scroll_id': scroll_id})
 
     def post_login(self, email, password):
-        """Get a auth token for the given user credentials"""
+        """Get an api_key for the given user credentials"""
         data = {
             'email': email,
             'password': password

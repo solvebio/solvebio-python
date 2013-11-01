@@ -92,8 +92,8 @@ class Namespace(object):
         if self._datasets is None:
             self._datasets = sorted(client.get_namespace(self._name)['datasets'],
                                     key=lambda k: k['name'])
-            for dataset in self._datasets:
-                self.__dict__[dataset['name']] = Dataset(**dataset)
+            for ds in self._datasets:
+                self.__dict__[ds['name']] = Dataset(ds['full_name'], **ds)
 
         return self._datasets
 
