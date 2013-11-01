@@ -93,13 +93,13 @@ class Namespace(object):
             self._datasets = sorted(client.get_namespace(self._name)['datasets'],
                                     key=lambda k: k['name'])
             for ds in self._datasets:
-                self.__dict__[ds['name']] = Dataset(ds['full_name'], **ds)
+                self.__dict__[ds['name']] = Dataset(ds['path'], **ds)
 
         return self._datasets
 
     def help(self):
         _content = 'Datasets in %s:\n\n' % self._name
-        _content += tabulate([(d['full_name'], d['title'])
+        _content += tabulate([(d['path'], d['title'])
                               for d in self._get_datasets()],
                               ['Dataset', 'Title'])
         print _content
@@ -133,7 +133,7 @@ class Dataset(object):
 
     def select(self, *filters, **kwargs):
         # Create and return a new Select object with the set of Filters
-        return Select(self._full_name).select(*filters, **kwargs)
+        return Select(self._path).select(*filters, **kwargs)
 
     def help(self):
         fields = [(k['name'], k['data_type'], k['description']) for k
@@ -145,10 +145,10 @@ class Dataset(object):
                     tabulate(fields, ['Field', 'Type', 'Description']))
 
     def __repr__(self):
-        return '<Dataset: %s>' % self._full_name
+        return '<Dataset: %s>' % self._path
 
     def __str__(self):
-        return self._full_name
+        return self._path
 
 
 directory = NamespaceDirectory()
