@@ -17,15 +17,10 @@
 # limitations under the License.
 
 
-from solve.core.solvelog import solvelog
-from solve.core.client import client
-from solve.core.utils.tabulate import tabulate
-
-from .filter import Filter
-from .select import Select
-
-import logging
-logger = logging.getLogger('solve')
+from .solvelog import solvelog
+from .client import client
+from .utils.tabulate import tabulate
+from .select import Select, Filter
 
 
 class NamespaceDirectory(object):

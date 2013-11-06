@@ -17,11 +17,104 @@
 # limitations under the License.
 
 
-from .filter import Filter
-from ..client import client
-from ..solvelog import solvelog
-from ..utils.printing import red, pretty_int
-from ..utils.tabulate import tabulate
+import copy
+
+from .client import client
+from .solvelog import solvelog
+from .utils.printing import pretty_int
+from .utils.tabulate import tabulate
+
+
+class Filter(object):
+    """
+    Filter objects.
+
+    Makes it easier to create filters cumulatively using ``&`` (and),
+    ``|`` (or) and ``~`` (not) operations.
+
+    For example::
+
+        f = F()
+        f &= F(price='Free')
+        f |= F(style='Mexican')
+
+    creates a filter "price = 'Free' or style = 'Mexican'".
+
+    Each set of kwargs in a `Filter` are ANDed together:
+
+        * `<field>=''` uses a term filter (exact term)
+        * `<field>__in=[]` uses a terms filter (match any)
+
+    String terms are not analyzed and are always assumed to be exact matches.
+
+    Numeric columns can be selected by range using:
+
+        * `<field>__gt`: greater than
+        * `<field>__gte`: greater than or equal to
+        * `<field>__lt`: less than
+        * `<field>__lte`: less than or equal to
+
+    Field action examples:
+
+        TCGA.somatic_mutations.select(gene__in=['BRCA', 'GATA3'],
+                                      chr='3',
+                                      start__gt=10000,
+                                      end__lte=20000)
+    """
+    def __init__(self, **filters):
+        """Creates a Filter"""
+        filters = filters.items()
+        if len(filters) > 1:
+            self.filters = [{'and': filters}]
+        else:
+            self.filters = filters
+
+    def __repr__(self):
+        return '<Filter {0}>'.format(self.filters)
+
+    def _combine(self, other, conn='and'):
+        """
+        OR and AND will create a new Filter, with the filters from both Filter
+        objects combined with the connector `conn`.
+        """
+        f = Filter()
+
+        self_filters = copy.deepcopy(self.filters)
+        other_filters = copy.deepcopy(other.filters)
+
+        if not self.filters:
+            f.filters = other_filters
+        elif not other.filters:
+            f.filters = self_filters
+        elif conn in self.filters[0]:
+            f.filters = self_filters
+            f.filters[0][conn].extend(other_filters)
+        elif conn in other.filters[0]:
+            f.filters = other_filters
+            f.filters[0][conn].extend(self_filters)
+        else:
+            f.filters = [{conn: self_filters + other_filters}]
+
+        return f
+
+    def __or__(self, other):
+        return self._combine(other, 'or')
+
+    def __and__(self, other):
+        return self._combine(other, 'and')
+
+    def __invert__(self):
+        f = Filter()
+        self_filters = copy.deepcopy(self.filters)
+        if len(self_filters) == 0:
+            f.filters = []
+        elif (len(self_filters) == 1
+              and isinstance(self_filters[0], dict)
+              and self_filters[0].get('not', {})):
+            f.filters = self_filters[0]['not']
+        else:
+            f.filters = [{'not': self_filters}]
+        return f
 
 
 class Result(object):
@@ -284,3 +377,4 @@ class Select(object):
         self._results_received += len(response['results'])
         # always overwrite the cache
         self._results_cache = [self._result_class(r) for r in response['results']]
+

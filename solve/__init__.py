@@ -29,6 +29,8 @@ Have questions or comments? email us at: contact@solvebio.com
 __author__ = 'Solve, Inc. <contact@solvebio.com>'
 __version__ = '0.1.8'
 
+from .core.dataset import directory as data
+
 
 def help():
     # TODO: make fancy with colors!
@@ -52,11 +54,6 @@ use the help() function, for example:
 
 
 Enjoy using Solve!"""
-
-try:
-    data
-except NameError:
-    from .core.dataset import directory as data
 
 
 __all__ = ['__version__', 'data', 'help']
