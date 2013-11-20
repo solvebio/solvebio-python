@@ -24,6 +24,7 @@ import locale
 
 try:
     reload(sys).setdefaultencoding(locale.getdefaultlocale()[1])
+    locale.setlocale(locale.LC_ALL, '')
 except:
     pass
 
