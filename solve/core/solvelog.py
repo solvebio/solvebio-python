@@ -53,7 +53,16 @@ def _init_logging():
         file_handler.setFormatter(file_fmt)
         base_logger.addHandler(file_handler)
 
-    base_logger.addHandler(logging.NullHandler())
+    try:
+        base_logger.addHandler(logging.NullHandler())
+    except:
+        # supports Python < 2.7
+        class NullHandler(logging.Handler):
+            def emit(self, record):
+                pass
+
+        base_logger.addHandler(NullHandler())
+
     return base_logger
 
 solvelog = _init_logging()
