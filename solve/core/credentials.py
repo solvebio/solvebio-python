@@ -40,7 +40,7 @@ class netrc(_netrc):
     Adds a save() method to netrc
     """
 
-    def save(self):
+    def save(self, path):
         """Dump the class data in the format of a .netrc file."""
         rep = u""
         for host in self.hosts.keys():
@@ -55,7 +55,7 @@ class netrc(_netrc):
                 rep = rep + line
             rep = rep + "\n"
 
-        f = open(self.file, 'w')
+        f = open(path, 'w')
         f.write(rep)
         f.close()
 
@@ -112,7 +112,7 @@ def delete_credentials():
     except KeyError:
         pass
     else:
-        rc.save()
+        rc.save(NETRC_PATH)
 
 
 def save_credentials(email, api_key):
@@ -123,4 +123,4 @@ def save_credentials(email, api_key):
 
     # Overwrites any existing credentials
     rc.hosts[solveconfig.API_HOST] = (email, None, api_key)
-    rc.save()
+    rc.save(NETRC_PATH)
