@@ -22,28 +22,23 @@ from .solveconfig import solveconfig
 from netrc import netrc as _netrc, NetrcParseError
 import os
 
+try:
+    NETRC_PATH = os.path.join(os.environ['HOME'], ".netrc")
+except KeyError:
+    raise IOError("Could not find .netrc: $HOME is not set")
+
+# create an empty .netrc if it doesn't exist
+if not os.path.exists(NETRC_PATH):
+    try:
+        open(NETRC_PATH, 'w+').close()
+    except IOError:
+        raise Exception("Could not create a netrc file at '%s', permission denied." % NETRC_PATH)
+
 
 class netrc(_netrc):
-    """Add a save() method to netrc"""
-
-    def __init__(self, file=None):
-        self.file = file
-        if self.file is None:
-            try:
-                self.file = os.path.join(os.environ['HOME'], ".netrc")
-            except KeyError:
-                raise IOError("Could not find .netrc: $HOME is not set")
-
-        self.hosts = {}
-        self.macros = {}
-
-        if os.path.exists(self.file):
-            fp = open(self.file)
-        else:
-            # file doesnt exist yet
-            fp = open(self.file, 'w+')
-
-        self._parse(self.file, fp)
+    """
+    Adds a save() method to netrc
+    """
 
     def save(self):
         """Dump the class data in the format of a .netrc file."""
@@ -95,7 +90,7 @@ def get_credentials():
     Raises CredentialsError if no valid netrc file is found.
     """
     try:
-        auths = netrc().authenticators(solveconfig.API_HOST)
+        auths = netrc(NETRC_PATH).authenticators(solveconfig.API_HOST)
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError(
             'Did not find valid netrc file: ' + str(e))
@@ -108,7 +103,7 @@ def get_credentials():
 
 def delete_credentials():
     try:
-        rc = netrc()
+        rc = netrc(NETRC_PATH)
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
@@ -122,7 +117,7 @@ def delete_credentials():
 
 def save_credentials(email, api_key):
     try:
-        rc = netrc()
+        rc = netrc(NETRC_PATH)
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
