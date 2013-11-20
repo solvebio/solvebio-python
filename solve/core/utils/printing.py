@@ -22,7 +22,10 @@ import sys
 import subprocess
 import locale
 
-locale.setlocale(locale.LC_ALL, 'en_US')
+try:
+    reload(sys).setdefaultencoding(locale.getdefaultlocale()[1])
+except:
+    pass
 
 from solve.core.solvelog import solvelog
 from solve.core.solveconfig import solveconfig
