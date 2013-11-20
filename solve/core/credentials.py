@@ -27,10 +27,10 @@ try:
 except KeyError:
     raise IOError("Could not find .netrc: $HOME is not set")
 
-# create an empty .netrc if it doesn't exist
+# create an empty .netrc (or append in worst case) if it doesn't exist
 if not os.path.exists(NETRC_PATH):
     try:
-        open(NETRC_PATH, 'w+').close()
+        open(NETRC_PATH, 'a').close()
     except IOError:
         raise Exception("Could not create a netrc file at '%s', permission denied." % NETRC_PATH)
 
