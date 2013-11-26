@@ -46,7 +46,7 @@ class NamespaceDirectory(object):
         return object.__getattribute__(self, name)
 
     def help(self):
-        _content = 'All Namespaces:\n\n'
+        _content = 'All Online Namespaces:\n\n'
         _content += tabulate([(ns['name'], ns['title'])
                              for ns in self._get_namespaces()],
                              ['Namespace', 'Title'])

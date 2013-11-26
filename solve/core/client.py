@@ -137,17 +137,21 @@ class SolveClient(object):
             # not authenticated
             print LOGIN_REQUIRED_MESSAGE
             raise SolveAPIError(response)
-        else:
-            # a fatal error! :-(
+        elif response.status_code != 404:
             solvelog.debug('API Error: %d' % response.status_code)
-            raise SolveAPIError(response)
 
-    def get_namespaces(self):
-        # TODO: handle paginated namespace list
-        namespaces = []
-        response = self._request('GET', '/dataset')
-        namespaces += response['results']
-        return namespaces
+        raise SolveAPIError(response)
+
+    def get_namespaces(self, page=1):
+        try:
+            # Only gets online Namespaces
+            response = self._request('GET', '/dataset?online=1&page=%d' % page)
+        except SolveAPIError as err:
+            if err.response.status_code == 404:
+                return []
+            raise err
+        else:
+            return response['results']
 
     def get_namespace(self, namespace):
         return self._request('GET', '/dataset/%s' % namespace)
