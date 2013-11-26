@@ -352,7 +352,10 @@ class Select(object):
             self._start_scroll()
 
         if self._results_cache is None:
-            self._scroll()
+            if self._results_total == 0:
+                self._results_cache = []
+            else:
+                self._scroll()
 
     def _start_scroll(self):
         response = client.post_dataset_select(self._dataset, self._build_query())
@@ -377,4 +380,3 @@ class Select(object):
         self._results_received += len(response['results'])
         # always overwrite the cache
         self._results_cache = [self._result_class(r) for r in response['results']]
-
