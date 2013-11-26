@@ -33,7 +33,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
 
 
 def shell(args):
-    """Open the Solve shell (IPython wrapper)"""
+    """Open the SolveBio shell (IPython wrapper)"""
 
     from IPython.config.loader import Config
     try:
@@ -45,8 +45,8 @@ def shell(args):
         prompt_config.in_template = '[Solve] In <\\#>: '
         prompt_config.in2_template = '   .\\D.: '
         prompt_config.out_template = 'Out<\\#>: '
-        banner1 = 'Solve shell started.'
-        exit_msg = 'Quitting Solve shell.'
+        banner1 = 'SolveBio Python shell started.'
+        exit_msg = 'Quitting SolveBio shell.'
     else:
         print("Running nested copies of IPython.")
         cfg = Config()
@@ -69,16 +69,16 @@ def shell(args):
 
 
 # CLI argument parsers
-base_parser = SolveArgumentParser(description='The Solve bioinformatics environment.')
+base_parser = SolveArgumentParser(description='The SolveBio bioinformatics environment.')
 base_parser.add_argument('--version', action='version', version='solve %s' % solve.__version__)
-base_parser.add_argument('--api-host', help='Override the default Solve API host')
+base_parser.add_argument('--api-host', help='Override the default SolveBio API host')
 
 subcommands = base_parser.add_subparsers(title='subcommands',
-    description="""Subcommands of the Solve CLI""",
+    description="""Subcommands of the SolveBio CLI""",
     dest='subcommand')
 
 # shell parser
-shell_parser = subcommands.add_parser('shell', help='Open the Solve shell')
+shell_parser = subcommands.add_parser('shell', help='Open the SolveBio Python shell')
 shell_parser.set_defaults(func=shell)
 
 
@@ -93,7 +93,7 @@ login_parser.set_defaults(func=auth_login)
 logout_parser = subcommands.add_parser('logout', help='Logout and delete saved credentials')
 logout_parser.set_defaults(func=auth_logout)
 
-whoami_parser = subcommands.add_parser('whoami', help='Show your Solve email address')
+whoami_parser = subcommands.add_parser('whoami', help='Show your SolveBio email address')
 whoami_parser.set_defaults(func=auth_whoami)
 
 

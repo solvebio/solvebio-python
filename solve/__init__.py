@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Solve Python Client
+SolveBio Python Client
 ~~~~~~~~~~~~~~~~~~~
 
 This is the Python client & library for the SolveBio API.
@@ -35,7 +35,7 @@ from .core.dataset import directory as data
 def help():
     # TODO: make fancy with colors!
     print """
-The Solve Shell.
+The SolveBio Shell.
 
 To list available datasets, type:
 

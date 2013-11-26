@@ -32,7 +32,7 @@ from .solveconfig import solveconfig
 LOGIN_REQUIRED_MESSAGE = red("""
 Sorry, your API credentials seem to be invalid.
 
-Solve is currently in private beta.
+SolveBio is currently in private beta.
 Please go to www.solvebio.com to find out more.
 
 If you are a beta user, please log in by typing:
@@ -71,7 +71,7 @@ class SolveAPIError(BaseException):
 
 
 class SolveTokenAuth(AuthBase):
-    """Custom auth handler for Solve API token authentication"""
+    """Custom auth handler for SolveBio API token authentication"""
     def __init__(self, api_key=None):
         self.api_key = api_key or get_api_key()
 
@@ -94,7 +94,7 @@ class SolveClient(object):
         self.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'User-Agent': 'Solve Client %s [Python %s/%s]' % (
+            'User-Agent': 'SolveBio Python Client %s [Python %s/%s]' % (
                 __version__,
                 platform.python_implementation(),
                 platform.python_version()
