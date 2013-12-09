@@ -145,7 +145,7 @@ class SolveClient(object):
     def get_namespaces(self, page=1):
         try:
             # Only gets online Namespaces
-            response = self._request('GET', '/dataset?online=1&page=%d' % page)
+            response = self._request('GET', '/datasets?online=1&page=%d' % page)
         except SolveAPIError as err:
             if err.response.status_code == 404:
                 return []
@@ -154,17 +154,17 @@ class SolveClient(object):
             return response['results']
 
     def get_namespace(self, namespace):
-        return self._request('GET', '/dataset/%s' % namespace)
+        return self._request('GET', '/datasets/%s' % namespace)
 
     def get_dataset(self, namespace, dataset):
-        return self._request('GET', '/dataset/%s/%s' % (namespace, dataset))
+        return self._request('GET', '/datasets/%s/%s' % (namespace, dataset))
 
     def post_dataset_select(self, namespace, data):
-        return self._request('POST', '/dataset/%s/select' % namespace,
+        return self._request('POST', '/datasets/%s/select' % namespace,
                              data=data)
 
     def get_dataset_select(self, namespace, scroll_id):
-        return self._request('GET', '/dataset/%s/select' % namespace,
+        return self._request('GET', '/datasets/%s/select' % namespace,
                              params={'scroll_id': scroll_id})
 
     def post_login(self, email, password):
