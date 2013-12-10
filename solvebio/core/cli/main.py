@@ -18,7 +18,7 @@
 # limitations under the License.
 
 
-import solve
+import solvebio
 
 import argparse
 import sys
@@ -42,7 +42,7 @@ def shell(args):
     except NameError:
         cfg = Config()
         prompt_config = cfg.PromptManager
-        prompt_config.in_template = '[Solve] In <\\#>: '
+        prompt_config.in_template = '[SolveBio] In <\\#>: '
         prompt_config.in2_template = '   .\\D.: '
         prompt_config.out_template = 'Out<\\#>: '
         banner1 = 'SolveBio Python shell started.'
@@ -70,7 +70,7 @@ def shell(args):
 
 # CLI argument parsers
 base_parser = SolveArgumentParser(description='The SolveBio bioinformatics environment.')
-base_parser.add_argument('--version', action='version', version='solve %s' % solve.__version__)
+base_parser.add_argument('--version', action='version', version='solvebio %s' % solvebio.__version__)
 base_parser.add_argument('--api-host', help='Override the default SolveBio API host')
 
 subcommands = base_parser.add_subparsers(title='subcommands',
@@ -105,7 +105,7 @@ def main(args=None):
         args = base_parser.parse_args()
 
     if args.api_host:
-        from solve.core.solveconfig import solveconfig
+        from solvebio.core.solveconfig import solveconfig
 
         if args.api_host.startswith('http://'):
             solveconfig.API_SSL, solveconfig.API_HOST = False, args.api_host.replace('http://', '')

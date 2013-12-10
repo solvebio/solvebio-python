@@ -29,7 +29,7 @@ class NamespaceDirectory(object):
     """
 
     def __init__(self):
-        self._name = 'solve.data'
+        self._name = 'solvebio.data'
         self._namespaces = None  # lazy loaded
 
     def __repr__(self):

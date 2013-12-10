@@ -26,7 +26,7 @@ LOGLEVEL_FILE = os.environ.get('SOLVE_LOGLEVEL_FILE', 'WARNING')
 
 
 def _init_logging():
-    base_logger = logging.getLogger("solve")
+    base_logger = logging.getLogger("solvebio")
     base_logger.setLevel('DEBUG')
 
     #clear handlers if any exist
@@ -38,12 +38,12 @@ def _init_logging():
     if LOGLEVEL_STREAM:
         stream_handler = logging.StreamHandler()
         stream_handler.setLevel(LOGLEVEL_STREAM)
-        stream_fmt = logging.Formatter('[Solve] %(message)s')
+        stream_fmt = logging.Formatter('[SolveBio] %(message)s')
         stream_handler.setFormatter(stream_fmt)
         base_logger.addHandler(stream_handler)
 
     if LOGLEVEL_FILE:
-        logfile_path = os.path.expanduser('~/.solve/solve.log')
+        logfile_path = os.path.expanduser('~/.solvebio/solvebio.log')
         if not os.path.isdir(os.path.dirname(logfile_path)):
             os.makedirs(os.path.dirname(logfile_path))
 

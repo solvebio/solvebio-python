@@ -73,8 +73,8 @@ def get_api_key():
     """
     try:
         # user can manually override the api_key:
-        #   solve.api_key = "API_KEY"
-        from solve import api_key
+        #   solvebio.api_key = "API_KEY"
+        from solvebio import api_key
         return api_key
     except ImportError:
         # otherwise, try to get it from netrc

@@ -28,8 +28,8 @@ try:
 except:
     pass
 
-from solve.core.solvelog import solvelog
-from solve.core.solveconfig import solveconfig
+from solvebio.core.solvelog import solvelog
+from solvebio.core.solveconfig import solveconfig
 
 if sys.stdout.isatty():
     try:

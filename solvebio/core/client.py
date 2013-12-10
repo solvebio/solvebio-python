@@ -22,7 +22,7 @@ import platform
 import requests
 from requests.auth import AuthBase
 
-from solve import __version__
+from solvebio import __version__
 from .solvelog import solvelog
 from .credentials import get_api_key
 from .utils.printing import red
@@ -37,7 +37,7 @@ Please go to www.solvebio.com to find out more.
 
 If you are a beta user, please log in by typing:
 
-    solve login
+    solvebio login
 
 """)
 

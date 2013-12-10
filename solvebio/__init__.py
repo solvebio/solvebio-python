@@ -27,7 +27,7 @@ Have questions or comments? email us at: contact@solvebio.com
 
 
 __author__ = 'Solve, Inc. <contact@solvebio.com>'
-__version__ = '0.1.12'
+__version__ = '0.2.0'
 
 from .core.dataset import directory as data
 
@@ -39,21 +39,21 @@ The SolveBio Shell.
 
 To list available datasets, type:
 
-    solve.data.help()
+    solvebio.data.help()
 
 
 To get some data, use the select() function, for example:
 
-    solve.data.TCGA.somatic_mutations.select()
+    solvebio.data.TCGA.somatic_mutations.select()
 
 
 You may filter on any field in the datset. To see the fields for any dataset,
 use the help() function, for example:
 
-    solve.data.TCGA.somatic_mutations.help()
+    solvebio.data.TCGA.somatic_mutations.help()
 
 
-Enjoy using Solve!"""
+Enjoy using SolveBio!"""
 
 
 __all__ = ['__version__', 'data', 'help']

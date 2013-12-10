@@ -15,17 +15,17 @@ You may want to first install `readline` for a better experience:
     easy_install readline
 
 
-Now just install `solve` from PyPI:
+Now just install `solvebio` from PyPI:
 
-    pip install solve
+    pip install solvebio
 
 
 To log in, type:
 
-    solve login
+    solvebio login
 
 Enter your credentials and you should be good to go!
-Just type `solve` to enter the Solve shell.
+Just type `solvebio` to enter the SolveBio Python shell.
 
 
 Installing from Git

@@ -438,7 +438,7 @@ def _build_row(cells, padding, begin, sep, end):
 
     # SolveBio: we're only displaying Key-Value tuples (dimension of 2). enforce that we don't wrap lines by setting a max
     #  limit on row width which is equal to solveconfig.TTY_COLS
-    from solve.core.solveconfig import solveconfig
+    from solvebio.core.solveconfig import solveconfig
     rendered_cells = (begin + sep.join(padded_cells) + end).rstrip()
     if len(rendered_cells) > solveconfig.TTY_COLS:
         if not cells[-1].endswith(" ") and not cells[-1].endswith("-"):
