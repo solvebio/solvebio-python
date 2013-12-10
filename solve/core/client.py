@@ -160,11 +160,11 @@ class SolveClient(object):
         return self._request('GET', '/datasets/%s/%s' % (namespace, dataset))
 
     def post_dataset_select(self, namespace, data):
-        return self._request('POST', '/datasets/%s/select' % namespace,
+        return self._request('POST', '/datasets/%s/_select' % namespace,
                              data=data)
 
     def get_dataset_select(self, namespace, scroll_id):
-        return self._request('GET', '/datasets/%s/select' % namespace,
+        return self._request('GET', '/datasets/%s/_select' % namespace,
                              params={'scroll_id': scroll_id})
 
     def post_login(self, email, password):
@@ -196,7 +196,7 @@ class SolveClient(object):
             'processor': platform.processor(),
             'pyexe_build': platform.architecture()[0]
         }
-        self._request('POST', '/report/install', data=data)
+        self._request('POST', '/reports/install', data=data)
 
 
 client = SolveClient()
