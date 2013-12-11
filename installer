@@ -19,9 +19,7 @@
 #
 # This is the guided installer for the SolveBio Python Client
 #
-# To use it run:
-#   curl -kL https://github.com/solvebio/solve-python/installer | bash
-#
+#   curl -kL https://raw.github.com/solvebio/solve-python/master/installer | bash
 #
 
 shopt -s extglob
@@ -65,11 +63,12 @@ done
 
 if [ "$PYTHON_FOUND" == '1' ]; then
     echo "Found Python ${PYTHON_VERSION} at ${PYTHON}!"
-    echo -n "Which Python do you want to use (press enter for: ${PYTHON}) ? "
-    read PYTHON_ALT
-    if [[ -x $PYTHON_ALT ]]; then
-        PYTHON=$PYTHON_ALT
-    fi
+    # TODO: allow optional Python path
+    # echo -n "Which Python do you want to use (press enter for: ${PYTHON}) ? "
+    # read PYTHON_ALT
+    # if [[ -x $PYTHON_ALT ]]; then
+    #     PYTHON=$PYTHON_ALT
+    # fi
     echo "Using ${PYTHON}..."
 else
     echo "The SolveBio Python Client requires Python >= 2.6.5 and < 3.0"
