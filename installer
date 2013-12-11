@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+#
+# Copyright © 2013 Solve, Inc. <http://www.solvebio.com>. All rights reserved.
+#
+# email: contact@solvebio.com
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+# This is the guided installer for the SolveBio Python Client
+#
+# To use it run:
+#   curl -kL https://github.com/solvebio/solve-python/installer | bash
+#
+#
+
+shopt -s extglob
+
+function fail_exit() {
+    echo
+    echo "Failed to install SolveBio."
+    echo "If you need some help, email us at contact@solvebio.com or go to our public chat room at http://chat.solvebio.com/"
+    exit
+}
+
+trap ctrl_c INT
+
+function ctrl_c() {
+    echo
+    echo
+    echo "Installation was aborted..."
+    fail_exit
+}
+
+echo "Installing the SolveBio Python Client..."
+echo
+
+# Check Python versions
+PYTHON_PATHS=`echo $PATH | sed -e 's/:/ /g'`
+PYTHON_VERSIONS=`find -f $PYTHON_PATHS \( -regex ".*/python*" -o -regex ".*/python2.[567]" \) 2> /dev/null`
+
+echo "Looking for a supported Python installation..."
+# try in order of $PATH
+for PYTHON in $PYTHON_VERSIONS ; do
+    if [[ ! -x $PYTHON ]] ; then
+        continue
+    fi
+
+    PYTHON_VERSION=`$PYTHON -V 2>&1 | cut -d " " -f 2`
+    if [[ $PYTHON_VERSION =~ 2.[67].[0-9] ]]; then
+        PYTHON_FOUND='1'
+        break
+    fi
+done
+
+if [ "$PYTHON_FOUND" == '1' ]; then
+    echo "Found Python ${PYTHON_VERSION} at ${PYTHON}!"
+    echo -n "Which Python do you want to use (press enter for: ${PYTHON}) ? "
+    read PYTHON_ALT
+    if [[ -x $PYTHON_ALT ]]; then
+        PYTHON=$PYTHON_ALT
+    fi
+    echo "Using ${PYTHON}..."
+else
+    echo "The SolveBio Python Client requires Python >= 2.6.5 and < 3.0"
+    # TODO: instructions for installing Python
+    fail_exit
+fi
+
+# Check OpenSSL version
+
+OPENSSL_VERSION=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION"`
+OPENSSL_VERSION_MAJOR=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION_INFO[0]"`
+OPENSSL_VERSION_MINOR=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION_INFO[1]"`
+OPENSSL_VERSION_PATCH=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION_INFO[2]"`
+
+if [ "$OPENSSL_VERSION_MAJOR" -lt "1" ]; then
+    echo "checking minor"
+    if [ "$OPENSSL_VERSION_MINOR" -lt "9" ] || [ "$OPENSSL_VERSION_PATCH" -lt "8" ]; then
+        echo
+        echo "The SolveBio Python Client requires OpenSSL >= 0.9.8"
+        echo "Your Python SSL module is linked to $OPENSSL_VERSION"
+        fail_exit
+    fi
+fi
+
+# Check for working pip
+PIP_VERSION=`$PYTHON -m pip -V 2>&1`
+
+if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
+    echo "It looks like pip is not installed. We will now install it."
+    echo "You may need to enter your sudo password."
+    sudo $PYTHON -m easy_install pip
+
+    PIP_VERSION=`$PYTHON -m pip -V 2>&1`
+    if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
+        echo
+        echo "There seems to be a problem installing pip..."
+        fail_exit
+    else
+        echo "pip install successful!"
+    fi
+fi
+
+# Install solvebio via pip
+
+echo
+echo "Installing the SolveBio module via pip..."
+echo "You may need to enter your sudo password."
+sudo $PYTHON -m pip install solvebio && SUCCESS="1"
+
+if [ $? -eq 0 ]; then
+    echo
+    echo "Success! SolveBio has been installed."
+    echo "Now run 'solvebio login' to start."
+    echo
+    echo "Check out the Get Started guide at https://www.solvebio.com/documentation/get-started"
+    echo "If you need some help, email us at contact@solvebio.com or see our chat room http://chat.solvebio.com/"
+else
+    fail_exit
+fi
