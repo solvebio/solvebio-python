@@ -103,14 +103,14 @@ if [ "$OPENSSL_VERSION_MAJOR" -lt "1" ]; then
 fi
 
 # Check for working pip
-PIP_VERSION=`$PYTHON -m pip -V 2>&1`
+PIP_VERSION=`$PYTHON -m pip --version 2>&1`
 
 if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
     echo "It looks like pip is not installed. We will now install it."
     echo "You may need to enter your sudo password."
     sudo $PYTHON -m easy_install pip
 
-    PIP_VERSION=`$PYTHON -m pip -V 2>&1`
+    PIP_VERSION=`$PYTHON -m pip --version 2>&1`
     if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
         echo
         echo "There seems to be a problem installing pip..."
