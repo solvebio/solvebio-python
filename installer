@@ -22,6 +22,16 @@
 #   curl -kL https://raw.github.com/solvebio/solve-python/master/installer | bash
 #
 
+echo
+echo " ____        _           ____  _"
+echo "/ ___|  ___ | |_   _____| __ )(_) ___"
+echo "\___ \ / _ \| \ \ / / _ \  _ \| |/ _ \\"
+echo " ___) | (_) | |\ V /  __/ |_) | | (_) |"
+echo "|____/ \___/|_| \_/ \___|____/|_|\___/"
+echo
+echo "Copyright © 2013 Solve, Inc. <http://www.solvebio.com>. All rights reserved."
+echo
+
 shopt -s extglob
 
 function fail_exit() {
@@ -84,7 +94,6 @@ OPENSSL_VERSION_MINOR=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION_INFO[1]
 OPENSSL_VERSION_PATCH=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION_INFO[2]"`
 
 if [ "$OPENSSL_VERSION_MAJOR" -lt "1" ]; then
-    echo "checking minor"
     if [ "$OPENSSL_VERSION_MINOR" -lt "9" ] || [ "$OPENSSL_VERSION_PATCH" -lt "8" ]; then
         echo
         echo "The SolveBio Python Client requires OpenSSL >= 0.9.8"
