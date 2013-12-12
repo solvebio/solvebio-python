@@ -31,14 +31,14 @@ Just type `solvebio` to enter the SolveBio Python shell.
 Installing from Git
 -------------------
 
-    pip install -e git+https://github.com/solvebio/solve-python.git#egg=solve
+    pip install -e git+https://github.com/solvebio/solvebio-python.git#egg=solve
 
 
 
 Development
 -----------
 
-    git clone https://github.com/solvebio/solve-python.git
+    git clone https://github.com/solvebio/solvebio-python.git
     cd solve-python/
     python setup.py develop
 
