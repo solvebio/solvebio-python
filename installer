@@ -106,8 +106,8 @@ fi
 PIP_VERSION=`$PYTHON -m pip --version 2>&1`
 
 if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
-    echo "It looks like pip is not installed. We will now install it."
-    echo "You may need to enter your sudo password."
+    echo "It looks like pip is not installed. We will now attempt to install it."
+    echo "(Your user or system password may be required)"
     sudo $PYTHON -m easy_install pip
 
     PIP_VERSION=`$PYTHON -m pip --version 2>&1`
@@ -120,11 +120,16 @@ if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
     fi
 fi
 
+# Install readline with easy_install
+echo "Installing readline through easy_install (enhances IPython)..."
+echo "(Your user or system password may be required)"
+sudo $PYTHON -m easy_install readline
+
 # Install solvebio via pip
 
 echo
 echo "Installing the SolveBio module via pip..."
-echo "You may need to enter your sudo password."
+echo "(Your user or system password may be required)"
 sudo $PYTHON -m pip install solvebio && SUCCESS="1"
 
 if [ $? -eq 0 ]; then
