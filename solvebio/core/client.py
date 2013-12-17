@@ -162,12 +162,12 @@ class SolveClient(object):
     def get_dataset_field(self, namespace, dataset, field):
         return self._request('GET', '/datasets/%s/%s/fields/%s' % (namespace, dataset, field))
 
-    def post_dataset_select(self, namespace, data):
-        return self._request('POST', '/datasets/%s/_select' % namespace,
+    def post_dataset_select(self, namespace, dataset, data):
+        return self._request('POST', '/datasets/%s/%s/_select' % (namespace, dataset),
                              data=data)
 
-    def get_dataset_select(self, namespace, scroll_id):
-        return self._request('GET', '/datasets/%s/_select' % namespace,
+    def get_dataset_select(self, namespace, dataset, scroll_id):
+        return self._request('GET', '/datasets/%s/%s/_select' % (namespace, dataset),
                              params={'scroll_id': scroll_id})
 
     def post_login(self, email, password):

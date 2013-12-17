@@ -153,11 +153,8 @@ class Select(object):
     """
 
     def __init__(self, dataset, result_class=Result):
-        assert len(dataset.split('.')) == 2, "Dataset not valid. " \
-            "Make sure it looks like: 'TCGA.mutations'"
-
+        self._dataset = dataset  # a Dataset object
         self._result_class = result_class
-        self._dataset = dataset
         self._filters = []
         self._scroll_id = None
         self._results_received = None
@@ -358,7 +355,9 @@ class Select(object):
                 self._scroll()
 
     def _start_scroll(self):
-        response = client.post_dataset_select(self._dataset, self._build_query())
+        response = client.post_dataset_select(self._dataset._namespace,
+                    self._dataset._name, self._build_query())
+
         self._cursor = 0
         self._results_cache = None
         self._results_total = response['total']
@@ -374,7 +373,9 @@ class Select(object):
                                 % self._results_total)
 
     def _scroll(self):
-        response = client.get_dataset_select(self._dataset, self._scroll_id)
+        response = client.get_dataset_select(self._dataset._namespace,
+                    self._dataset._name, self._scroll_id)
+
         # TODO: handle scroll_id failure
         self._scroll_id = response['scroll_id']
         self._results_received += len(response['results'])

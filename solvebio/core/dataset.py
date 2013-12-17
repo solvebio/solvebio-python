@@ -89,7 +89,7 @@ class Namespace(object):
             self._datasets = sorted(client.get_namespace(self._name)['datasets'],
                                     key=lambda k: k['name'])
             for ds in self._datasets:
-                path = '%s.%s' % (ds['namespace'], ds['name'])
+                path = '%s/%s' % (ds['namespace'], ds['name'])
                 self.__dict__[ds['name']] = Dataset(path, **ds)
 
         return self._datasets
@@ -108,15 +108,12 @@ class Dataset(object):
     """
 
     def __init__(self, path, **meta):
-        assert len(path.split('.')) == 2, "Dataset name not valid. " \
-                "Make sure it looks like: 'TCGA.mutations'"
-
         self._path = path
         self._dataset = None
 
         if not meta:
             # if no metadata is passed, we'll need to fetch it
-            self._namespace, self._name = path.split('.')
+            self._namespace, self._name = path.split('/')
             meta = self._get_dataset()
 
         for k, v in meta.items():
@@ -131,7 +128,7 @@ class Dataset(object):
 
     def select(self, *filters, **kwargs):
         """Create and return a new Select object with the set of Filters"""
-        return Select(self._path).select(*filters, **kwargs)
+        return Select(self).select(*filters, **kwargs)
 
     def range(self, chromosome, start, end, overlap=False):
         """Shortcut to do a range queries on supported Datasets"""
@@ -140,14 +137,17 @@ class Dataset(object):
                         '_coordinate_end__range': [int(start), int(end)]})
         chrom_filter = Filter(_chromosome=str(chromosome))
         if overlap:
-            return Select(self._path).select(chrom_filter | range_filter)
+            return Select(self).select(chrom_filter | range_filter)
         else:
-            return Select(self._path).select(chrom_filter & range_filter)
+            return Select(self).select(chrom_filter & range_filter)
 
     def help(self, field=None):
+        self._get_dataset()
+
         if field is None:
+            # show dataset help information
             fields = [(k['name'], k['data_type'], k['description']) for k
-                        in sorted(self._get_dataset()['fields'], key=lambda k: k['name'])]
+                        in sorted(self._dataset['fields'], key=lambda k: k['name'])]
             print u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
                         self,
                         self._title,
@@ -155,8 +155,23 @@ class Dataset(object):
                         tabulate(fields, ['Field', 'Type', 'Description']))
         else:
             # Show detailed field information
-            _field = client.get_dataset_field(self._namespace, self._name, field)
-            import pdb; pdb.set_trace()
+            try:
+                field = client.get_dataset_field(self._namespace, self._name, field)
+            except:
+                print u'\nSorry there was a problem getting information about that field. Please try again later.\n'
+                return False
+
+            print u'\nHelp for field %s from dataset %s:\n' % (field['name'], self._title)
+            print u'This field contains %s-type data' % field['data_type']
+            print field['description']
+
+            if field['facets'] and field['data_type'] == 'string':
+                print tabulate([(f,) for f in sorted(field['facets'])], ['Facets'])
+            elif field['facets'] and field['data_type'] in ('integer', 'double', 'long', 'float'):
+                print 'Minimum value: %s' % field['facets'][0]
+                print 'Maximum value: %s' % field['facets'][1]
+            else:
+                print 'No facets are available for this field'
 
     def __repr__(self):
         return '<Dataset: %s>' % self._path
