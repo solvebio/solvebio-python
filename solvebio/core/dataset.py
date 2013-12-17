@@ -144,14 +144,19 @@ class Dataset(object):
         else:
             return Select(self._path).select(chrom_filter & range_filter)
 
-    def help(self):
-        fields = [(k['name'], k['data_type'], k['description']) for k
-                    in sorted(self._get_dataset()['fields'], key=lambda k: k['name'])]
-        print u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
-                    self,
-                    self._title,
-                    self._description,
-                    tabulate(fields, ['Field', 'Type', 'Description']))
+    def help(self, field=None):
+        if field is None:
+            fields = [(k['name'], k['data_type'], k['description']) for k
+                        in sorted(self._get_dataset()['fields'], key=lambda k: k['name'])]
+            print u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
+                        self,
+                        self._title,
+                        self._description,
+                        tabulate(fields, ['Field', 'Type', 'Description']))
+        else:
+            # Show detailed field information
+            _field = client.get_dataset_field(self._namespace, self._name, field)
+            import pdb; pdb.set_trace()
 
     def __repr__(self):
         return '<Dataset: %s>' % self._path

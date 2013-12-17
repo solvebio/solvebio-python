@@ -159,6 +159,9 @@ class SolveClient(object):
     def get_dataset(self, namespace, dataset):
         return self._request('GET', '/datasets/%s/%s' % (namespace, dataset))
 
+    def get_dataset_field(self, namespace, dataset, field):
+        return self._request('GET', '/datasets/%s/%s/fields/%s' % (namespace, dataset, field))
+
     def post_dataset_select(self, namespace, data):
         return self._request('POST', '/datasets/%s/_select' % namespace,
                              data=data)
