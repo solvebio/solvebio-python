@@ -27,7 +27,7 @@ Have questions or comments? email us at: contact@solvebio.com
 
 
 __author__ = 'Solve, Inc. <contact@solvebio.com>'
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 from .core.dataset import directory as data
 
