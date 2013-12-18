@@ -94,6 +94,7 @@ class SolveClient(object):
         self.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
+            'Accept-Encoding': 'gzip,deflate',
             'User-Agent': 'SolveBio Python Client %s [Python %s/%s]' % (
                 __version__,
                 platform.python_implementation(),
