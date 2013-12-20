@@ -132,14 +132,7 @@ class Dataset(object):
 
     def range(self, chromosome, start, end, overlap=False):
         """Shortcut to do a range queries on supported Datasets"""
-        range_filter = Filter(**{
-                        '_coordinate_start__range': [int(start), int(end)],
-                        '_coordinate_end__range': [int(start), int(end)]})
-        chrom_filter = Filter(_chromosome=str(chromosome))
-        if overlap:
-            return Select(self).select(chrom_filter | range_filter)
-        else:
-            return Select(self).select(chrom_filter & range_filter)
+        return Select(self).range(chromosome, start, end, overlap)
 
     def help(self, field=None):
         self._get_dataset()

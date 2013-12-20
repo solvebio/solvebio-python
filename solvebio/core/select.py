@@ -61,6 +61,11 @@ class Filter(object):
                                       start__gt=10000,
                                       end__lte=20000)
     """
+    # constants for range() query keys
+    RANGE_CHROMOSOME_KEY = '_range_chromosome_'
+    RANGE_START_KEY = '_range_start_'
+    RANGE_END_KEY = '_range_end_'
+
     def __init__(self, **filters):
         """Creates a Filter"""
         filters = filters.items()
@@ -190,6 +195,30 @@ class Select(object):
         filter once with the resulting Filter instance.
         """
         return self._clone(filters=list(filters) + [Filter(**kwargs)])
+
+    def range(self, chromosome, start, end, overlap=False):
+        """
+        Shortcut to do range queries on supported datasets.
+
+        start and end should be positive integers.
+        chromosome should be in the format 'chrN'.
+        """
+        # TODO: ensure dataset supports range queries!
+        start, end = int(start), int(end)
+        if type(chromosome) is int:
+            chromosome = 'chr%d' % chromosome
+        elif not chromosome.startswith('chr'):
+            raise Exception('The chromosome parameter for range queries must be in the format: "chrN"')
+
+        range_filter = Filter(**{
+                        Filter.RANGE_START_KEY + '__range': [start, end],
+                        Filter.RANGE_END_KEY + '__range': [start, end]})
+        chrom_filter = Filter(**{Filter.RANGE_CHROMOSOME_KEY: chromosome})
+
+        if overlap:
+            return self.select(chrom_filter | range_filter)
+        else:
+            return self.select(chrom_filter & range_filter)
 
     def _build_query(self):
         q = {}
