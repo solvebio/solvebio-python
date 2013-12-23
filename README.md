@@ -6,9 +6,17 @@ The solve Python package and command-line interface (CLI) are used to work in ou
 For more information about SolveBio see http://www.solvebio.com
 
 
+Automatic Installer
+-------------------
 
-Installing the latest release
------------------------------
+To use our guided installer, open up your terminal paste this:
+
+    curl -kL https://install.solvebio.com/ | bash
+
+
+
+Manual Installation
+-------------------
 
 You may want to first install `readline` for a better experience:
 

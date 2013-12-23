@@ -17,9 +17,9 @@
 # limitations under the License.
 #
 #
-# This is the guided installer for the SolveBio Python Client
+# This is the guided installer for the SolveBio Python Client:
 #
-#   curl -kL https://raw.github.com/solvebio/solve-python/master/installer | bash
+#    curl -kL https://install.solvebio.com | bash
 #
 
 echo
