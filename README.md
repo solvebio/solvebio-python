@@ -11,7 +11,7 @@ Automatic Installer
 
 To use our guided installer, open up your terminal paste this:
 
-    curl -kL https://install.solvebio.com/ | bash
+    curl -kL install.solvebio.com | bash
 
 
 
