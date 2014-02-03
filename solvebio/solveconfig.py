@@ -1,22 +1,4 @@
 # -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Solve, Inc. <http://www.solvebio.com>. All rights reserved.
-#
-# email: contact@solvebio.com
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 import os
 
 
@@ -24,11 +6,15 @@ class SolveConfig(object):
     _environ = ['API_HOST', 'API_SSL', 'LOGLEVEL_STREAM', 'LOGLEVEL_FILE']
     _defaults = {}
 
-    def __init__(self):
-        """Set defaults from valid environment variables"""
+    def __init__(self, defaults={}):
+        self.set_defaults(defaults)
         for name in self._environ:
             if ('SOLVE_' + name) in os.environ:
                 self.set_default(name, os.environ.get(name))
+
+    def set_defaults(self, defaults):
+        for k, v in defaults.items():
+            self.set_default(k, v)
 
     def set_default(self, key, value):
         self._defaults[key] = value
@@ -58,13 +44,10 @@ class SolveConfig(object):
             return default
 
 
-solveconfig = SolveConfig()
-
-# Default settings
-
-solveconfig.set_default('TTY_ROWS', 24)
-solveconfig.set_default('TTY_COLS', 80)
-solveconfig.set_default('TTY_COLORS', True)
-
-solveconfig.set_default('API_HOST', 'api.solvebio.com')
-solveconfig.set_default('API_SSL', True)
+config = SolveConfig({
+    'TTY_ROWS': 24,
+    'TTY_COLS': 80,
+    'TTY_COLORS': True,
+    'API_HOST': 'api.solvebio.com',
+    'API_SSL': True
+})

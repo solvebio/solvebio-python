@@ -1,28 +1,10 @@
 # -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Solve, Inc. <http://www.solvebio.com>. All rights reserved.
-#
-# email: contact@solvebio.com
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 import copy
 
-from .client import client
-from .solvelog import solvelog
-from .utils.printing import pretty_int
-from .utils.tabulate import tabulate
+from client import client
+from utils.solvelog import solvelog
+from utils.printing import pretty_int
+from utils.tabulate import tabulate
 
 
 class Filter(object):
@@ -122,14 +104,14 @@ class Filter(object):
         return f
 
 
-class Result(object):
+class QueryResult(object):
     """
-    Container for Select result key/value documents
+    Container for Query result key/value documents
     """
     def __init__(self, obj):
         for k, v in obj.items():
             if k == 'metadata':
-                self.metadata = Result(v)
+                self.metadata = QueryResult(v)
             else:
                 setattr(self, k, v)
 
@@ -147,17 +129,18 @@ class Result(object):
 
     def items(self):
         # alphabetically sorted keys, excluding hidden keys (_*)
-        return [(k, v) for k, v in sorted(self.__dict__.items(), key=lambda k: k[0])
+        return [(k, v) for k, v
+                in sorted(self.__dict__.items(), key=lambda k: k[0])
                 if not k.startswith('_')]
 
 
-class Select(object):
+class Query(object):
     """
-    A Select API request wrapper that generates a request from Filter objects,
+    A Query API request wrapper that generates a request from Filter objects,
     and can iterate through streaming result sets.
     """
 
-    def __init__(self, dataset, result_class=Result):
+    def __init__(self, dataset, result_class=QueryResult):
         self._dataset = dataset  # a Dataset object
         self._result_class = result_class
         self._filters = []
@@ -177,9 +160,9 @@ class Select(object):
         #new.__dict__.update(kwargs)
         return new
 
-    def select(self, *filters, **kwargs):
+    def filter(self, *filters, **kwargs):
         """
-        Returns this Select instance with the query args combined with
+        Returns this Query instance with the query args combined with
         existing set with AND.
 
         kwargs are simply passed to a new Filter object and combined to any
@@ -208,17 +191,18 @@ class Select(object):
         if type(chromosome) is int:
             chromosome = 'chr%d' % chromosome
         elif not chromosome.startswith('chr'):
-            raise Exception('The chromosome parameter for range queries must be in the format: "chrN"')
+            raise Exception('The chromosome parameter for range queries '
+                            'must be in the format: "chrN"')
 
-        range_filter = Filter(**{
-                        Filter.RANGE_START_KEY + '__range': [start, end],
-                        Filter.RANGE_END_KEY + '__range': [start, end]})
+        range_filter = Filter(
+            **{Filter.RANGE_START_KEY + '__range': [start, end],
+               Filter.RANGE_END_KEY + '__range': [start, end]})
         chrom_filter = Filter(**{Filter.RANGE_CHROMOSOME_KEY: chromosome})
 
         if overlap:
-            return self.select(chrom_filter | range_filter)
+            return self.filter(chrom_filter | range_filter)
         else:
-            return self.select(chrom_filter & range_filter)
+            return self.filter(chrom_filter & range_filter)
 
     def _build_query(self):
         q = {}
@@ -262,7 +246,7 @@ class Select(object):
 
     def __len__(self):
         """
-        Executes select and returns the total number of results
+        Executes query and returns the total number of results
         """
         self._fetch_results()
 
@@ -285,11 +269,11 @@ class Select(object):
         self._fetch_results()
 
         if self._results_total == 0:
-            return u'Select on %s returned 0 results' % self._dataset
+            return u'Query on %s returned 0 results' % self._dataset
 
         return u'\n%s\n\n... %s more results.' % (
-                tabulate(self[0].items(), ['Columns', 'Sample']),
-                pretty_int(self._results_total - 1))
+            tabulate(self[0].items(), ['Columns', 'Sample']),
+            pretty_int(self._results_total - 1))
 
     def __getitem__(self, key):
         """
@@ -298,10 +282,11 @@ class Select(object):
         if not isinstance(key, (slice, int, long)):
             raise TypeError
 
-        assert ((not isinstance(key, slice) and (key >= 0))
-                or (isinstance(key, slice) and (key.start is None or key.start >= 0)
-                    and (key.stop is None or key.stop >= 0))), \
-                "Negative indexing is not supported."
+        assert (
+            (not isinstance(key, slice) and (key >= 0)) or
+            (isinstance(key, slice) and (key.start is None or key.start >= 0)
+                and (key.stop is None or key.stop >= 0))
+            ), "Negative indexing is not supported."
 
         if self._results_cache:
             # see if the result is cached already
@@ -309,7 +294,7 @@ class Select(object):
             upper = self._results_received
             if isinstance(key, slice):
                 if key.start is not None and key.start >= lower \
-                    and key.stop is not None and key.stop <= upper:
+                        and key.stop is not None and key.stop <= upper:
                     return self._results_cache[key]
             elif key >= lower and key <= upper:
                 return self._results_cache[key]
@@ -330,8 +315,8 @@ class Select(object):
 
     def __iter__(self):
         """
-        Execute a select and iterate through the result set.
-        Once the cached result set is exhausted, repeat select.
+        Execute a query and iterate through the result set.
+        Once the cached result set is exhausted, repeat query.
         """
         # restart a fresh scroll
         self._start_scroll()
@@ -350,7 +335,7 @@ class Select(object):
 
     def next(self):
         """
-        Allows the Select object to be an iterable.
+        Allows the Query object to be an iterable.
         Iterates through the internal cache using a cursor.
         """
         # if next() is called on its own, make sure we have some results
@@ -358,7 +343,7 @@ class Select(object):
 
         # If the cursor has reached the end
         if (self._stop is not None and self._cursor >= self._stop) \
-            or self._cursor >= self._results_total:
+                or self._cursor >= self._results_total:
             raise StopIteration
 
         cache_index = self._cursor - self._results_received
@@ -384,8 +369,9 @@ class Select(object):
                 self._scroll()
 
     def _start_scroll(self):
-        response = client.post_dataset_select(self._dataset._namespace,
-                    self._dataset._name, self._build_query())
+        response = client.post_dataset_select(
+            self._dataset._namespace,
+            self._dataset._name, self._build_query())
 
         self._cursor = 0
         self._results_cache = None
@@ -394,19 +380,25 @@ class Select(object):
         # should be 0 results received
         self._results_received = len(response['results'])
         if self._results_received:
-            solvelog.warning('%d results from initial scroll ID fetch'
-                                % len(self._results_cache))
+            solvelog.warning(
+                '%d results from initial scroll ID fetch'
+                % len(self._results_cache))
 
         if self._start is not None and self._start >= self._results_total:
-            raise IndexError('Index out of range, only %d total results(s)'
-                                % self._results_total)
+            raise IndexError(
+                'Index out of range, only %d total results(s)'
+                % self._results_total)
 
     def _scroll(self):
-        response = client.get_dataset_select(self._dataset._namespace,
-                    self._dataset._name, self._scroll_id)
+        response = client.get_dataset_select(
+            self._dataset._namespace,
+            self._dataset._name, self._scroll_id)
 
         # TODO: handle scroll_id failure
         self._scroll_id = response['scroll_id']
         self._results_received += len(response['results'])
         # always overwrite the cache
-        self._results_cache = [self._result_class(r) for r in response['results']]
+        self._results_cache = [
+            self._result_class(r)
+            for r in response['results']
+        ]
