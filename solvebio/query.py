@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-import copy
+from .client import client
+from .utils.printing import pretty_int
+from .utils.tabulate import tabulate
 
-from client import client
-from utils.solvelog import solvelog
-from utils.printing import pretty_int
-from utils.tabulate import tabulate
+import copy
+import logging
+logger = logging.getLogger('solvebio')
 
 
 class Filter(object):
@@ -380,7 +381,7 @@ class Query(object):
         # should be 0 results received
         self._results_received = len(response['results'])
         if self._results_received:
-            solvelog.warning(
+            logger.warning(
                 '%d results from initial scroll ID fetch'
                 % len(self._results_cache))
 

@@ -3,7 +3,7 @@ import urllib
 import re
 
 # from utils.tabulate import tabulate
-from client import client
+from .client import client
 # from querying import Query
 
 try:

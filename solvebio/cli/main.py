@@ -44,23 +44,32 @@ def shell(args):
     # string with options exactly as you would type them if you were starting
     # IPython at the system command line. Any parameters you want to define for
     # configuration can thus be specified here.
-    ipshell = InteractiveShellEmbed(config=cfg,
-               banner1=banner1,
-               exit_msg=exit_msg)
+    ipshell = InteractiveShellEmbed(
+        config=cfg,
+        banner1=banner1,
+        exit_msg=exit_msg)
     ipshell()
 
 
 # CLI argument parsers
-base_parser = SolveArgumentParser(description='The SolveBio bioinformatics environment.')
-base_parser.add_argument('--version', action='version', version='solvebio %s' % solvebio.__version__)
-base_parser.add_argument('--api-host', help='Override the default SolveBio API host')
+base_parser = SolveArgumentParser(
+    description='The SolveBio bioinformatics environment.')
+base_parser.add_argument(
+    '--version', action='version',
+    version='solvebio %s' % solvebio.version.VERSION)
+base_parser.add_argument(
+    '--api-host', help='Override the default SolveBio API host')
+base_parser.add_argument(
+    '--api-key', help='Manually provide an API key')
 
-subcommands = base_parser.add_subparsers(title='subcommands',
+subcommands = base_parser.add_subparsers(
+    title='subcommands',
     description="""Subcommands of the SolveBio CLI""",
     dest='subcommand')
 
 # shell parser
-shell_parser = subcommands.add_parser('shell', help='Open the SolveBio Python shell')
+shell_parser = subcommands.add_parser(
+    'shell', help='Open the SolveBio Python shell')
 shell_parser.set_defaults(func=shell)
 
 
@@ -69,13 +78,16 @@ from .auth import (login as auth_login,
                    logout as auth_logout,
                    whoami as auth_whoami)
 
-login_parser = subcommands.add_parser('login', help='Login and save credentials')
+login_parser = subcommands.add_parser(
+    'login', help='Login and save credentials')
 login_parser.set_defaults(func=auth_login)
 
-logout_parser = subcommands.add_parser('logout', help='Logout and delete saved credentials')
+logout_parser = subcommands.add_parser(
+    'logout', help='Logout and delete saved credentials')
 logout_parser.set_defaults(func=auth_logout)
 
-whoami_parser = subcommands.add_parser('whoami', help='Show your SolveBio email address')
+whoami_parser = subcommands.add_parser(
+    'whoami', help='Show your SolveBio email address')
 whoami_parser.set_defaults(func=auth_whoami)
 
 
@@ -87,13 +99,8 @@ def main(args=None):
         args = base_parser.parse_args()
 
     if args.api_host:
-        from solvebio.core.solveconfig import solveconfig
-
-        if args.api_host.startswith('http://'):
-            solveconfig.API_SSL, solveconfig.API_HOST = False, args.api_host.replace('http://', '')
-        elif args.api_host.startswith('https://'):
-            solveconfig.API_SSL, solveconfig.API_HOST = True, args.api_host.replace('https://', '')
-        else:
-            solveconfig.API_HOST = args.api_host
+        solvebio.api_host = args.api_host
+    if args.api_key:
+        solvebio.api_key = args.api_key
 
     args.func(args)

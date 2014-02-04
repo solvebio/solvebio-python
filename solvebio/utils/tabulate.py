@@ -413,7 +413,6 @@ def _normalize_tabular_data(tabular_data, headers):
         headers = list(map(_text_type, rows[0]))  # headers should be strings
         rows = rows[1:]
 
-    
     headers = list(headers)
 
     rows = list(map(list, rows))
@@ -434,17 +433,20 @@ def _build_row(cells, padding, begin, sep, end):
     pad = u" " * padding
     padded_cells = [pad + cell + pad for cell in cells]
 
-    # SolveBio: we're only displaying Key-Value tuples (dimension of 2). enforce that we don't wrap lines by setting a max
-    #  limit on row width which is equal to solveconfig.TTY_COLS
-    from solvebio.core.solveconfig import solveconfig
+    # SolveBio: we're only displaying Key-Value tuples (dimension of 2).
+    #  enforce that we don't wrap lines by setting a max
+    #  limit on row width which is equal to TTY_COLS (see printing)
+    from .printing import TTY_COLS
     rendered_cells = (begin + sep.join(padded_cells) + end).rstrip()
-    if len(rendered_cells) > solveconfig.TTY_COLS:
+    if len(rendered_cells) > TTY_COLS:
         if not cells[-1].endswith(" ") and not cells[-1].endswith("-"):
             terminating_str = " ... "
         else:
             terminating_str = ""
-        rendered_cells = "{0}{1}{2}".format(rendered_cells[:solveconfig.TTY_COLS - len(terminating_str) - 1], terminating_str, end)
-        
+        rendered_cells = "{0}{1}{2}".format(
+            rendered_cells[:TTY_COLS - len(terminating_str) - 1],
+            terminating_str, end)
+
     return rendered_cells
 
 

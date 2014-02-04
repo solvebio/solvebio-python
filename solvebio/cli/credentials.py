@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from solveconfig import config
+import solvebio
 
 from netrc import netrc as _netrc, NetrcParseError
+from urlparse import urlparse
 import os
 
 try:
@@ -51,30 +52,14 @@ class CredentialsError(BaseException):
     pass
 
 
-def get_api_key():
-    """
-    Helper function to get the current user's API key or None.
-    """
-    try:
-        # user can manually override the api_key:
-        #   solvebio.api_key = "API_KEY"
-        from solvebio import api_key
-        return api_key
-    except ImportError:
-        # otherwise, try to get it from netrc
-        creds = get_credentials()
-        if creds:
-            return creds[1]
-        return None
-
-
 def get_credentials():
     """
     Returns the tuple user / password given a path for the .netrc file.
     Raises CredentialsError if no valid netrc file is found.
     """
     try:
-        auths = netrc(NETRC_PATH).authenticators(config.API_HOST)
+        auths = netrc(NETRC_PATH).authenticators(
+            urlparse(solvebio.api_host).netloc)
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError(
             'Could not find valid netrc file: ' + str(e))
@@ -92,7 +77,7 @@ def delete_credentials():
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
     try:
-        del rc.hosts[config.API_HOST]
+        del rc.hosts[urlparse(solvebio.api_host).netloc]
     except KeyError:
         pass
     else:
@@ -106,5 +91,5 @@ def save_credentials(email, api_key):
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
     # Overwrites any existing credentials
-    rc.hosts[config.API_HOST] = (email, None, api_key)
+    rc.hosts[urlparse(solvebio.api_host).netloc] = (email, None, api_key)
     rc.save(NETRC_PATH)

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
-__version__ = 'undefined'
-for row in open('solvebio/__init__.py').readlines():
-    if row.startswith('__version__'):
+VERSION = 'undefined'
+for row in open('solvebio/version.py').readlines():
+    if row.startswith('VERSION'):
         exec(row)
 
 setup(
     name='solvebio',
-    version=__version__,
+    version=VERSION,
     description='The SolveBio Python client',
     long_description=open('README.txt').read(),
     author='Solve, Inc.',
@@ -20,7 +20,7 @@ setup(
     install_requires=['requests>=2.0.0', 'ipython'],
     platforms='any',
     entry_points={
-        'console_scripts': ['solvebio = solvebio.core.cli.main:main']
+        'console_scripts': ['solvebio = solvebio.cli.main:main']
     },
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import getpass
 
-from ..client import client
-from ..credentials import get_credentials, delete_credentials, save_credentials
+import solvebio
+from solvebio.client import client, SolveAPIError
+from credentials import get_credentials, delete_credentials, save_credentials
 
 
 def _ask_for_credentials():
@@ -21,20 +22,35 @@ def login(args):
     Email and password are used to get the user's auth_token key.
     """
     delete_credentials()
-    email, password = _ask_for_credentials()
 
-    response = client.post_login(email, password)
+    email, password = _ask_for_credentials()
+    data = {
+        'email': email,
+        'password': password
+    }
+
+    try:
+        response = client.request('post', '/v1/auth/token', data=data)
+    except SolveAPIError as e:
+        e.log_field_errors(data.keys())
+        response = None
 
     if response:
         save_credentials(email.lower(), response['token'])
         # reset the default client's auth token
-        client.auth = None
-
-        try:
-            client.post_install_report()
-        except Exception:
-            pass
-
+        solvebio.api_key = response['token']
+        # TODO: install report
+        # def post_install_report(self):
+        #     data = {
+        #         'hostname': platform.node(),
+        #         'python_version': platform.python_version(),
+        #         'python_implementation': platform.python_implementation(),
+        #         'platform': platform.platform(),
+        #         'architecture': platform.machine(),
+        #         'processor': platform.processor(),
+        #         'pyexe_build': platform.architecture()[0]
+        #     }
+        #     self._request('POST', '/reports/install', data=data)
         print 'You are now logged-in.'
     else:
         print 'Login failed.'

@@ -3,6 +3,9 @@ import os
 import sys
 import subprocess
 import locale
+import logging
+
+logger = logging.getLogger('solvebio')
 
 try:
     reload(sys).setdefaultencoding(locale.getdefaultlocale()[1])
@@ -10,20 +13,22 @@ try:
 except:
     pass
 
-from solvebio.core.solvelog import solvelog
-from solvebio.core.solveconfig import solveconfig
+TTY_ROWS = 24
+TTY_COLS = 80
+TTY_COLORS = True
 
 if sys.stdout.isatty():
     try:
         with open(os.devnull, 'w') as fnull:
-            rows, cols = subprocess.check_output(['stty', 'size'],
-                                            stderr=fnull).split()
-            solveconfig.TTY_ROWS = int(rows)
-            solveconfig.TTY_COLS = int(cols)
+            rows, cols = subprocess.check_output(
+                ['stty', 'size'],
+                stderr=fnull).split()
+            TTY_ROWS = int(rows)
+            TTY_COLS = int(cols)
     except:
-        solvelog.warn('Cannot detect terminal column width')
+        logger.warn('Cannot detect terminal column width')
 else:
-    solveconfig.TTY_COLORS = False
+    TTY_COLORS = False
 
 
 def pretty_int(num):
@@ -33,25 +38,25 @@ def pretty_int(num):
 # Basic color support
 
 def green(text):
-    if not solveconfig.TTY_COLORS:
+    if not TTY_COLORS:
         return text
     return '\033[32m' + text + '\033[39m'
 
 
 def red(text):
-    if not solveconfig.TTY_COLORS:
+    if not TTY_COLORS:
         return text
     return '\033[31m' + text + '\033[39m'
 
 
 def yellow(text):
-    if not solveconfig.TTY_COLORS:
+    if not TTY_COLORS:
         return text
     return '\033[33m' + text + '\033[39m'
 
 
 def blue(text):
-    if not solveconfig.TTY_COLORS:
+    if not TTY_COLORS:
         return text
     return '\033[34m' + text + '\033[39m'
 
