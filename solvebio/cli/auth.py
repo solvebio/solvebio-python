@@ -16,6 +16,23 @@ def _ask_for_credentials():
             print 'Email and password are both required.'
 
 
+def _send_install_report():
+    import platform
+    data = {
+        'hostname': platform.node(),
+        'python_version': platform.python_version(),
+        'python_implementation': platform.python_implementation(),
+        'platform': platform.platform(),
+        'architecture': platform.machine(),
+        'processor': platform.processor(),
+        'pyexe_build': platform.architecture()[0]
+    }
+    try:
+        client.request('post', '/v1/reports/install', data=data)
+    except:
+        pass
+
+
 def login(args):
     """
     Prompt user for login information (email/password).
@@ -39,18 +56,7 @@ def login(args):
         save_credentials(email.lower(), response['token'])
         # reset the default client's auth token
         solvebio.api_key = response['token']
-        # TODO: install report
-        # def post_install_report(self):
-        #     data = {
-        #         'hostname': platform.node(),
-        #         'python_version': platform.python_version(),
-        #         'python_implementation': platform.python_implementation(),
-        #         'platform': platform.platform(),
-        #         'architecture': platform.machine(),
-        #         'processor': platform.processor(),
-        #         'pyexe_build': platform.architecture()[0]
-        #     }
-        #     self._request('POST', '/reports/install', data=data)
+        _send_install_report()
         print 'You are now logged-in.'
     else:
         print 'Login failed.'
