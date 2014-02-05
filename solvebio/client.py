@@ -36,31 +36,40 @@ class SolveAPIError(BaseException):
         self.json_body = None
         self.status_code = None
         self.message = message or self.default_message
+        self.field_errors = []
 
         if response is not None:
             self.status_code = response.status_code
             try:
                 self.json_body = response.json()
             except:
-                logger.error(
+                logger.debug(
                     'API Response (%d): No content.' % self.status_code)
             else:
-                # log general errors before field errors
-                if 'detail' in self.json_body:
-                    logger.error(
-                        'API Response (%d): %s'
-                        % (self.status_code, self.json_body['detail']))
-                    self.message = self.json_body['detail']
+                logger.debug(
+                    'API Response (%d): %s'
+                    % (self.status_code, self.json_body))
 
-                if 'non_field_errors' in self.json_body:
-                    [logger.error(i) for i in
-                        self.json_body['non_field_errors']]
+                if self.status_code in [400, 404]:
+                    self.message = 'Bad request.'
 
-    def log_field_errors(self, fields):
-        if self.json_body:
-            for f in fields:
-                if f in self.json_body:
-                    logger.error('Field %s: %s' % (f, self.field_errors[f]))
+                    if 'detail' in self.json_body:
+                        self.message = '%s.' % self.json_body['detail']
+
+                    if 'non_field_errors' in self.json_body:
+                        self.message = '%s.' % \
+                            ', '.join(self.json_body['non_field_errors'])
+
+                    for k, v in self.json_body.items():
+                        if k not in ['detail', 'non_field_errors']:
+                            if isinstance(v, list):
+                                v = ', '.join(v)
+                            self.field_errors.append('%s (%s)' % (k, v))
+
+                    if self.field_errors:
+                        self.message += (' The following fields were missing '
+                                         'or invalid: %s' %
+                                         ', '.join(self.field_errors))
 
     def __str__(self):
         return self.message
@@ -114,9 +123,11 @@ class SolveClient(object):
             )
         }
 
-    def request(self, method, url, params={}, data=None):
+    def request(self, method, url, params=None):
         if method.upper() in ('POST', 'PUT', 'PATCH'):
-            data = json.dumps(data)
+            data = json.dumps(params)
+        else:
+            data = None
 
         api_host = self.api_host or solvebio.api_host
         if not api_host:
@@ -138,21 +149,11 @@ class SolveClient(object):
         except Exception as e:
             self._handle_request_error(e)
 
-        if 200 <= response.status_code < 300:
+        if not (200 <= response.status_code < 300):
+            self._handle_api_error(response)
+        else:
             # all success responses are JSON
             return response.json()
-        elif response.status_code == 401:
-            # not authenticated
-            raise SolveAPIError(
-                message=LOGIN_REQUIRED_MESSAGE, response=response)
-        elif response.status_code == 404:
-            # not found
-            raise SolveAPIError(
-                message='Nothing was returned from that SolveBio API request',
-                response=response)
-        else:
-            logger.debug('API Error: %d' % response.status_code)
-            raise SolveAPIError(response=response)
 
     def _handle_request_error(self, e):
         if isinstance(e, requests.exceptions.RequestException):
@@ -171,6 +172,16 @@ class SolveClient(object):
         msg = textwrap.fill(msg) + "\n\n(Network error: %s)" % (err,)
         raise SolveAPIError(message=msg)
 
+    def _handle_api_error(self, response):
+        if response.status_code in [400, 404]:
+            raise SolveAPIError(response=response)
+        elif response.status_code == 401:
+            # not authenticated
+            raise SolveAPIError(
+                message=LOGIN_REQUIRED_MESSAGE, response=response)
+        else:
+            logger.info('API Error: %d' % response.status_code)
+            raise SolveAPIError(response=response)
 
     # def get_namespaces(self, page=1):
     #     try:

@@ -93,6 +93,9 @@ class SolveObject(dict):
         if isinstance(self.get('id'), int):
             ident_parts.append('id=%d' % (self.get('id'),))
 
+        if isinstance(self.get('urn'), unicode):
+            ident_parts.append('urn=%s' % (self.get('urn'),))
+
         return '<%s at %s> JSON: %s' % (
             ' '.join(ident_parts), hex(id(self)), str(self))
 
@@ -140,7 +143,7 @@ class APIResource(SolveObject):
                 'Could not determine which URL to request: %s instance '
                 'has invalid ID: %r' % (type(self).__name__, id), 'id')
         base = self.class_url()
-        return "%s/%d" % (base, id)
+        return "%s/%s" % (base, str(id))
 
 
 class ListObject(SolveObject):
@@ -153,7 +156,7 @@ class ListObject(SolveObject):
 
     def retrieve(self, id, **params):
         base = self.get('url')
-        url = "%s/%d" % (base, id)
+        url = "%s/%s" % (base, str(id))
 
         return self.request('get', url, params)
 
@@ -197,18 +200,27 @@ class User(SingletonAPIResource):
 
 
 class Depository(CreateableAPIResource, ListableAPIResource):
+    # TODO: list versions
+    # TODO: list grandchild datasets
+    # TODO: search within all()
     pass
 
 
 class DepositoryVersion(CreateableAPIResource, ListableAPIResource):
+    # TODO: list datasets
     pass
 
 
 class Dataset(CreateableAPIResource, ListableAPIResource):
+    # TODO: list fields
+    # TODO: get parent DepositoryVersion and Depository
+    # TODO: query()/data()
+    # TODO: help function?
     pass
 
 
 class DatasetField(CreateableAPIResource, ListableAPIResource):
+    # TODO: get facets (help?)
     pass
 
 

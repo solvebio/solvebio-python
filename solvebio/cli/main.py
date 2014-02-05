@@ -4,6 +4,7 @@ import solvebio
 
 import argparse
 import sys
+import os
 
 
 class SolveArgumentParser(argparse.ArgumentParser):
@@ -91,9 +92,9 @@ whoami_parser = subcommands.add_parser(
 whoami_parser.set_defaults(func=auth_whoami)
 
 
-def main(args=None):
+def main():
     if len(sys.argv) == 1:
-        # If there are no args at all, default to the shell
+        # if no subcommand is issued, default to shell
         args = base_parser.parse_args(['shell'])
     else:
         args = base_parser.parse_args()
