@@ -125,7 +125,10 @@ class SolveClient(object):
 
     def request(self, method, url, params=None):
         if method.upper() in ('POST', 'PUT', 'PATCH'):
+            # use only the data payload for write requests
+            # TODO: might be an issue with data queries
             data = json.dumps(params)
+            params = None
         else:
             data = None
 

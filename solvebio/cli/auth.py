@@ -28,7 +28,7 @@ def _send_install_report():
         'pyexe_build': platform.architecture()[0]
     }
     try:
-        client.request('post', '/v1/reports/install', data=data)
+        client.request('post', '/v1/reports/install', data)
     except:
         pass
 
@@ -45,21 +45,16 @@ def login(args):
         'email': email,
         'password': password
     }
-
     try:
-        response = client.request('post', '/v1/auth/token', data=data)
+        response = client.request('post', '/v1/auth/token', data)
     except SolveAPIError as e:
-        e.log_field_errors(data.keys())
-        response = None
-
-    if response:
+        print 'Login failed: %s' % e.message
+    else:
         save_credentials(email.lower(), response['token'])
         # reset the default client's auth token
         solvebio.api_key = response['token']
         _send_install_report()
         print 'You are now logged-in.'
-    else:
-        print 'Login failed.'
 
 
 def logout(args):

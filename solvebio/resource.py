@@ -27,7 +27,8 @@ def convert_to_solve_object(resp):
         'DepositoryVersion': DepositoryVersion,
         'Dataset': Dataset,
         'DatasetField': DatasetField,
-        'User': User
+        'User': User,
+        'list': ListObject
     }
 
     if isinstance(resp, list):
@@ -80,8 +81,8 @@ class SolveObject(dict):
             super(SolveObject, self).__setitem__(
                 k, convert_to_solve_object(v))
 
-    def request(self, method, url):
-        response = client.request(method, url)
+    def request(self, method, url, params=None):
+        response = client.request(method, url, params)
         return convert_to_solve_object(response)
 
     def __repr__(self):
@@ -147,18 +148,14 @@ class APIResource(SolveObject):
 
 
 class ListObject(SolveObject):
+    # TODO: support __getitem__
+    # TODO: support iteration
 
     def all(self, **params):
         return self.request('get', self['url'], params)
 
     def create(self, **params):
         return self.request('post', self['url'], params)
-
-    def retrieve(self, id, **params):
-        base = self.get('url')
-        url = "%s/%s" % (base, str(id))
-
-        return self.request('get', url, params)
 
 
 class SingletonAPIResource(APIResource):
@@ -186,6 +183,15 @@ class ListableAPIResource(APIResource):
         return convert_to_solve_object(response)
 
 
+class SearchableAPIResource(APIResource):
+    @classmethod
+    def search(cls, query='', **params):
+        params.update({'q': query})
+        url = cls.class_url()
+        response = client.request('get', url, params)
+        return convert_to_solve_object(response)
+
+
 class CreateableAPIResource(APIResource):
 
     @classmethod
@@ -199,29 +205,39 @@ class User(SingletonAPIResource):
     pass
 
 
-class Depository(CreateableAPIResource, ListableAPIResource):
-    # TODO: list versions
-    # TODO: list grandchild datasets
-    # TODO: search within all()
-    pass
+class Depository(CreateableAPIResource, ListableAPIResource,
+                 SearchableAPIResource):
+
+    def versions(self, **params):
+        response = client.request('get', self.versions_url, params)
+        return convert_to_solve_object(response)
 
 
 class DepositoryVersion(CreateableAPIResource, ListableAPIResource):
-    # TODO: list datasets
-    pass
+
+    def datasets(self, **params):
+        response = client.request('get', self.datasets_url, params)
+        return convert_to_solve_object(response)
 
 
 class Dataset(CreateableAPIResource, ListableAPIResource):
-    # TODO: list fields
-    # TODO: get parent DepositoryVersion and Depository
-    # TODO: query()/data()
-    # TODO: help function?
-    pass
+    def depository_version(self):
+        return DepositoryVersion.retrieve(self['depository_version'])
 
+    def depository(self):
+        return Depository.retrieve(self['depository'])
+
+    def fields(self, **params):
+        response = client.request('get', self.fields_url, params)
+        return convert_to_solve_object(response)
+
+    def query()
 
 class DatasetField(CreateableAPIResource, ListableAPIResource):
-    # TODO: get facets (help?)
-    pass
+
+    def facets(self, **params):
+        response = client.request('get', self.facets_url, params)
+        return convert_to_solve_object(response)
 
 
 
