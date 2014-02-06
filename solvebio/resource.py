@@ -53,6 +53,8 @@ class SolveObject(dict):
 
         if id:
             self['id'] = id
+        elif params.get('urn'):
+            self['urn'] = params.get('urn')
 
     def __setattr__(self, k, v):
         if k[0] == '_' or k in self.__dict__:
@@ -71,6 +73,7 @@ class SolveObject(dict):
 
     @classmethod
     def construct_from(cls, values):
+        """Used to create a new object from an HTTP response"""
         instance = cls(values.get('id'))
         instance.refresh_from(values)
         return instance
@@ -105,7 +108,7 @@ class SolveObject(dict):
 
     @property
     def solvebio_id(self):
-        return self.id
+        return self.id or self.urn
 
 
 class APIResource(SolveObject):
@@ -138,13 +141,19 @@ class APIResource(SolveObject):
         return "/v1/%ss" % (cls_name,)
 
     def instance_url(self):
+        """Get instance URL by ID or URN (if available)"""
         id = self.get('id')
-        if not id:
+        urn = self.get('urn')
+        base = self.class_url()
+
+        if id:
+            return "%s/%d" % (base, id)
+        elif urn:
+            return "%s/%s" % (base, urn)
+        else:
             raise Exception(
                 'Could not determine which URL to request: %s instance '
                 'has invalid ID: %r' % (type(self).__name__, id), 'id')
-        base = self.class_url()
-        return "%s/%s" % (base, str(id))
 
 
 class ListObject(SolveObject):
@@ -184,6 +193,7 @@ class ListableAPIResource(APIResource):
 
 
 class SearchableAPIResource(APIResource):
+
     @classmethod
     def search(cls, query='', **params):
         params.update({'q': query})
@@ -207,6 +217,20 @@ class User(SingletonAPIResource):
 
 class Depository(CreateableAPIResource, ListableAPIResource,
                  SearchableAPIResource):
+    URN_REGEX = r'^urn:solvebio:[\w\d\-\.]+$'
+    URN_FORMAT = 'urn:solvebio:{DEPOSITORY}'
+
+    @classmethod
+    def retrieve(cls, id, **params):
+        """Supports lookup by URN"""
+        if isinstance(id, unicode) or isinstance(id, str):
+            params.update({'urn': unicode(id).strip()})
+            id = None
+            if not re.match(cls.URN_REGEX, params['urn']):
+                raise Exception('Unrecognized URN. Must be in the following '
+                                'format: "%s"' % cls.URN_FORMAT)
+
+        return super(Depository, cls).retrieve(id, **params)
 
     def versions(self, **params):
         response = client.request('get', self.versions_url, params)
@@ -214,6 +238,20 @@ class Depository(CreateableAPIResource, ListableAPIResource,
 
 
 class DepositoryVersion(CreateableAPIResource, ListableAPIResource):
+    URN_REGEX = r'^urn:solvebio(:[\w\d\-\.]+){2}$'
+    URN_FORMAT = 'urn:solvebio:{DEPOSITORY}:{VERSION}'
+
+    @classmethod
+    def retrieve(cls, id, **params):
+        """Supports lookup by URN"""
+        if isinstance(id, unicode) or isinstance(id, str):
+            params.update({'urn': unicode(id).strip()})
+            id = None
+            if not re.match(cls.URN_REGEX, params['urn']):
+                raise Exception('Unrecognized URN. Must be in the following '
+                                'format: "%s"' % cls.URN_FORMAT)
+
+        return super(DepositoryVersion, cls).retrieve(id, **params)
 
     def datasets(self, **params):
         response = client.request('get', self.datasets_url, params)
@@ -221,6 +259,21 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource):
 
 
 class Dataset(CreateableAPIResource, ListableAPIResource):
+    URN_REGEX = r'^urn:solvebio(:[\w\d\-\.]+){3}$'
+    URN_FORMAT = 'urn:solvebio:{DEPOSITORY}:{VERSION}:{DATASET}'
+
+    @classmethod
+    def retrieve(cls, id, **params):
+        """Supports lookup by URN"""
+        if isinstance(id, unicode) or isinstance(id, str):
+            params.update({'urn': unicode(id).strip()})
+            id = None
+            if not re.match(cls.URN_REGEX, params['urn']):
+                raise Exception('Unrecognized URN. Must be in the following '
+                                'format: "%s"' % cls.URN_FORMAT)
+
+        return super(Dataset, cls).retrieve(id, **params)
+
     def depository_version(self):
         return DepositoryVersion.retrieve(self['depository_version'])
 
@@ -231,9 +284,26 @@ class Dataset(CreateableAPIResource, ListableAPIResource):
         response = client.request('get', self.fields_url, params)
         return convert_to_solve_object(response)
 
-    def query()
+    def query(self, **filters):
+        # TODO: support querying
+        pass
+
 
 class DatasetField(CreateableAPIResource, ListableAPIResource):
+    URN_REGEX = r'^urn:solvebio(:[\w\d\-\.]+){4}$'
+    URN_FORMAT = 'urn:solvebio:{DEPOSITORY}:{VERSION}:{DATASET}:{FIELD}'
+
+    @classmethod
+    def retrieve(cls, id, **params):
+        """Supports lookup by URN"""
+        if isinstance(id, unicode) or isinstance(id, str):
+            params.update({'urn': unicode(id).strip()})
+            id = None
+            if not re.match(cls.URN_REGEX, params['urn']):
+                raise Exception('Unrecognized URN. Must be in the following '
+                                'format: "%s"' % cls.URN_FORMAT)
+
+        return super(Dataset, cls).retrieve(id, **params)
 
     def facets(self, **params):
         response = client.request('get', self.facets_url, params)

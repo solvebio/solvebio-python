@@ -43,6 +43,8 @@ class SolveAPIError(BaseException):
             try:
                 self.json_body = response.json()
             except:
+                if response.status_code == 404:
+                    self.message = '404 Not Found.'
                 logger.debug(
                     'API Response (%d): No content.' % self.status_code)
             else:
@@ -151,6 +153,8 @@ class SolveClient(object):
                                         headers=self.headers)
         except Exception as e:
             self._handle_request_error(e)
+
+        # TODO: get API version from response headers
 
         if not (200 <= response.status_code < 300):
             self._handle_api_error(response)
