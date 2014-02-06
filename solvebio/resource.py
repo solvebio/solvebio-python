@@ -319,6 +319,50 @@ class Dataset(CreateableAPIResource, ListableAPIResource):
         # TODO: support querying
         pass
 
+    # def select(self, *filters, **kwargs):
+    #     """Create and return a new Select object with the set of Filters"""
+    #     return Select(self).select(*filters, **kwargs)
+
+    # def range(self, chromosome, start, end, overlap=False):
+    #     """Shortcut to do a range queries on supported Datasets"""
+    #     return Select(self).range(chromosome, start, end, overlap)
+
+    # def help(self, field=None):
+    #     self._get_dataset()
+    #
+    #     if field is None:
+    #         # show dataset help information
+    #         fields = [(k['name'], k['data_type'], k['description']) for k
+    #                     in sorted(self._dataset['fields'],
+    #                        key=lambda k: k['name'])]
+    #         print u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
+    #                     self,
+    #                     self._title,
+    #                     self._description,
+    #                     tabulate(fields, ['Field', 'Type', 'Description']))
+    #     else:
+    #         # Show detailed field information
+    #         try:
+    #             field = client.get_dataset_field(
+    #               self._namespace, self._name, field)
+    #         except:
+    #             return False
+    #
+    #         print u'\nHelp for field %s from dataset %s:\n' \
+    #           % (field['name'], self._title)
+    #         print u'This field contains %s-type data' % field['data_type']
+    #         print field['description']
+    #
+    #         if field['facets'] and field['data_type'] == 'string':
+    #             print tabulate([(f,) for f in sorted(field['facets'])],
+    #                ['Facets'])
+    #         elif field['facets'] and field['data_type'] in \
+    #               ('integer', 'double', 'long', 'float'):
+    #             print 'Minimum value: %s' % field['facets'][0]
+    #             print 'Maximum value: %s' % field['facets'][1]
+    #         else:
+    #             print 'No facets are available for this field'
+
 
 class DatasetField(CreateableAPIResource, ListableAPIResource):
     URN_REGEX = r'^urn:solvebio(:[\w\d\-\.]+){4}$'
@@ -339,157 +383,3 @@ class DatasetField(CreateableAPIResource, ListableAPIResource):
     def facets(self, **params):
         response = client.request('get', self.facets_url, params)
         return convert_to_solve_object(response)
-
-
-
-# class NamespaceDirectory(object):
-#     """
-#     The Directory is a singleton used to contain all Namespaces.
-#     """
-
-#     def __init__(self):
-#         self._name = 'solvebio.data'
-#         self._namespaces = None  # lazy loaded
-
-#     def __repr__(self):
-#         return '<NamespaceDirectory: %s>' % self._name
-
-#     def __str__(self):
-#         return self._name
-
-#     def __dir__(self):
-#         return [k['name'] for k in self._get_namespaces()]
-
-#     def __getattr__(self, name):
-#         self._get_namespaces()
-#         return object.__getattribute__(self, name)
-
-#     def help(self):
-#         _content = 'All Online Namespaces:\n\n'
-#         _content += tabulate([(ns['name'], ns['title'])
-#                              for ns in self._get_namespaces()],
-#                              ['Namespace', 'Title'])
-#         print _content
-
-#     def _get_namespaces(self):
-#         if self._namespaces is None:
-#             # load Namespaces from API store in instance cache
-#             self._namespaces = sorted(client.get_namespaces(),
-#                                       key=lambda k: k['name'])
-#             for namespace in self._namespaces:
-#                 self.__dict__[namespace['name']] = Namespace(**namespace)
-
-#         return self._namespaces
-
-
-# class Namespace(object):
-#     """Namespaces are named-containers of Datasets"""
-
-#     def __init__(self, **meta):
-#         self._datasets = None  # lazy loaded
-#         for k, v in meta.items():
-#             self.__dict__['_' + k] = v
-
-#     def __repr__(self):
-#         return '<Namespace: %s>' % self._name
-
-#     def __str__(self):
-#         return self._name
-
-#     def __dir__(self):
-#         return [k['name'] for k in self._get_datasets()]
-
-#     def __getattr__(self, name):
-#         self._get_datasets()
-#         return object.__getattribute__(self, name)
-
-#     def _get_datasets(self):
-#         if self._datasets is None:
-#             self._datasets = sorted(client.get_namespace(self._name)['datasets'],
-#                                     key=lambda k: k['name'])
-#             for ds in self._datasets:
-#                 path = '%s/%s' % (ds['namespace'], ds['name'])
-#                 self.__dict__[ds['name']] = Dataset(path, **ds)
-
-#         return self._datasets
-
-#     def help(self):
-#         _content = 'Datasets in %s:\n\n' % self._name
-#         _content += tabulate([('%s.%s' % (d['namespace'], d['name']), d['title'])
-#                               for d in self._get_datasets()],
-#                               ['Dataset', 'Title'])
-#         print _content
-
-
-# class Dataset(object):
-#     """
-#     Stores a Dataset and its fields
-#     """
-
-#     def __init__(self, path, **meta):
-#         self._path = path
-#         self._dataset = None
-
-#         if not meta:
-#             # if no metadata is passed, we'll need to fetch it
-#             self._namespace, self._name = path.split('/')
-#             meta = self._get_dataset()
-
-#         for k, v in meta.items():
-#             # prefix each field with '_'
-#             self.__dict__['_' + k] = v
-
-#     def _get_dataset(self):
-#         if self._dataset is None:
-#             self._dataset = client.get_dataset(self._namespace, self._name)
-
-#         return self._dataset
-
-#     def select(self, *filters, **kwargs):
-#         """Create and return a new Select object with the set of Filters"""
-#         return Select(self).select(*filters, **kwargs)
-
-#     def range(self, chromosome, start, end, overlap=False):
-#         """Shortcut to do a range queries on supported Datasets"""
-#         return Select(self).range(chromosome, start, end, overlap)
-
-#     def help(self, field=None):
-#         self._get_dataset()
-
-#         if field is None:
-#             # show dataset help information
-#             fields = [(k['name'], k['data_type'], k['description']) for k
-#                         in sorted(self._dataset['fields'], key=lambda k: k['name'])]
-#             print u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
-#                         self,
-#                         self._title,
-#                         self._description,
-#                         tabulate(fields, ['Field', 'Type', 'Description']))
-#         else:
-#             # Show detailed field information
-#             try:
-#                 field = client.get_dataset_field(self._namespace, self._name, field)
-#             except:
-#                 print u'\nSorry there was a problem getting information about that field. Please try again later.\n'
-#                 return False
-
-#             print u'\nHelp for field %s from dataset %s:\n' % (field['name'], self._title)
-#             print u'This field contains %s-type data' % field['data_type']
-#             print field['description']
-
-#             if field['facets'] and field['data_type'] == 'string':
-#                 print tabulate([(f,) for f in sorted(field['facets'])], ['Facets'])
-#             elif field['facets'] and field['data_type'] in ('integer', 'double', 'long', 'float'):
-#                 print 'Minimum value: %s' % field['facets'][0]
-#                 print 'Maximum value: %s' % field['facets'][1]
-#             else:
-#                 print 'No facets are available for this field'
-
-#     def __repr__(self):
-#         return '<Dataset: %s>' % self._path
-
-#     def __str__(self):
-#         return self._path
-
-
-# directory = NamespaceDirectory()
