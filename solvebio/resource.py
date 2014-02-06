@@ -157,14 +157,45 @@ class APIResource(SolveObject):
 
 
 class ListObject(SolveObject):
-    # TODO: support __getitem__
-    # TODO: support iteration
 
     def all(self, **params):
         return self.request('get', self['url'], params)
 
     def create(self, **params):
         return self.request('post', self['url'], params)
+
+    def next_page(self, **params):
+        if self['links']['next']:
+            return self.request('get', self['links']['next'], params)
+        return None
+
+    def prev_page(self, **params):
+        if self['links']['prev']:
+            self.request('get', self['links']['prev'], params)
+        return None
+
+    def objects(self):
+        return convert_to_solve_object(self['data'])
+
+    def __iter__(self):
+        self._i = 0
+        return self
+
+    def next(self):
+        if not getattr(self, '_i', None):
+            self._i = 0
+
+        if self._i >= len(self['data']):
+            # get the next page of results
+            next_page = self.next_page()
+            if next_page is None:
+                raise StopIteration
+            self.refresh_from(next_page)
+            self._i = 0
+
+        obj = convert_to_solve_object(self['data'][self._i])
+        self._i += 1
+        return obj
 
 
 class SingletonAPIResource(APIResource):
