@@ -4,7 +4,7 @@ import re
 
 # from utils.tabulate import tabulate
 from .client import client
-# from querying import Query
+from .query import Query
 
 try:
     import json
@@ -315,17 +315,11 @@ class Dataset(CreateableAPIResource, ListableAPIResource):
         response = client.request('get', self.fields_url, params)
         return convert_to_solve_object(response)
 
-    def query(self, **filters):
-        # TODO: support querying
-        pass
-
-    # def select(self, *filters, **kwargs):
-    #     """Create and return a new Select object with the set of Filters"""
-    #     return Select(self).select(*filters, **kwargs)
-
-    # def range(self, chromosome, start, end, overlap=False):
-    #     """Shortcut to do a range queries on supported Datasets"""
-    #     return Select(self).range(chromosome, start, end, overlap)
+    def data(self, **params):
+        q = Query(self.data_url, **params)
+        if params.get('filters'):
+            return q.filter(params.get('filters'))
+        return q
 
     # def help(self, field=None):
     #     self._get_dataset()

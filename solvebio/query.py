@@ -39,10 +39,10 @@ class Filter(object):
 
     Field action examples:
 
-        TCGA.somatic_mutations.select(gene__in=['BRCA', 'GATA3'],
-                                      chr='3',
-                                      start__gt=10000,
-                                      end__lte=20000)
+        dataset.query(gene__in=['BRCA', 'GATA3'],
+                      chr='3',
+                      start__gt=10000,
+                      end__lte=20000)
     """
     # constants for range() query keys
     RANGE_CHROMOSOME_KEY = '_range_chromosome_'
@@ -141,24 +141,28 @@ class Query(object):
     and can iterate through streaming result sets.
     """
 
-    def __init__(self, dataset, result_class=QueryResult):
-        self._dataset = dataset  # a Dataset object
-        self._result_class = result_class
+    def __init__(self, data_url, **params):
+        self._data_url = data_url
+        self._mode = params.get('mode', 'offset')
+        self._limit = params.get('limit', 100)  # results per request
+        self._result_class = params.get('result_class', QueryResult)
         self._filters = []
-        self._scroll_id = None
-        self._results_received = None
-        self._results_total = None
-        self._results_cache = None
-        self._cursor = None
-        self._start = None
-        self._stop = None
+        self._response = None  # the cache response
+
+        # manages iteration of records across multiple requests
+        self._slice_start = None
+        self._slice_stop = None
+        self._window = None  # the index range of results received
+        self._i = 0  # internal result cache iterator
 
     def _clone(self, filters=None):
-        new = self.__class__(self._dataset, self._result_class)
+        new = self.__class__(self._data_url,
+                             mode=self._mode,
+                             limit=self._limit,
+                             result_class=self._result_class)
         new._filters = self._filters
         if filters is not None:
             new._filters += filters
-        #new.__dict__.update(kwargs)
         return new
 
     def filter(self, *filters, **kwargs):
@@ -205,17 +209,6 @@ class Query(object):
         else:
             return self.filter(chrom_filter & range_filter)
 
-    def _build_query(self):
-        q = {}
-        if self._filters:
-            filters = self._process_filters(self._filters)
-            if len(filters) > 1:
-                q['filters'] = [{'and': filters}]
-            else:
-                q['filters'] = filters
-
-        return q
-
     def _process_filters(self, filters):
         """Takes a list of filters and returns JSON
 
@@ -246,35 +239,39 @@ class Query(object):
         return rv
 
     def __len__(self):
-        """
-        Executes query and returns the total number of results
-        """
-        self._fetch_results()
-
-        if self._start is not None:
-            start = self._start
+        """Executes query and returns the total number of results"""
+        if self._slice_start is not None:
+            start = self._slice_start
         else:
             start = 0
-        if self._stop is not None and self._stop <= self._results_total:
-            stop = self._stop
+
+        if self._slice_stop is not None and self._slice_stop <= self.total:
+            stop = self._slice_stop
         else:
-            stop = self._results_total
+            stop = self.total
 
         return stop - start
 
     def __nonzero__(self):
-        self._fetch_results()
-        return bool(self._results_total)
+        return bool(self.total)
 
     def __repr__(self):
-        self._fetch_results()
-
-        if self._results_total == 0:
-            return u'Query on %s returned 0 results' % self._dataset
+        if self.total == 0:
+            return u'Query returned 0 results'
 
         return u'\n%s\n\n... %s more results.' % (
-            tabulate(self[0].items(), ['Columns', 'Sample']),
-            pretty_int(self._results_total - 1))
+            tabulate(self[0].items(), ['Fields', 'Data']),
+            pretty_int(self.total - 1))
+
+    def __getattr__(self, key):
+        if self._response is None:
+            logger.debug('Warming up the Query response cache')
+            self.request()
+
+        if key in self._response.keys():
+            return self._response[key]
+
+        raise AttributeError(key)
 
     def __getitem__(self, key):
         """
@@ -289,29 +286,32 @@ class Query(object):
                 and (key.stop is None or key.stop >= 0))
             ), "Negative indexing is not supported."
 
-        if self._results_cache:
-            # see if the result is cached already
-            lower = self._results_received - len(self._results_cache)
-            upper = self._results_received
+        if self._response is not None:
+            # if we're already warmed up, see if we have the results
+            lower, upper = self._window
             if isinstance(key, slice):
                 if key.start is not None and key.start >= lower \
                         and key.stop is not None and key.stop <= upper:
-                    return self._results_cache[key]
-            elif key >= lower and key <= upper:
-                return self._results_cache[key]
+                    return self.results[key]
+            elif key >= lower and key < upper:
+                return self.results[key]
 
         if isinstance(key, slice):
             new = self._clone()
             if key.start is not None:
-                new._start = int(key.start)
+                new._slice_start = int(key.start)
             if key.stop is not None:
-                new._stop = int(key.stop)
-            return list(new)[::key.step] if key.step else new
+                new._slice_stop = int(key.stop)
+
+            if key.step:
+                return list(new)[::key.step]
+            else:
+                return list(new)
 
         # not a slice, just an index
         new = self._clone()
-        new._start = key
-        new._stop = key + 1
+        new._slice_start = key
+        new._slice_stop = key + 1
         return list(new)[0]
 
     def __iter__(self):
@@ -319,18 +319,19 @@ class Query(object):
         Execute a query and iterate through the result set.
         Once the cached result set is exhausted, repeat query.
         """
-        # restart a fresh scroll
-        self._start_scroll()
+        # always start fresh
+        self.request()
 
-        # fast-forward the cursor if _start is requested
-        if self._start:  # not None and > 0
-            self._cursor = self._start
-            while self._results_received < self._cursor:
-                self._scroll()
+        # start the internal counter _i
+        self._i = self._slice_start or 0
 
-            # slice the results_cache to put _start at 0 in the cache
-            self._results_cache = \
-                self._results_cache[self._cursor - self._results_received:]
+        # fast-forward the cursor if needed
+        while self._window[1] < self._i:
+            self.request(**{self._mode: self._response[self._mode]})
+
+        # slice the results_cache to put _start at 0 in the cache
+        self._response['results'] = \
+            self._response['results'][self._i - self._window[0]:]
 
         return self
 
@@ -339,67 +340,81 @@ class Query(object):
         Allows the Query object to be an iterable.
         Iterates through the internal cache using a cursor.
         """
-        # if next() is called on its own, make sure we have some results
-        self._fetch_results()
-
         # If the cursor has reached the end
-        if (self._stop is not None and self._cursor >= self._stop) \
-                or self._cursor >= self._results_total:
+        if (self._slice_stop is not None and self._i >= self._slice_stop) \
+                or self._i >= self.total:
             raise StopIteration
 
-        cache_index = self._cursor - self._results_received
+        # get the index within the current window
+        cache_index = self._i - self._window[1]
         if cache_index == 0:
-            # If result cache is empty, request more
-            self._scroll()
-            cache_index = self._cursor - self._results_received
+            # current result cache is empty, request more
+            self.request(**{self._mode: self._response[self._mode]})
+            cache_index = self._i - self._window[1]
 
-        self._cursor += 1
-        return self._results_cache[cache_index]
+        self._i += 1
+        return self.results[cache_index]
 
-    def _fetch_results(self):
+    def _recalculate_window(self, response, params):
         """
-        Starts the scroll process and scrolls if in empty state
+        Recalculate the window of retrieved results so we can handle slicing.
         """
-        if self._scroll_id is None:
-            self._start_scroll()
+        results_in_response = len(response['results'])
 
-        if self._results_cache is None:
-            if self._results_total == 0:
-                self._results_cache = []
+        if self._mode == 'cursor':
+            if self._window is None:
+                # if cursor mode and no response yet, assume we're at 0
+                return [0, results_in_response]
             else:
-                self._scroll()
+                # if cursor and previous window, increment the previous window
+                return[self._window[1], self._window[1] + results_in_response]
+        elif response['offset']:
+            # if offset mode, just use the offset if it exists
+            return [response['offset'] - results_in_response,
+                    response['offset']]
+        elif params['offset']:
+            # no offset found in the response... use the request params
+            return [params['offset'], params['offset'] + results_in_response]
 
-    def _start_scroll(self):
-        response = client.post_dataset_select(
-            self._dataset._namespace,
-            self._dataset._name, self._build_query())
+        return [0, results_in_response]
 
-        self._cursor = 0
-        self._results_cache = None
-        self._results_total = response['total']
-        self._scroll_id = response['scroll_id']
-        # should be 0 results received
-        self._results_received = len(response['results'])
-        if self._results_received:
-            logger.warning(
-                '%d results from initial scroll ID fetch'
-                % len(self._results_cache))
+    def _build_query(self):
+        q = {
+            'mode': self._mode,
+            'limit': self._limit
+        }
 
-        if self._start is not None and self._start >= self._results_total:
+        if self._filters:
+            filters = self._process_filters(self._filters)
+            if len(filters) > 1:
+                q['filters'] = [{'and': filters}]
+            else:
+                q['filters'] = filters
+
+        return q
+
+    def request(self, **params):
+        params.update(self._build_query())
+        logger.debug('Querying dataset: %s' % str(params))
+        response = client.request('post', self._data_url, params)
+        logger.debug('Query response Took %(took)d Total %(total)d' % response)
+
+        if response['mode'] != self._mode:
+            logger.info('Server modified the query mode from %s to %s',
+                        self._mode, response['mode'])
+            self._mode = response['mode']
+
+        self._window = self._recalculate_window(response, params)
+        logger.debug('Query response window [%d, %d]'
+                     % (self._window[0], self._window[1]))
+
+        response['results'] = [self._result_class(r)
+                               for r in response['results']]
+
+        self._response = response
+
+        if self._slice_start is not None \
+                and self._slice_start >= self.total:
             raise IndexError(
                 'Index out of range, only %d total results(s)'
-                % self._results_total)
-
-    def _scroll(self):
-        response = client.get_dataset_select(
-            self._dataset._namespace,
-            self._dataset._name, self._scroll_id)
-
-        # TODO: handle scroll_id failure
-        self._scroll_id = response['scroll_id']
-        self._results_received += len(response['results'])
-        # always overwrite the cache
-        self._results_cache = [
-            self._result_class(r)
-            for r in response['results']
-        ]
+                % self.total)
