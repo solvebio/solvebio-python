@@ -4,7 +4,6 @@ import solvebio
 
 import argparse
 import sys
-import os
 
 
 class SolveArgumentParser(argparse.ArgumentParser):

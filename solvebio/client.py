@@ -128,7 +128,6 @@ class SolveClient(object):
     def request(self, method, url, params=None):
         if method.upper() in ('POST', 'PUT', 'PATCH'):
             # use only the data payload for write requests
-            # TODO: might be an issue with data queries
             data = json.dumps(params)
             params = None
         else:
@@ -189,55 +188,5 @@ class SolveClient(object):
         else:
             logger.info('API Error: %d' % response.status_code)
             raise SolveAPIError(response=response)
-
-    # def get_namespaces(self, page=1):
-    #     try:
-    #         # Only gets online Namespaces
-    #         response = self._request(
-    #             'GET', '/datasets?online=1&page=%d' % page)
-    #     except SolveAPIError as err:
-    #         if err.response.status_code == 404:
-    #             return []
-    #         raise err
-    #     else:
-    #         return response['results']
-
-    # def get_namespace(self, namespace):
-    #     return self._request('GET', '/datasets/%s' % namespace)
-
-    # def get_dataset(self, namespace, dataset):
-    #     return self._request('GET', '/datasets/%s/%s' % (namespace, dataset))
-
-    # def get_dataset_field(self, namespace, dataset, field):
-    #     return self._request('GET', '/datasets/%s/%s/fields/%s' % (namespace, dataset, field))
-
-    # def post_dataset_select(self, namespace, dataset, data):
-    #     return self._request('POST', '/datasets/%s/%s/_select' % (namespace, dataset),
-    #                          data=data)
-
-    # def get_dataset_select(self, namespace, dataset, scroll_id):
-    #     return self._request('GET', '/datasets/%s/%s/_select' % (namespace, dataset),
-    #                          params={'scroll_id': scroll_id})
-
-    # def post_login(self, email, password):
-    #     """Get an api_key for the given user credentials"""
-    #     data = {
-    #         'email': email,
-    #         'password': password
-    #     }
-    #     try:
-    #         return self._request('POST', '/auth/token', data=data)
-    #     except SolveAPIError as exc:
-    #         exc.log_field_errors(data.keys())
-    #         return None
-
-    # def get_current_user(self):
-    #     try:
-    #         return self._request('GET', '/user/current')
-    #     except SolveAPIError:
-    #         # TODO: handle invalid token
-    #         return None
-
-
 
 client = SolveClient()
