@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import urllib
+from urlparse import urljoin
 import re
 
 # from utils.tabulate import tabulate
@@ -14,6 +15,20 @@ except ImportError:
 # test for compatible json module
 if not (json and hasattr(json, 'loads')):
     import simplejson as json
+
+try:
+    import webbrowser
+except ImportError:
+    webbrowser = None
+
+
+def open_help(path):
+    url = urljoin('https://www.solvebio.com/', path)
+    try:
+        webbrowser.open(url)
+    except webbrowser.Error:
+        print ('The SolveBio Python client was unable to open the following '
+               'URL: %s' % url)
 
 
 def camelcase_to_underscore(name):
@@ -267,9 +282,16 @@ class Depository(CreateableAPIResource, ListableAPIResource,
 
         return super(Depository, cls).retrieve(id, **params)
 
-    def versions(self, **params):
+    def versions(self, name=None, **params):
+        if name:
+            # construct the dataset URN
+            return DepositoryVersion.retrieve(self['urn'] + ':%s' % name)
+
         response = client.request('get', self.versions_url, params)
         return convert_to_solve_object(response)
+
+    def help(self):
+        open_help(self['full_name'])
 
 
 class DepositoryVersion(CreateableAPIResource, ListableAPIResource):
@@ -293,9 +315,16 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource):
 
         return super(DepositoryVersion, cls).retrieve(id, **params)
 
-    def datasets(self, **params):
+    def datasets(self, name=None, **params):
+        if name:
+            # construct the dataset URN
+            return Dataset.retrieve(self['urn'] + ':%s' % name)
+
         response = client.request('get', self.datasets_url, params)
         return convert_to_solve_object(response)
+
+    def help(self):
+        open_help(self['full_name'])
 
 
 class Dataset(CreateableAPIResource, ListableAPIResource):
@@ -325,7 +354,11 @@ class Dataset(CreateableAPIResource, ListableAPIResource):
     def depository(self):
         return Depository.retrieve(self['depository'])
 
-    def fields(self, **params):
+    def fields(self, name=None, **params):
+        if name:
+            # construct the field URN
+            return DatasetField.retrieve(self['urn'] + ':%s' % name)
+
         response = client.request('get', self.fields_url, params)
         return convert_to_solve_object(response)
 
@@ -335,41 +368,8 @@ class Dataset(CreateableAPIResource, ListableAPIResource):
             return q.filter(params.get('filters'))
         return q
 
-    # def help(self, field=None):
-    #     self._get_dataset()
-    #
-    #     if field is None:
-    #         # show dataset help information
-    #         fields = [(k['name'], k['data_type'], k['description']) for k
-    #                     in sorted(self._dataset['fields'],
-    #                        key=lambda k: k['name'])]
-    #         print u'\nHelp for: %s\n%s\n%s\n\n%s\n\n' % (
-    #                     self,
-    #                     self._title,
-    #                     self._description,
-    #                     tabulate(fields, ['Field', 'Type', 'Description']))
-    #     else:
-    #         # Show detailed field information
-    #         try:
-    #             field = client.get_dataset_field(
-    #               self._namespace, self._name, field)
-    #         except:
-    #             return False
-    #
-    #         print u'\nHelp for field %s from dataset %s:\n' \
-    #           % (field['name'], self._title)
-    #         print u'This field contains %s-type data' % field['data_type']
-    #         print field['description']
-    #
-    #         if field['facets'] and field['data_type'] == 'string':
-    #             print tabulate([(f,) for f in sorted(field['facets'])],
-    #                ['Facets'])
-    #         elif field['facets'] and field['data_type'] in \
-    #               ('integer', 'double', 'long', 'float'):
-    #             print 'Minimum value: %s' % field['facets'][0]
-    #             print 'Maximum value: %s' % field['facets'][1]
-    #         else:
-    #             print 'No facets are available for this field'
+    def help(self):
+        open_help(self['full_name'])
 
 
 class DatasetField(CreateableAPIResource, ListableAPIResource):
@@ -396,3 +396,6 @@ class DatasetField(CreateableAPIResource, ListableAPIResource):
     def facets(self, **params):
         response = client.request('get', self.facets_url, params)
         return convert_to_solve_object(response)
+
+    def help(self):
+        return self.facets()
