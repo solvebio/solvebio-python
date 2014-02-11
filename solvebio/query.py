@@ -105,34 +105,20 @@ class Filter(object):
         return f
 
 
-class QueryResult(object):
+class QueryResult(dict):
     """
     Container for Query result key/value documents
     """
+
     def __init__(self, obj):
         for k, v in obj.items():
-            if k == 'metadata':
-                self.metadata = QueryResult(v)
-            else:
+            if k.startswith('_'):
                 setattr(self, k, v)
+            else:
+                self[k] = v
 
-    def __getitem__(self, name):
-        return getattr(self, name)
-
-    def __repr__(self):
-        return str(self.values())
-
-    def keys(self):
-        return [k for k, v in self.items()]
-
-    def values(self):
-        return [v for k, v in self.items()]
-
-    def items(self):
-        # alphabetically sorted keys, excluding hidden keys (_*)
-        return [(k, v) for k, v
-                in sorted(self.__dict__.items(), key=lambda k: k[0])
-                if not k.startswith('_')]
+    def fields(self):
+        return self.keys()
 
 
 class Query(object):
