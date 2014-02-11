@@ -362,19 +362,23 @@ class Query(object):
         results_in_response = len(response['results'])
 
         if self._mode == 'cursor':
+            # cursor mode
             if self._window is None:
                 # if cursor mode and no response yet, assume we're at 0
                 return [0, results_in_response]
             else:
                 # if cursor and previous window, increment the previous window
                 return[self._window[1], self._window[1] + results_in_response]
-        elif response['offset']:
-            # if offset mode, just use the offset if it exists
-            return [response['offset'] - results_in_response,
-                    response['offset']]
-        elif params['offset']:
-            # no offset found in the response... use the request params
-            return [params['offset'], params['offset'] + results_in_response]
+        else:
+            # offset mode
+            if 'offset' in response:
+                # if offset mode, just use the offset if it exists
+                return [response['offset'] - results_in_response,
+                        response['offset']]
+            elif 'offset' in params:
+                # no offset found in the response... use the request params
+                return [params['offset'],
+                        params['offset'] + results_in_response]
 
         return [0, results_in_response]
 

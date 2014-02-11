@@ -248,18 +248,22 @@ class User(SingletonAPIResource):
 
 class Depository(CreateableAPIResource, ListableAPIResource,
                  SearchableAPIResource):
+    FULL_NAME_REGEX = r'^[\w\d\-\.]+$'
     URN_REGEX = r'^urn:solvebio:[\w\d\-\.]+$'
     URN_FORMAT = 'urn:solvebio:{DEPOSITORY}'
 
     @classmethod
     def retrieve(cls, id, **params):
-        """Supports lookup by URN"""
+        """Supports lookup by URN or full name"""
         if isinstance(id, unicode) or isinstance(id, str):
-            params.update({'urn': unicode(id).strip()})
+            _id = unicode(id).strip()
             id = None
-            if not re.match(cls.URN_REGEX, params['urn']):
-                raise Exception('Unrecognized URN. Must be in the following '
-                                'format: "%s"' % cls.URN_FORMAT)
+            if re.match(cls.URN_REGEX, _id):
+                params.update({'urn': _id})
+            elif re.match(cls.FULL_NAME_REGEX, _id):
+                params.update({'urn': u'urn:solvebio:%s' % _id})
+            else:
+                raise Exception('Unrecognized ID. Must be URN or full name.')
 
         return super(Depository, cls).retrieve(id, **params)
 
@@ -269,18 +273,23 @@ class Depository(CreateableAPIResource, ListableAPIResource,
 
 
 class DepositoryVersion(CreateableAPIResource, ListableAPIResource):
+    FULL_NAME_REGEX = r'^[\w\d\-\.]+/[\w\d\-\.]+$'
     URN_REGEX = r'^urn:solvebio(:[\w\d\-\.]+){2}$'
     URN_FORMAT = 'urn:solvebio:{DEPOSITORY}:{VERSION}'
 
     @classmethod
     def retrieve(cls, id, **params):
-        """Supports lookup by URN"""
+        """Supports lookup by URN or full name"""
         if isinstance(id, unicode) or isinstance(id, str):
-            params.update({'urn': unicode(id).strip()})
+            _id = unicode(id).strip()
             id = None
-            if not re.match(cls.URN_REGEX, params['urn']):
-                raise Exception('Unrecognized URN. Must be in the following '
-                                'format: "%s"' % cls.URN_FORMAT)
+            if re.match(cls.URN_REGEX, _id):
+                params.update({'urn': _id})
+            elif re.match(cls.FULL_NAME_REGEX, _id):
+                params.update({'urn': u'urn:solvebio:%s'
+                              % _id.replace('/', ':')})
+            else:
+                raise Exception('Unrecognized ID. Must be URN or full name.')
 
         return super(DepositoryVersion, cls).retrieve(id, **params)
 
@@ -290,18 +299,23 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource):
 
 
 class Dataset(CreateableAPIResource, ListableAPIResource):
+    FULL_NAME_REGEX = r'^([\w\d\-\.]+/){2}[\w\d\-\.]+$'
     URN_REGEX = r'^urn:solvebio(:[\w\d\-\.]+){3}$'
     URN_FORMAT = 'urn:solvebio:{DEPOSITORY}:{VERSION}:{DATASET}'
 
     @classmethod
     def retrieve(cls, id, **params):
-        """Supports lookup by URN"""
+        """Supports lookup by URN or full name"""
         if isinstance(id, unicode) or isinstance(id, str):
-            params.update({'urn': unicode(id).strip()})
+            _id = unicode(id).strip()
             id = None
-            if not re.match(cls.URN_REGEX, params['urn']):
-                raise Exception('Unrecognized URN. Must be in the following '
-                                'format: "%s"' % cls.URN_FORMAT)
+            if re.match(cls.URN_REGEX, _id):
+                params.update({'urn': _id})
+            elif re.match(cls.FULL_NAME_REGEX, _id):
+                params.update({'urn': u'urn:solvebio:%s'
+                              % _id.replace('/', ':')})
+            else:
+                raise Exception('Unrecognized ID. Must be URN or full name.')
 
         return super(Dataset, cls).retrieve(id, **params)
 
@@ -359,20 +373,25 @@ class Dataset(CreateableAPIResource, ListableAPIResource):
 
 
 class DatasetField(CreateableAPIResource, ListableAPIResource):
+    FULL_NAME_REGEX = r'^([\w\d\-\.]+/){3}[\w\d\-\.]+$'
     URN_REGEX = r'^urn:solvebio(:[\w\d\-\.]+){4}$'
     URN_FORMAT = 'urn:solvebio:{DEPOSITORY}:{VERSION}:{DATASET}:{FIELD}'
 
     @classmethod
     def retrieve(cls, id, **params):
-        """Supports lookup by URN"""
+        """Supports lookup by URN or full name"""
         if isinstance(id, unicode) or isinstance(id, str):
-            params.update({'urn': unicode(id).strip()})
+            _id = unicode(id).strip()
             id = None
-            if not re.match(cls.URN_REGEX, params['urn']):
-                raise Exception('Unrecognized URN. Must be in the following '
-                                'format: "%s"' % cls.URN_FORMAT)
+            if re.match(cls.URN_REGEX, _id):
+                params.update({'urn': _id})
+            elif re.match(cls.FULL_NAME_REGEX, _id):
+                params.update({'urn': u'urn:solvebio:%s'
+                              % _id.replace('/', ':')})
+            else:
+                raise Exception('Unrecognized ID. Must be URN or full name.')
 
-        return super(Dataset, cls).retrieve(id, **params)
+        return super(DatasetField, cls).retrieve(id, **params)
 
     def facets(self, **params):
         response = client.request('get', self.facets_url, params)
