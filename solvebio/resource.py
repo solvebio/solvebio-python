@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import urllib
-from urlparse import urljoin
 import re
 
 # from utils.tabulate import tabulate
 from .client import client
 from .query import Query
+from .help import open_help
 
 try:
     import json
@@ -15,20 +15,6 @@ except ImportError:
 # test for compatible json module
 if not (json and hasattr(json, 'loads')):
     import simplejson as json
-
-try:
-    import webbrowser
-except ImportError:
-    webbrowser = None
-
-
-def open_help(path):
-    url = urljoin('https://www.solvebio.com/', path)
-    try:
-        webbrowser.open(url)
-    except webbrowser.Error:
-        print ('The SolveBio Python client was unable to open the following '
-               'URL: %s' % url)
 
 
 def camelcase_to_underscore(name):

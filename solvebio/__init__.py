@@ -10,20 +10,14 @@ Have questions or comments? email us at: contact@solvebio.com
 """
 import os as _os
 import logging as _logging
+from .help import open_help as _open_help
 
 api_key = _os.environ.get('SOLVEBIO_API_KEY', None)
 api_host = _os.environ.get('SOLVEBIO_API_HOST', 'https://api.solvebio.com')
 
 
 def help():
-    print """
-The SolveBio Python Shell.
-
-To list available Depositories, type:
-
-    solvebio.Depositories.all()
-
-Enjoy using SolveBio!"""
+    _open_help('/docs')
 
 
 def _init_logging():
