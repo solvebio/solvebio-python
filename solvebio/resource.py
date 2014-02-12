@@ -54,8 +54,8 @@ class SolveObject(dict):
 
         if id:
             self['id'] = id
-        elif params.get('urn'):
-            self['urn'] = params.get('urn')
+        elif params.get('full_name'):
+            self['full_name'] = params.get('full_name')
 
     def __setattr__(self, k, v):
         if k[0] == '_' or k in self.__dict__:
@@ -98,8 +98,8 @@ class SolveObject(dict):
         if isinstance(self.get('id'), int):
             ident_parts.append('id=%d' % (self.get('id'),))
 
-        if isinstance(self.get('urn'), unicode):
-            ident_parts.append('urn=%s' % (self.get('urn'),))
+        if isinstance(self.get('full_name'), unicode):
+            ident_parts.append('full_name=%s' % (self.get('full_name'),))
 
         return '<%s at %s> JSON: %s' % (
             ' '.join(ident_parts), hex(id(self)), str(self))
@@ -109,7 +109,7 @@ class SolveObject(dict):
 
     @property
     def solvebio_id(self):
-        return self.id or self.urn
+        return self.id or self.full_name
 
 
 class APIResource(SolveObject):
@@ -142,15 +142,15 @@ class APIResource(SolveObject):
         return "/v1/%ss" % (cls_name,)
 
     def instance_url(self):
-        """Get instance URL by ID or URN (if available)"""
+        """Get instance URL by ID or full name (if available)"""
         id = self.get('id')
-        urn = self.get('urn')
+        full_name = self.get('full_name')
         base = self.class_url()
 
         if id:
             return "%s/%d" % (base, id)
-        elif urn:
-            return "%s/%s" % (base, urn)
+        elif full_name:
+            return "%s/%s" % (base, full_name)
         else:
             raise Exception(
                 'Could not determine which URL to request: %s instance '
@@ -250,28 +250,25 @@ class User(SingletonAPIResource):
 class Depository(CreateableAPIResource, ListableAPIResource,
                  SearchableAPIResource):
     FULL_NAME_REGEX = r'^[\w\d\-\.]+$'
-    URN_REGEX = r'^urn:solvebio:[\w\d\-\.]+$'
-    URN_FORMAT = 'urn:solvebio:{DEPOSITORY}'
 
     @classmethod
     def retrieve(cls, id, **params):
-        """Supports lookup by URN or full name"""
+        """Supports lookup by ID or full name"""
         if isinstance(id, unicode) or isinstance(id, str):
             _id = unicode(id).strip()
             id = None
-            if re.match(cls.URN_REGEX, _id):
-                params.update({'urn': _id})
-            elif re.match(cls.FULL_NAME_REGEX, _id):
-                params.update({'urn': u'urn:solvebio:%s' % _id})
+            if re.match(cls.FULL_NAME_REGEX, _id):
+                params.update({'full_name': _id})
             else:
-                raise Exception('Unrecognized ID. Must be URN or full name.')
+                raise Exception('Unrecognized full name.')
 
         return super(Depository, cls).retrieve(id, **params)
 
     def versions(self, name=None, **params):
         if name:
-            # construct the dataset URN
-            return DepositoryVersion.retrieve(self['urn'] + ':%s' % name)
+            # construct the depo version full name
+            return DepositoryVersion.retrieve(
+                '/'.join([self['full_name'], name]))
 
         response = client.request('get', self.versions_url, params)
         return convert_to_solve_object(response)
@@ -282,29 +279,25 @@ class Depository(CreateableAPIResource, ListableAPIResource,
 
 class DepositoryVersion(CreateableAPIResource, ListableAPIResource):
     FULL_NAME_REGEX = r'^[\w\d\-\.]+/[\w\d\-\.]+$'
-    URN_REGEX = r'^urn:solvebio(:[\w\d\-\.]+){2}$'
-    URN_FORMAT = 'urn:solvebio:{DEPOSITORY}:{VERSION}'
 
     @classmethod
     def retrieve(cls, id, **params):
-        """Supports lookup by URN or full name"""
+        """Supports lookup by full name"""
         if isinstance(id, unicode) or isinstance(id, str):
             _id = unicode(id).strip()
             id = None
-            if re.match(cls.URN_REGEX, _id):
-                params.update({'urn': _id})
-            elif re.match(cls.FULL_NAME_REGEX, _id):
-                params.update({'urn': u'urn:solvebio:%s'
-                              % _id.replace('/', ':')})
+            if re.match(cls.FULL_NAME_REGEX, _id):
+                params.update({'full_name': _id})
             else:
-                raise Exception('Unrecognized ID. Must be URN or full name.')
+                raise Exception('Unrecognized full name.')
 
         return super(DepositoryVersion, cls).retrieve(id, **params)
 
     def datasets(self, name=None, **params):
         if name:
-            # construct the dataset URN
-            return Dataset.retrieve(self['urn'] + ':%s' % name)
+            # construct the dataset full name
+            return Dataset.retrieve(
+                '/'.join([self['full_name'], name]))
 
         response = client.request('get', self.datasets_url, params)
         return convert_to_solve_object(response)
@@ -315,22 +308,17 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource):
 
 class Dataset(CreateableAPIResource, ListableAPIResource):
     FULL_NAME_REGEX = r'^([\w\d\-\.]+/){2}[\w\d\-\.]+$'
-    URN_REGEX = r'^urn:solvebio(:[\w\d\-\.]+){3}$'
-    URN_FORMAT = 'urn:solvebio:{DEPOSITORY}:{VERSION}:{DATASET}'
 
     @classmethod
     def retrieve(cls, id, **params):
-        """Supports lookup by URN or full name"""
+        """Supports lookup by full name"""
         if isinstance(id, unicode) or isinstance(id, str):
             _id = unicode(id).strip()
             id = None
-            if re.match(cls.URN_REGEX, _id):
-                params.update({'urn': _id})
-            elif re.match(cls.FULL_NAME_REGEX, _id):
-                params.update({'urn': u'urn:solvebio:%s'
-                              % _id.replace('/', ':')})
+            if re.match(cls.FULL_NAME_REGEX, _id):
+                params.update({'full_name': _id})
             else:
-                raise Exception('Unrecognized ID. Must be URN or full name.')
+                raise Exception('Unrecognized full name.')
 
         return super(Dataset, cls).retrieve(id, **params)
 
@@ -343,7 +331,8 @@ class Dataset(CreateableAPIResource, ListableAPIResource):
     def fields(self, name=None, **params):
         if name:
             # construct the field URN
-            return DatasetField.retrieve(self['urn'] + ':%s' % name)
+            return DatasetField.retrieve(
+                '/'.join([self['full_name'], name]))
 
         response = client.request('get', self.fields_url, params)
         return convert_to_solve_object(response)
@@ -360,8 +349,6 @@ class Dataset(CreateableAPIResource, ListableAPIResource):
 
 class DatasetField(CreateableAPIResource, ListableAPIResource):
     FULL_NAME_REGEX = r'^([\w\d\-\.]+/){3}[\w\d\-\.]+$'
-    URN_REGEX = r'^urn:solvebio(:[\w\d\-\.]+){4}$'
-    URN_FORMAT = 'urn:solvebio:{DEPOSITORY}:{VERSION}:{DATASET}:{FIELD}'
 
     @classmethod
     def retrieve(cls, id, **params):
@@ -369,13 +356,10 @@ class DatasetField(CreateableAPIResource, ListableAPIResource):
         if isinstance(id, unicode) or isinstance(id, str):
             _id = unicode(id).strip()
             id = None
-            if re.match(cls.URN_REGEX, _id):
-                params.update({'urn': _id})
-            elif re.match(cls.FULL_NAME_REGEX, _id):
-                params.update({'urn': u'urn:solvebio:%s'
-                              % _id.replace('/', ':')})
+            if re.match(cls.FULL_NAME_REGEX, _id):
+                params.update({'full_name': _id})
             else:
-                raise Exception('Unrecognized ID. Must be URN or full name.')
+                raise Exception('Unrecognized full name.')
 
         return super(DatasetField, cls).retrieve(id, **params)
 
