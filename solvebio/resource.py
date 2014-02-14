@@ -338,7 +338,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource):
         return convert_to_solve_object(response)
 
     def query(self, **params):
-        q = Query(self.data_url, **params)
+        q = Query(self['data_url'], **params)
         if params.get('filters'):
             return q.filter(params.get('filters'))
         return q
