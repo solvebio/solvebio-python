@@ -12,8 +12,8 @@ setup(
     description='The SolveBio Python client',
     long_description=open('README.txt').read(),
     author='Solve, Inc.',
-    author_email='help@solvebio.com',
-    url='http://www.solvebio.com',
+    author_email='contact@solvebio.com',
+    url='https://www.solvebio.com',
     packages=find_packages(),
     package_dir={"solvebio": "solvebio"},
     #package_data={"solvebio": []},
@@ -23,11 +23,9 @@ setup(
         'console_scripts': ['solvebio = solvebio.cli.main:main']
     },
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Science/Research',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Scientific/Engineering :: Bio-Informatics'
     ],
