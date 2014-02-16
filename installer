@@ -103,6 +103,12 @@ if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
     fi
 fi
 
+PIP_FLAGS=""
+# disable the use of wheels if pip supports them
+if [ $(pip --help | grep wheel -c) -ne 0 ]; then
+  PIP_FLAGS="--no-use-wheel"
+fi
+
 # Install readline with easy_install
 echo "Installing readline through easy_install (enhances IPython)..."
 echo "(Your user or system password may be required)"
@@ -113,7 +119,7 @@ sudo $PYTHON -m easy_install readline
 echo
 echo "Installing the SolveBio module via pip..."
 echo "(Your user or system password may be required)"
-sudo $PYTHON -m pip install solvebio && SUCCESS="1"
+sudo $PYTHON -m pip install solvebio $PIP_FLAGS && SUCCESS="1"
 
 if [ $? -eq 0 ]; then
     echo
