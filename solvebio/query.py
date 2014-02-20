@@ -357,11 +357,11 @@ class Query(object):
                 return[self._window[1], self._window[1] + results_in_response]
         else:
             # offset mode
-            if 'offset' in response:
+            if response.get('offset', None) is not None:
                 # if offset mode, just use the offset if it exists
                 return [response['offset'] - results_in_response,
                         response['offset']]
-            elif 'offset' in params:
+            elif params.get('offset', None) is not None:
                 # no offset found in the response... use the request params
                 return [params['offset'],
                         params['offset'] + results_in_response]
