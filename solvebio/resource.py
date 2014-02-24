@@ -329,6 +329,11 @@ class Dataset(CreateableAPIResource, ListableAPIResource):
         return Depository.retrieve(self['depository'])
 
     def fields(self, name=None, **params):
+        if 'fields_url' not in self:
+            raise Exception(
+                'Please use Dataset.retrieve({ID}) before doing looking '
+                'up fields')
+
         if name:
             # construct the field URN
             return DatasetField.retrieve(
@@ -338,6 +343,9 @@ class Dataset(CreateableAPIResource, ListableAPIResource):
         return convert_to_solve_object(response)
 
     def query(self, **params):
+        if 'data_url' not in self:
+            raise Exception(
+                'Please use Dataset.retrieve({ID}) before querying')
         q = Query(self['data_url'], **params)
         if params.get('filters'):
             return q.filter(params.get('filters'))

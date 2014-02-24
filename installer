@@ -19,8 +19,13 @@ shopt -s extglob
 
 function fail_exit() {
     echo
+    echo "#####################################"
+    echo
     echo "Failed to install SolveBio."
     echo "If you need some help, email us at contact@solvebio.com or go to our public chat room at http://chat.solvebio.com/"
+    echo
+    echo "#####################################"
+    echo
     exit
 }
 
@@ -114,20 +119,34 @@ echo "Installing readline through easy_install (enhances IPython)..."
 echo "(Your user or system password may be required)"
 sudo $PYTHON -m easy_install readline
 
-# Install solvebio via pip
+# Install/Upgrade solvebio via pip
+if [ $(pip freeze | grep solvebio -c) -ne 0 ]; then
+  echo "SolveBio Python client already installed, we will try to upgrade it..."
+  PIP_FLAGS="${PIP_FLAGS} --upgrade"
+  ACTION="Upgrading"
+else
+  ACTION="Installing"
+fi
 
 echo
-echo "Installing the SolveBio module via pip..."
+echo "${ACTION} the SolveBio module via pip..."
 echo "(Your user or system password may be required)"
 sudo $PYTHON -m pip install solvebio $PIP_FLAGS && SUCCESS="1"
 
 if [ $? -eq 0 ]; then
     echo
+    echo "#####################################"
+    echo
     echo "Success! SolveBio has been installed."
     echo "Now run 'solvebio login' to start."
     echo
-    echo "Check out the Get Started guide at https://www.solvebio.com/documentation/get-started"
-    echo "If you need some help, email us at contact@solvebio.com or see our chat room http://chat.solvebio.com/"
+    echo "Check out the Get Started guide:"
+    echo "https://www.solvebio.com/documentation/get-started"
+    echo "If you need some help, email contact@solvebio.com"
+    echo "or visit our chat room http://chat.solvebio.com/"
+    echo
+    echo "#####################################"
+    echo
 else
     fail_exit
 fi
