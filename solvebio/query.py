@@ -132,7 +132,7 @@ class Query(object):
         self._mode = params.get('mode', 'offset')
         self._limit = params.get('limit', 100)  # results per request
         self._result_class = params.get('result_class', QueryResult)
-        self._filters = []
+        self._filters = list()
         self._response = None  # the cache response
 
         # manages iteration of records across multiple requests
@@ -146,7 +146,7 @@ class Query(object):
                              mode=self._mode,
                              limit=self._limit,
                              result_class=self._result_class)
-        new._filters = self._filters
+        new._filters += self._filters
         if filters is not None:
             new._filters += filters
         return new
