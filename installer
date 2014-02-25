@@ -77,7 +77,14 @@ fi
 
 # Check OpenSSL version
 
-OPENSSL_VERSION=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION"`
+OPENSSL_VERSION=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION" 2> /dev/null`
+if [ "$OPENSSL_VERSION" == "" ]; then
+    echo
+    echo
+    echo "SolveBio for Python requires a more recent version of Python-OpenSSL"
+    fail_exit
+fi
+
 OPENSSL_VERSION_MAJOR=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION_INFO[0]"`
 OPENSSL_VERSION_MINOR=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION_INFO[1]"`
 OPENSSL_VERSION_PATCH=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION_INFO[2]"`
@@ -85,7 +92,7 @@ OPENSSL_VERSION_PATCH=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION_INFO[2]
 if [ "$OPENSSL_VERSION_MAJOR" -lt "1" ]; then
     if [ "$OPENSSL_VERSION_MINOR" -lt "9" ] || [ "$OPENSSL_VERSION_PATCH" -lt "8" ]; then
         echo
-        echo "The SolveBio Python Client requires OpenSSL >= 0.9.8"
+        echo "SolveBio for Python requires OpenSSL >= 0.9.8"
         echo "Your Python SSL module is linked to $OPENSSL_VERSION"
         fail_exit
     fi
@@ -121,7 +128,7 @@ fi
 
 # Are we installing or upgrading?
 if [ $(pip freeze | grep solvebio -c) -ne 0 ]; then
-  echo "SolveBio Python client already installed, we will try to upgrade it..."
+  echo "SolveBio for Python is already installed, we will try to upgrade it..."
   PIP_FLAGS="${PIP_FLAGS} --upgrade"
   ACTION="Upgrading"
 else
@@ -137,7 +144,7 @@ if [ $? -eq 0 ]; then
     echo
     echo "#####################################"
     echo
-    echo "Success! The SolveBio Python client is now installed."
+    echo "Success! SolveBio for Python is now installed."
     echo
     echo "Run 'solvebio login' to start."
     echo
