@@ -44,7 +44,7 @@ echo
 
 # Check Python versions
 PYTHON_PATHS=`echo $PATH | sed -e 's/:/ /g'`
-PYTHON_VERSIONS=`find -f $PYTHON_PATHS \( -regex ".*/python*" -o -regex ".*/python2.[567]" \) 2> /dev/null`
+PYTHON_VERSIONS=`find $PYTHON_PATHS -regex ".*/python*" -o -regex ".*/python2.[567]" 2> /dev/null | sort`
 
 echo "Looking for a supported Python installation..."
 # try in order of $PATH
