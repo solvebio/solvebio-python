@@ -81,7 +81,7 @@ OPENSSL_VERSION=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION" 2> /dev/null
 if [ "$OPENSSL_VERSION" == "" ]; then
     echo
     echo
-    echo "SolveBio for Python requires a more recent version of Python-OpenSSL"
+    echo "SolveBio for Python requires a more recent version of Python-OpenSSL."
     fail_exit
 fi
 
