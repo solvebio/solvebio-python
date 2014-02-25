@@ -22,7 +22,8 @@ function fail_exit() {
     echo "#####################################"
     echo
     echo "Failed to install SolveBio."
-    echo "If you need some help, email us at contact@solvebio.com or go to our public chat room at http://chat.solvebio.com/"
+    echo "If you need some help, email us at contact@solvebio.com"
+    echo "or chat with our engineers at http://chat.solvebio.com/"
     echo
     echo "#####################################"
     echo
@@ -90,9 +91,13 @@ if [ "$OPENSSL_VERSION_MAJOR" -lt "1" ]; then
     fi
 fi
 
+# Install readline with easy_install
+echo "Installing readline through easy_install (enhances IPython)..."
+echo "(Your user or system password may be required)"
+sudo $PYTHON -m easy_install readline
+
 # Check for working pip
 PIP_VERSION=`$PYTHON -m pip --version 2>&1`
-
 if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
     echo "It looks like pip is not installed. We will now attempt to install it."
     echo "(Your user or system password may be required)"
@@ -110,16 +115,11 @@ fi
 
 PIP_FLAGS=""
 # disable the use of wheels if pip supports them
-if [ $(pip --help | grep wheel -c) -ne 0 ]; then
+if [ $($PYTHON -m pip install --help | grep "\-\-no\-use\-wheel" -c) -ne 0 ]; then
   PIP_FLAGS="--no-use-wheel"
 fi
 
-# Install readline with easy_install
-echo "Installing readline through easy_install (enhances IPython)..."
-echo "(Your user or system password may be required)"
-sudo $PYTHON -m easy_install readline
-
-# Install/Upgrade solvebio via pip
+# Are we installing or upgrading?
 if [ $(pip freeze | grep solvebio -c) -ne 0 ]; then
   echo "SolveBio Python client already installed, we will try to upgrade it..."
   PIP_FLAGS="${PIP_FLAGS} --upgrade"
@@ -137,13 +137,14 @@ if [ $? -eq 0 ]; then
     echo
     echo "#####################################"
     echo
-    echo "Success! SolveBio has been installed."
-    echo "Now run 'solvebio login' to start."
+    echo "Success! The SolveBio Python client is now installed."
+    echo
+    echo "Run 'solvebio login' to start."
     echo
     echo "Check out the Get Started guide:"
     echo "https://www.solvebio.com/documentation/get-started"
     echo "If you need some help, email contact@solvebio.com"
-    echo "or visit our chat room http://chat.solvebio.com/"
+    echo "or chat with our engineers at http://chat.solvebio.com/"
     echo
     echo "#####################################"
     echo
