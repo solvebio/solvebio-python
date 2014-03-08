@@ -109,6 +109,7 @@ if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
     echo "It looks like pip is not installed. We will now attempt to install it."
     echo "(Your user or system password may be required)"
     sudo $PYTHON -m easy_install pip
+    # TODO: use this instead: curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
 
     PIP_VERSION=`$PYTHON -m pip --version 2>&1`
     if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
