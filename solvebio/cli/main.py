@@ -16,8 +16,13 @@ class SolveArgumentParser(argparse.ArgumentParser):
 
 def shell(args):
     """Open the SolveBio shell (IPython wrapper)"""
+    try:
+        from IPython.config.loader import Config
+    except ImportError:
+        print("The SolveBio Python shell requires IPython.\n"
+              "To install, type: 'pip install ipython'")
+        return
 
-    from IPython.config.loader import Config
     try:
         # see if we're already inside IPython
         get_ipython

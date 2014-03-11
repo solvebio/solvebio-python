@@ -17,7 +17,7 @@ setup(
     packages=find_packages(),
     package_dir={"solvebio": "solvebio"},
     #package_data={"solvebio": []},
-    install_requires=['requests>=2.0.0', 'ipython'],
+    install_requires=['requests>=2.0.0'],
     platforms='any',
     entry_points={
         'console_scripts': ['solvebio = solvebio.cli.main:main']
