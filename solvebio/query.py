@@ -118,6 +118,8 @@ class RangeFilter(Filter):
         start and end should be positive integers.
         chromosome should be in the format 'chrN'.
         """
+        chromosome, start, end = str(chromosome), str(start), str(end)
+
         f = Filter(**{self.RANGE_START + '__range': [start, end]})
 
         if overlap:
