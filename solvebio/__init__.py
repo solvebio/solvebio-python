@@ -68,7 +68,7 @@ _init_logging()
 
 from . import version
 from resource import User, Depository, DepositoryVersion, Dataset, DatasetField
-from query import Filter
+from query import Filter, RangeFilter
 
 __all__ = ['Depository', 'DepositoryVersion', 'Dataset',
-           'DatasetField', 'User', 'Filter']
+           'DatasetField', 'User', 'Filter', 'RangeFilter']
