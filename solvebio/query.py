@@ -44,11 +44,6 @@ class Filter(object):
                       start__gt=10000,
                       end__lte=20000)
     """
-    # constants for range() query keys
-    RANGE_CHROMOSOME_KEY = '_range_chromosome_'
-    RANGE_START_KEY = '_range_start_'
-    RANGE_END_KEY = '_range_end_'
-
     def __init__(self, **filters):
         """Creates a Filter"""
         filters = filters.items()
@@ -103,6 +98,42 @@ class Filter(object):
         else:
             f.filters = [{'not': self_filters}]
         return f
+
+
+class RangeFilter(Filter):
+    """
+    Helper class that generates Range Filters
+    """
+    # TODO: normalize range query values
+
+    RANGE_CHROMOSOME = '_range_chromosome'
+    RANGE_START = '_range_start'
+    RANGE_END = '_range_end'
+    RANGE_STRAND = '_range_strand'
+
+    def __init__(self, chromosome, start, end, strand=None, overlap=False):
+        """
+        Shortcut to do range queries on supported datasets.
+
+        start and end should be positive integers.
+        chromosome should be in the format 'chrN'.
+        """
+        f = Filter(**{self.RANGE_START + '__range': [start, end]})
+
+        if overlap:
+            f = f | Filter(**{self.RANGE_END + '__range': [start, end]})
+        else:
+            f = f & Filter(**{self.RANGE_END + '__range': [start, end]})
+
+        f = f & Filter(**{self.RANGE_CHROMOSOME: chromosome})
+
+        if strand is not None:
+            f = f & Filter(**{self.RANGE_STRAND: strand})
+
+        self.filters = f.filters
+
+    def __repr__(self):
+        return '<RangeFilter {0}>'.format(self.filters)
 
 
 class QueryResult(dict):
@@ -170,30 +201,16 @@ class Query(object):
         """
         return self._clone(filters=list(filters) + [Filter(**kwargs)])
 
-    def range(self, chromosome, start, end, overlap=False):
+    def range(self, chromosome, start, end, strand=None, overlap=True):
         """
         Shortcut to do range queries on supported datasets.
 
         start and end should be positive integers.
         chromosome should be in the format 'chrN'.
         """
-        # TODO: ensure dataset supports range queries!
-        start, end = int(start), int(end)
-        if type(chromosome) is int:
-            chromosome = 'chr%d' % chromosome
-        elif not chromosome.startswith('chr'):
-            raise Exception('The chromosome parameter for range queries '
-                            'must be in the format: "chrN"')
-
-        range_filter = Filter(
-            **{Filter.RANGE_START_KEY + '__range': [start, end],
-               Filter.RANGE_END_KEY + '__range': [start, end]})
-        chrom_filter = Filter(**{Filter.RANGE_CHROMOSOME_KEY: chromosome})
-
-        if overlap:
-            return self.filter(chrom_filter | range_filter)
-        else:
-            return self.filter(chrom_filter & range_filter)
+        # TODO: ensure dataset supports range queries?
+        return self._clone(
+            filters=[RangeFilter(chromosome, start, end, strand, overlap)])
 
     def _process_filters(self, filters):
         """Takes a list of filters and returns JSON
