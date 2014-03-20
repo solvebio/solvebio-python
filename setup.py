@@ -13,7 +13,7 @@ setup(
     long_description=open('README.txt').read(),
     author='Solve, Inc.',
     author_email='contact@solvebio.com',
-    url='https://www.solvebio.com',
+    url='https://github.com/solvebio/solvebio-python',
     packages=find_packages(),
     package_dir={"solvebio": "solvebio"},
     #package_data={"solvebio": []},
