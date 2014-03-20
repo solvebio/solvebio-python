@@ -12,7 +12,7 @@ echo "\___ \ / _ \| \ \ / / _ \  _ \| |/ _ \\"
 echo " ___) | (_) | |\ V /  __/ |_) | | (_) |"
 echo "|____/ \___/|_| \_/ \___|____/|_|\___/"
 echo
-echo "Copyright © 2013 Solve, Inc. <http://www.solvebio.com>. All rights reserved."
+echo "Copyright © 2014 Solve, Inc. <http://www.solvebio.com>. All rights reserved."
 echo
 
 shopt -s extglob
