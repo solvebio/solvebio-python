@@ -70,6 +70,5 @@ def whoami(args):
     creds = get_credentials()
     if creds:
         print creds[0]
-        client.get_current_user()
     else:
         print 'You are not logged-in.'
