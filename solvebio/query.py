@@ -172,6 +172,7 @@ class Query(object):
         self._mode = params.get('mode', 'offset')
         self._limit = params.get('limit', 100)  # results per request
         self._result_class = params.get('result_class', QueryResult)
+        self._debug = params.get('debug', False)
         self._filters = list()
         self._response = None  # the cache response
 
@@ -397,7 +398,8 @@ class Query(object):
     def _build_query(self):
         q = {
             'mode': self._mode,
-            'limit': self._limit
+            'limit': self._limit,
+            'debug': self._debug
         }
 
         if self._filters:
