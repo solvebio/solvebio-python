@@ -2,7 +2,7 @@ import logging
 logger = logging.getLogger('solvebio')
 
 
-class SolveAPIError(BaseException):
+class SolveError(BaseException):
     default_message = ('Unexpected error communicating with SolveBio. '
                        'If this problem persists, let us know at '
                        'contact@solvebio.com.')

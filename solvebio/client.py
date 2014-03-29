@@ -3,7 +3,7 @@ import solvebio
 from solvebio import version
 from solvebio.utils.printing import red
 from solvebio.cli.credentials import get_credentials
-from solvebio.errors import SolveAPIError
+from solvebio.errors import SolveError
 
 import json
 import platform
@@ -50,9 +50,7 @@ class SolveTokenAuth(AuthBase):
             return solvebio.api_key
 
         try:
-            creds = get_credentials()
-            if creds:
-                return creds[1]
+            return get_credentials()[1]
         except:
             pass
 
@@ -86,7 +84,7 @@ class SolveClient(object):
 
         api_host = self.api_host or solvebio.api_host
         if not api_host:
-            raise SolveAPIError(message='No SolveBio API host is set')
+            raise SolveError(message='No SolveBio API host is set')
         elif not url.startswith(api_host):
             url = urljoin(api_host, url)
 
@@ -114,7 +112,7 @@ class SolveClient(object):
 
     def _handle_request_error(self, e):
         if isinstance(e, requests.exceptions.RequestException):
-            msg = SolveAPIError.default_message
+            msg = SolveError.default_message
             err = "%s: %s" % (type(e).__name__, str(e))
         else:
             msg = ("Unexpected error communicating with SolveBio. "
@@ -127,17 +125,17 @@ class SolveClient(object):
             else:
                 err += " with no error message"
         msg = textwrap.fill(msg) + "\n\n(Network error: %s)" % (err,)
-        raise SolveAPIError(message=msg)
+        raise SolveError(message=msg)
 
     def _handle_api_error(self, response):
         if response.status_code in [400, 404]:
-            raise SolveAPIError(response=response)
+            raise SolveError(response=response)
         elif response.status_code == 401:
             # not authenticated
-            raise SolveAPIError(
+            raise SolveError(
                 message=LOGIN_REQUIRED_MESSAGE, response=response)
         else:
             logger.info('API Error: %d' % response.status_code)
-            raise SolveAPIError(response=response)
+            raise SolveError(response=response)
 
 client = SolveClient()

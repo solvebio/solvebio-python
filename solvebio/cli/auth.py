@@ -2,7 +2,7 @@
 import getpass
 
 import solvebio
-from solvebio.client import client, SolveAPIError
+from solvebio.client import client, SolveError
 from credentials import get_credentials, delete_credentials, save_credentials
 
 
@@ -47,7 +47,7 @@ def login(args):
     }
     try:
         response = client.request('post', '/v1/auth/token', data)
-    except SolveAPIError as e:
+    except SolveError as e:
         print 'Login failed: %s' % e.message
     else:
         save_credentials(email.lower(), response['token'])

@@ -66,11 +66,11 @@ def _init_logging():
 
 _init_logging()
 
-from . import version  # noqa
-from .errors import SolveAPIError
+from . import version
+from .errors import SolveError
 from .resource import (User, Depository, DepositoryVersion, Dataset,
                        DatasetField)
 from .query import Filter, RangeFilter
 
-__all__ = ['Depository', 'DepositoryVersion', 'Dataset',
-           'DatasetField', 'User', 'Filter', 'RangeFilter', 'SolveAPIError']
+__all__ = ['version', 'Depository', 'DepositoryVersion', 'Dataset',
+           'DatasetField', 'User', 'Filter', 'RangeFilter', 'SolveError']

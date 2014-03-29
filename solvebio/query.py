@@ -171,6 +171,8 @@ class Query(object):
         self._data_url = data_url
         self._mode = params.get('mode', 'offset')
         self._limit = params.get('limit', 100)  # results per request
+        if self._limit < 0:
+            raise Exception('Limit must be >= 0')
         self._result_class = params.get('result_class', QueryResult)
         self._debug = params.get('debug', False)
         self._filters = list()
@@ -269,7 +271,7 @@ class Query(object):
         return bool(self.total)
 
     def __repr__(self):
-        if self.total == 0:
+        if self.total == 0 or self._limit == 0:
             return u'Query returned 0 results'
 
         return u'\n%s\n\n... %s more results.' % (
@@ -325,6 +327,10 @@ class Query(object):
         new = self._clone()
         new._slice_start = key
         new._slice_stop = key + 1
+
+        if new._limit == 0:
+            return list(new)
+
         return list(new)[0]
 
     def __iter__(self):
@@ -353,9 +359,13 @@ class Query(object):
         Allows the Query object to be an iterable.
         Iterates through the internal cache using a cursor.
         """
-        # If the cursor has reached the end
+        # See if the cursor has reached the end
         if (self._slice_stop is not None and self._i >= self._slice_stop) \
                 or self._i >= self.total:
+            raise StopIteration
+
+        # If there is no window (limit == 0), also stop
+        if self._i == self._window[1] == 0:
             raise StopIteration
 
         # get the index within the current window

@@ -39,13 +39,10 @@ Optional settings:
     # Override the SolveBio API host [OPTIONAL]
     SOLVEBIO_API_HOST = 'https://api.solvebio.com'
 
-    # Use a custom dataset alias model by specifying it here [OPTIONAL]
-    SOLVEBIO_DATASET_MODEL = 'django_solvebio.Dataset'
-
     # You can optionally bypass DB lookups by hardcoding aliases.
     # The key is the alias, and the value may be an ID or
     # full dataset name (see example below). [OPTIONAL]
-    SOLVEBIO_DATASETS = {
+    SOLVEBIO_DATASET_ALIASES = {
         'clinvar': 'ClinVar/0.0.2/ClinVar'
     }
 
