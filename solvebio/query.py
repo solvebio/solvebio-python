@@ -275,7 +275,8 @@ class Query(object):
             return u'Query returned 0 results'
 
         return u'\n%s\n\n... %s more results.' % (
-            tabulate(self[0].items(), ['Fields', 'Data']),
+            tabulate(self[0].items(), ['Fields', 'Data'],
+                     aligns=['right', 'left']),
             pretty_int(self.total - 1))
 
     def __getattr__(self, key):

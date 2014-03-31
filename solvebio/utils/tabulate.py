@@ -521,14 +521,14 @@ def _format_table(fmt, headers, rows, colwidths, colaligns):
 
 
 def tabulate(tabular_data, headers=[], tablefmt="orgmode",
-             floatfmt="g", numalign="decimal", stralign="left",
-             missingval=u""):
+             floatfmt="g", aligns=[], missingval=u""):
     list_of_lists, headers = _normalize_tabular_data(tabular_data, headers)
 
     # optimization: look for ANSI control codes once,
     # enable smart width functions only if a control code is found
-    plain_text = u'\n'.join(['\t'.join(map(_text_type, headers))] + \
-                            [u'\t'.join(map(_text_type, row)) for row in list_of_lists])
+    plain_text = u'\n'.join(
+        ['\t'.join(map(_text_type, headers))]
+        + [u'\t'.join(map(_text_type, row)) for row in list_of_lists])
 
     has_invisible = re.search(_invisible_codes, plain_text)
     if has_invisible:
@@ -541,17 +541,23 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
 
     coltypes = list(map(_column_type, cols))
     cols = [[_format(v, ct, floatfmt, missingval) for v in c]
-             for c, ct in zip(cols, coltypes)]
+            for c, ct in zip(cols, coltypes)]
 
     # align columns
-    aligns = [numalign if ct in [int, float] else stralign for ct in coltypes]
-    minwidths = [width_fn(h) + 2 for h in headers] if headers else [0] * len(cols)
+    if not aligns:
+        # dynamic alignment by col type
+        aligns = ["decimal" if ct in [int, float] else "left"
+                  for ct in coltypes]
+
+    minwidths = [width_fn(h) + 2 for h in headers] if headers \
+        else [0] * len(cols)
     cols = [_align_column(c, a, minw, has_invisible)
             for c, a, minw in zip(cols, aligns, minwidths)]
 
     if headers:
         # align headers and add headers
-        minwidths = [max(minw, width_fn(c[0])) for minw, c in zip(minwidths, cols)]
+        minwidths = [max(minw, width_fn(c[0]))
+                     for minw, c in zip(minwidths, cols)]
         headers = [_align_header(h, a, minw)
                    for h, a, minw in zip(headers, aligns, minwidths)]
         rows = list(zip(*cols))
