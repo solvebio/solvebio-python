@@ -117,20 +117,23 @@ _invisible_codes = re.compile("\x1b\[\d*m")  # ANSI color codes
 
 
 def simple_separated_format(separator):
-    """Construct a simple TableFormat with columns separated by a separator.
+    """
+    Construct a simple TableFormat with columns separated by a separator.
 
     >>> tsv = simple_separated_format("\t") ; \
-        tabulate([["foo", 1], ["spam", 23]], tablefmt=tsv) == u'foo \\t 1\\nspam\\t23'
+        tabulate([["foo", 1], ["spam", 23]], \
+            tablefmt=tsv) == u'foo \\t 1\\nspam\\t23'
     True
 
     """
     return TableFormat(None, None, None, None,
-                       headerrow=None, datarow=DataRow('', '\t', ''), **_format_defaults)
+                       headerrow=None, datarow=DataRow('', '\t', ''),
+                       **_format_defaults)
 
 
 def _isconvertible(conv, string):
     try:
-        n = conv(string)
+        n = conv(string)  # noqa
         return True
     except (TypeError, ValueError):
         return False
@@ -156,12 +159,14 @@ def _isint(string):
     False
     """
     return type(string) is int or \
-           (isinstance(string, _binary_type) or isinstance(string, _text_type)) and \
-           _isconvertible(int, string)
+        (isinstance(string, _binary_type) or
+         isinstance(string, _text_type)) and \
+        _isconvertible(int, string)
 
 
 def _type(string, has_invisible=True):
-    """The least generic type (type(None), int, float, str, unicode).
+    """
+    The least generic type (type(None), int, float, str, unicode).
 
     >>> _type(None) is type(None)
     True
@@ -193,7 +198,8 @@ def _type(string, has_invisible=True):
 
 
 def _afterpoint(string):
-    """Symbols after a decimal point, -1 if the string lacks the decimal point.
+    """
+    Symbols after a decimal point, -1 if the string lacks the decimal point.
 
     >>> _afterpoint("123.45")
     2
@@ -220,37 +226,46 @@ def _afterpoint(string):
 
 
 def _padleft(width, s, has_invisible=True):
-    """Flush right.
+    """
+    Flush right.
 
-    >>> _padleft(6, u'\u044f\u0439\u0446\u0430') == u'  \u044f\u0439\u0446\u0430'
+    >>> _padleft(6, u'\u044f\u0439\u0446\u0430') \
+        == u'  \u044f\u0439\u0446\u0430'
     True
 
     """
-    iwidth = width + len(s) - len(_strip_invisible(s)) if has_invisible else width
+    iwidth = width + len(s) - len(_strip_invisible(s)) \
+        if has_invisible else width
     fmt = u"{0:>%ds}" % iwidth
     return fmt.format(s)
 
 
 def _padright(width, s, has_invisible=True):
-    """Flush left.
+    """
+    Flush left.
 
-    >>> _padright(6, u'\u044f\u0439\u0446\u0430') == u'\u044f\u0439\u0446\u0430  '
+    >>> _padright(6, u'\u044f\u0439\u0446\u0430') \
+        == u'\u044f\u0439\u0446\u0430  '
     True
 
     """
-    iwidth = width + len(s) - len(_strip_invisible(s)) if has_invisible else width
+    iwidth = width + len(s) - len(_strip_invisible(s)) \
+        if has_invisible else width
     fmt = u"{0:<%ds}" % iwidth
     return fmt.format(s)
 
 
 def _padboth(width, s, has_invisible=True):
-    """Center string.
+    """
+    Center string.
 
-    >>> _padboth(6, u'\u044f\u0439\u0446\u0430') == u' \u044f\u0439\u0446\u0430 '
+    >>> _padboth(6, u'\u044f\u0439\u0446\u0430') \
+        == u' \u044f\u0439\u0446\u0430 '
     True
 
     """
-    iwidth = width + len(s) - len(_strip_invisible(s)) if has_invisible else width
+    iwidth = width + len(s) - len(_strip_invisible(s)) \
+        if has_invisible else width
     fmt = u"{0:^%ds}" % iwidth
     return fmt.format(s)
 
@@ -261,7 +276,8 @@ def _strip_invisible(s):
 
 
 def _visible_width(s):
-    """Visible width of a printed string. ANSI color codes are removed.
+    """
+    Visible width of a printed string. ANSI color codes are removed.
 
     >>> _visible_width('\x1b[31mhello\x1b[0m'), _visible_width("world")
     (5, 5)
@@ -274,10 +290,14 @@ def _visible_width(s):
 
 
 def _align_column(strings, alignment, minwidth=0, has_invisible=True):
-    """[string] -> [padded_string]
+    """
+    [string] -> [padded_string]
 
-    >>> list(map(str,_align_column(["12.345", "-1234.5", "1.23", "1234.5", "1e+234", "1.0e234"], "decimal")))
-    ['   12.345  ', '-1234.5    ', '    1.23   ', ' 1234.5    ', '    1e+234 ', '    1.0e234']
+    >>> list(map(str,_align_column( \
+        ["12.345", "-1234.5", "1.23", "1234.5", \
+         "1e+234", "1.0e234"], "decimal")))
+    ['   12.345  ', '-1234.5    ', '    1.23   ', \
+     ' 1234.5    ', '    1e+234 ', '    1.0e234']
 
     """
     if alignment == "right":
@@ -314,7 +334,8 @@ def _more_generic(type1, type2):
 
 
 def _column_type(strings, has_invisible=True):
-    """The least generic type all column values are convertible to.
+    """
+    The least generic type all column values are convertible to.
 
     >>> _column_type(["1", "2"]) is _int_type
     True
@@ -335,13 +356,18 @@ def _column_type(strings, has_invisible=True):
 
 
 def _format(val, valtype, floatfmt, missingval=u""):
-    """Format a value accoding to its type.
+    """
+    Format a value accoding to its type.
 
     Unicode is supported:
 
-    >>> hrow = [u'\u0431\u0443\u043a\u0432\u0430', u'\u0446\u0438\u0444\u0440\u0430'] ; \
+    >>> hrow = [u'\u0431\u0443\u043a\u0432\u0430', \
+                u'\u0446\u0438\u0444\u0440\u0430'] ; \
         tbl = [[u'\u0430\u0437', 2], [u'\u0431\u0443\u043a\u0438', 4]] ; \
-        good_result = u'\\u0431\\u0443\\u043a\\u0432\\u0430      \\u0446\\u0438\\u0444\\u0440\\u0430\\n-------  -------\\n\\u0430\\u0437             2\\n\\u0431\\u0443\\u043a\\u0438           4' ; \
+        good_result = u'\\u0431\\u0443\\u043a\\u0432\\u0430      \
+                        \\u0446\\u0438\\u0444\\u0440\\u0430\\n-------\
+                          -------\\n\\u0430\\u0437             \
+                          2\\n\\u0431\\u0443\\u043a\\u0438           4' ; \
         tabulate(tbl, headers=hrow) == good_result
     True
 
@@ -367,7 +393,8 @@ def _align_header(header, alignment, width):
 
 
 def _normalize_tabular_data(tabular_data, headers):
-    """Transform a supported data type to a list of lists, and a list of headers.
+    """
+    Transform a supported data type to a list of lists, and a list of headers.
 
     Supported tabular data types:
 
@@ -389,15 +416,19 @@ def _normalize_tabular_data(tabular_data, headers):
         if hasattr(tabular_data.values, "__call__"):
             # likely a conventional dict
             keys = tabular_data.keys()
-            rows = list(izip_longest(*tabular_data.values()))  # columns have to be transposed
+            # columns have to be transposed
+            rows = list(izip_longest(*tabular_data.values()))
         elif hasattr(tabular_data, "index"):
-            # values is a property, has .index => it's likely a pandas.DataFrame (pandas 0.11.0)
+            # values is a property, has .index then
+            # it's likely a pandas.DataFrame (pandas 0.11.0)
             keys = tabular_data.keys()
-            vals = tabular_data.values  # values matrix doesn't need to be transposed
+            # values matrix doesn't need to be transposed
+            vals = tabular_data.values
             names = tabular_data.index
             rows = [[v] + list(row) for v, row in zip(names, vals)]
         else:
-            raise ValueError("tabular data doesn't appear to be a dict or a DataFrame")
+            raise ValueError("tabular data doesn't appear to be a dict "
+                             "or a DataFrame")
 
         if headers == "keys":
             headers = list(map(_text_type, keys))  # headers should be strings
@@ -497,8 +528,9 @@ def _format_table(fmt, headers, rows, colwidths, colaligns):
     if fmt.linebelowheader and "linebelowheader" not in hidden:
         begin, fill, sep, end = fmt.linebelowheader
         if fmt.usecolons:
-            segs = [_line_segment_with_colons(fmt.linebelowheader, a, w + 2 * pad)
-                    for w, a in zip(colwidths, colaligns)]
+            segs = [
+                _line_segment_with_colons(fmt.linebelowheader, a, w + 2 * pad)
+                for w, a in zip(colwidths, colaligns)]
             lines.append(_build_row(segs, 0, begin, sep, end))
         else:
             lines.append(_build_line(colwidths, pad, *fmt.linebelowheader))
