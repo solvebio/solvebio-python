@@ -2,7 +2,7 @@
 import solvebio
 from solvebio import version
 from solvebio.utils.printing import red
-from solvebio.cli.credentials import get_credentials
+from solvebio.credentials import get_credentials
 from solvebio.errors import SolveError
 
 import json

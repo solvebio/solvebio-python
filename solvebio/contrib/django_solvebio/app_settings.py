@@ -13,7 +13,7 @@ if API_KEY:
     solvebio.api_key = API_KEY
 else:
     # attempt to get API key from get_credentials (local .netrc)
-    from solvebio.cli.credentials import get_credentials
+    from solvebio.credentials import get_credentials
 
     try:
         solvebio.api_key = API_KEY = get_credentials()[1]
