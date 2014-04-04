@@ -54,3 +54,34 @@ Feel free to submit issues to this GitHub repository and/or
 send us an email at contact@solvebio.com.
 
 """
+import re
+import logging
+logger = logging.getLogger('django_solvebio')
+
+from solvebio import Dataset, SolveError
+from models import DatasetAlias
+import app_settings
+
+
+class SolveBio(object):
+    @classmethod
+    def is_enabled(cls):
+        return bool(app_settings.API_KEY)
+
+    @classmethod
+    def get_dataset(cls, alias):
+        if alias is not None and alias in app_settings.DATASET_ALIASES:
+            return Dataset(app_settings.DATASET_ALIASES[alias])
+
+        try:
+            return Dataset(DatasetAlias.objects.get(alias=alias).dataset_id)
+        except DatasetAlias.DoesNotExist:
+            pass
+
+        # if the alias_or_id matches the Dataset regex, return it
+        if isinstance(alias, (int, long)) or \
+                re.match(Dataset.FULL_NAME_REGEX, alias):
+            return Dataset(alias)
+
+        raise SolveError(
+            'Cannot find the SolveBio dataset by alias "%s"' % alias)

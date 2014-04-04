@@ -11,13 +11,17 @@ class netrc(_netrc):
     Adds path pre-processing to __init__() and save() method to netrc
     """
     def __init__(self, path=None):
+        default_netrc = (path is None and
+                         not os.environ.get('NETRC_PATH', False))
+
         if path is None:
             try:
                 path = os.path.join(
                     os.environ.get('NETRC_PATH', os.environ['HOME']),
                     ".netrc")
             except KeyError:
-                raise IOError("Could not find .netrc: $HOME is not set")
+                raise IOError("Could not find .netrc: neither $NETRC_PATH "
+                              "nor $HOME are set")
 
         # create an empty .netrc if it doesn't exist
         if not os.path.exists(path):
@@ -32,7 +36,7 @@ class netrc(_netrc):
         self.path = path
 
         with open(path) as fp:
-            self._parse(path, fp)
+            self._parse(path, fp, default_netrc)
 
     def save(self):
         """Dump the class data in the format of a .netrc file."""

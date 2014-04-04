@@ -2,7 +2,7 @@ import logging
 logger = logging.getLogger('solvebio')
 
 
-class SolveError(BaseException):
+class SolveError(Exception):
     default_message = ('Unexpected error communicating with SolveBio. '
                        'If this problem persists, let us know at '
                        'contact@solvebio.com.')
@@ -27,7 +27,7 @@ class SolveError(BaseException):
                     'API Response (%d): %s'
                     % (self.status_code, self.json_body))
 
-                if self.status_code in [400, 404]:
+                if self.status_code in [400, 401, 403, 404]:
                     self.message = 'Bad request.'
 
                     if 'detail' in self.json_body:

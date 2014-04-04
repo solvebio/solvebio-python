@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import solvebio
 from solvebio import version
-from solvebio.utils.printing import red
 from solvebio.credentials import get_credentials
 from solvebio.errors import SolveError
 
@@ -14,18 +13,6 @@ from urlparse import urljoin
 from requests.auth import AuthBase
 
 logger = logging.getLogger('solvebio')
-
-LOGIN_REQUIRED_MESSAGE = red("""
-Sorry, your API credentials seem to be invalid.
-
-SolveBio is currently in Private Beta.
-Please go to https://www.solvebio.com to find out more.
-
-If you are a beta user, please log in by typing:
-
-    solvebio login
-
-""")
 
 
 class SolveTokenAuth(AuthBase):
@@ -128,12 +115,8 @@ class SolveClient(object):
         raise SolveError(message=msg)
 
     def _handle_api_error(self, response):
-        if response.status_code in [400, 404]:
+        if response.status_code in [400, 401, 403, 404]:
             raise SolveError(response=response)
-        elif response.status_code == 401:
-            # not authenticated
-            raise SolveError(
-                message=LOGIN_REQUIRED_MESSAGE, response=response)
         else:
             logger.info('API Error: %d' % response.status_code)
             raise SolveError(response=response)
