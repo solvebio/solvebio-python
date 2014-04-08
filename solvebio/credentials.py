@@ -8,20 +8,16 @@ import os
 
 class netrc(_netrc):
     """
-    Adds path pre-processing to __init__() and save() method to netrc
+    Adds a save() method to netrc
     """
-    def __init__(self, path=None):
-        default_netrc = (path is None and
-                         not os.environ.get('NETRC_PATH', False))
-
-        if path is None:
-            try:
-                path = os.path.join(
-                    os.environ.get('NETRC_PATH', os.environ['HOME']),
-                    ".netrc")
-            except KeyError:
-                raise IOError("Could not find .netrc: neither $NETRC_PATH "
-                              "nor $HOME are set")
+    @staticmethod
+    def path():
+        try:
+            path = os.path.join(
+                os.environ.get('NETRC_PATH', os.environ['HOME']), ".netrc")
+        except KeyError:
+            raise IOError("Could not find .netrc: neither $NETRC_PATH "
+                          "nor $HOME are set")
 
         # create an empty .netrc if it doesn't exist
         if not os.path.exists(path):
@@ -30,15 +26,9 @@ class netrc(_netrc):
             except IOError:
                 raise Exception("Could not create a netrc file at '%s', "
                                 "permission denied." % path)
+        return path
 
-        self.hosts = {}
-        self.macros = {}
-        self.path = path
-
-        with open(path) as fp:
-            self._parse(path, fp, default_netrc)
-
-    def save(self):
+    def save(self, path):
         """Dump the class data in the format of a .netrc file."""
         rep = u""
         for host in self.hosts.keys():
@@ -54,7 +44,7 @@ class netrc(_netrc):
                 rep = rep + line
             rep = rep + "\n"
 
-        f = open(self.path, 'w')
+        f = open(path, 'w')
         f.write(rep)
         f.close()
 
@@ -72,7 +62,8 @@ def get_credentials():
     Raises CredentialsError if no valid netrc file is found.
     """
     try:
-        auths = netrc().authenticators(
+        netrc_path = netrc.path()
+        auths = netrc(netrc_path).authenticators(
             urlparse(solvebio.api_host).netloc)
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError(
@@ -86,7 +77,8 @@ def get_credentials():
 
 def delete_credentials():
     try:
-        rc = netrc()
+        netrc_path = netrc.path()
+        rc = netrc(netrc_path)
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
@@ -95,15 +87,16 @@ def delete_credentials():
     except KeyError:
         pass
     else:
-        rc.save()
+        rc.save(netrc_path)
 
 
 def save_credentials(email, api_key):
     try:
-        rc = netrc()
+        netrc_path = netrc.path()
+        rc = netrc(netrc_path)
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
     # Overwrites any existing credentials
     rc.hosts[urlparse(solvebio.api_host).netloc] = (email, None, api_key)
-    rc.save()
+    rc.save(netrc_path)
