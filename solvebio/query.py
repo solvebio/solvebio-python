@@ -296,24 +296,33 @@ class Query(object):
         if not isinstance(key, (slice, int, long)):
             raise TypeError
 
+        # prevent indexing when limit is 0
+        assert (self._limit > 0), "Indexing not supported when limit == 0."
+
+        # prevent negative indexing
         assert (
             (not isinstance(key, slice) and (key >= 0)) or
             (isinstance(key, slice) and (key.start is None or key.start >= 0)
                 and (key.stop is None or key.stop >= 0))
             ), "Negative indexing is not supported."
 
+        # if the cache is warmed up, see if we have the results
         if self._response is not None:
-            # if we're already warmed up, see if we have the results
             lower, upper = self._window
+
             if isinstance(key, slice):
-                if key.start is not None and key.start >= lower \
-                        and key.stop is not None and key.stop <= upper:
-                    return self.results[key]
-            elif key >= lower and key < upper:
+                # double slices and single stop slices are handled
+                if key.stop is not None and int(key.stop) <= upper:
+                    if key.start is None or (key.start is not None
+                                             and int(key.start) >= lower):
+                        return self.results[key]
+            elif lower <= key < upper:
                 return self.results[key]
 
+        # the result is not yet cached so we need to start fresh
+        new = self._clone()
+
         if isinstance(key, slice):
-            new = self._clone()
             if key.start is not None:
                 new._slice_start = int(key.start)
             if key.stop is not None:
@@ -324,13 +333,9 @@ class Query(object):
             else:
                 return list(new)
 
-        # not a slice, just an index
-        new = self._clone()
+        # not a slice, just an single index
         new._slice_start = key
         new._slice_stop = key + 1
-
-        if new._limit == 0:
-            return list(new)
 
         return list(new)[0]
 
