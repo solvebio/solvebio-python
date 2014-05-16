@@ -171,10 +171,9 @@ class Query(object):
         self._data_url = data_url
         self._mode = params.get('mode', 'offset')
         self._limit = params.get('limit', 100)  # results per request
-        if self._limit < 0:
-            raise Exception('Limit must be >= 0')
         self._result_class = params.get('result_class', QueryResult)
         self._debug = params.get('debug', False)
+        self._fields = params.get('fields', None)
         self._filters = list()
         self._response = None  # the cache response
 
@@ -184,11 +183,16 @@ class Query(object):
         self._window = None  # the index range of results received
         self._i = 0  # internal result cache iterator
 
+        # parameter error checking
+        if self._limit < 0:
+            raise Exception('"limit" parameter must be >= 0')
+
     def _clone(self, filters=None):
         new = self.__class__(self._data_url,
                              mode=self._mode,
                              limit=self._limit,
                              result_class=self._result_class)
+        new._fields = self._fields
         new._filters += self._filters
         if filters is not None:
             new._filters += filters
@@ -424,6 +428,9 @@ class Query(object):
                 q['filters'] = [{'and': filters}]
             else:
                 q['filters'] = filters
+
+        if self._fields is not None:
+            q['fields'] = self._fields
 
         return q
 
