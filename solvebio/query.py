@@ -456,7 +456,7 @@ class Query(object):
                                for r in response['results']]
 
         if self._slice_start is not None \
-                and self._slice_start >= self.total:
+                and self._slice_start >= response['total']:
             raise IndexError(
                 'Index out of range, only %d total results(s)'
                 % self.total)
