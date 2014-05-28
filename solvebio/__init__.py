@@ -22,9 +22,9 @@ def help():
 
 def _init_logging():
     loglevel_base = _os.environ.get('SOLVEBIO_LOGLEVEL', 'WARN')
-    loglevel_stream = _os.environ.get('SOLVEBIO_LOGLEVEL_STREAM', 'WARN')
+    loglevel_stream = _os.environ.get('SOLVEBIO_LOGLEVEL', 'WARN')
     logfile = _os.environ.get('SOLVEBIO_LOGFILE', '~/.solvebio/solvebio.log')
-    loglevel_file = _os.environ.get('SOLVEBIO_LOGLEVEL_STREAM', 'DEBUG')
+    loglevel_file = _os.environ.get('SOLVEBIO_LOGLEVEL', 'DEBUG')
 
     base_logger = _logging.getLogger("solvebio")
     base_logger.setLevel(loglevel_base)

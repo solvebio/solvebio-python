@@ -61,7 +61,7 @@ class SolveClient(object):
             )
         }
 
-    def request(self, method, url, params=None):
+    def request(self, method, url, params=None, raw=False):
         if method.upper() in ('POST', 'PUT', 'PATCH'):
             # use only the data payload for write requests
             data = json.dumps(params)
@@ -89,13 +89,13 @@ class SolveClient(object):
         except Exception as e:
             self._handle_request_error(e)
 
-        # TODO: get API version from response headers
-
         if not (200 <= response.status_code < 300):
             self._handle_api_error(response)
-        else:
-            # all success responses are JSON
-            return response.json()
+
+        if raw:
+            return response
+
+        return response.json()
 
     def _handle_request_error(self, e):
         if isinstance(e, requests.exceptions.RequestException):

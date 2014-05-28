@@ -70,7 +70,9 @@ class SolveBio(object):
 
     @classmethod
     def get_dataset(cls, alias):
-        if alias is not None and alias in app_settings.DATASET_ALIASES:
+        assert alias, 'Dataset alias argument cannot be None'
+
+        if alias in app_settings.DATASET_ALIASES:
             return Dataset(app_settings.DATASET_ALIASES[alias])
 
         try:

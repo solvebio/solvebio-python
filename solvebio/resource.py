@@ -396,7 +396,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         response = client.request('get', self.fields_url, params)
         return convert_to_solve_object(response)
 
-    def query(self, **params):
+    def _data_url(self):
         if 'data_url' not in self:
             if 'id' not in self or not self['id']:
                 raise Exception(
@@ -404,9 +404,11 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                     'Please instantiate the Dataset '
                     'object with an ID or full_name.')
             # automatically construct the data_url from the ID
-            self['data_url'] = self.instance_url() + u'/data'
+            return self.instance_url() + u'/data'
+        return self['data_url']
 
-        q = Query(self['data_url'], **params)
+    def query(self, **params):
+        q = Query(self._data_url(), **params)
         if params.get('filters'):
             return q.filter(params.get('filters'))
         return q

@@ -286,7 +286,7 @@ class Query(object):
     def __getattr__(self, key):
         if self._response is None:
             logger.debug('Warming up the Query response cache')
-            self.request()
+            self.execute()
 
         if key in self._response.keys():
             return self._response[key]
@@ -349,14 +349,14 @@ class Query(object):
         Once the cached result set is exhausted, repeat query.
         """
         # always start fresh
-        self.request()
+        self.execute()
 
         # start the internal counter _i
         self._i = self._slice_start or 0
 
         # fast-forward the cursor if needed
         while self._window[1] < self._i:
-            self.request(**{self._mode: self._response[self._mode]})
+            self.execute(**{self._mode: self._response[self._mode]})
 
         # slice the results_cache to put _start at 0 in the cache
         self._response['results'] = \
@@ -382,7 +382,7 @@ class Query(object):
         cache_index = self._i - self._window[1]
         if cache_index == 0:
             # current result cache is empty, request more
-            self.request(**{self._mode: self._response[self._mode]})
+            self.execute(**{self._mode: self._response[self._mode]})
             cache_index = self._i - self._window[1]
 
         self._i += 1
@@ -434,7 +434,10 @@ class Query(object):
 
         return q
 
-    def request(self, **params):
+    def execute(self, **params):
+        """
+        Executes a query and returns the request parameters and response.
+        """
         params.update(self._build_query())
         logger.debug('Querying dataset: %s' % str(params))
         response = client.request('post', self._data_url, params)
@@ -452,10 +455,11 @@ class Query(object):
         response['results'] = [self._result_class(r)
                                for r in response['results']]
 
-        self._response = response
-
         if self._slice_start is not None \
                 and self._slice_start >= self.total:
             raise IndexError(
                 'Index out of range, only %d total results(s)'
                 % self.total)
+
+        self._response = response
+        return params, response
