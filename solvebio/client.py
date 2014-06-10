@@ -48,8 +48,8 @@ class SolveClient(object):
     """A requests-based HTTP client for SolveBio API resources"""
 
     def __init__(self, api_key=None, api_host=None):
-        self.api_key = api_key
-        self.api_host = api_host
+        self._api_key = api_key
+        self._api_host = api_host
         self.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -69,7 +69,7 @@ class SolveClient(object):
         else:
             data = None
 
-        api_host = self.api_host or solvebio.api_host
+        api_host = self._api_host or solvebio.api_host
         if not api_host:
             raise SolveError(message='No SolveBio API host is set')
         elif not url.startswith(api_host):
@@ -82,7 +82,7 @@ class SolveClient(object):
                                         url=url,
                                         params=params,
                                         data=data,
-                                        auth=SolveTokenAuth(self.api_key),
+                                        auth=SolveTokenAuth(self._api_key),
                                         verify=True,
                                         timeout=80,
                                         headers=self.headers)

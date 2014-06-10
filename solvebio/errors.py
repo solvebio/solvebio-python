@@ -31,7 +31,7 @@ class SolveError(Exception):
                     self.message = 'Bad request.'
 
                     if 'detail' in self.json_body:
-                        self.message = '%s.' % self.json_body['detail']
+                        self.message = '%s' % self.json_body['detail']
 
                     if 'non_field_errors' in self.json_body:
                         self.message = '%s.' % \
