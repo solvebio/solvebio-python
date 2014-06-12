@@ -1,0 +1,6 @@
+include LICENSE
+include AUTHORS
+include README.md
+include MANIFEST.in
+recursive-include solvebio *.py
+recursive-include solvebio/contrib/django_solvebio/templates *.html
