@@ -99,8 +99,10 @@ if [ "$OPENSSL_VERSION_MAJOR" -lt "1" ]; then
 fi
 
 # Install readline with easy_install
-echo "Installing readline through easy_install (enhances IPython)..."
-echo "(Your user or system password may be required)"
+echo
+echo "Installing readline (enhances IPython) with easy_install."
+echo "Your system (sudo) password may be required."
+echo
 sudo $PYTHON -m easy_install readline
 
 # Check for working pip
@@ -124,7 +126,8 @@ fi
 PIP_FLAGS=""
 # disable the use of wheels if pip supports them
 if [ $($PYTHON -m pip install --help | grep "\-\-no\-use\-wheel" -c) -ne 0 ]; then
-  PIP_FLAGS="--no-use-wheel"
+  # force-reinstall in case the user has the .whl installed already
+  PIP_FLAGS="--force-reinstall --no-use-wheel"
 fi
 
 # Are we installing or upgrading?
