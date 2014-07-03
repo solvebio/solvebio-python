@@ -145,22 +145,6 @@ class RangeFilter(Filter):
         return '<RangeFilter {0}>'.format(self.filters)
 
 
-class QueryResult(dict):
-    """
-    Container for Query result key/value documents
-    """
-
-    def __init__(self, obj):
-        for k, v in obj.items():
-            if k.startswith('_'):
-                setattr(self, k, v)
-            else:
-                self[k] = v
-
-    def fields(self):
-        return self.keys()
-
-
 class Query(object):
     """
     A Query API request wrapper that generates a request from Filter objects,
@@ -171,7 +155,7 @@ class Query(object):
         self._data_url = data_url
         self._mode = params.get('mode', 'offset')
         self._limit = params.get('limit', 100)  # results per request
-        self._result_class = params.get('result_class', QueryResult)
+        self._result_class = params.get('result_class', dict)
         self._debug = params.get('debug', False)
         self._fields = params.get('fields', None)
         self._filters = list()
