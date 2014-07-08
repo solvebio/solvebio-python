@@ -103,10 +103,10 @@ class SolveObject(dict):
         return convert_to_solve_object(response)
 
     def __repr__(self):
-        ident_parts = [type(self).__name__]
-
         if isinstance(self.get('class_name'), basestring):
-            ident_parts.append(self.get('class_name').encode('utf8'))
+            ident_parts = [self.get('class_name').encode('utf8')]
+        else:
+            ident_parts = [type(self).__name__]
 
         if isinstance(self.get('id'), int):
             ident_parts.append('id=%d' % (self.get('id'),))
