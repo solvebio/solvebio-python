@@ -76,7 +76,7 @@ class SolveObject(dict):
 
         try:
             return self[k]
-        except KeyError, err:
+        except KeyError as err:
             raise AttributeError(*err.args)
 
     def __setitem__(self, k, v):
