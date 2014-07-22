@@ -125,7 +125,6 @@ def test_solve_api(args): #pylint: disable=unused-argument
                                             start=100000,
                                             end=900000)
         run_and_verify(lambda: query.filter(range_filter), 'run a range filter')
-        print('\nPASS!')
 
     except TestFail as exc:
         print('\n\n\x1b[31mFAIL!\x1b[39m {}'.format(exc))

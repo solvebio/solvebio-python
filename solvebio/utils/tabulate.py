@@ -113,7 +113,7 @@ _table_formats = {"simple":
                               without_header_hide=["linebelowheader"])}
 
 
-_invisible_codes = re.compile("\x1b\[\d*m")  # ANSI color codes
+_invisible_codes = re.compile(r'\x1b\[\d*m')  # ANSI color codes
 
 
 def simple_separated_format(separator):
@@ -481,7 +481,7 @@ def _build_row(cells, padding, begin, sep, end):
     return rendered_cells
 
 
-def _build_line(colwidths, padding, begin, fill, sep,  end):
+def _build_line(colwidths, padding, begin, fill, sep, end):
     "Return a string which represents a horizontal line."
     cells = [fill * (w + 2 * padding) for w in colwidths]
     return _build_row(cells, 0, begin, sep, end)
@@ -600,4 +600,6 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
     if not isinstance(tablefmt, TableFormat):
         tablefmt = _table_formats.get(tablefmt, _table_formats["orgmode"])
 
+    # make sure values don't have newlines or tabs in them
+    rows = [(r[0], r[1].replace('\n', '').replace('\t', '')) for r in rows]
     return _format_table(tablefmt, headers, rows, minwidths, aligns)
