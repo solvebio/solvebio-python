@@ -186,11 +186,14 @@ class Query(object):
         new = self.__class__(self._data_url,
                              mode=self._mode,
                              limit=self._limit,
-                             result_class=self._result_class)
+                             result_class=self._result_class,
+                             debug=self._debug)
         new._fields = self._fields
         new._filters += self._filters
+
         if filters is not None:
             new._filters += filters
+
         return new
 
     def filter(self, *filters, **kwargs):
