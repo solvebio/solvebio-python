@@ -22,8 +22,7 @@ function fail_exit() {
     echo "#####################################"
     echo
     echo "Failed to install SolveBio."
-    echo "If you need some help, email us at contact@solvebio.com"
-    echo "or chat with our engineers at http://chat.solvebio.com/"
+    echo "Need some help? Email us at contact@solvebio.com"
     echo
     echo "#####################################"
     echo
@@ -40,15 +39,16 @@ function ctrl_c() {
 }
 
 echo "Installing the SolveBio Python Client..."
-echo
 
 # Check Python versions
-PYTHON_PATHS=`echo $PATH | sed -e 's/:/ /g'`
-PYTHON_VERSIONS=`find $PYTHON_PATHS -regex ".*/python*" -o -regex ".*/python2.[567]" 2> /dev/null | sort`
-
 echo "Looking for a supported Python installation..."
-# try in order of $PATH
-for PYTHON in $PYTHON_VERSIONS ; do
+PATHS=`echo $PATH | sed -e 's/:/ /g'`
+
+# For each path in $PATH, look for python
+for path in $PATHS; do
+  PYTHONS=`find $path -regex ".*/python*" -o -regex ".*/python2.[567]" 2> /dev/null | sort`
+
+  for PYTHON in $PYTHONS; do
     if [[ ! -x $PYTHON ]] ; then
         continue
     fi
@@ -58,6 +58,11 @@ for PYTHON in $PYTHON_VERSIONS ; do
         PYTHON_FOUND='1'
         break
     fi
+  done
+
+  if [ "$PYTHON_FOUND" == '1' ]; then
+    break
+  fi
 done
 
 if [ "$PYTHON_FOUND" == '1' ]; then
@@ -154,8 +159,7 @@ if [ $? -eq 0 ]; then
     echo
     echo "Check out the Get Started guide:"
     echo "https://www.solvebio.com/documentation/get-started"
-    echo "If you need some help, email contact@solvebio.com"
-    echo "or chat with our engineers at http://chat.solvebio.com/"
+    echo "If you need some help, email us at contact@solvebio.com"
     echo
     echo "#####################################"
     echo
