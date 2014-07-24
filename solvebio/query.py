@@ -109,35 +109,46 @@ class Filter(object):
 
 class RangeFilter(Filter):
     """
-    Helper class that generates Range Filters
+    Helper class that generates Range Filters from UCSC-style ranges.
     """
-    # TODO: normalize range query values
+    SUPPORTED_BUILDS = ('hg18', 'hg19', 'hg38')
 
-    RANGE_CHROMOSOME = '_range_chromosome'
-    RANGE_START = '_range_start'
-    RANGE_END = '_range_end'
-    RANGE_STRAND = '_range_strand'
+    @classmethod
+    def from_string(cls, string, overlap=False):
+        """
+        Handles UCSC-style range queries (hg19:chr1:100-200)
+        """
+        try:
+            build, chromosome, pos = string.split(':')
+        except ValueError:
+            raise ValueError(
+                'Please use UCSC-style format: "hg19:chr2:1000-2000"')
 
-    def __init__(self, chromosome, start, end, strand=None, overlap=False):
+        if '-' in pos:
+            start, end = pos.replace(',', '').split('-')
+        else:
+            start = end = pos.replace(',', '')
+
+        return cls(build, chromosome, start, end, overlap=overlap)
+
+    def __init__(self, build, chromosome, start, end, overlap=False):
         """
         Shortcut to do range queries on supported datasets.
-
-        start and end should be positive integers.
-        chromosome should be in the format 'chrN'.
         """
-        chromosome, start, end = str(chromosome), str(start), str(end)
+        if build.lower() not in self.SUPPORTED_BUILDS:
+            raise Exception('Build {0} not supported for range filters. '
+                            'Supported builds are: {1}'
+                            .format(build, ', '.join(self.SUPPORTED_BUILDS)))
 
-        f = Filter(**{self.RANGE_START + '__range': [start, end]})
+        f = Filter(**{'{0}_start__range'.format(build): [start, end]})
 
         if overlap:
-            f = f | Filter(**{self.RANGE_END + '__range': [start, end]})
+            f = f | Filter(**{'{0}_end__range'.format(build): [start, end]})
         else:
-            f = f & Filter(**{self.RANGE_END + '__range': [start, end]})
+            f = f & Filter(**{'{0}_end__range'.format(build): [start, end]})
 
-        f = f & Filter(**{self.RANGE_CHROMOSOME: chromosome})
-
-        if strand is not None:
-            f = f & Filter(**{self.RANGE_STRAND: strand})
+        f = f & Filter(**{'{0}_chromosome'.format(build):
+                          str(chromosome).replace('chr', '')})
 
         self.filters = f.filters
 
@@ -204,9 +215,6 @@ class Query(object):
     def range(self, chromosome, start, end, strand=None, overlap=True):
         """
         Shortcut to do range queries on supported datasets.
-
-        start and end should be positive integers.
-        chromosome should be in the format 'chrN'.
         """
         # TODO: ensure dataset supports range queries?
         return self._clone(
