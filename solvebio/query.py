@@ -5,6 +5,8 @@ from .utils.tabulate import tabulate
 
 import copy
 import logging
+import xml.dom.minidom
+import xml.parsers.expat
 logger = logging.getLogger('solvebio')
 
 
@@ -155,6 +157,16 @@ class RangeFilter(Filter):
     def __repr__(self):
         return '<RangeFilter {0}>'.format(self.filters)
 
+class AutoStr(str):
+    """
+        string-like class that automatically pretty prints different
+        types of values
+    """
+    def __str__(self):
+        try:
+            return xml.dom.minidom.parseString(self).toprettyxml()
+        except:
+            return self.__repr__()
 
 class Query(object):
     """
@@ -294,16 +306,13 @@ class Query(object):
         """
         if not isinstance(key, (slice, int, long)):
             raise TypeError
-
-        # prevent indexing when limit is 0
-        assert (self._limit > 0), "Indexing not supported when limit == 0."
-
-        # prevent negative indexing
-        assert (
-            (not isinstance(key, slice) and (key >= 0)) or
-            (isinstance(key, slice) and (key.start is None or key.start >= 0)
-                and (key.stop is None or key.stop >= 0))
-            ), "Negative indexing is not supported."
+        if self._limit < 0:
+            raise ValueError('Indexing not supporting when limit == 0.')
+        if isinstance(key, slice):
+            if key.start is not None and key.start >= 0:
+                raise ValueError('Negative indexing is not supported')
+        elif key < 0:
+            raise ValueError('Negative indexing is not supported')
 
         # if the cache is warmed up, see if we have the results
         if self._response is not None:
@@ -447,8 +456,15 @@ class Query(object):
         logger.debug('Query response window [%d, %d]'
                      % (self._window[0], self._window[1]))
 
-        response['results'] = [self._result_class(r)
-                               for r in response['results']]
+        converted_results = []
+        for result in response['results']:
+            # the _source_document field is the only field which we really need
+            # to worry about pretty printing. We don't want the overhead for the
+            # rest of the values.
+            if '_source_document' in result.keys():
+                result['_source_document'] = AutoStr(result['_source_document'])
+            converted_results.append(self._result_class(result))
+        response['results'] = converted_results
 
         if self._slice_start is not None \
                 and self._slice_start >= response['total']:
