@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """ Main file for SolveBio CLI """
-from __future__ import print_function
+#from __future__ import print_function
 
 import os
 import sys
@@ -12,17 +12,18 @@ import solvebio
 
 from . import auth
 
+
 class SolveArgumentParser(argparse.ArgumentParser):
     """Main parser for the SolveBio command line client"""
     HELP = {
-        'login' : 'Login and save credentials',
-        'logout' : 'Logout and delete saved credentials',
-        'whoami' : 'Show your SolveBio email address',
-        'shell' : 'Open the SolveBio Python shell',
-        'test' : 'Make sure the SolveBio API is working correctly',
-        'version' : '%(prog)s {}'.format(solvebio.version.VERSION),
-        'api_host' : 'Override the default SolveBio API host',
-        'api_key' : 'Manually provide a SolveBio API key'
+        'login': 'Login and save credentials',
+        'logout': 'Logout and delete saved credentials',
+        'whoami': 'Show your SolveBio email address',
+        'shell': 'Open the SolveBio Python shell',
+        'test': 'Make sure the SolveBio API is working correctly',
+        'version': '%(prog)s {}'.format(solvebio.version.VERSION),
+        'api_host': 'Override the default SolveBio API host',
+        'api_key': 'Manually provide a SolveBio API key'
     }
 
     def __init__(self, *args, **kwargs):
@@ -41,10 +42,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
             a subparser, as we do below
         """
         subcmd_params = {
-            'title' : 'SolveBio Commands',
-            'dest' : 'subcommands'
+            'title': 'SolveBio Commands',
+            'dest': 'subcommands'
         }
-        subcmd = self.add_subparsers(**subcmd_params) #pylint: disable=star-args
+        subcmd = self.add_subparsers(
+            **subcmd_params)  # pylint: disable=star-args
         login_parser = subcmd.add_parser('login', help=self.HELP['login'])
         login_parser.set_defaults(func=auth.login)
         logout_parser = subcmd.add_parser('logout', help=self.HELP['logout'])
@@ -61,8 +63,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
             Try to parse the args first, and then add the subparsers. We want
             to do this so that we can check to see if there are any unknown
             args. We can assume that if, by this point, there are no unknown
-            args, we can append shell to the unknown args as a default. However,
-            to do this, we have to suppress stdout/stderr while doing the
+            args, we can append shell to the unknown args as a default.
+            However, to do this, we have to suppress stdout/stderr during the
             initial parsing, in case the user calls the help method (in which
             case we want to add the additional arguments and *then* call the
             help method. This is a hack to get around the fact that argparse
@@ -83,9 +85,9 @@ class SolveArgumentParser(argparse.ArgumentParser):
         return super(SolveArgumentParser, self).parse_args(args, namespace)
 
 
-def test_solve_api(args): #pylint: disable=unused-argument
+def test_solve_api(args):  # pylint: disable=unused-argument
     """ Test SolveBio API """
-    DATASET = 'Clinvar/1.0.0/ClinVar' #pylint: disable=invalid-name
+    DATASET = 'Clinvar/1.0.0/ClinVar'  # pylint: disable=invalid-name
 
     class TestFail(Exception):
         """ Custom Exception class for running basic tests """
@@ -124,13 +126,14 @@ def test_solve_api(args): #pylint: disable=unused-argument
         range_filter = solvebio.RangeFilter(chromosome=1,
                                             start=100000,
                                             end=900000)
-        run_and_verify(lambda: query.filter(range_filter), 'run a range filter')
+        run_and_verify(lambda: query.filter(range_filter),
+                       'run a range filter')
 
     except TestFail as exc:
         print('\n\n\x1b[31mFAIL!\x1b[39m {}'.format(exc))
 
 
-def launch_ipython_shell(args): #pylint: disable=unused-argument
+def launch_ipython_shell(args):  # pylint: disable=unused-argument
     """Open the SolveBio shell (IPython wrapper)"""
     try:
         from IPython.config.loader import Config
@@ -141,7 +144,7 @@ def launch_ipython_shell(args): #pylint: disable=unused-argument
 
     try:
         # see if we're already inside IPython
-        get_ipython #pylint: disable=undefined-variable
+        get_ipython  # pylint: disable=undefined-variable
     except NameError:
         cfg = Config()
         prompt_config = cfg.PromptManager

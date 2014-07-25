@@ -133,7 +133,7 @@ def simple_separated_format(separator):
 
 def _isconvertible(conv, string):
     try:
-        n = conv(string)  # noqa
+        conv(string)  # noqa
         return True
     except (TypeError, ValueError):
         return False
