@@ -87,7 +87,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
 
 def test_solve_api(args):  # pylint: disable=unused-argument
     """ Test SolveBio API """
-    DATASET = 'Clinvar/1.0.0/ClinVar'  # pylint: disable=invalid-name
+    DATASET = 'ClinVar/2.0.0-1/Variants'  # pylint: disable=invalid-name
 
     class TestFail(Exception):
         """ Custom Exception class for running basic tests """
@@ -123,7 +123,8 @@ def test_solve_api(args):  # pylint: disable=unused-argument
         run_and_verify(basic_filter, 'run a basic filter')
 
         # run a range filter
-        range_filter = solvebio.RangeFilter(chromosome=1,
+        range_filter = solvebio.RangeFilter(build="hg19",
+                                            chromosome=1,
                                             start=100000,
                                             end=900000)
         run_and_verify(lambda: query.filter(range_filter),
