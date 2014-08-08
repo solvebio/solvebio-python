@@ -309,7 +309,8 @@ class Query(object):
         if self._limit < 0:
             raise ValueError('Indexing not supporting when limit == 0.')
         if isinstance(key, slice):
-            if key.start is not None and key.start >= 0:
+            # if key.start is not None and key.start >= 0:
+            if key.start is not None and key.stop is not None and key.start > key.stop:
                 raise ValueError('Negative indexing is not supported')
         elif key < 0:
             raise ValueError('Negative indexing is not supported')
