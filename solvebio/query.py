@@ -3,12 +3,13 @@ from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
 
+import abc
 import copy
 import logging
 import xml.dom.minidom
 import xml.parsers.expat
 logger = logging.getLogger('solvebio')
-
+logger.setLevel(logging.DEBUG)
 
 class Filter(object):
     """
@@ -168,27 +169,26 @@ class AutoStr(str):
         except:
             return self.__repr__()
 
-class Query(object):
+class QueryBase(object):
     """
     A Query API request wrapper that generates a request from Filter objects,
     and can iterate through streaming result sets.
     """
+    __metaclass__ = abc.ABCMeta
+
+    MAXIMUM_LIMIT = 10000
 
     def __init__(self, data_url, **params):
         self._data_url = data_url
         self._mode = params.get('mode', 'offset')
-        self._limit = params.get('limit', 100)  # results per request
+        self._limit = int(params.get('limit', QueryBase.MAXIMUM_LIMIT))  # results per request
         self._result_class = params.get('result_class', dict)
         self._debug = params.get('debug', False)
         self._fields = params.get('fields', None)
         self._filters = list()
-        self._response = None  # the cache response
 
-        # manages iteration of records across multiple requests
-        self._slice_start = None
-        self._slice_stop = None
-        self._window = None  # the index range of results received
-        self._i = 0  # internal result cache iterator
+        # response
+        self._response = None
 
         # parameter error checking
         if self._limit < 0:
@@ -265,21 +265,10 @@ class Query(object):
         return rv
 
     def __len__(self):
-        """Executes query and returns the total number of results"""
-        if self._slice_start is not None:
-            start = self._slice_start
-        else:
-            start = 0
-
-        if self._slice_stop is not None and self._slice_stop <= self.total:
-            stop = self._slice_stop
-        else:
-            stop = self.total
-
-        return stop - start
+        return min(self.total, len(self.results))
 
     def __nonzero__(self):
-        return bool(self.total)
+        return bool(len(self))
 
     def __repr__(self):
         if self.total == 0 or self._limit == 0:
@@ -316,38 +305,7 @@ class Query(object):
         elif key < 0:
             raise ValueError('Negative indexing is not supported')
 
-        # if the cache is warmed up, see if we have the results
-        if self._response is not None:
-            lower, upper = self._window
-
-            if isinstance(key, slice):
-                # double slices and single stop slices are handled
-                if key.stop is not None and int(key.stop) <= upper:
-                    if key.start is None or (key.start is not None
-                                             and int(key.start) >= lower):
-                        return self.results[key]
-            elif lower <= key < upper:
-                return self.results[key]
-
-        # the result is not yet cached so we need to start fresh
-        new = self._clone()
-
-        if isinstance(key, slice):
-            if key.start is not None:
-                new._slice_start = int(key.start)
-            if key.stop is not None:
-                new._slice_stop = int(key.stop)
-
-            if key.step:
-                return list(new)[::key.step]
-            else:
-                return list(new)
-
-        # not a slice, just an single index
-        new._slice_start = key
-        new._slice_stop = key + 1
-
-        return list(new)[0]
+        return self._get_results(key)
 
     def __iter__(self):
         """
@@ -356,17 +314,7 @@ class Query(object):
         """
         # always start fresh
         self.execute()
-
-        # start the internal counter _i
-        self._i = self._slice_start or 0
-
-        # fast-forward the cursor if needed
-        while self._window[1] < self._i:
-            self.execute(**{self._mode: self._response[self._mode]})
-
-        # slice the results_cache to put _start at 0 in the cache
-        self._response['results'] = \
-            self._response['results'][self._i - self._window[0]:]
+        self._i = -1
 
         return self
 
@@ -375,51 +323,18 @@ class Query(object):
         Allows the Query object to be an iterable.
         Iterates through the internal cache using a cursor.
         """
-        # See if the cursor has reached the end
-        if (self._slice_stop is not None and self._i >= self._slice_stop) \
-                or self._i >= self.total:
-            raise StopIteration
-
-        # If there is no window (limit == 0), also stop
-        if self._i == self._window[1] == 0:
-            raise StopIteration
-
-        # get the index within the current window
-        cache_index = self._i - self._window[1]
-        if cache_index == 0:
-            # current result cache is empty, request more
-            self.execute(**{self._mode: self._response[self._mode]})
-            cache_index = self._i - self._window[1]
-
+        # increment
         self._i += 1
-        return self.results[cache_index]
 
-    def _recalculate_window(self, response, params):
-        """
-        Recalculate the window of retrieved results so we can handle slicing.
-        """
-        results_in_response = len(response['results'])
+        return self._next()
 
-        if self._mode == 'cursor':
-            # cursor mode
-            if self._window is None:
-                # if cursor mode and no response yet, assume we're at 0
-                return [0, results_in_response]
-            else:
-                # if cursor and previous window, increment the previous window
-                return[self._window[1], self._window[1] + results_in_response]
-        else:
-            # offset mode
-            if response.get('offset', None) is not None:
-                # if offset mode, just use the offset if it exists
-                return [response['offset'] - results_in_response,
-                        response['offset']]
-            elif params.get('offset', None) is not None:
-                # no offset found in the response... use the request params
-                return [params['offset'],
-                        params['offset'] + results_in_response]
+    @abc.abstractmethod
+    def _next(self):
+        pass
 
-        return [0, results_in_response]
+    @abc.abstractmethod
+    def _get_results(self, key):
+        pass
 
     def _build_query(self):
         q = {
@@ -454,10 +369,6 @@ class Query(object):
                         self._mode, response['mode'])
             self._mode = response['mode']
 
-        self._window = self._recalculate_window(response, params)
-        logger.debug('Query response window [%d, %d]'
-                     % (self._window[0], self._window[1]))
-
         converted_results = []
         for result in response['results']:
             # the _source_document field is the only field which we really need
@@ -468,9 +379,74 @@ class Query(object):
             converted_results.append(self._result_class(result))
         response['results'] = converted_results
 
-        if self._slice_start is not None \
-                and self._slice_start >= response['total']:
-            raise IndexError('list index out of range')
-
         self._response = response
         return params, response
+
+
+class Query(QueryBase):
+    def _get_results(self, key):
+        return self.results[key]
+
+    def _next(self):
+        if self._i == len(self):
+            raise StopIteration()
+
+        return self.results[self._i]
+
+
+# class PagingQuery(QueryBase):
+#     def __init__(self, data_url, **params):
+#         super(self.__class__, self).__init__(data_url, **params)
+#         self._slice = slice(0)
+
+#     def __iter__(self):
+#         self._slice = slice(0)
+#         return super(self.__class__, self).__iter__()
+
+#     def _next(self):
+#         if self._i == self.total:
+#             raise StopIteration()
+
+#         if self._i == len(self.results):
+#             # fetch next page...
+#             _start = self._i / self._limit
+#             _stop = _start + self._limit
+#             self._slice = slice(_start, _stop)
+#             self.execute(offset=_start)
+
+#         return self.results[self._i % self._limit]
+
+#     def _get_results(self, key):
+#         if isinstance(key, slice):
+#             _key_start = (key.start if isinstance(key, slice) else key) or 0
+#             _key_stop = (key.stop if isinstance(key, slice) else key) or self.total
+#             key_slice = slice(_key_start, min(_key_stop, _key_start + self._limit))
+
+#             def _in(inner_slice, outer_slice):
+#                 return inner_slice.start >= outer_slice.start \
+#                             and inner_slice.stop <= outer_slice.stop
+
+#             if not _in(key_slice, self._slice):
+#                 self.execute(offset=key_slice.start)
+#                 self._slice = slice(key_slice.start, key_slice.start + self._limit)
+#             _offset_slice = slice(key_slice.start - self._slice.start, key_slice.stop - self._slice.start)
+
+#             return self.results[_offset_slice]
+
+#         else:
+#             if key < self._slice.start or key >= self._slice.stop:
+#                 _start = int(key - self._limit*0.5)
+#                 _stop = int(key + self._limit*0.5)
+
+#                 # bounds checks...
+#                 if _start < 0:
+#                     _start = 0
+#                     _stop = self._limit
+#                 elif _start >= self.total:
+#                     _stop = self.total
+#                     _start = _stop - self._limit
+
+#                 self.execute(offset=_start)
+#                 self._slice = slice(_start, _stop);
+
+#             return self.results[key - self._slice.start]
