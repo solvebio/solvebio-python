@@ -359,6 +359,7 @@ class Query(QueryBase):
         return self.results[key]
 
     def _next(self):
+        logger.debug('derpderpderp')
         if self._i == len(self):
             raise StopIteration()
 
@@ -378,54 +379,150 @@ class PagingQuery(QueryBase):
         if self._i == self.total:
             raise StopIteration()
 
-        if self._i == len(self.results):
+        if self._i % len(self.results) == 0:
             # fetch next page...
-            _start = self._i / self._limit
+            _start = (self._i / self._limit) * self._limit
             _stop = _start + self._limit
             self._slice = slice(_start, _stop)
+            logger.debug('executing query for slice: [%s, %s)' %
+                        (_start, _stop))
             self.execute(offset=_start)
 
         return self.results[self._i % self._limit]
 
-    def _get_results(self, key):
-        if isinstance(key, slice):
-            _key_start = key.start or 0
-            _key_stop = key.stop or self.total
-            key_slice = slice(
-                _key_start, min(_key_stop, _key_start + self._limit)
-            )
-
-            def _in(inner_slice, outer_slice):
-                return inner_slice.start >= outer_slice.start \
-                    and inner_slice.stop <= outer_slice.stop
-
-            if not _in(key_slice, self._slice):
-                self.execute(offset=key_slice.start)
-                self._slice = slice(
-                    key_slice.start, key_slice.start + self._limit
-                )
-
-            _offset_slice = slice(
-                key_slice.start - self._slice.start,
-                key_slice.stop - self._slice.start
-            )
-
-            return self.results[_offset_slice]
-
+    def _as_slice(self, slice_or_idx):
+        if isinstance(slice_or_idx, slice):
+            return slice_or_idx
         else:
-            if key < self._slice.start or key >= self._slice.stop:
-                _start = int(key - self._limit * 0.5)
-                _stop = int(key + self._limit * 0.5)
+            return slice(slice_or_idx, slice_or_idx + 1)
 
-                # bounds checks...
-                if _start < 0:
-                    _start = 0
-                    _stop = self._limit
-                elif _start >= self.total:
-                    _stop = self.total
-                    _start = _stop - self._limit
+    def _has_slice(self, slice_or_idx):
+        return slice_or_idx.start >= self._slice.start and \
+            slice_or_idx.stop <= self._slice.stop
 
-                self.execute(offset=_start)
-                self._slice = slice(_start, _stop)
+    def _fetch_next_slice(self, _slice):
+        _start = _slice.start
+        _stop = _slice.stop
 
-            return self.results[key - self._slice.start]
+        # expand slice around requested range
+        _delta = min(_stop - _start, self._limit)
+        _start = _start - (self._limit - _delta) / 2
+        _stop = _start + self._limit
+        if _start <= 0:
+            _start = 0
+            _stop = self._limit
+        elif _stop >= self.total:
+            _start = self.total - self._limit
+            _stop = self.total
+
+        # query...
+        logger.debug('executing query for slice: [%s, %s)' % (_start, _stop))
+        self.execute(offset=_start)
+
+        return slice(_start, _stop)
+
+    def _get_results(self, key):
+        is_slice = isinstance(key, slice)
+
+        key = self._as_slice(key)
+
+        if not self._has_slice(key):
+            self._slice = self._fetch_next_slice(key)
+
+        _offset_start = key.start - self._slice.start
+        _offset_stop = (key.stop - key.start) + _offset_start
+        _offset_slice = slice(_offset_start, _offset_stop)
+
+        logger.debug('fetching slice: [%s, %s)' % (key.start, key.stop))
+        logger.debug(' current slice: [%s, %s)' %
+                    (self._slice.start, self._slice.stop))
+        logger.debug('  offset slice: [%s, %s)' %
+                    (_offset_slice.start, _offset_slice.stop))
+
+        return self.results[_offset_slice] if is_slice \
+            else self.results[_offset_slice.start]
+
+        # if isinstance(key, slice):
+        #     _key_start = key.start or 0
+        #     _key_stop = key.stop or self.total
+        #     key_slice = slice(
+        #         _key_start, min(_key_stop, _key_start + self._limit)
+        #     )
+
+        #     def _in(inner_slice, outer_slice):
+        #         return inner_slice.start >= outer_slice.start \
+        #             and inner_slice.stop <= outer_slice.stop
+
+        #     if not _in(key_slice, self._slice):
+        #         self.execute(offset=key_slice.start)
+        #         self._slice = slice(
+        #             key_slice.start, key_slice.start + self._limit
+        #         )
+
+        #     _offset_slice = slice(
+        #         key_slice.start - self._slice.start,
+        #         key_slice.stop - self._slice.start
+        #     )
+
+        #     return self.results[_offset_slice]
+
+        # else:
+        #     if key < self._slice.start or key >= self._slice.stop:
+        #         _start = int(key - self._limit * 0.5)
+        #         _stop = _start + self._limit
+
+        #         # bounds checks...
+        #         if _start < 0:
+        #             _start = 0
+        #             _stop = self._limit
+        #         elif _start >= self.total:
+        #             _stop = self.total
+        #             _start = _stop - self._limit
+
+        #         self.execute(offset=_start)
+        #         self._slice = slice(_start, _stop)
+
+        #     return self.results[key - self._slice.start]
+
+    # def _get_results(self, key):
+    #     if isinstance(key, slice):
+    #         _key_start = key.start or 0
+    #         _key_stop = key.stop or self.total
+    #         key_slice = slice(
+    #             _key_start, min(_key_stop, _key_start + self._limit)
+    #         )
+
+    #         def _in(inner_slice, outer_slice):
+    #             return inner_slice.start >= outer_slice.start \
+    #                 and inner_slice.stop <= outer_slice.stop
+
+    #         if not _in(key_slice, self._slice):
+    #             self.execute(offset=key_slice.start)
+    #             self._slice = slice(
+    #                 key_slice.start, key_slice.start + self._limit
+    #             )
+
+    #         _offset_slice = slice(
+    #             key_slice.start - self._slice.start,
+    #             key_slice.stop - self._slice.start
+    #         )
+
+    #         return self.results[_offset_slice]
+
+    #     else:
+    #         if key < self._slice.start or key >= self._slice.stop:
+    #             _start = int(key - self._limit * 0.5)
+    #             _stop = _start + self._limit
+
+    #             # bounds checks...
+    #             if _start < 0:
+    #                 _start = 0
+    #                 _stop = self._limit
+    #             elif _start >= self.total:
+    #                 _stop = self.total
+    #                 _start = _stop - self._limit
+
+    #             self.execute(offset=_start)
+    #             self._slice = slice(_start, _stop)
+
+    #         return self.results[key - self._slice.start]
