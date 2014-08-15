@@ -6,10 +6,10 @@ from .utils.tabulate import tabulate
 import abc
 import copy
 import logging
-import xml.dom.minidom
-import xml.parsers.expat
+
 logger = logging.getLogger('solvebio')
 logger.setLevel(logging.DEBUG)
+
 
 class Filter(object):
     """
@@ -158,16 +158,6 @@ class RangeFilter(Filter):
     def __repr__(self):
         return '<RangeFilter {0}>'.format(self.filters)
 
-class AutoStr(str):
-    """
-        string-like class that automatically pretty prints different
-        types of values
-    """
-    def __str__(self):
-        try:
-            return xml.dom.minidom.parseString(self).toprettyxml()
-        except:
-            return self.__repr__()
 
 class QueryBase(object):
     """
@@ -180,8 +170,8 @@ class QueryBase(object):
 
     def __init__(self, data_url, **params):
         self._data_url = data_url
-        self._mode = params.get('mode', 'offset')
-        self._limit = int(params.get('limit', QueryBase.MAXIMUM_LIMIT))  # results per request
+        # results per request
+        self._limit = int(params.get('limit', QueryBase.MAXIMUM_LIMIT))
         self._result_class = params.get('result_class', dict)
         self._debug = params.get('debug', False)
         self._fields = params.get('fields', None)
@@ -196,7 +186,6 @@ class QueryBase(object):
 
     def _clone(self, filters=None):
         new = self.__class__(self._data_url,
-                             mode=self._mode,
                              limit=self._limit,
                              result_class=self._result_class,
                              debug=self._debug)
@@ -338,7 +327,6 @@ class QueryBase(object):
 
     def _build_query(self):
         q = {
-            'mode': self._mode,
             'limit': self._limit,
             'debug': self._debug
         }
@@ -363,22 +351,6 @@ class QueryBase(object):
         logger.debug('Querying dataset: %s' % str(params))
         response = client.request('post', self._data_url, params)
         logger.debug('Query response Took %(took)d Total %(total)d' % response)
-
-        if response['mode'] != self._mode:
-            logger.info('Server modified the query mode from %s to %s',
-                        self._mode, response['mode'])
-            self._mode = response['mode']
-
-        converted_results = []
-        for result in response['results']:
-            # the _source_document field is the only field which we really need
-            # to worry about pretty printing. We don't want the overhead for the
-            # rest of the values.
-            if '_source_document' in result.keys():
-                result['_source_document'] = AutoStr(result['_source_document'])
-            converted_results.append(self._result_class(result))
-        response['results'] = converted_results
-
         self._response = response
         return params, response
 
