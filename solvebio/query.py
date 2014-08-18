@@ -346,12 +346,13 @@ class QueryBase(object):
         """
         Executes a query and returns the request parameters and response.
         """
-        params.update(self._build_query())
-        logger.debug('Querying dataset: %s' % str(params))
-        response = client.request('post', self._data_url, params)
+        _params = self._build_query()
+        _params.update(**params)
+        logger.debug('Querying dataset: %s' % str(_params))
+        response = client.request('post', self._data_url, _params)
         logger.debug('Query response Took %(took)d Total %(total)d' % response)
         self._response = response
-        return params, response
+        return _params, response
 
 
 class Query(QueryBase):
@@ -418,7 +419,7 @@ class PagingQuery(QueryBase):
 
         # query...
         logger.debug('executing query for slice: [%s, %s)' % (_start, _stop))
-        self.execute(offset=_start)
+        self.execute(offset=_start, limit=_width)
 
         return slice(_start, _stop)
 
