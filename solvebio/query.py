@@ -271,7 +271,7 @@ class PagingQuery(object):
 
     def __getattr__(self, key):
         if self._response is None:
-            print 'warmup (__getattr__): ', key
+            logger.debug('warmup (__getattr__): %s' % key)
             self.execute()
 
         if key in self._response:
@@ -289,7 +289,7 @@ class PagingQuery(object):
 
         # warmup result set...
         if self._response is None:
-            print 'warmup (__getitem__): ', key
+            logger.debug('warmup (__getitem__): %s' % key)
             self.execute()
 
         if not isinstance(key, (slice, int, long)):
