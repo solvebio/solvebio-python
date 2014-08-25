@@ -151,7 +151,11 @@ class PagingQueryTest(BaseQueryTest):
             self.assertEqual(id_a, id_b)
 
 
-class QueryTest(PagingQueryTest):
+class QueryTest(BaseQueryTest):
+    def setUp(self):
+        super(QueryTest, self).setUp()
+        self.paing = False
+
     def test_limit(self):
         limit = 10
         results = self.dataset.query(limit=limit)
@@ -161,5 +165,4 @@ class QueryTest(PagingQueryTest):
             # Python 2.6 compatability
             self.assertNotEqual(results[i], None)
         self.assertEqual(i, limit - 1)
-
         self.assertRaises(IndexError, lambda: results[limit])
