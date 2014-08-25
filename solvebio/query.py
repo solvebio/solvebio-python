@@ -401,18 +401,20 @@ class PagingQuery(object):
         return _params, response
 
 
-# # TODO: fix Python module reload bug that's breaking "super"
 class Query(PagingQuery):
+    def __init__(self, data_url, **params):
+        PagingQuery.__init__(self, data_url, **params)
+
     def __len__(self):
         return min(self.total, len(self.results))
 
     def _next(self):
         if self._i == len(self) or self._i == self._limit:
             raise StopIteration()
-        return super(self.__class__, self)._next()
+        return PagingQuery._next(self)
 
     def __getitem__(self, key):
         if isinstance(key, (int, long)) \
                 and key >= self._window_slice.stop:
             raise IndexError()
-        return super(self.__class__, self).__getitem__(key)
+        return PagingQuery.__getitem__(self, key)
