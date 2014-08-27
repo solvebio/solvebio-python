@@ -40,13 +40,6 @@ class BaseQueryTest(SolveBioTestCase):
         self.dataset = Dataset.retrieve(TEST_DATASET_NAME)
         self.paging = False
 
-    # test Query when limit is specified and is LESS THAN the number of
-    # total available results
-    def test_limit(self):
-        limit = 10
-        results = self.dataset.query(paging=self.paging, limit=limit)
-        self.assertEqual(len(results), results.total)
-
     # test Filtered Query in which limit is specified but is GREATER THAN
     #  the number of total available results
     def test_limit_filter(self):
@@ -88,6 +81,15 @@ class PagingQueryTest(BaseQueryTest):
     def setUp(self):
         super(PagingQueryTest, self).setUp()
         self.paging = True
+
+    def test_limit(self):
+        """
+        In paging queries, len(results) should return the total # of results
+        that exist.
+        """
+        limit = 10
+        results = self.dataset.query(paging=True, limit=limit)
+        self.assertEqual(len(results), results.total)
 
     def test_paging(self):
         limit = 100
@@ -154,11 +156,15 @@ class PagingQueryTest(BaseQueryTest):
 class QueryTest(BaseQueryTest):
     def setUp(self):
         super(QueryTest, self).setUp()
-        self.paing = False
+        self.paging = False
 
     def test_limit(self):
+        """
+        When paging is off, len(results) should return the number of
+        results retrieved.
+        """
         limit = 10
-        results = self.dataset.query(limit=limit)
+        results = self.dataset.query(paging=self.paging, limit=limit)
         self.assertEqual(len(results), limit)
 
         for i in range(0, len(results)):
