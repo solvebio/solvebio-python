@@ -1,7 +1,6 @@
 import pkgutil
 import unittest
 
-from . import test_query as query
 
 def all_names():
     for _, modname, _ in pkgutil.iter_modules(__path__):

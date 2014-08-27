@@ -29,7 +29,7 @@ def _init_logging():
     base_logger = _logging.getLogger("solvebio")
     base_logger.setLevel(loglevel_base)
 
-    #clear handlers if any exist
+    # clear handlers if any exist
     handlers = base_logger.handlers[:]
     for handler in handlers:
         base_logger.removeHandler(handler)

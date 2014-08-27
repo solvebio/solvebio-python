@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Main file for SolveBio CLI """
-#from __future__ import print_function
 
 import os
 import sys
@@ -163,7 +161,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     try:
         from IPython.terminal.embed import InteractiveShellEmbed
     except ImportError:
-        #pylint: disable=import-error,no-name-in-module
+        # pylint: disable=import-error,no-name-in-module
         from IPython.frontend.terminal.embed import InteractiveShellEmbed
 
     # Now create an instance of the embeddable shell. The first argument is a

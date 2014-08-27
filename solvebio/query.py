@@ -334,10 +334,10 @@ class PagingQuery(object):
         if self._has_slice(self._as_slice(i_offset)):
             _result_start = i_offset - self._window_slice.start
             logger.debug('  window slice: [%s, %s)' %
-                        (_result_start, _result_start + 1))
+                         (_result_start, _result_start + 1))
         else:
             logger.debug('executing query. offset/limit: %6d/%d' %
-                        (i_offset, self._limit))
+                         (i_offset, self._limit))
             self.execute(offset=i_offset, limit=self._limit)
             _result_start = self._i % self._limit
         return self.results[_result_start]

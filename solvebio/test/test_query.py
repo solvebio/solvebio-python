@@ -3,7 +3,7 @@ import re
 import unittest
 
 import solvebio
-from solvebio import *
+from solvebio import Dataset, Filter
 
 # from mock import patch, Mock
 
