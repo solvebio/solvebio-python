@@ -180,13 +180,13 @@ class BatchQueryTest(SolveBioTestCase):
         super(BatchQueryTest, self).setUp()
 
     def test_invalid_batch_query(self):
-        queries = [
-            self.dataset.query(limit=1, fields=['bogus_field']),
-            self.dataset.query(limit=10).filter(omim_id__gt=100000)
-        ]
+        def test(self):
+            BatchQuery([
+                self.dataset.query(limit=1, fields=['bogus_field']),
+                self.dataset.query(limit=10).filter(omim_id__gt=100000)
+            ]).execute()
 
-        with self.assertRaises(SolveError):
-            BatchQuery(queries).execute()
+        self.assertRaises(SolveError, test, self)
 
     def test_batch_query(self):
         queries = [
