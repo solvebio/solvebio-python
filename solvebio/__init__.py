@@ -70,7 +70,8 @@ from . import version
 from .errors import SolveError
 from .resource import (User, Depository, DepositoryVersion, Dataset,
                        DatasetField)
-from .query import Filter, RangeFilter
+from .query import Query, PagingQuery, BatchQuery, Filter, RangeFilter
 
 __all__ = ['version', 'Depository', 'DepositoryVersion', 'Dataset',
-           'DatasetField', 'User', 'Filter', 'RangeFilter', 'SolveError']
+           'DatasetField', 'User', 'Filter', 'RangeFilter', 'Query',
+           'PagingQuery', 'BatchQuery', 'SolveError']

@@ -164,8 +164,9 @@ class PagingQuery(object):
     """
     MAXIMUM_LIMIT = 100
 
-    def __init__(self, data_url, **params):
-        self._data_url = data_url
+    def __init__(self, dataset_id, **params):
+        self._dataset_id = dataset_id
+        self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
         # results per request
         self._limit = int(params.get('limit', PagingQuery.MAXIMUM_LIMIT))
         self._result_class = params.get('result_class', dict)
@@ -183,7 +184,7 @@ class PagingQuery(object):
             raise Exception('\'limit\' parameter must be >= 0')
 
     def _clone(self, filters=None):
-        new = self.__class__(self._data_url,
+        new = self.__class__(self._dataset_id,
                              limit=self._limit,
                              result_class=self._result_class,
                              debug=self._debug)
@@ -402,8 +403,8 @@ class PagingQuery(object):
 
 
 class Query(PagingQuery):
-    def __init__(self, data_url, **params):
-        PagingQuery.__init__(self, data_url, **params)
+    def __init__(self, dataset_id, **params):
+        PagingQuery.__init__(self, dataset_id, **params)
 
     def __len__(self):
         return min(self.total, len(self.results))
@@ -418,3 +419,34 @@ class Query(PagingQuery):
                 and key >= self._window_slice.stop:
             raise IndexError()
         return PagingQuery.__getitem__(self, key)
+
+
+class BatchQuery(object):
+    """
+    BatchQuery accepts a list of Query objects and executes them
+    in a single request to /v1/batch_query.
+    """
+    def __init__(self, queries):
+        """
+        Expects a list of Query objects.
+        """
+        if not isinstance(queries, list):
+            queries = [queries]
+
+        self._queries = queries
+
+    def _build_query(self):
+        query = {'queries': []}
+
+        for i in self._queries:
+            q = i._build_query()
+            q.update({'dataset': i._dataset_id})
+            query['queries'].append(q)
+
+        return query
+
+    def execute(self, **params):
+        _params = self._build_query()
+        _params.update(**params)
+        response = client.request('post', '/v1/batch_query', _params)
+        return response

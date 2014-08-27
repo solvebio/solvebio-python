@@ -408,11 +408,10 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         return self['data_url']
 
     def query(self, paging=False, **params):
+        self._data_url()  # raises an exception if there's no ID
         query_klass = PagingQuery if paging else Query
-        q = query_klass(self._data_url(), **params)
-        if params.get('filters'):
-            return q.filter(params.get('filters'))
-        return q
+        q = query_klass(self['id'], **params)
+        return q.filter(params.get('filters')) if params.get('filters') else q
 
     def help(self):
         open_help(self['full_name'])
