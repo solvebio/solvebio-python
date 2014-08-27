@@ -29,7 +29,7 @@ def _init_logging():
     base_logger = _logging.getLogger("solvebio")
     base_logger.setLevel(loglevel_base)
 
-    #clear handlers if any exist
+    # clear handlers if any exist
     handlers = base_logger.handlers[:]
     for handler in handlers:
         base_logger.removeHandler(handler)
@@ -70,7 +70,8 @@ from . import version
 from .errors import SolveError
 from .resource import (User, Depository, DepositoryVersion, Dataset,
                        DatasetField)
-from .query import Filter, RangeFilter
+from .query import Query, PagingQuery, BatchQuery, Filter, RangeFilter
 
 __all__ = ['version', 'Depository', 'DepositoryVersion', 'Dataset',
-           'DatasetField', 'User', 'Filter', 'RangeFilter', 'SolveError']
+           'DatasetField', 'User', 'Filter', 'RangeFilter', 'Query',
+           'PagingQuery', 'BatchQuery', 'SolveError']

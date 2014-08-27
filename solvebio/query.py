@@ -5,8 +5,7 @@ from .utils.tabulate import tabulate
 
 import copy
 import logging
-import xml.dom.minidom
-import xml.parsers.expat
+
 logger = logging.getLogger('solvebio')
 
 
@@ -157,46 +156,35 @@ class RangeFilter(Filter):
     def __repr__(self):
         return '<RangeFilter {0}>'.format(self.filters)
 
-class AutoStr(str):
-    """
-        string-like class that automatically pretty prints different
-        types of values
-    """
-    def __str__(self):
-        try:
-            return xml.dom.minidom.parseString(self).toprettyxml()
-        except:
-            return self.__repr__()
 
-class Query(object):
+class PagingQuery(object):
     """
     A Query API request wrapper that generates a request from Filter objects,
     and can iterate through streaming result sets.
     """
+    MAXIMUM_LIMIT = 100
 
-    def __init__(self, data_url, **params):
-        self._data_url = data_url
-        self._mode = params.get('mode', 'offset')
-        self._limit = params.get('limit', 100)  # results per request
+    def __init__(self, dataset_id, **params):
+        self._dataset_id = dataset_id
+        self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
+        # results per request
+        self._limit = int(params.get('limit', PagingQuery.MAXIMUM_LIMIT))
         self._result_class = params.get('result_class', dict)
         self._debug = params.get('debug', False)
         self._fields = params.get('fields', None)
         self._filters = list()
-        self._response = None  # the cache response
 
-        # manages iteration of records across multiple requests
-        self._slice_start = None
-        self._slice_stop = None
-        self._window = None  # the index range of results received
-        self._i = 0  # internal result cache iterator
+        # init
+        self._response = None
+        self._reset_iter()
+        self._reset_slice_window()
 
         # parameter error checking
         if self._limit < 0:
-            raise Exception('"limit" parameter must be >= 0')
+            raise Exception('\'limit\' parameter must be >= 0')
 
     def _clone(self, filters=None):
-        new = self.__class__(self._data_url,
-                             mode=self._mode,
+        new = self.__class__(self._dataset_id,
                              limit=self._limit,
                              result_class=self._result_class,
                              debug=self._debug)
@@ -265,45 +253,46 @@ class Query(object):
         return rv
 
     def __len__(self):
-        """Executes query and returns the total number of results"""
-        if self._slice_start is not None:
-            start = self._slice_start
-        else:
-            start = 0
-
-        if self._slice_stop is not None and self._slice_stop <= self.total:
-            stop = self._slice_stop
-        else:
-            stop = self.total
-
-        return stop - start
+        return self.total
 
     def __nonzero__(self):
-        return bool(self.total)
+        return bool(len(self))
 
     def __repr__(self):
         if self.total == 0 or self._limit == 0:
-            return u'Query returned 0 results'
+            return u'query returned 0 results'
 
         return u'\n%s\n\n... %s more results.' % (
             tabulate(self[0].items(), ['Fields', 'Data'],
                      aligns=['right', 'left']),
             pretty_int(self.total - 1))
 
+    def _reset_iter(self):
+        self._i = -1
+
     def __getattr__(self, key):
         if self._response is None:
-            logger.debug('Warming up the Query response cache')
+            logger.debug('warmup (__getattr__): %s' % key)
             self.execute()
 
-        if key in self._response.keys():
+        if key in self._response:
             return self._response[key]
 
-        raise AttributeError(key)
+        raise AttributeError(
+            '\'%s\' object has no attribute \'%s\'' %
+            (self.__class__.__name__, key))
 
     def __getitem__(self, key):
         """
         Retrieve an item or slice from the set of results
         """
+        self._request_slice = self._as_slice(key)
+
+        # warmup result set...
+        if self._response is None:
+            logger.debug('warmup (__getitem__): %s' % key)
+            self.execute()
+
         if not isinstance(key, (slice, int, long)):
             raise TypeError
         if self._limit < 0:
@@ -316,58 +305,16 @@ class Query(object):
         elif key < 0:
             raise ValueError('Negative indexing is not supported')
 
-        # if the cache is warmed up, see if we have the results
-        if self._response is not None:
-            lower, upper = self._window
-
-            if isinstance(key, slice):
-                # double slices and single stop slices are handled
-                if key.stop is not None and int(key.stop) <= upper:
-                    if key.start is None or (key.start is not None
-                                             and int(key.start) >= lower):
-                        return self.results[key]
-            elif lower <= key < upper:
-                return self.results[key]
-
-        # the result is not yet cached so we need to start fresh
-        new = self._clone()
-
+        _results = list(self)[:]
+        # reset request slice
+        self._request_slice = slice(0, float('inf'))
         if isinstance(key, slice):
-            if key.start is not None:
-                new._slice_start = int(key.start)
-            if key.stop is not None:
-                new._slice_stop = int(key.stop)
-
-            if key.step:
-                return list(new)[::key.step]
-            else:
-                return list(new)
-
-        # not a slice, just an single index
-        new._slice_start = key
-        new._slice_stop = key + 1
-
-        return list(new)[0]
+            return _results[slice(0, key.stop - key.start)]
+        else:
+            return _results[0]
 
     def __iter__(self):
-        """
-        Execute a query and iterate through the result set.
-        Once the cached result set is exhausted, repeat query.
-        """
-        # always start fresh
-        self.execute()
-
-        # start the internal counter _i
-        self._i = self._slice_start or 0
-
-        # fast-forward the cursor if needed
-        while self._window[1] < self._i:
-            self.execute(**{self._mode: self._response[self._mode]})
-
-        # slice the results_cache to put _start at 0 in the cache
-        self._response['results'] = \
-            self._response['results'][self._i - self._window[0]:]
-
+        self._reset_iter()
         return self
 
     def next(self):
@@ -375,55 +322,48 @@ class Query(object):
         Allows the Query object to be an iterable.
         Iterates through the internal cache using a cursor.
         """
-        # See if the cursor has reached the end
-        if (self._slice_stop is not None and self._i >= self._slice_stop) \
-                or self._i >= self.total:
-            raise StopIteration
-
-        # If there is no window (limit == 0), also stop
-        if self._i == self._window[1] == 0:
-            raise StopIteration
-
-        # get the index within the current window
-        cache_index = self._i - self._window[1]
-        if cache_index == 0:
-            # current result cache is empty, request more
-            self.execute(**{self._mode: self._response[self._mode]})
-            cache_index = self._i - self._window[1]
-
+        # increment
         self._i += 1
-        return self.results[cache_index]
+        return self._next()
 
-    def _recalculate_window(self, response, params):
-        """
-        Recalculate the window of retrieved results so we can handle slicing.
-        """
-        results_in_response = len(response['results'])
+    def _next(self):
+        _delta = self._request_slice.stop - self._request_slice.start
+        if self._i == len(self) or self._i == _delta:
+            raise StopIteration()
 
-        if self._mode == 'cursor':
-            # cursor mode
-            if self._window is None:
-                # if cursor mode and no response yet, assume we're at 0
-                return [0, results_in_response]
-            else:
-                # if cursor and previous window, increment the previous window
-                return[self._window[1], self._window[1] + results_in_response]
+        i_offset = self._i + self._request_slice.start
+        if self._has_slice(self._as_slice(i_offset)):
+            _result_start = i_offset - self._window_slice.start
+            logger.debug('  window slice: [%s, %s)' %
+                         (_result_start, _result_start + 1))
         else:
-            # offset mode
-            if response.get('offset', None) is not None:
-                # if offset mode, just use the offset if it exists
-                return [response['offset'] - results_in_response,
-                        response['offset']]
-            elif params.get('offset', None) is not None:
-                # no offset found in the response... use the request params
-                return [params['offset'],
-                        params['offset'] + results_in_response]
+            logger.debug('executing query. offset/limit: %6d/%d' %
+                         (i_offset, self._limit))
+            self.execute(offset=i_offset, limit=self._limit)
+            _result_start = self._i % self._limit
+        return self.results[_result_start]
 
-        return [0, results_in_response]
+    # slice operations
+    def _as_slice(self, slice_or_idx):
+        if isinstance(slice_or_idx, slice):
+            return slice_or_idx
+        else:
+            return slice(slice_or_idx, slice_or_idx + 1)
+
+    def _has_slice(self, slice_or_idx):
+        return slice_or_idx.start >= self._window_slice.start and \
+            slice_or_idx.stop <= self._window_slice.stop
+
+    def _reset_request_slice(self):
+        self._request_slice = slice(0, float('inf'))
+
+    def _reset_slice_window(self):
+        self._window = []
+        self._window_slice = slice(0, float('inf'))
+        self._reset_request_slice()
 
     def _build_query(self):
         q = {
-            'mode': self._mode,
             'limit': self._limit,
             'debug': self._debug
         }
@@ -444,33 +384,69 @@ class Query(object):
         """
         Executes a query and returns the request parameters and response.
         """
-        params.update(self._build_query())
-        logger.debug('Querying dataset: %s' % str(params))
-        response = client.request('post', self._data_url, params)
-        logger.debug('Query response Took %(took)d Total %(total)d' % response)
+        _params = self._build_query()
+        _params.update(**params)
+        # logger.debug('querying dataset: %s' % str(_params))
 
-        if response['mode'] != self._mode:
-            logger.info('Server modified the query mode from %s to %s',
-                        self._mode, response['mode'])
-            self._mode = response['mode']
-
-        self._window = self._recalculate_window(response, params)
-        logger.debug('Query response window [%d, %d]'
-                     % (self._window[0], self._window[1]))
-
-        converted_results = []
-        for result in response['results']:
-            # the _source_document field is the only field which we really need
-            # to worry about pretty printing. We don't want the overhead for the
-            # rest of the values.
-            if '_source_document' in result.keys():
-                result['_source_document'] = AutoStr(result['_source_document'])
-            converted_results.append(self._result_class(result))
-        response['results'] = converted_results
-
-        if self._slice_start is not None \
-                and self._slice_start >= response['total']:
-            raise IndexError('list index out of range')
-
+        response = client.request('post', self._data_url, _params)
+        logger.debug(
+            'query response took: %(took)d ms, total: %(total)d' % response)
         self._response = response
-        return params, response
+
+        # update window
+        _offset = _params.get('offset', 0)
+        _len = len(self._response['results'])
+        self._window = self.results
+        self._window_slice = slice(_offset, _offset + _len)
+
+        return _params, response
+
+
+class Query(PagingQuery):
+    def __init__(self, dataset_id, **params):
+        PagingQuery.__init__(self, dataset_id, **params)
+
+    def __len__(self):
+        return min(self.total, len(self.results))
+
+    def _next(self):
+        if self._i == len(self) or self._i == self._limit:
+            raise StopIteration()
+        return PagingQuery._next(self)
+
+    def __getitem__(self, key):
+        if isinstance(key, (int, long)) \
+                and key >= self._window_slice.stop:
+            raise IndexError()
+        return PagingQuery.__getitem__(self, key)
+
+
+class BatchQuery(object):
+    """
+    BatchQuery accepts a list of Query objects and executes them
+    in a single request to /v1/batch_query.
+    """
+    def __init__(self, queries):
+        """
+        Expects a list of Query objects.
+        """
+        if not isinstance(queries, list):
+            queries = [queries]
+
+        self._queries = queries
+
+    def _build_query(self):
+        query = {'queries': []}
+
+        for i in self._queries:
+            q = i._build_query()
+            q.update({'dataset': i._dataset_id})
+            query['queries'].append(q)
+
+        return query
+
+    def execute(self, **params):
+        _params = self._build_query()
+        _params.update(**params)
+        response = client.request('post', '/v1/batch_query', _params)
+        return response

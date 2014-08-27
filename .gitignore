@@ -13,3 +13,4 @@ tests/coverage_html/
 tests/.coverage
 *.DS_Store
 .idea
+.tox

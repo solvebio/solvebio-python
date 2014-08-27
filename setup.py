@@ -16,6 +16,7 @@ setup(
     url='https://github.com/solvebio/solvebio-python',
     packages=find_packages(),
     package_dir={"solvebio": "solvebio"},
+    test_suite='solvebio.test.all',
     include_package_data=True,
     install_requires=['requests>=2.0.0'],
     platforms='any',

@@ -4,7 +4,7 @@ import re
 
 # from utils.tabulate import tabulate
 from .client import client
-from .query import Query
+from .query import Query, PagingQuery
 from .help import open_help
 
 try:
@@ -407,11 +407,11 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
             return self.instance_url() + u'/data'
         return self['data_url']
 
-    def query(self, **params):
-        q = Query(self._data_url(), **params)
-        if params.get('filters'):
-            return q.filter(params.get('filters'))
-        return q
+    def query(self, paging=False, **params):
+        self._data_url()  # raises an exception if there's no ID
+        query_klass = PagingQuery if paging else Query
+        q = query_klass(self['id'], **params)
+        return q.filter(params.get('filters')) if params.get('filters') else q
 
     def help(self):
         open_help(self['full_name'])
