@@ -30,6 +30,12 @@ class FilterTest(unittest.TestCase):
         self.assertEqual(repr(a), "<Filter [('chr1', '3')]>",
                          "prior 'or' doesn't mung filter")
 
+        filters3 = Filter(omim_id=144650) | Filter(omim_id=144600) \
+          | Filter(omim_id=145300)
+        self.assertEqual(repr(filters3),
+                         "<Filter [{'or': [('omim_id', 144650), ('omim_id', 144600), ('omim_id', 145300)]}]>")
+
+
     def test_process_filters(self):
         # FIXME: add more and put in a loop.
         filters = [('omid', None)]
