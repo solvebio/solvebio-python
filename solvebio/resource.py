@@ -23,15 +23,6 @@ def camelcase_to_underscore(name):
 
 
 def convert_to_solve_object(resp):
-    types = {
-        'Depository': Depository,
-        'DepositoryVersion': DepositoryVersion,
-        'Dataset': Dataset,
-        'DatasetField': DatasetField,
-        'User': User,
-        'list': ListObject
-    }
-
     if isinstance(resp, list):
         return [convert_to_solve_object(i) for i in resp]
     elif isinstance(resp, dict) and not isinstance(resp, SolveObject):
@@ -441,3 +432,12 @@ class DatasetField(CreateableAPIResource, ListableAPIResource,
 
     def help(self):
         return self.facets()
+
+types = {
+    'Depository': Depository,
+    'DepositoryVersion': DepositoryVersion,
+    'Dataset': Dataset,
+    'DatasetField': DatasetField,
+    'User': User,
+    'list': ListObject
+}
