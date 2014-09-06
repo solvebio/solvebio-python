@@ -18,9 +18,9 @@ class Filter(object):
 
     For example::
 
-        f = F()
-        f &= F(price='Free')
-        f |= F(style='Mexican')
+        f = Filter()
+        f &= Filter(price='Free')
+        f |= Filter(style='Mexican')
 
     creates a filter "price = 'Free' or style = 'Mexican'".
 
