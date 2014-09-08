@@ -18,16 +18,18 @@ class Filter(object):
 
     For example::
 
-        f = F()
-        f &= F(price='Free')
-        f |= F(style='Mexican')
+        f = Filter()
+        f &= Filter(price='Free')
+        f |= Filter(style='Mexican')
 
     creates a filter "price = 'Free' or style = 'Mexican'".
 
     Each set of kwargs in a `Filter` are ANDed together:
 
-        * `<field>=''` uses a term filter (exact term)
-        * `<field>__in=[]` uses a terms filter (match any)
+        * `<field>='<value>'` matches if the field is that exact value
+        * `<field>__in=[<item1>, ...]` matches any of the terms <item1> and so on
+        * `<field>__range=[<start>, <end>]` matches anything from <start> to <end>
+        * `<field>__between=[<start>, <end>]` matches anything between <start> to <end> not include either <start> or <end>
 
     String terms are not analyzed and are always assumed to be exact matches.
 
