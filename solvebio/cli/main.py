@@ -9,7 +9,7 @@ import argparse
 import solvebio
 
 from . import auth
-
+from solvebio.credentials import get_credentials
 
 class SolveArgumentParser(argparse.ArgumentParser):
     """Main parser for the SolveBio command line client"""
@@ -151,6 +151,13 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
         prompt_config.in2_template = '   .\\D.: '
         prompt_config.out_template = 'Out<\\#>: '
         banner1 = 'SolveBio Python shell started.'
+        creds = get_credentials()
+        if creds:
+            banner1 += "\nYou may be logged in as {}".format(creds[0])
+        else:
+            banner1 += '\nYou are not logged in yet.'
+
+
         exit_msg = 'Quitting SolveBio shell.'
     else:
         print("Running nested copies of IPython.")
