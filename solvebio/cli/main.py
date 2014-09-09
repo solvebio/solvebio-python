@@ -152,11 +152,11 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
         prompt_config.out_template = 'Out<\\#>: '
         banner1 = 'SolveBio Python shell started.'
         creds = get_credentials()
-        if creds:
-            banner1 += "\nYou may be logged in as {}".format(creds[0])
-        else:
-            banner1 += '\nYou are not logged in yet.'
 
+        if creds:
+            banner1 += "\nYou are logged in as {}".format(creds[0])
+        else:
+            banner1 += '\nYou are not logged in. Please run "solvebio login".'
 
         exit_msg = 'Quitting SolveBio shell.'
     else:

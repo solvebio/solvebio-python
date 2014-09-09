@@ -12,7 +12,7 @@ class PagingQueryTest(SolveBioTestCase):
         self.dataset = Dataset.retrieve(TEST_DATASET_NAME)
         self.paging = True
 
-    def no_test_limit(self):
+    def test_limit(self):
         """
         In paging queries, len(results) should return the total # of results
         that exist.
@@ -23,9 +23,9 @@ class PagingQueryTest(SolveBioTestCase):
 
     def test_paging(self):
         limit = 100
-        total = 2012
+        total = 7
         results = self.dataset.query(paging=True, limit=limit) \
-            .filter(hg19_start__range = (140000000, 150000000))
+          .filter(hg19_start__range = (140000000, 140050000))
 
         self.assertEqual(len(results), total)
 
@@ -33,23 +33,23 @@ class PagingQueryTest(SolveBioTestCase):
             continue
         self.assertEqual(i, total - 1)
 
-    def no_test_slice(self):
+    def test_slice(self):
         limit = 100
         results = self.dataset.query(paging=True, limit=limit) \
-            .filter(hg19_start__range = (140000000, 150000000))[200:410]
-        self.assertEqual(len(results), 210)
+            .filter(hg19_start__range = (140000000, 140050000))[2:5]
+        self.assertEqual(len(results), 3)
 
         results = self.dataset.query(paging=True, limit=limit) \
-            .filter(omim_id__in=range(100000, 110000))[0:5]
-        self.assertEqual(len(results), 5)
+            .filter(hg19_start__in=range(140000000, 140050000))[0:8]
+        self.assertEqual(len(results), 7)
 
-    def no_test_paging_and_slice_equivalence(self):
-        idx0 = 60
-        idx1 = 81
+    def test_paging_and_slice_equivalence(self):
+        idx0 = 3
+        idx1 = 5
 
         def _query():
-            return self.dataset.query(paging=True, limit=10) \
-                .filter(omim_id__in=range(100000, 120000))
+            return self.dataset.query(paging=True, limit=20) \
+              .filter(hg19_start__range = (140000000, 140060000))[2:10]
 
         results_slice = _query()[idx0:idx1]
         results_paging = []
@@ -62,11 +62,11 @@ class PagingQueryTest(SolveBioTestCase):
         self.assertEqual(len(results_paging), len(results_slice))
 
         for i in range(0, len(results_slice)):
-            id_a = results_paging[i]['omim_id']
-            id_b = results_slice[i]['omim_id']
+            id_a = results_paging[i]['hg19_start']
+            id_b = results_slice[i]['hg19_start']
             self.assertEqual(id_a, id_b)
 
-    def no_test_caching(self):
+    def test_caching(self):
         idx0 = 60
         idx1 = 81
 
@@ -78,8 +78,8 @@ class PagingQueryTest(SolveBioTestCase):
 
         self.assertEqual(len(results_slice), len(results_cached))
         for i in range(0, len(results_slice)):
-            id_a = results_slice[i]['omim_id']
-            id_b = results_cached[i]['omim_id']
+            id_a = results_slice[i]['reference_allele']
+            id_b = results_cached[i]['reference_allele']
             self.assertEqual(id_a, id_b)
 
 
