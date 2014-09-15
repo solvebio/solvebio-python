@@ -300,6 +300,7 @@ class PagingQuery(object):
         if self._limit < 0:
             raise ValueError('Indexing not supporting when limit == 0.')
         if isinstance(key, slice):
+            key = self._bounded_slice(key)
             start = 0 if key.start is None else key.start
             stop = float('inf') if key.stop is None else key.stop
             if start < 0 or stop < 0 or start > stop:
@@ -311,7 +312,11 @@ class PagingQuery(object):
         # reset request slice
         self._request_slice = slice(0, float('inf'))
         if isinstance(key, slice):
-            return _results[slice(0, key.stop - key.start)]
+            _delta = key.stop - key.start
+            # slice args must be an integer or None
+            if _delta == float('inf'):
+                _delta = None
+            return _results[slice(0, _delta)]
         else:
             return _results[0]
 
@@ -348,9 +353,15 @@ class PagingQuery(object):
     # slice operations
     def _as_slice(self, slice_or_idx):
         if isinstance(slice_or_idx, slice):
-            return slice_or_idx
+            return self._bounded_slice(slice_or_idx)
         else:
             return slice(slice_or_idx, slice_or_idx + 1)
+
+    def _bounded_slice(self, _slice):
+        return slice(
+            _slice.start if _slice.start is not None else 0,
+            _slice.stop if _slice.stop is not None else float('inf')
+        )
 
     def _has_slice(self, slice_or_idx):
         return slice_or_idx.start >= self._window_slice.start and \
@@ -410,6 +421,20 @@ class Query(PagingQuery):
 
     def __len__(self):
         return min(self.total, len(self.results))
+
+    def _bounded_slice(self, _slice):
+        _start = _slice.start
+        _stop = _slice.stop
+        if _start is None and _stop is None:
+            # e.g. q[:] --> [0, limit)
+            return slice(0, self._limit)
+        elif _start is None:
+            # e.g. q[:50] --> [0, min(50, limit) )
+            return slice(0, min(_stop, self._limit))
+        elif _stop is None:
+            # e.g. q[50:] --> [50, 50 + limit)
+            return slice(_start, _start + self._limit)
+        return slice(_start, _stop)
 
     def _next(self):
         if self._i == len(self) or self._i == self._limit:

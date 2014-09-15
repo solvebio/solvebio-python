@@ -1,12 +1,10 @@
 """Test Non Paging Queries"""
 import unittest
 import sys
-import solvebio
 sys.path.insert(0, '.')
 from query_helper import SolveBioTestCase, TEST_DATASET_NAME
-from solvebio import Dataset, Filter, BatchQuery, SolveError
+from solvebio import Dataset, Filter
 
-# from mock import patch, Mock
 
 class BaseQueryTest(SolveBioTestCase):
     def setUp(self):
@@ -69,10 +67,25 @@ class BaseQueryTest(SolveBioTestCase):
 
         self.assertRaises(IndexError, lambda: results[num_filters])
 
-    # API_LIMIT_MAX = 10000
-    # def test_limit_max(self):
-    #     q = self.dataset.query(limit=API_LIMIT_MAX * 10)
-    #     self.assertRaises(SolveError, lambda: len(q))
+    def test_slice_ranges(self):
+        limit = 50
+
+        query = self.dataset.query(paging=self.paging, limit=limit)
+        self.assertEqual(len(query), limit)
+
+        query = self.dataset.query(paging=self.paging, limit=limit)
+        self.assertEqual(len(query[0:limit]), limit)
+
+        query = self.dataset.query(paging=self.paging, limit=limit)
+        self.assertEqual(len(query[:limit]), limit)
+
+        query = self.dataset.query(paging=self.paging, limit=limit)
+        self.assertEqual(len(query[limit:]), limit)
+
+        # equality test
+        r0 = self.dataset.query(paging=self.paging, limit=limit)[0:limit][-1]
+        r1 = self.dataset.query(paging=self.paging, limit=limit)[limit - 1:][0]
+        self.assertEqual(r0['rcvaccession'], r1['rcvaccession'])
 
 
 if __name__ == "__main__":
