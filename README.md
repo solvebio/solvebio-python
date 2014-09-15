@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rocky/solvebio-python.svg)](https://travis-ci.org/rocky/solvebio-python)
+
 SolveBio Python Client
 ======================
 
@@ -55,4 +57,3 @@ To tag new versions:
 
     git tag `cat solvebio/version.py | cut -d "'" -f 2`
     git push --tags origin master
-
