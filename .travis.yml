@@ -2,6 +2,10 @@ language: python
 python:
 - '2.7'
 env:
-  - "SOLVEBIO_API_KEY=0cedb161d845e6a58ec6781478b8314c536e632f"
+  SOLVEBIO_API_KEY:
+    secure: bnEguHrPY1b5464p96iOLZe9kxEXWztPiyhoqd+Np85ZE+7l6b7zFdMuBvuBvFK16EQZ5Fbgd7w+cDq9VaTXSJLAdj0o122UnLVMEgf1QFfbP5M8qBjNXZ3gm2PkpxIvSn0UtS07bTonhv/NVpqvb9NlY9GV29BosLdx0pJ+nS0=
 script:
- - python ./setup.py test
+- python ./setup.py test
+notifications:
+  slack:
+    secure: WvTImIlFKtCSTrcpk11RB467ybQBmZatk1k9CEEb5qkRRX0IUhmmNzV4xKIJR40Hf1u84uW6j5AeD/OChHycU+1C/OmMgyFAIYMAkE8db+dGtpdlQO5a5Jj9xzK8nfUKrw6Y3JzDTn+mQkeFyRP6D8fj3WPWOV5G9EOTY62sLiQ=
