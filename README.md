@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/rocky/solvebio-python.svg)](https://travis-ci.org/rocky/solvebio-python)
+[![Build
+Status](https://travis-ci.org/solvebio/solvebio-python.svg)](https://travis-ci.org/solvebio/solvebio-python)
 
 SolveBio Python Client
 ======================
