@@ -56,7 +56,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
         shell_parser = subcmd.add_parser('test', help=self.HELP['test'])
         shell_parser.set_defaults(func=test_solve_api)
 
-    def parse_args(self, args=None, namespace=None):
+    def parse_solvebio_args(self, args=None, namespace=None):
         """
             Try to parse the args first, and then add the subparsers. We want
             to do this so that we can check to see if there are any unknown
@@ -181,7 +181,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
 def main(argv=sys.argv[1:]):
     """ Main entry point for SolveBio CLI """
     parser = SolveArgumentParser()
-    args = parser.parse_args(argv)
+    args = parser.parse_solvebio_args(argv)
 
     if args.api_host:
         solvebio.api_host = args.api_host
