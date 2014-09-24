@@ -50,7 +50,7 @@ class SolveClient(object):
     def __init__(self, api_key=None, api_host=None):
         self._api_key = api_key
         self._api_host = api_host
-        self.headers = {
+        self._headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Accept-Encoding': 'gzip,deflate',
@@ -61,15 +61,30 @@ class SolveClient(object):
             )
         }
 
-    def request(self, method, url, params=None, raw=False):
+    def request(self, method, url, params=None, raw=False,
+                auth_class=SolveTokenAuth, timeout=80, headers={}):
+        # Support auth-less requests (ie for OAuth2)
+        if auth_class:
+            _auth = auth_class(self._api_key)
+        else:
+            _auth = None
+
+        # Support header modifications
+        _headers = dict(self._headers)
+        _headers.update(headers)
+
         if method.upper() in ('POST', 'PUT', 'PATCH'):
-            # use only the data payload for write requests
-            data = json.dumps(params)
+            # use only data payload for write requests
+            if _headers.get('Content-Type', None) == 'application/json':
+                data = json.dumps(params)
+            else:
+                data = params
             params = None
         else:
             data = None
 
         api_host = self._api_host or solvebio.api_host
+
         if not api_host:
             raise SolveError(message='No SolveBio API host is set')
         elif not url.startswith(api_host):
@@ -78,14 +93,10 @@ class SolveClient(object):
         logger.debug('API %s Request: %s' % (method.upper(), url))
 
         try:
-            response = requests.request(method=method.upper(),
-                                        url=url,
-                                        params=params,
-                                        data=data,
-                                        auth=SolveTokenAuth(self._api_key),
-                                        verify=True,
-                                        timeout=80,
-                                        headers=self.headers)
+            response = requests.request(
+                method=method.upper(), url=url, params=params,
+                data=data, verify=True, timeout=timeout,
+                auth=_auth, headers=_headers)
         except Exception as e:
             self._handle_request_error(e)
 

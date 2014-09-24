@@ -2,12 +2,49 @@ from django.http import HttpResponse, HttpResponseNotFound, \
     HttpResponseBadRequest
 from django.views.generic.base import View
 from django.template import loader, RequestContext, TemplateDoesNotExist
+from django.core.cache import cache
 
 from solvebio.contrib.django_solvebio import SolveBio
 from solvebio.errors import SolveError
 from solvebio.client import client
 
 import json
+
+from app_settings import APP_ID, APP_SECRET, ACCESS_TOKEN
+
+
+class OAuth2AccessTokenView(View):
+    """
+    If the SolveBio App credentials are available,
+    returns an OAuth2 access token.
+    """
+    CACHE_KEY = ACCESS_TOKEN['CACHE_KEY']
+    CACHE_TIMEOUT = ACCESS_TOKEN['CACHE_TIMEOUT']
+    SCOPE = ACCESS_TOKEN['SCOPE']
+
+    def get(self, request, *args, **kwargs):
+        auth = None
+
+        if APP_ID and APP_SECRET:
+            if self.CACHE_KEY:
+                auth = cache.get(self.CACHE_KEY)
+
+            if auth is None:
+                # OAuth2 requests are not json-encoded
+                headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+                res = client.request('POST', '/v1/oauth2/token', params={
+                    'grant_type': 'client_credentials',
+                    'client_id': APP_ID,
+                    'client_secret': APP_SECRET,
+                    'scope': self.SCOPE
+                }, auth_class=None, timeout=10, headers=headers)
+                auth = json.dumps(res)
+
+                if self.CACHE_KEY:
+                    cache.set(self.CACHE_KEY,
+                              auth, timeout=self.CACHE_TIMEOUT)
+
+        return HttpResponse(auth, content_type='application/json')
 
 
 class DashboardView(View):
