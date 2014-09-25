@@ -1,13 +1,37 @@
 <!DOCTYPE html>
-<html lang="en" data-ng-cloak data-ng-app="solvebio.dashboards">
+<html lang="en">
 <head>
 	<meta charset="utf-8">
 	<title>SolveBio Dashboard</title>
 	<link rel="stylesheet" href="//solvebio.s3.amazonaws.com/js/dev/solvebio-dashboards.css" type="text/css" />
 	<script type="text/javascript" src="//solvebio.s3.amazonaws.com/js/dev/solvebio-dashboards.js"></script>
+  <!-- Load a custom dashboard, or include it in this html file (see below) -->
+  <!-- <script type="text/javascript" src="/static/solvebio-dashboards-mydashboard.js"></script> -->
 </head>
-<body data-dashboard>
+<body data-ng-controller="DashboardCtrl">
+    <!-- This is an dashboard boilerplate -->
     {% block body %}
     {% endblock body %}
+
+    <script>
+    // Initialize the dashboard
+    angular.module('dashboard', ['solvebio.dashboards'])
+
+    // The main dashboard controller
+    .controller('DashboardCtrl', ['$scope', '$log', 'Dashboard',
+        function($scope, $log, Dashboard) {
+            $scope.loading = true;
+
+            Dashboard.handleMessage = function(message) {
+                // Define your dashboard API here
+                $scope.loading = false;
+            };
+        }
+    ]);
+
+    angular.element(document).ready(function() {
+        angular.bootstrap(document, ['dashboard']);
+    });
+    </script>
 </body>
 </html>

@@ -36,6 +36,10 @@ Add your SolveBio API key to your ``settings.py``:
 
 Optional settings:
 
+    # Add SolveBio Application credentials
+    SOLVEBIO_APP_ID = os.environ.get("SOLVEBIO_APP_ID")
+    SOLVEBIO_APP_SECRET = os.environ.get("SOLVEBIO_APP_SECRET")
+
     # Override the SolveBio API host [OPTIONAL]
     SOLVEBIO_API_HOST = 'https://api.solvebio.com'
 

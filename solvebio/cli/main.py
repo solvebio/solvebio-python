@@ -5,11 +5,11 @@ import os
 import sys
 import argparse
 
-
 import solvebio
 
 from . import auth
 from solvebio.credentials import get_credentials
+
 
 class SolveArgumentParser(argparse.ArgumentParser):
     """Main parser for the SolveBio command line client"""
@@ -18,7 +18,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
         'logout': 'Logout and delete saved credentials',
         'whoami': 'Show your SolveBio email address',
         'shell': 'Open the SolveBio Python shell',
-        'test': 'Make sure the SolveBio API is working correctly',
         'version': '%(prog)s {}'.format(solvebio.version.VERSION),
         'api_host': 'Override the default SolveBio API host',
         'api_key': 'Manually provide a SolveBio API key'
@@ -53,10 +52,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
         whoami_parser.set_defaults(func=auth.whoami)
         shell_parser = subcmd.add_parser('shell', help=self.HELP['shell'])
         shell_parser.set_defaults(func=launch_ipython_shell)
-        shell_parser = subcmd.add_parser('test', help=self.HELP['test'])
-        shell_parser.set_defaults(func=test_solve_api)
 
-    def parse_args(self, args=None, namespace=None):
+    def parse_solvebio_args(self, args=None, namespace=None):
         """
             Try to parse the args first, and then add the subparsers. We want
             to do this so that we can check to see if there are any unknown
@@ -81,55 +78,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
             sys.stdout, sys.stderr = sys.__stdout__, sys.__stderr__
         self._add_subcommands()
         return super(SolveArgumentParser, self).parse_args(args, namespace)
-
-
-def test_solve_api(args):  # pylint: disable=unused-argument
-    """ Test SolveBio API """
-    DATASET = 'ClinVar/2.0.0-1/Variants'  # pylint: disable=invalid-name
-
-    class TestFail(Exception):
-        """ Custom Exception class for running basic tests """
-        def __init__(self, *args, **kwargs):
-            super(TestFail, self).__init__(*args, **kwargs)
-
-    def run_and_verify(query_func, title='run a test', check_func=len):
-        """ Function for running small tests with nice printing and checks """
-        sys.stdout.write('Trying to {}...'.format(title))
-        response = query_func()
-        if not check_func(response):
-            raise TestFail('Failed on {}'.format(DATASET))
-        sys.stdout.write('\x1b[32mOK!\x1b[39m\n')
-        return response
-
-    creds = solvebio.credentials.get_credentials()
-    if not creds:
-        print('You must be logged in as a SolveBio user '
-              'in order to run the test suite!')
-    try:
-        # try loading a dataset
-        load_dataset = lambda: solvebio.Dataset.retrieve(DATASET)
-        try:
-            dataset = run_and_verify(load_dataset, 'load a dataset')
-        except solvebio.errors.SolveError as exc:
-            raise TestFail('Loading {} failed! ({})'.format(DATASET, exc))
-
-        # run a basic query
-        query = run_and_verify(dataset.query, 'run a basic query')
-
-        # run a basic filter
-        basic_filter = lambda: query.filter(clinical_significance='Pathogenic')
-        run_and_verify(basic_filter, 'run a basic filter')
-
-        # run a range filter
-        range_filter = solvebio.RangeFilter(build="hg19",
-                                            chromosome=1,
-                                            start=100000,
-                                            end=900000)
-        run_and_verify(lambda: query.filter(range_filter),
-                       'run a range filter')
-
-    except TestFail as exc:
-        print('\n\n\x1b[31mFAIL!\x1b[39m {}'.format(exc))
 
 
 def launch_ipython_shell(args):  # pylint: disable=unused-argument
@@ -181,7 +129,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
 def main(argv=sys.argv[1:]):
     """ Main entry point for SolveBio CLI """
     parser = SolveArgumentParser()
-    args = parser.parse_args(argv)
+    args = parser.parse_solvebio_args(argv)
 
     if args.api_host:
         solvebio.api_host = args.api_host

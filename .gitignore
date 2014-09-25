@@ -4,6 +4,7 @@
 *~
 *.swp
 *.cache
+ChangeLog
 MANIFEST
 dist/
 build/
