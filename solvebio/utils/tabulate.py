@@ -2,7 +2,7 @@
 #
 # This file contains code from python-tabulate, modified for SolveBio
 #
-# Copyright Â© 2011-2013 Sergey Astanin
+# Copyright © 2011-2013 Sergey Astanin
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -127,7 +127,7 @@ def simple_separated_format(separator):
 
     """
     return TableFormat(None, None, None, None,
-                       headerrow=None, datarow=DataRow('', '\t', ''),
+                       headerrow=None, datarow=DataRow('', separator, ''),
                        **_format_defaults)
 
 
@@ -592,10 +592,9 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
                      for minw, c in zip(minwidths, cols)]
         headers = [_align_header(h, a, minw)
                    for h, a, minw in zip(headers, aligns, minwidths)]
-        rows = list(zip(*cols))
     else:
         minwidths = [width_fn(c[0]) for c in cols]
-        rows = list(zip(*cols))
+    rows = list(zip(*cols))
 
     if not isinstance(tablefmt, TableFormat):
         tablefmt = _table_formats.get(tablefmt, _table_formats["orgmode"])
