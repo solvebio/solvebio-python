@@ -67,67 +67,58 @@ spam\t23
                          'simple separated format table')
         ####################################################################
 
-#         expected = """a|         |         |
-# |---------+---------|
-# |         |       2 |
-# |         |       4 |
-# """
-#         hrow = [u'\u0431\u0443\u043a\u0432\u0430', u'\u0446\u0438\u0444\u0440\u0430']
-#         tbl = [[u"\u0430\u0437", 2], ["\u0431\u0443\u043a\u0438", 4]]
+        expected = """| abcd   |   12345 |
+|--------+---------|
+| XY     |       2 |
+| lmno   |       4 |
+"""
+        hrow = [u'abcd', u'12345']
+        tbl = [[u"XY", 2], ["lmno", 4]]
 
-#         print
-#         x = t.tabulate(tbl, hrow)
-#         print x
-#         print expected
-#         print len(expected)-1, len(x)
-#         for i in range(len(expected)-1):
-#             print "'%s' '%s' %s" % (x[i], expected[i], x[i] == expected[i])
-
-
-#         self.assertEqual(expected[1:-1], t.tabulate(tbl, hrow),
-#                      'org mode with header and unicode')
+        self.assertEqual(t.tabulate(tbl, hrow), expected[0:-1],
+                     'org mode with header and unicode')
 
         ###################################################################
 
-#         expected = """| Fields                | Data                        |
-# |-----------------------+-----------------------------|
-# | rcvaccession_version  | 2                           |
-# | hg18_chromosome       | 3                           |
-# | hg19_start            | 148562304                   |
-# | rcvaccession          | RCV000060731                |
-# | hg38_start            | 148844517                   |
-# | reference_allele      | C                           |
-# | gene_symbols          | CPB1                        |
-# | rsid                  | rs150241322                 |
-# | hg19_chromosome       | 3                           |
-# | hgvs                  | NC_000003.12:g.148844517C>T |
-# | clinical_significance | other                       |
-# | alternate_alleles     | T                           |
-# | clinical_origin       | somatic                     |
-# | type                  | SNV                         |
-# """
+        expected = """|                Fields | Data                            |
+|-----------------------+---------------------------------|
+|            hg19_start | 148562304                       |
+|          rcvaccession | RCV000060731                    |
+|            hg38_start | 148844517                       |
+|          gene_symbols | ['CPB1']                        |
+|     alternate_alleles | ['T']                           |
+|       clinical_origin | ['somatic']                     |
+|       hg18_chromosome | 3                               |
+|  rcvaccession_version | 2                               |
+|      reference_allele | C                               |
+|                  rsid | rs150241322                     |
+|       hg19_chromosome | 3                               |
+|                  hgvs | ['NC_000003.12:g.148844517C>T'] |
+| clinical_significance | other                           |
+|                  type | SNV                             |
+"""
+        h = {
+           "rcvaccession_version":2,
+           "hg18_chromosome":"3",
+           "hg19_start":148562304,
+           "rcvaccession":"RCV000060731",
+           "hg38_start":148844517,
+           "reference_allele":"C",
+           "gene_symbols":["CPB1"],
+           "rsid":"rs150241322",
+           "hg19_chromosome":"3",
+           "hgvs":["NC_000003.12:g.148844517C>T"],
+           "clinical_significance":"other",
+           "alternate_alleles":["T"],
+           "clinical_origin":["somatic"],
+           "type":"SNV"
+        }
+        data = t.tabulate(h.items(),
+                          headers=('Fields', 'Data'),
+                          aligns= ('right', 'left'))
 
-#         hash = {
-#             "rcvaccession_version":2,
-#             "hg18_chromosome":"3",
-#             "hg19_start":148562304,
-#             "rcvaccession":"RCV000060731",
-#             "hg38_start":148844517,
-#             "reference_allele":"C",
-#             "gene_symbols":["CPB1"],
-#             "rsid":"rs150241322",
-#             "hg19_chromosome":"3",
-#             "hgvs":["NC_000003.12:g.148844517C>T"],
-#             "clinical_significance":"other",
-#             "alternate_alleles":["T"],
-#             "clinical_origin":["somatic"],
-#             "type":"SNV"
-#         }
-#         self.assertEqual(t.tabulate(hash,
-#                                     headers=('Fields', 'Data'),
-#                                     aligns= ('right', 'left')),
-#                                     expected[0:-1],
-#                                     'mixed data with arrays; close to actual query output')
+        self.assertEqual(expected[0:-1], data,
+                         'mixed data with arrays; close to actual query output')
 
 if __name__ == "__main__":
     unittest.main()
