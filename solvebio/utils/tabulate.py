@@ -2,7 +2,7 @@
 #
 # This file contains code from python-tabulate, modified for SolveBio
 #
-# Copyright © 2011-2013 Sergey Astanin
+# Copyright Â© 2011-2013 Sergey Astanin
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
