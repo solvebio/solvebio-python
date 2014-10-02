@@ -12,3 +12,5 @@ The [depository folder](https://github.com/solvebio/solvebio-python/blob/demos/d
 [dataset folder](https://github.com/solvebio/solvebio-python/blob/demos/demo/dataset) has programs for retrieving properties of a dataset.
 
 However, issuing queries on a dataset is probably what you will most want to do. The [query folder](https://github.com/solvebio/solvebio-python/blob/demos/demo/query) contains examples of queries.
+
+There is a [cheat sheet](https://github.com/solvebio/solvebio-python/blob/demos/demo/cheat-sheet.py) which has examples of a number of constructs.
