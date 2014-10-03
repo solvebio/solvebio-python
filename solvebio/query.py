@@ -264,8 +264,9 @@ class PagingQuery(object):
         if self.total == 0 or self._limit == 0:
             return u'query returned 0 results'
 
+        sorted_items = sorted(self[0].items() , key=lambda x: x[0])
         return u'\n%s\n\n... %s more results.' % (
-            tabulate(self[0].items(), ['Fields', 'Data'],
+            tabulate(sorted_items, ['Fields', 'Data'],
                      aligns=['right', 'left']),
             pretty_int(self.total - 1))
 
