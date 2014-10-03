@@ -113,8 +113,7 @@ spam\t23
            "rsid"                 :"rs150241322",
            "type"                 :"SNV"
         }
-        data = sorted(h.items(), key=lambda x: x[0])
-        got  = t.tabulate(data,
+        got  = t.tabulate(h.items(),
                           headers=('Fields', 'Data'),
                           aligns= ('right', 'left'))
 
