@@ -1,5 +1,11 @@
 import solvebio
 
+# solvebio.api_key = 'set-me-correctly'
+if not solvebio.api_key:
+    print( 'Please set solvebio.api_key. Hint: solvebio login')
+    import sys
+    sys.exit(1)
+
 # Load the Dataset object
 dataset = solvebio.Dataset.retrieve('ClinVar/1.0.0/ClinVar')
 
