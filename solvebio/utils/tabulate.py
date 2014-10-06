@@ -392,7 +392,7 @@ def _align_header(header, alignment, width):
         return _padleft(width, header)
 
 
-def _normalize_tabular_data(tabular_data, headers):
+def _normalize_tabular_data(tabular_data, headers, sort=True):
     """
     Transform a supported data type to a list of lists, and a list of headers.
 
@@ -433,7 +433,7 @@ def _normalize_tabular_data(tabular_data, headers):
         if headers == "keys":
             headers = list(map(_text_type, keys))  # headers should be strings
 
-    else:  # it's a usual an iterable of iterables, or a NumPy array
+    else:  # it's, as usual, an iterable of iterables, or a NumPy array
         rows = list(tabular_data)
 
         if headers == "keys" and len(rows) > 0:  # keys are column indices
@@ -447,6 +447,9 @@ def _normalize_tabular_data(tabular_data, headers):
     headers = list(headers)
 
     rows = list(map(list, rows))
+
+    if sort and reduce(lambda x, y: x and len(y) == 2, rows, True):
+        rows = sorted(rows, key=lambda x: x[0])
 
     # pad with empty headers for initial columns if necessary
     if headers and len(rows) > 0:
@@ -467,7 +470,10 @@ def _build_row(cells, padding, begin, sep, end):
     # SolveBio: we're only displaying Key-Value tuples (dimension of 2).
     #  enforce that we don't wrap lines by setting a max
     #  limit on row width which is equal to TTY_COLS (see printing)
-    from .printing import TTY_COLS
+    if __name__ == "__main__":
+        TTY_COLS = 80
+    else:
+        from .printing import TTY_COLS
     rendered_cells = (begin + sep.join(padded_cells) + end).rstrip()
     if len(rendered_cells) > TTY_COLS:
         if not cells[-1].endswith(" ") and not cells[-1].endswith("-"):
@@ -553,8 +559,9 @@ def _format_table(fmt, headers, rows, colwidths, colaligns):
 
 
 def tabulate(tabular_data, headers=[], tablefmt="orgmode",
-             floatfmt="g", aligns=[], missingval=u""):
-    list_of_lists, headers = _normalize_tabular_data(tabular_data, headers)
+             floatfmt="g", aligns=[], missingval=u"", sort=True):
+    list_of_lists, headers = _normalize_tabular_data(tabular_data, headers,
+                                                     sort=sort)
 
     # optimization: look for ANSI control codes once,
     # enable smart width functions only if a control code is found
@@ -602,3 +609,17 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
     # make sure values don't have newlines or tabs in them
     rows = [(r[0], r[1].replace('\n', '').replace('\t', '')) for r in rows]
     return _format_table(tablefmt, headers, rows, minwidths, aligns)
+
+if __name__ == "__main__":
+    data = [
+        ("gene_symbols",          ["CPB1"]),
+        ("clinical_significance", "other"),
+        ("clinical_origin",       ["somatic"]),
+        ("alternate_alleles",     ["T"]),
+        ]
+    print(tabulate(data,
+                   headers=('Fields', 'Data'),
+                   aligns= ('right', 'left'), sort=True))
+    print(tabulate(data,
+                   headers=('Fields', 'Data'),
+                   aligns= ('right', 'left'), sort=False))

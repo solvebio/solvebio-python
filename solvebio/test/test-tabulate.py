@@ -60,14 +60,16 @@ class TestTabulate(unittest.TestCase):
     def test_tabulate(self):
         tsv = t.simple_separated_format("\t")
         p.TTY_COLS = 80
-        expected = """foo 	 1
+        expected = """
+foo 	 1
 spam\t23
 """
-        self.assertEqual(t.tabulate([["foo", 1], ["spam", 23]], [], tsv), expected[0:-1],
+        self.assertEqual(t.tabulate([["foo", 1], ["spam", 23]], [], tsv), expected[1:-1],
                          'simple separated format table')
         ####################################################################
 
-        expected = """| abcd   |   12345 |
+        expected = """
+| abcd   |   12345 |
 |--------+---------|
 | XY     |       2 |
 | lmno   |       4 |
@@ -75,50 +77,44 @@ spam\t23
         hrow = [u'abcd', u'12345']
         tbl = [[u"XY", 2], ["lmno", 4]]
 
-        self.assertEqual(t.tabulate(tbl, hrow), expected[0:-1],
+        self.assertEqual(t.tabulate(tbl, hrow), expected[1:-1],
                      'org mode with header and unicode')
 
         ###################################################################
 
-        expected = """|                Fields | Data                            |
-|-----------------------+---------------------------------|
-|     alternate_alleles | ['T']                           |
-|       clinical_origin | ['somatic']                     |
-| clinical_significance | other                           |
-|          gene_symbols | ['CPB1']                        |
-|       hg18_chromosome | 3                               |
-|       hg19_chromosome | 3                               |
-|            hg19_start | 148562304                       |
-|            hg38_start | 148844517                       |
-|                  hgvs | ['NC_000003.12:g.148844517C>T'] |
-|          rcvaccession | RCV000060731                    |
-|  rcvaccession_version | 2                               |
-|      reference_allele | C                               |
-|                  rsid | rs150241322                     |
-|                  type | SNV                             |
+        expected = """
+|                Fields | Data         |
+|-----------------------+--------------|
+|     alternate_alleles | [u'T']       |
+|       clinical_origin | [u'somatic'] |
+| clinical_significance | other        |
+|          gene_symbols | [u'CPB1']    |
 """
-        h = {
-           "alternate_alleles"    :["T"],
-           "clinical_origin"      :["somatic"],
-           "clinical_significance":"other",
-           "gene_symbols"         :["CPB1"],
-           "hg18_chromosome"      :"3",
-           "hg19_chromosome"      :"3",
-           "hg19_start"           :148562304,
-           "hg38_start"           :148844517,
-           "hgvs"                 :["NC_000003.12:g.148844517C>T"],
-           "rcvaccession"         :"RCV000060731",
-           "rcvaccession_version" :2,
-           "reference_allele"     :"C",
-           "rsid"                 :"rs150241322",
-           "type"                 :"SNV"
-        }
-        got  = t.tabulate(h.items(),
+        data = [
+            ("gene_symbols",          ["CPB1"]),
+            ("clinical_significance", "other"),
+            ("clinical_origin",       ["somatic"]),
+            ("alternate_alleles",     ["T"]),
+]
+        got  = t.tabulate(data,
                           headers=('Fields', 'Data'),
-                          aligns= ('right', 'left'))
-
-        self.assertEqual(expected[0:-1], got,
+                          aligns= ('right', 'left'), sort=True)
+        self.assertEqual(expected[1:-1], got,
                          'mixed data with arrays; close to actual query output')
+
+        expected = """
+|                Fields | Data         |
+|-----------------------+--------------|
+|          gene_symbols | [u'CPB1']    |
+| clinical_significance | other        |
+|       clinical_origin | [u'somatic'] |
+|     alternate_alleles | [u'T']       |
+"""
+        got  = t.tabulate(data,
+                          headers=('Fields', 'Data'),
+                          aligns= ('right', 'left'), sort=True)
+        self.assertEqual(expected[1:-1], got,
+                         'mixed data with arrays; unsorted')
 
 if __name__ == "__main__":
     unittest.main()
