@@ -83,19 +83,19 @@ spam\t23
         ###################################################################
 
         expected = """
-|                Fields | Data         |
-|-----------------------+--------------|
-|     alternate_alleles | [u'T']       |
-|       clinical_origin | [u'somatic'] |
-| clinical_significance | other        |
-|          gene_symbols | [u'CPB1']    |
+|                Fields | Data        |
+|-----------------------+-------------|
+|     alternate_alleles | ['T']       |
+|       clinical_origin | ['somatic'] |
+| clinical_significance | other       |
+|          gene_symbols | ['CPB1']    |
 """
         data = [
             ("gene_symbols",          ["CPB1"]),
             ("clinical_significance", "other"),
             ("clinical_origin",       ["somatic"]),
             ("alternate_alleles",     ["T"]),
-]
+            ]
         got  = t.tabulate(data,
                           headers=('Fields', 'Data'),
                           aligns= ('right', 'left'), sort=True)
@@ -103,16 +103,16 @@ spam\t23
                          'mixed data with arrays; close to actual query output')
 
         expected = """
-|                Fields | Data         |
-|-----------------------+--------------|
-|          gene_symbols | [u'CPB1']    |
-| clinical_significance | other        |
-|       clinical_origin | [u'somatic'] |
-|     alternate_alleles | [u'T']       |
+|                Fields | Data        |
+|-----------------------+-------------|
+|          gene_symbols | ['CPB1']    |
+| clinical_significance | other       |
+|       clinical_origin | ['somatic'] |
+|     alternate_alleles | ['T']       |
 """
         got  = t.tabulate(data,
                           headers=('Fields', 'Data'),
-                          aligns= ('right', 'left'), sort=True)
+                          aligns= ('right', 'left'), sort=False)
         self.assertEqual(expected[1:-1], got,
                          'mixed data with arrays; unsorted')
 
