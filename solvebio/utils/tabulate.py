@@ -27,11 +27,7 @@ from __future__ import unicode_literals
 from collections import namedtuple
 from platform import python_version_tuple
 import re
-
-try:
-    from .printing import TTY_COLS
-except ValueError:
-    TTY_COLS = 80
+from printing import TTY_COLS
 
 if python_version_tuple()[0] < "3":
     from itertools import izip_longest
