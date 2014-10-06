@@ -8,17 +8,13 @@ import pandas
 
 # solvebio.api_key = 'set-me-correctly'
 if not solvebio.api_key:
-    print( 'Please set solvebio.api_key. Hint: solvebio login')
+    print('Please set solvebio.api_key. Hint: solvebio login')
     import sys
     sys.exit(1)
 
 omim = solvebio.Dataset.retrieve('OMIM/0.0.1-1/OMIM')
 
-# Print a list of Phenotype Maps
-for pm in omim.query():
-    print(pm['phenotype_maps'])
-
-omim_id_pmid_ids = {pm['omim_id']:pm['pmid_ids'] for pm in omim.query()}
+omim_id_pmid_ids = {pm['omim_id']: pm['pmid_ids'] for pm in omim.query()}
 omim_pm = pandas.Series(omim_id_pmid_ids)
 
 print(omim_pm)
