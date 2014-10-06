@@ -28,6 +28,10 @@ from collections import namedtuple
 from platform import python_version_tuple
 import re
 
+try:
+    from .printing import TTY_COLS
+except ValueError:
+    TTY_COLS = 80
 
 if python_version_tuple()[0] < "3":
     from itertools import izip_longest
@@ -471,10 +475,6 @@ def _build_row(cells, padding, begin, sep, end):
     # SolveBio: we're only displaying Key-Value tuples (dimension of 2).
     #  enforce that we don't wrap lines by setting a max
     #  limit on row width which is equal to TTY_COLS (see printing)
-    if __name__ == "__main__":
-        TTY_COLS = 80
-    else:
-        from .printing import TTY_COLS
     rendered_cells = (begin + sep.join(padded_cells) + end).rstrip()
     if len(rendered_cells) > TTY_COLS:
         if not cells[-1].endswith(" ") and not cells[-1].endswith("-"):

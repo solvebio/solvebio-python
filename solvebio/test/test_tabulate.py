@@ -64,6 +64,7 @@ class TestTabulate(unittest.TestCase):
 foo 	 1
 spam\t23
 """
+        # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(t.tabulate([["foo", 1], ["spam", 23]], [], tsv), expected[1:-1],
                          'simple separated format table')
         ####################################################################
@@ -77,6 +78,7 @@ spam\t23
         hrow = [u'abcd', u'12345']
         tbl = [[u"XY", 2], ["lmno", 4]]
 
+        # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(t.tabulate(tbl, hrow), expected[1:-1],
                      'org mode with header and unicode')
 
@@ -99,6 +101,8 @@ spam\t23
         got  = t.tabulate(data,
                           headers=('Fields', 'Data'),
                           aligns= ('right', 'left'), sort=True)
+
+        # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(expected[1:-1], got,
                          'mixed data with arrays; close to actual query output')
 
