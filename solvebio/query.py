@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from .client import client
-from .utils.printing import pretty_int
-from .utils.tabulate import tabulate
+from client import client
+from utils.printing import pretty_int
+from utils.tabulate import tabulate
 
 import copy
 import logging

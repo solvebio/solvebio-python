@@ -67,11 +67,25 @@ def _init_logging():
 _init_logging()
 
 from . import version
+from .annotation import Annotation
 from .errors import SolveError
+from .solveobject import SolveObject
 from .resource import (User, Depository, DepositoryVersion, Dataset,
                        DatasetField)
 from .query import Query, PagingQuery, BatchQuery, Filter, RangeFilter
 
-__all__ = ['version', 'Depository', 'DepositoryVersion', 'Dataset',
-           'DatasetField', 'User', 'Filter', 'RangeFilter', 'Query',
-           'PagingQuery', 'BatchQuery', 'SolveError']
+__all__ = ['version',
+           'Annotation'
+           'BatchQuery',
+           'Dataset',
+           'DatasetField',
+           'Depository',
+           'DepositoryVersion',
+           'Filter',
+           'PagingQuery',
+           'Query',
+           'RangeFilter',
+           'SolveError',
+           'SolveObject',
+           'User',
+           ]
