@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
-import urllib
-import re
+from ..client import client
+from .util import json
 
-from client import client
-from conversion import class_to_api_name, json
-
-# Subclasses of SolveObject will add to this
-types = {}
 
 def convert_to_solve_object(resp):
+    from . import types
+
     if isinstance(resp, list):
         return [convert_to_solve_object(i) for i in resp]
     elif isinstance(resp, dict) and not isinstance(resp, SolveObject):
@@ -29,7 +26,6 @@ class SolveObject(dict):
 
     def __init__(self, id=None, **params):
         super(SolveObject, self).__init__()
-        print types
 
         # store manually updated values for partial updates
         self._unsaved_values = set()

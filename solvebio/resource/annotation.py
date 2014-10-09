@@ -1,10 +1,12 @@
-"""Annotations are genomic samples that have been annotated.
-   See https://www.solvebio.com/docs/api/?python#annotations
 """
+Annotations are genomic samples that have been annotated.
+See https://www.solvebio.com/docs/api/?python#annotations
+"""
+from ..client import client
 
-from client import client
-from conversion import class_to_api_name, json
-from solveobject import SolveObject, convert_to_solve_object
+from .util import class_to_api_name, json
+from .solveobject import SolveObject, convert_to_solve_object
+
 
 class Annotation(SolveObject):
     @classmethod
@@ -35,11 +37,13 @@ class Annotation(SolveObject):
     def __str__(self):
         return json.dumps(self, sort_keys=True, indent=2)
 
+
 if __name__ == '__main__':
-    # print(Annotation.class_url())
-    # print(Annotation.retrieve(1))
+    print(Annotation.class_url())
+    print(Annotation.retrieve(1))
     print Annotation.class_url()
     x = Annotation.all()
     # print json
     print str(x)
-    if len(x) > 5: print(x[0:5])
+    if len(x) > 5:
+        print(x[0:5])

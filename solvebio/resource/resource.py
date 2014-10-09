@@ -2,14 +2,15 @@
 import urllib
 import re
 
-from client import client
-from query import Query, PagingQuery
-from help import open_help
-from conversion import class_to_api_name, json
-from solveobject import SolveObject, convert_to_solve_object, types
+from ..client import client
+from ..query import Query, PagingQuery
+from ..help import open_help
+
+from .util import class_to_api_name
+from .solveobject import SolveObject, convert_to_solve_object
+
 
 class APIResource(SolveObject):
-
     #    from pydbgr.api import debug; debug()
     #    types[self.__class__.__name__] = self
 
