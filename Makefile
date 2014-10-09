@@ -4,7 +4,7 @@
 # These comments before the targets start with #:
 # remake --tasks to shows the targets and the comments
 
-PHONY=check clean dist distclean test
+PHONY=check clean dist distclean test demos
 GIT2CL ?= git2cl
 PYTHON ?= python
 PYTHON3 ?= python3
@@ -16,6 +16,10 @@ all: check
 check:
 	$(PYTHON) ./setup.py test
 #	$(PYTHON3) ./setup.py test
+
+#: Run all demo programs
+demos:
+	$(MAKE) -C demo demos
 
 #: Clean up temporary files
 clean:
