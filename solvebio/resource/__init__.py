@@ -1,10 +1,9 @@
 """Glues together all SolveObjects"""
 # For the future...
-# from Depository import Depository
-# from DepositoryVersion import DepositoryVersion
 # from Dataset import Dataset
 # from DatasetField import DatasetField
-from .resource import Depository, DepositoryVersion, Dataset, User, \
+from depository import Depository, DepositoryVersion
+from resource import Dataset, User, \
     ListObject, DatasetField
 from .annotation import Annotation
 from .sample     import Sample
