@@ -7,14 +7,16 @@
 from .resource import Depository, DepositoryVersion, Dataset, User, \
     ListObject, DatasetField
 from .annotation import Annotation
+from .sample     import Sample
 
 
 types = {
-    'Depository': Depository,
-    'DepositoryVersion': DepositoryVersion,
+    'Annotation': Annotation,
     'Dataset': Dataset,
     'DatasetField': DatasetField,
+    'Depository': Depository,
+    'DepositoryVersion': DepositoryVersion,
+    'Sample': DepositoryVersion,
     'User': User,
-    'Annotation': Annotation,
     'list': ListObject
 }

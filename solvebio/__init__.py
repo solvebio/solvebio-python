@@ -69,7 +69,7 @@ _init_logging()
 from . import version
 from .errors import SolveError
 from .resource import (User, Depository, DepositoryVersion, Dataset,  # noqa
-                       DatasetField, Annotation)
+                       DatasetField, Annotation, Sample)
 from .query import Query, PagingQuery, BatchQuery, Filter, RangeFilter  # noqa
 
 __all__ = ['version',
@@ -84,5 +84,6 @@ __all__ = ['version',
            'Query',
            'RangeFilter',
            'SolveError',
+           'Sample',
            'User',
            ]

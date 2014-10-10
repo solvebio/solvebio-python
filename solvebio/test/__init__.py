@@ -1,7 +1,6 @@
 import pkgutil
 import unittest
 
-
 # FIXME: redo how testing works.
 
 def all_names():
@@ -9,6 +8,8 @@ def all_names():
         # FIXME: figure out why test loader can't resolve
         # solvebio.test.test_conversion
         if modname == 'test_conversion':
+            continue
+        if modname.startswith('test_modify_'):
             continue
         if modname.startswith('test_'):
             yield 'solvebio.test.' + modname
