@@ -65,7 +65,8 @@ foo 	 1
 spam\t23
 """
         # [-1:1] below to remove leading and trailing "\n"s above
-        self.assertEqual(t.tabulate([["foo", 1], ["spam", 23]], [], tsv), expected[1:-1],
+        self.assertEqual(t.tabulate([["foo", 1], ["spam", 23]], [], tsv),
+                         expected[1:-1],
                          'simple separated format table')
         ####################################################################
 

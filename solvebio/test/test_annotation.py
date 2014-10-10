@@ -19,13 +19,12 @@ class AnnotationTest(unittest.TestCase):
             ('status'      , 'completed')
             ]
         a = Annotation.retrieve(1)
-        print a
         subset = [(key, a[key]) for
                   key in [x[0] for x in expect]]
         self.assertEqual(subset, expect, 'Annotation.retrieve(1)')
 
         all = Annotation.all()
-        self.assertTrue(len(a) > 1,
+        self.assertTrue(len(all) > 1,
                         "Annotation.all() returns more than one value")
 
 

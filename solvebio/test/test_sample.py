@@ -27,7 +27,7 @@ class SampleTest(unittest.TestCase):
         # self.assertEqual(subset, expect, 'Sample.retrieve(1)')
 
         all = Sample.all()
-        self.assertTrue(len(a) > 1,
+        self.assertTrue(len(all) > 1,
                         "Annotation.all() returns more than one value")
 
 
