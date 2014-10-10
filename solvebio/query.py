@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-from client import client
-from utils.printing import pretty_int
-from utils.tabulate import tabulate
+"""Handles Querying and Filtering Datasets"""
+
+from .client import client
+from .utils.printing import pretty_int
+from .utils.tabulate import tabulate
 
 import copy
 import logging
@@ -264,10 +266,9 @@ class PagingQuery(object):
         if self.total == 0 or self._limit == 0:
             return u'query returned 0 results'
 
-        sorted_items = sorted(self[0].items() , key=lambda x: x[0])
         return u'\n%s\n\n... %s more results.' % (
-            tabulate(sorted_items, ['Fields', 'Data'],
-                     aligns=['right', 'left']),
+            tabulate(self[0].items(), ['Fields', 'Data'],
+                     aligns=['right', 'left'], sorted=True),
             pretty_int(self.total - 1))
 
     def _reset_iter(self):
