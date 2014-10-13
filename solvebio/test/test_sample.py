@@ -1,14 +1,16 @@
 import unittest
 import sys
+import os
 
 from solvebio import Sample
 
 class SampleTest(unittest.TestCase):
 
-    def test_annotation(self):
+    def test_sample(self):
         self.assertEqual(Sample.class_url(), '/v1/samples',
                          'Sample.class_url()')
-
+        if os.environ['SOLVEBIO_API_KEY'].startswith('0cedb161d'):
+            self.assertRaises(SolveError, lambda: Sample.retrieve(1))
         # FIXME:
         # Hmmm, need to try with something test key has access to.
         # And while we are at it we should also test access denied.
@@ -28,7 +30,7 @@ class SampleTest(unittest.TestCase):
 
         all = Sample.all()
         self.assertTrue(len(all) > 1,
-                        "Annotation.all() returns more than one value")
+                        "Sample.all() returns more than one value")
 
 
 if __name__ == "__main__":
