@@ -2,7 +2,7 @@ import unittest
 import sys
 import os
 
-from solvebio import Annotation
+from solvebio import Annotation, SolveError
 
 class AnnotationTest(unittest.TestCase):
 

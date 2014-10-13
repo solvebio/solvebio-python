@@ -2,7 +2,7 @@ import unittest
 import sys
 import os
 
-from solvebio import Sample
+from solvebio import Sample, SolveError
 
 class SampleTest(unittest.TestCase):
 
