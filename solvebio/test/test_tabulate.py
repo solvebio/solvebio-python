@@ -44,7 +44,7 @@ class TestTabulate(unittest.TestCase):
                 ["12.345", "-1234.5", "1.23", "1234.5",
                  "1e+234", "1.0e234"], "decimal"),
                 ['   12.345  ', '-1234.5    ', '    1.23   ',
-                      ' 1234.5    ', '    1e+234 ', '    1.0e234'])
+                 ' 1234.5    ', '    1e+234 ', '    1.0e234'])
 
     def test_column_type(self):
         self.assertEqual(t._column_type(["1", "2"]), t._int_type)
@@ -80,7 +80,7 @@ spam\t23
 
         # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(t.tabulate(tbl, hrow), expected[1:-1],
-                     'org mode with header and unicode')
+                         'org mode with header and unicode')
 
         ###################################################################
 
@@ -98,9 +98,9 @@ spam\t23
             ("clinical_origin",       ["somatic"]),
             ("alternate_alleles",     ["T"]),
             ]
-        got  = t.tabulate(data,
-                          headers=('Fields', 'Data'),
-                          aligns= ('right', 'left'), sort=True)
+        got = t.tabulate(data,
+                         headers=('Fields', 'Data'),
+                         aligns= ('right', 'left'), sort=True)
 
         # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(expected[1:-1], got,

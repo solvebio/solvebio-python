@@ -64,6 +64,24 @@ class SolveClient(object):
     def request(self, method, url, params=None, raw=False,
                 auth_class=SolveTokenAuth, timeout=80,
                 files=None, headers={}):
+        """
+        Issues an HTTP Request across the wire via the Python requests
+        library.
+           * *method* is an HTTP method: GET, PUT, POST, DELETE, ...
+           * *url* is the place to connect to. If the url doesn't start
+             with a protocol (https:// or http://), we'll slap
+             solvebio.api_host in the front.
+          *  *params* will go into the parameters or data section of
+             the request as appropriate, depending on the method value.
+          *  *timeout* is a timeout value in seconds for the request
+          *  File content in the form of a file handle can be passed
+             in *files* to upload a file. Generally files are passed
+             via POST requests
+          *  Custom headers can be provided through the *headers*
+             dictionary; generally though this will be set correctly by
+             default dependent on the method type. If the content type
+             is JSON, we'll JSON-encode params.
+        """
         # Support auth-less requests (ie for OAuth2)
         if auth_class:
             _auth = auth_class(self._api_key)
@@ -108,7 +126,8 @@ class SolveClient(object):
         if not (200 <= response.status_code < 300):
             self._handle_api_error(response)
 
-        if raw:
+        # 204 is used on deletion. There is no JSON here.
+        if raw or response.status_code == 204:
             return response
 
         return response.json()

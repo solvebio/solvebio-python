@@ -16,7 +16,7 @@ types = {
     'DatasetField': DatasetField,
     'Depository': Depository,
     'DepositoryVersion': DepositoryVersion,
-    'Sample': DepositoryVersion,
+    'Sample': Sample,
     'User': User,
     'list': ListObject
 }

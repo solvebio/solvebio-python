@@ -3,6 +3,7 @@
 from resource import CreateableAPIResource, ListableAPIResource, \
      UpdateableAPIResource
 from solveobject import convert_to_solve_object
+import re
 
 class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
                         UpdateableAPIResource):
