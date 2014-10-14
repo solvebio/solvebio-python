@@ -43,16 +43,16 @@ class Sample(SolveObject):
         elif 'vcf_file' in params:
             return Sample.create_from_file(genome_build, params['vcf_file'])
         else:
-            raise TypeError('Must specify exactly one of vcf_url or vcf_file parameter')
-
+            raise TypeError('Must specify exactly one of vcf_url or ' +
+                            'vcf_file parameter')
 
     @classmethod
     def create_from_file(cls, genome_build, vcf_file):
         """Creates a new sample from the specified file.  The data of
         the should be in VCF format."""
 
-        files= {'vcf_file': open(vcf_file, 'rb')}
-        params = {'genome_build': genome_build }
+        files = {'vcf_file': open(vcf_file, 'rb')}
+        params = {'genome_build': genome_build}
         response = client.request('post', Sample.class_url(), params=params,
                                   files=files)
         return convert_to_solve_object(response)
@@ -63,7 +63,7 @@ class Sample(SolveObject):
         the should be in VCF format.
         """
         params = {'genome_build': genome_build,
-                  'vcf_url'     : vcf_url}
+                  'vcf_url': vcf_url}
         response = client.request('post', Sample.class_url(), params=params)
         return convert_to_solve_object(response)
 

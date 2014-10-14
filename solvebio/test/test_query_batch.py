@@ -1,9 +1,9 @@
 import unittest
 import sys
-import solvebio
 sys.path.insert(0, '.')
 from query_helper import SolveBioTestCase, TEST_DATASET_NAME
-from solvebio import Dataset, Filter, BatchQuery, SolveError
+from solvebio import Dataset, BatchQuery, SolveError
+
 
 class BatchQueryTest(SolveBioTestCase):
     def setUp(self):

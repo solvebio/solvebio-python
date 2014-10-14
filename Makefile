@@ -4,11 +4,12 @@
 # These comments before the targets start with #:
 # remake --tasks to shows the targets and the comments
 
-PHONY=check clean dist distclean test clean_pyc
+PHONY=check clean dist distclean test clean_pyc lint
 GIT2CL ?= git2cl
 PYTHON ?= python
 PYTHON3 ?= python3
 RM      ?= rm
+LINT    = flake8
 
 #: the default target - same as running "check"
 all: check
@@ -33,6 +34,10 @@ clean_pyc:
 #: Create source tarball
 sdist:
 	$(PYTHON) ./setup.py sdist
+
+#: Style check. Set env var LINT to pyflakes, flake, or flake8
+lint:
+	$(LINT)
 
 #: Create binary egg distribution
 bdist_egg:

@@ -449,7 +449,7 @@ def _normalize_tabular_data(tabular_data, headers, sort=True):
     rows = list(map(list, rows))
 
     if sort and len(rows) > 1 and \
-      reduce(lambda x, y: x and len(y) == 2, rows, True):
+           reduce(lambda x, y: x and len(y) == 2, rows, True):
         rows = sorted(rows, key=lambda x: x[0])
 
     # pad with empty headers for initial columns if necessary
@@ -616,7 +616,7 @@ if __name__ == "__main__":
         ]
     print(tabulate(data,
                    headers=('Fields', 'Data'),
-                   aligns= ('right', 'left'), sort=True))
+                   aligns=('right', 'left'), sort=True))
     print(tabulate(data,
                    headers=('Fields', 'Data'),
-                   aligns= ('right', 'left'), sort=False))
+                   aligns=('right', 'left'), sort=False))

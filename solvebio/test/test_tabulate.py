@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import solvebio
 import unittest
 from solvebio.utils import tabulate as t
 from solvebio.utils import printing as p
+
 
 class TestTabulate(unittest.TestCase):
 
@@ -39,12 +39,11 @@ class TestTabulate(unittest.TestCase):
         self.assertEqual(t._padleft(2,  'abc'), 'abc')
         self.assertEqual(t._padboth(2,  'abc'), 'abc')
 
-
         self.assertEqual(
             t._align_column(
                 ["12.345", "-1234.5", "1.23", "1234.5",
                  "1e+234", "1.0e234"], "decimal"),
-                 ['   12.345  ', '-1234.5    ', '    1.23   ',
+                ['   12.345  ', '-1234.5    ', '    1.23   ',
                       ' 1234.5    ', '    1e+234 ', '    1.0e234'])
 
     def test_column_type(self):
@@ -58,15 +57,15 @@ class TestTabulate(unittest.TestCase):
         self.assertEqual(t._column_type([1, 2, None]), t._int_type)
 
     def test_tabulate(self):
-        tsv = t.simple_separated_format("\t")
         p.TTY_COLS = 80
+        tsv = t.simple_separated_format("\t")
         expected = """
 foo 	 1
 spam\t23
 """
         # [-1:1] below to remove leading and trailing "\n"s above
-        self.assertEqual(t.tabulate([["foo", 1], ["spam", 23]], [], tsv),
-                         expected[1:-1],
+        got = t.tabulate([["foo", 1], ["spam", 23]], [], tsv)
+        self.assertEqual(got, expected[1:-1],
                          'simple separated format table')
         ####################################################################
 
@@ -105,7 +104,8 @@ spam\t23
 
         # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(expected[1:-1], got,
-                         'mixed data with arrays; close to actual query output')
+                         'mixed data with arrays; close to actual' +
+                         'query output')
 
         expected = """
 |                Fields | Data        |
@@ -115,9 +115,9 @@ spam\t23
 |       clinical_origin | ['somatic'] |
 |     alternate_alleles | ['T']       |
 """
-        got  = t.tabulate(data,
-                          headers=('Fields', 'Data'),
-                          aligns= ('right', 'left'), sort=False)
+        got=t.tabulate(data,
+                       headers=('Fields', 'Data'),
+                       aligns= ('right', 'left'), sort=False)
         self.assertEqual(expected[1:-1], got,
                          'mixed data with arrays; unsorted')
 

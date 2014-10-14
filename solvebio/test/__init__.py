@@ -3,6 +3,7 @@ import unittest
 
 # FIXME: redo how testing works.
 
+
 def all_names():
     for _, modname, _ in pkgutil.iter_modules(__path__):
         # FIXME: figure out why test loader can't resolve
@@ -16,7 +17,7 @@ def all_names():
 
 
 def all():
-     return unittest.defaultTestLoader.loadTestsFromNames(all_names())
+    return unittest.defaultTestLoader.loadTestsFromNames(all_names())
 
 # def unit():
 #     unit_names = [name for name in all_names() if 'integration' not in name]

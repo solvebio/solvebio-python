@@ -1,8 +1,8 @@
 import unittest
-import sys
 import os
 
 from solvebio import Annotation, SolveError
+
 
 class AnnotationTest(unittest.TestCase):
 
@@ -10,7 +10,8 @@ class AnnotationTest(unittest.TestCase):
         self.assertEqual(Annotation.class_url(), '/v1/annotations',
                          'Annotation.class_url()')
 
-        if os.environ['SOLVEBIO_API_KEY'].startswith('0cedb161d'):
+        if 'SOLVEBIO_API_KEY' in os.environ and \
+               os.environ['SOLVEBIO_API_KEY'].startswith('0cedb161d'):
             self.assertRaises(SolveError, lambda: Annotation.retrieve(1))
         # else:
         #     expect = [

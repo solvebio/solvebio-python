@@ -75,15 +75,17 @@ class SolveClient(object):
         _headers.update(headers)
 
         if method.upper() in ('POST', 'PUT', 'PATCH'):
-            # use only data payload for write requests
-            if files is None \
-                   and _headers.get('Content-Type', None) == 'application/json':
-                data = json.dumps(params)
-            else:
-                # Don't use application/json for file uploads or GET requets
+            # We use only data payload for write requests, set that up and
+            # nuke params.
+            if files is not None:
+                # Don't use application/json for file uploads or GET requests
                 _headers.pop('Content-Type', None)
                 data = params
-                params = None
+            elif _headers.get('Content-Type', None) == 'application/json':
+                data = json.dumps(params)
+            else:
+                data = params
+            params = None
         else:
             data = None
 

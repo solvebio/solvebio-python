@@ -1,26 +1,28 @@
 import unittest
-import sys
 import os
 
 from solvebio import Sample, SolveError
 
+
 class SampleTest(unittest.TestCase):
 
     def test_sample_error_params(self):
-        for params in [ (), ('hg19') ]:
+        for params in [(), ('hg19')]:
             self.assertRaises(TypeError, lambda: Sample.create(*params))
-            self.assertRaises(TypeError, lambda: Sample.create_from_file(*params))
-            self.assertRaises(TypeError, lambda: Sample.create_from_url(*params))
-        for params in [ {},  {'vcf_file':'a', 'vcf_url':'b'} ]:
-            self.assertRaises(TypeError, lambda: Sample.create('hg19', *params))
-
+            self.assertRaises(TypeError,
+                              lambda: Sample.create_from_file(*params))
+            self.assertRaises(TypeError,
+                              lambda: Sample.create_from_url(*params))
+        for params in [{},  {'vcf_file': 'a', 'vcf_url': 'b'}]:
+            self.assertRaises(TypeError,
+                              lambda: Sample.create('hg19', *params))
 
     def test_sample(self):
         self.assertEqual(Sample.class_url(), '/v1/samples',
                          'Sample.class_url()')
 
         if 'SOLVEBIO_API_KEY' in os.environ and \
-               os.environ['SOLVEBIO_API_KEY'].startswith('0cedb161d'):
+            os.environ['SOLVEBIO_API_KEY'].startswith('0cedb161d'):
             self.assertRaises(SolveError, lambda: Sample.retrieve(1))
         # FIXME:
         # expect = [
