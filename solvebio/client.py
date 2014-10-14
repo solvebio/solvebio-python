@@ -62,7 +62,8 @@ class SolveClient(object):
         }
 
     def request(self, method, url, params=None, raw=False,
-                auth_class=SolveTokenAuth, timeout=80, headers={}):
+                auth_class=SolveTokenAuth, timeout=80,
+                files=None, headers={}):
         # Support auth-less requests (ie for OAuth2)
         if auth_class:
             _auth = auth_class(self._api_key)
@@ -75,11 +76,14 @@ class SolveClient(object):
 
         if method.upper() in ('POST', 'PUT', 'PATCH'):
             # use only data payload for write requests
-            if _headers.get('Content-Type', None) == 'application/json':
+            if files is None \
+                   and _headers.get('Content-Type', None) == 'application/json':
                 data = json.dumps(params)
             else:
+                # Don't use application/json for file uploads or GET requets
+                _headers.pop('Content-Type', None)
                 data = params
-            params = None
+                params = None
         else:
             data = None
 
@@ -91,12 +95,11 @@ class SolveClient(object):
             url = urljoin(api_host, url)
 
         logger.debug('API %s Request: %s' % (method.upper(), url))
-
         try:
             response = requests.request(
                 method=method.upper(), url=url, params=params,
                 data=data, verify=True, timeout=timeout,
-                auth=_auth, headers=_headers)
+                auth=_auth, headers=_headers, files=files)
         except Exception as e:
             self._handle_request_error(e)
 
