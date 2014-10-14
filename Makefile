@@ -4,10 +4,11 @@
 # These comments before the targets start with #:
 # remake --tasks to shows the targets and the comments
 
-PHONY=check clean dist distclean test
+PHONY=check clean dist distclean test clean_pyc
 GIT2CL ?= git2cl
 PYTHON ?= python
 PYTHON3 ?= python3
+RM      ?= rm
 
 #: the default target - same as running "check"
 all: check
@@ -17,13 +18,17 @@ check:
 	$(PYTHON) ./setup.py test
 #	$(PYTHON3) ./setup.py test
 
-#: Clean up temporary files
-clean:
+#: Clean up temporary files and .pyc files
+clean: clean_pyc
 	$(PYTHON) ./setup.py $@
 
 #: Create source (tarball) and binary (egg) distribution
 dist:
 	$(PYTHON) ./setup.py sdist bdist
+
+#: Remove .pyc files
+clean_pyc:
+	$(RM) -f */*.pyc */*/*.pyc
 
 #: Create source tarball
 sdist:
