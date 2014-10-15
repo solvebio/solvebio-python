@@ -1,11 +1,15 @@
 """Test Paging Queries"""
 import unittest
 import sys
+import os
 sys.path.insert(0, '.')
 from query_helper import SolveBioTestCase, TEST_DATASET_NAME
 from solvebio import Dataset
 
 
+@unittest.skipIf('SOLVEBIO_API_HOST' in os.environ and \
+                 os.environ['SOLVEBIO_API_HOST'] == 'http://127.0.0.1:8000',
+                 "showing class skipping")
 class PagingQueryTest(SolveBioTestCase):
     def setUp(self):
         super(PagingQueryTest, self).setUp()

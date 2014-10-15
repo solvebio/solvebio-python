@@ -4,8 +4,8 @@ import os
 from solvebio import Sample
 
 @unittest.skipUnless('TEST_SOLVEBIO_API_UPDATE' in os.environ,
-                     "showing class skipping")
-class SampleTest(unittest.TestCase):
+                     'Sample Update')
+class SampleAccessTest(unittest.TestCase):
 
     def check_response(self, response, expect, msg):
         subset = [(key, response[key]) for
@@ -44,7 +44,6 @@ class SampleTest(unittest.TestCase):
         total = total+1
         vcf_file = os.path.join(os.path.dirname(__file__),
                                 "data/sample.vcf.gz")
-        print vcf_file
         response = Sample.create(genome_build='hg19', vcf_file=vcf_file)
         self.check_response(response, expect,
                             'create sample.vcf.gz from a file')
