@@ -26,9 +26,10 @@ class SampleTest(unittest.TestCase):
                os.environ['SOLVEBIO_API_KEY'].startswith(
             '0cedb161d'):
             self.assertRaises(SolveError, lambda: Sample.retrieve(1))
-        all = Sample.all()
-        self.assertTrue(all.total > 1,
-                        "Sample.all() returns more than one value")
+        else:
+            all = Sample.all()
+            self.assertTrue(all.total > 1,
+                            "Sample.all() returns more than one value")
         return
 
 if __name__ == "__main__":
