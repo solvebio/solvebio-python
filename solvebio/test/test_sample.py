@@ -23,7 +23,8 @@ class SampleTest(unittest.TestCase):
                          'Sample.class_url()')
 
         if 'SOLVEBIO_API_KEY' in os.environ and \
-               os.environ['SOLVEBIO_API_KEY'].startswith('0cedb161d'):
+               os.environ['SOLVEBIO_API_KEY'].startswith(
+            '0cedb161d'):
             self.assertRaises(SolveError, lambda: Sample.retrieve(1))
         all = Sample.all()
         self.assertTrue(all.total > 1,

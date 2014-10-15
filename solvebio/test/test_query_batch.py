@@ -6,7 +6,7 @@ from query_helper import SolveBioTestCase, TEST_DATASET_NAME
 from solvebio import Dataset, BatchQuery, SolveError
 
 
-@unittest.skipIf('SOLVEBIO_API_HOST' in os.environ and \
+@unittest.skipIf('SOLVEBIO_API_HOST' in os.environ and
                  os.environ['SOLVEBIO_API_HOST'] == 'http://127.0.0.1:8000',
                  "showing class skipping")
 class BatchQueryTest(SolveBioTestCase):

@@ -448,8 +448,8 @@ def _normalize_tabular_data(tabular_data, headers, sort=True):
 
     rows = list(map(list, rows))
 
-    if sort and len(rows) > 1 and \
-           reduce(lambda x, y: x and len(y) == 2, rows, True):
+    if sort and (len(rows) > 1 and
+                 reduce(lambda x, y: x and len(y) == 2, rows, True)):
         rows = sorted(rows, key=lambda x: x[0])
 
     # pad with empty headers for initial columns if necessary

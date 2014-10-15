@@ -115,9 +115,9 @@ spam\t23
 |       clinical_origin | ['somatic'] |
 |     alternate_alleles | ['T']       |
 """
-        got=t.tabulate(data,
-                       headers=('Fields', 'Data'),
-                       aligns= ('right', 'left'), sort=False)
+        got = t.tabulate(data,
+                         headers=('Fields', 'Data'),
+                         aligns= ('right', 'left'), sort=False)
         self.assertEqual(expected[1:-1], got,
                          'mixed data with arrays; unsorted')
 

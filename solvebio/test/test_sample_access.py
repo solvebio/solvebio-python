@@ -3,8 +3,9 @@ import os
 
 from solvebio import Sample
 
+
 @unittest.skipUnless('TEST_SOLVEBIO_API_UPDATE' in os.environ,
-                     'Sample Update')
+                     'Sample Access')
 class SampleAccessTest(unittest.TestCase):
 
     def check_response(self, response, expect, msg):

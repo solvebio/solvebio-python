@@ -40,7 +40,7 @@ class FilterTest(unittest.TestCase):
     def test_process_filters(self):
         # FIXME: add more and put in a loop.
         filters = [('omid', None)]
-        expect  = filters
+        expect = filters
         dataset_name = 'omim/0.0.1-1/omim'
         x = solvebio.PagingQuery(dataset_name)
         self.assertEqual(repr(x._process_filters(filters)), repr(expect))
