@@ -1,7 +1,8 @@
 import unittest
 import os
 
-from solvebio import Annotation, SolveError
+from solvebio.errors import SolveError
+from solvebio.resource import Annotation
 
 
 class AnnotationTest(unittest.TestCase):
