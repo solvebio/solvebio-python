@@ -17,19 +17,13 @@ class SampleTest(unittest.TestCase):
         for params in [{}, {'vcf_file': 'a', 'vcf_url': 'b'}]:
             self.assertRaises(TypeError,
                               lambda: Sample.create('hg19', *params))
+
+        # TODO: check unauthorized access
         return
 
     def test_sample(self):
         self.assertEqual(Sample.class_url(), '/v1/samples',
                          'Sample.class_url()')
-
-        if 'SOLVEBIO_API_KEY' in os.environ and \
-               os.environ['SOLVEBIO_API_KEY'].startswith('0cedb161d'):
-            self.assertRaises(SolveError, lambda: Sample.retrieve(1))
-        else:
-            all = Sample.all()
-            self.assertTrue(all.total > 1,
-                            "Sample.all() returns more than one value")
         return
 
 if __name__ == "__main__":

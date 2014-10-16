@@ -8,6 +8,7 @@ from solvebio.resource import Sample
                      'Sample Access')
 class SampleAccessTest(unittest.TestCase):
 
+    # FIXME: DRY routine with test_sample_access.py
     def check_response(self, response, expect, msg):
         subset = [(key, response[key]) for
                   key in [x[0] for x in expect]]

@@ -28,7 +28,7 @@ class TestTabulate(unittest.TestCase):
         self.assertEqual(t._afterpoint('eggs'), -1)
         self.assertEqual(t._afterpoint('123e45'), 2)
 
-        self.assertEqual(t._padleft(6, u'abcd'), u'abcd')
+        self.assertEqual(t._padleft(6, u'abcd'), u'  abcd')
         self.assertEqual(t._padright(6, u"abcd"), u"abcd  ")
 
         self.assertEqual(t._padboth(6, "abcd"), " abcd ")
