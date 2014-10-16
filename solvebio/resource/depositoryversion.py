@@ -1,9 +1,14 @@
 """DepositoryVersion Class"""
 
+from ..client import client
+from dataset import Dataset
+from ..help import open_help
+
 from resource import CreateableAPIResource, ListableAPIResource, \
      UpdateableAPIResource
 from solveobject import convert_to_solve_object
 import re
+
 
 class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
                         UpdateableAPIResource):

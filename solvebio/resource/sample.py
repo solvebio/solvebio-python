@@ -6,8 +6,8 @@ support uncompressed (extension “.vcf”) and gzip-compressed (extension
 """
 from ..client import client
 
-from .util import class_to_api_name, json
-from .solveobject import SolveObject, convert_to_solve_object
+from util import class_to_api_name, json
+from solveobject import SolveObject, convert_to_solve_object
 
 
 class Sample(SolveObject):
@@ -38,7 +38,8 @@ class Sample(SolveObject):
         """
         if 'vcf_url' in params:
             if 'vcf_file' in params:
-                raise TypeError('Specified both vcf_url and vcf_file; use only one')
+                raise TypeError('Specified both vcf_url and vcf_file; ' +
+                                'use only one')
             return Sample.create_from_url(genome_build, params['vcf_url'])
         elif 'vcf_file' in params:
             return Sample.create_from_file(genome_build, params['vcf_file'])

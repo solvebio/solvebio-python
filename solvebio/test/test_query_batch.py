@@ -2,8 +2,9 @@ import unittest
 import sys
 import os
 sys.path.insert(0, '.')
+sys.path.insert(0, '...')
 from query_helper import SolveBioTestCase, TEST_DATASET_NAME
-from solvebio import Dataset, BatchQuery, SolveError
+from solvebio.resource  import Dataset, BatchQuery, SolveError
 
 
 @unittest.skipIf('SOLVEBIO_API_HOST' in os.environ and

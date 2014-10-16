@@ -1,18 +1,13 @@
 # -*- coding: utf-8 -*-
 import urllib
-import re
 
 from ..client import client
-from ..query import Query, PagingQuery
-from ..help import open_help
 
-from .util import class_to_api_name
-from .solveobject import SolveObject, convert_to_solve_object
+from util import class_to_api_name
+from solveobject import SolveObject, convert_to_solve_object
 
 
 class APIResource(SolveObject):
-    #    from pydbgr.api import debug; debug()
-    #    types[self.__class__.__name__] = self
 
     @classmethod
     def retrieve(cls, id, **params):
@@ -159,93 +154,3 @@ class DeletableAPIResource(APIResource):
     def delete(self, **params):
         self.refresh_from(self.request('delete', self.instance_url(), params))
         return self
-
-
-# API resources
-
-class User(SingletonAPIResource):
-    pass
-
-class Dataset(CreateableAPIResource, ListableAPIResource,
-              UpdateableAPIResource):
-    ALLOW_FULL_NAME_ID = True
-    FULL_NAME_REGEX = r'^([\w\d\-\.]+/){2}[\w\d\-\.]+$'
-
-    @classmethod
-    def retrieve(cls, id, **params):
-        """Supports lookup by full name"""
-        if isinstance(id, unicode) or isinstance(id, str):
-            _id = unicode(id).strip()
-            id = None
-            if re.match(cls.FULL_NAME_REGEX, _id):
-                params.update({'full_name': _id})
-            else:
-                raise Exception('Unrecognized full name.')
-
-        return super(Dataset, cls).retrieve(id, **params)
-
-    def depository_version(self):
-        return DepositoryVersion.retrieve(self['depository_version'])
-
-    def depository(self):
-        return Depository.retrieve(self['depository'])
-
-    def fields(self, name=None, **params):
-        if 'fields_url' not in self:
-            raise Exception(
-                'Please use Dataset.retrieve({ID}) before doing looking '
-                'up fields')
-
-        if name:
-            # construct the field's full_name if a field name is provided
-            return DatasetField.retrieve(
-                '/'.join([self['full_name'], name]))
-
-        response = client.request('get', self.fields_url, params)
-        return convert_to_solve_object(response)
-
-    def _data_url(self):
-        if 'data_url' not in self:
-            if 'id' not in self or not self['id']:
-                raise Exception(
-                    'No Dataset ID was provided. '
-                    'Please instantiate the Dataset '
-                    'object with an ID or full_name.')
-            # automatically construct the data_url from the ID
-            return self.instance_url() + u'/data'
-        return self['data_url']
-
-    def query(self, paging=False, **params):
-        self._data_url()  # raises an exception if there's no ID
-        query_klass = PagingQuery if paging else Query
-        q = query_klass(self['id'], **params)
-        return q.filter(params.get('filters')) if params.get('filters') else q
-
-    def help(self):
-        open_help(self['full_name'])
-
-
-class DatasetField(CreateableAPIResource, ListableAPIResource,
-                   UpdateableAPIResource):
-    ALLOW_FULL_NAME_ID = True
-    FULL_NAME_REGEX = r'^([\w\d\-\.]+/){3}[\w\d\-\.]+$'
-
-    @classmethod
-    def retrieve(cls, id, **params):
-        """Supports lookup by ID or full name"""
-        if isinstance(id, unicode) or isinstance(id, str):
-            _id = unicode(id).strip()
-            id = None
-            if re.match(cls.FULL_NAME_REGEX, _id):
-                params.update({'full_name': _id})
-            else:
-                raise Exception('Unrecognized full name.')
-
-        return super(DatasetField, cls).retrieve(id, **params)
-
-    def facets(self, **params):
-        response = client.request('get', self.facets_url, params)
-        return convert_to_solve_object(response)
-
-    def help(self):
-        return self.facets()

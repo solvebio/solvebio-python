@@ -1,13 +1,13 @@
 """Glues together all SolveObjects"""
-# For the future...
-# from Dataset import Dataset
-# from DatasetField import DatasetField
+_package__ = 'solvebio.resource'
 from depository import Depository
 from depositoryversion import DepositoryVersion
-from resource import Dataset, User, \
-    ListObject, DatasetField
-from .annotation import Annotation
-from .sample     import Sample
+from resource import ListObject
+from annotation import Annotation
+from sample import Sample
+from user import User
+from dataset import Dataset
+from datasetfield import DatasetField
 
 
 types = {

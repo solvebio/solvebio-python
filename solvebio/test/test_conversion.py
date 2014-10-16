@@ -3,7 +3,7 @@ import sys
 
 sys.path.insert(0, '..')
 sys.path.insert(0, '.')
-from conversion import class_to_api_name
+from solvebio.resource.util import class_to_api_name
 
 
 class ConversionTest(unittest.TestCase):

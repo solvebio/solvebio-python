@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ..client import client
-from .util import json
+from util import json
 
 
 def convert_to_solve_object(resp):

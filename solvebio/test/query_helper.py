@@ -2,6 +2,7 @@
 import os
 import re
 import unittest
+
 import solvebio
 
 TEST_DATASET_NAME = 'ClinVar/2.0.0-1/Variants'
