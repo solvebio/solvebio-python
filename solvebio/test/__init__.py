@@ -5,7 +5,9 @@ import unittest
 
 
 def all_names():
-    for _, modname, _ in pkgutil.iter_modules(__path__):
+    for i, modname, j in pkgutil.iter_modules(__path__):
+        print i, j
+        print modname
         # FIXME: figure out why test loader can't resolve
         # solvebio.test.test_conversion
         if modname in ('test_conversion',

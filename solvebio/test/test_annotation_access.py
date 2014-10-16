@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from solvebio import Annotation
+from solvebio.resource import Annotation
 
 
 @unittest.skipUnless('TEST_SOLVEBIO_API_UPDATE' in os.environ,

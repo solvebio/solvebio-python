@@ -1,13 +1,14 @@
 """Depository Class"""
-
-__package__ = 'solvebio.resource'
-from .. import client
-from depositoryversion import DepositoryVersion
-from ..help import open_help
-from resource import CreateableAPIResource, ListableAPIResource, \
-     SearchableAPIResource, UpdateableAPIResource
-from solveobject import convert_to_solve_object
+# __package__ = 'solvebio.resource'
 import re
+
+from ..client import client
+from ..help import open_help
+
+from .solveobject import convert_to_solve_object
+from .resource import CreateableAPIResource, ListableAPIResource, \
+    SearchableAPIResource, UpdateableAPIResource
+from .depositoryversion import DepositoryVersion
 
 
 class Depository(CreateableAPIResource, ListableAPIResource,

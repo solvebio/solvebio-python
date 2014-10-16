@@ -4,8 +4,8 @@ See https://www.solvebio.com/docs/api/?python#annotations
 """
 from ..client import client
 
-from util import class_to_api_name, json
-from solveobject import SolveObject, convert_to_solve_object
+from .util import class_to_api_name, json
+from .solveobject import SolveObject, convert_to_solve_object
 
 
 class Annotation(SolveObject):

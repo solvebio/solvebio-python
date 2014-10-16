@@ -1,17 +1,15 @@
 """Dataset Class"""
+import re
 
-__package__ = 'solvebio.resource'
+# __package__ = 'solvebio.resource'
 from ..client import client
-from datasetfield import DatasetField
-from depository import Depository
-from depositoryversion import DepositoryVersion
-from resource import CreateableAPIResource, ListableAPIResource, \
-    UpdateableAPIResource
 from ..help import open_help
 from ..query import Query, PagingQuery
-from solveobject import convert_to_solve_object
 
-import re
+from .solveobject import convert_to_solve_object
+from .resource import CreateableAPIResource, ListableAPIResource, \
+    UpdateableAPIResource
+from .datasetfield import DatasetField
 
 
 class Dataset(CreateableAPIResource, ListableAPIResource,
@@ -37,9 +35,11 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         return super(Dataset, cls).retrieve(id, **params)
 
     def depository_version(self):
+        from .depositoryversion import DepositoryVersion
         return DepositoryVersion.retrieve(self['depository_version'])
 
     def depository(self):
+        from .depository import Depository
         return Depository.retrieve(self['depository'])
 
     def fields(self, name=None, **params):

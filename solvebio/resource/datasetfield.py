@@ -1,11 +1,11 @@
 """DatasetField Class"""
-
-from .. import client
-from resource import CreateableAPIResource, ListableAPIResource, \
-     UpdateableAPIResource
-from solveobject import convert_to_solve_object
-
 import re
+
+from ..client import client
+
+from .solveobject import convert_to_solve_object
+from .resource import CreateableAPIResource, ListableAPIResource, \
+    UpdateableAPIResource
 
 
 class DatasetField(CreateableAPIResource, ListableAPIResource,

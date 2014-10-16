@@ -1,6 +1,5 @@
-"""User Class"""
-
-from resource import SingletonAPIResource
+# -*- coding: utf-8 -*-
+from .resource import SingletonAPIResource
 
 
 class User(SingletonAPIResource):
