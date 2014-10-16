@@ -10,25 +10,25 @@ class TestTabulate(unittest.TestCase):
     def test_classify(self):
 
         self.assertEqual(t._isnumber('123.45'), True)
-        self.assertEqual(t._isnumber('123'),    True)
-        self.assertEqual(t._isnumber('spam'),   False)
-        self.assertEqual(t._isint('123'),       True)
-        self.assertEqual(t._isint('123.45'),    False)
+        self.assertEqual(t._isnumber('123'), True)
+        self.assertEqual(t._isnumber('spam'), False)
+        self.assertEqual(t._isint('123'), True)
+        self.assertEqual(t._isint('123.45'), False)
 
-        self.assertEqual(t._type(None),   t._none_type)
+        self.assertEqual(t._type(None), t._none_type)
         self.assertEqual(t._type(u'foo'), t._text_type)
-        self.assertEqual(t._type('1'),    t._int_type)
-        self.assertEqual(t._type(1),      t._int_type)
+        self.assertEqual(t._type('1'), t._int_type)
+        self.assertEqual(t._type(1), t._int_type)
         self.assertEqual(t._type('\x1b[31m42\x1b[0m'), t._int_type)
 
     def test_align(self):
-        self.assertEqual(t._afterpoint('123.45'),  2)
-        self.assertEqual(t._afterpoint('1001'),   -1)
+        self.assertEqual(t._afterpoint('123.45'), 2)
+        self.assertEqual(t._afterpoint('1001'), -1)
 
-        self.assertEqual(t._afterpoint('eggs'),   -1)
-        self.assertEqual(t._afterpoint('123e45'),  2)
+        self.assertEqual(t._afterpoint('eggs'), -1)
+        self.assertEqual(t._afterpoint('123e45'), 2)
 
-        self.assertEqual(t._padleft(6, u'abcd'),  u'  abcd')
+        self.assertEqual(t._padleft(6, u'abcd'), u'abcd')
         self.assertEqual(t._padright(6, u"abcd"), u"abcd  ")
 
         self.assertEqual(t._padboth(6, "abcd"), " abcd ")
@@ -36,8 +36,8 @@ class TestTabulate(unittest.TestCase):
         self.assertEqual(t._padboth(7, "abcd"), " abcd  ")
 
         self.assertEqual(t._padright(2, 'abc'), 'abc')
-        self.assertEqual(t._padleft(2,  'abc'), 'abc')
-        self.assertEqual(t._padboth(2,  'abc'), 'abc')
+        self.assertEqual(t._padleft(2, 'abc'), 'abc')
+        self.assertEqual(t._padboth(2, 'abc'), 'abc')
 
         self.assertEqual(
             t._align_column(
@@ -93,11 +93,10 @@ spam\t23
 |          gene_symbols | ['CPB1']    |
 """
         data = [
-            ("gene_symbols",          ["CPB1"]),
+            ("gene_symbols", ["CPB1"]),
             ("clinical_significance", "other"),
-            ("clinical_origin",       ["somatic"]),
-            ("alternate_alleles",     ["T"]),
-            ]
+            ("clinical_origin", ["somatic"]),
+            ("alternate_alleles", ["T"]), ]
         got = t.tabulate(data,
                          headers=('Fields', 'Data'),
                          aligns= ('right', 'left'), sort=True)

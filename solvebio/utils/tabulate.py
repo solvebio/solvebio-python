@@ -492,9 +492,9 @@ def _build_line(colwidths, padding, begin, fill, sep, end):
 
 def _mediawiki_cell_attrs(row, colaligns):
     "Prefix every cell in a row with an HTML alignment attribute."
-    alignment = {"left":    '',
-                 "right":   'align="right"| ',
-                 "center":  'align="center"| ',
+    alignment = {"left": '',
+                 "right": 'align="right"| ',
+                 "center": 'align="center"| ',
                  "decimal": 'align="right"| '}
     row2 = [alignment[a] + c for c, a in zip(row, colaligns)]
     return row2
@@ -609,11 +609,10 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
 
 if __name__ == "__main__":
     data = [
-        ("gene_symbols",          ["CPB1"]),
+        ("gene_symbols", ["CPB1"]),
         ("clinical_significance", "other"),
-        ("clinical_origin",       ["somatic"]),
-        ("alternate_alleles",     ["T"]),
-        ]
+        ("clinical_origin", ["somatic"]),
+        ("alternate_alleles", ["T"]), ]
     print(tabulate(data,
                    headers=('Fields', 'Data'),
                    aligns=('right', 'left'), sort=True))

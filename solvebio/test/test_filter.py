@@ -8,7 +8,7 @@ class FilterTest(unittest.TestCase):
 
     def test_filter_basic(self):
         f = solvebio.Filter()
-        self.assertEqual(repr(f),  '<Filter []>', 'empty filter')
+        self.assertEqual(repr(f), '<Filter []>', 'empty filter')
         self.assertEqual(repr(~f), '<Filter []>', '"not" of empty filter')
 
         # Because the order in listing keys is arbitrary, we only

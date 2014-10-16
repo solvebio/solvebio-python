@@ -41,8 +41,8 @@ class SampleAccessTest(unittest.TestCase):
         self.check_response(response, expect,
                             'create sample.vcf.gz from url')
         all = Sample.all()
-        self.assertEqual(all.total, total+1, "After uploading an url")
-        total = total+1
+        self.assertEqual(all.total, total + 1, "After uploading an url")
+        total = total + 1
         vcf_file = os.path.join(os.path.dirname(__file__),
                                 "data/sample.vcf.gz")
         response = Sample.create(genome_build='hg19', vcf_file=vcf_file)

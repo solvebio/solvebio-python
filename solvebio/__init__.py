@@ -68,7 +68,7 @@ _init_logging()
 
 from . import version
 from .errors import SolveError
-from .query import Query, PagingQuery,  Filter, RangeFilter
+from .query import Query, PagingQuery, Filter, RangeFilter
 
 __all__ = ['version',
            'Annotation'

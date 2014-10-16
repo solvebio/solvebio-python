@@ -14,7 +14,7 @@ class SampleTest(unittest.TestCase):
                               lambda: Sample.create_from_file(*params))
             self.assertRaises(TypeError,
                               lambda: Sample.create_from_url(*params))
-        for params in [{},  {'vcf_file': 'a', 'vcf_url': 'b'}]:
+        for params in [{}, {'vcf_file': 'a', 'vcf_url': 'b'}]:
             self.assertRaises(TypeError,
                               lambda: Sample.create('hg19', *params))
         return
