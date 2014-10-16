@@ -1,10 +1,8 @@
 """Test Paging Queries"""
 import unittest
-import sys
 import os
-sys.path.insert(0, '.')
 from query_helper import SolveBioTestCase, TEST_DATASET_NAME
-from solvebio import Dataset
+from solvebio.resource import Dataset
 
 
 @unittest.skipIf('SOLVEBIO_API_HOST' in os.environ and

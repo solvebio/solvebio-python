@@ -1,7 +1,8 @@
 import unittest
 import os
 
-from solvebio import Sample, SolveError
+from solvebio.errors import SolveError
+from solvebio.resource import Sample
 
 
 class SampleTest(unittest.TestCase):
