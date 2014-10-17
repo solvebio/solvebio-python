@@ -47,7 +47,7 @@ bdist_egg:
 # to do the following. I'm sure distutils will someday get there.
 DISTCLEAN_FILES = build dist *.egg-info *.pyc *.so py*.py
 
-#: Remove ALL dervied files
+#: Remove ALL derived files
 distclean: clean
 	-rm -fr $(DISTCLEAN_FILES) || true
 
@@ -57,6 +57,10 @@ install:
 
 #: Same as 'check' target
 test: check
+
+#: Run a specific unit test, eg test-sample runs solvebio.test.test_sample
+test-%:
+	python -m unittest solvebio.test.$(subst test-,test_,$@)
 
 rmChangeLog:
 	rm ChangeLog || true
