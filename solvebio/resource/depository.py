@@ -1,5 +1,4 @@
-"""Depository Class"""
-# __package__ = 'solvebio.resource'
+"""Solvebio Depository API resource"""
 import re
 
 from ..client import client

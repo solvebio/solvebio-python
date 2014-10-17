@@ -1,4 +1,4 @@
-"""Dataset Class"""
+"""Solvebio Dataset API Resource"""
 import re
 
 # __package__ = 'solvebio.resource'

@@ -1,4 +1,4 @@
-"""DepositoryVersion Class"""
+"""Solvebio DepositoryVersion Resource"""
 import re
 
 from ..client import client

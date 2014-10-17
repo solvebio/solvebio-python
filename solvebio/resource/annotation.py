@@ -1,20 +1,15 @@
-"""
-Annotations are genomic samples that have been annotated.
-See https://www.solvebio.com/docs/api/?python#annotations
-"""
+"""Solvebio Annotation API Resource"""
 from ..client import client
 
-from .util import class_to_api_name, json
-from .solveobject import SolveObject, convert_to_solve_object
+from .util import json
+from .solveobject import convert_to_solve_object
+from .resource import APIResource
 
-
-class Annotation(SolveObject):
-    @classmethod
-    def class_url(cls):
-        "Returns a versioned URI string for this class"
-        # FIXME: DRY with other class_url routines
-        return "/v1/{0}".format(class_to_api_name(cls.__name__))
-
+class Annotation(APIResource):
+    """
+    Annotations are genomic samples that have been annotated.
+    See https://www.solvebio.com/docs/api/?python#annotations
+    """
     @classmethod
     def retrieve(cls, id):
         "Retrieves a specific annotation by ID."

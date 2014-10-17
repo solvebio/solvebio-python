@@ -1,4 +1,4 @@
-"""DatasetField Class"""
+"""Solvebio DatasetField API Resource"""
 import re
 
 from ..client import client
