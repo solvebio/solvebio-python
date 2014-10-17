@@ -270,7 +270,7 @@ class PagingQuery(object):
 
         return u'\n%s\n\n... %s more results.' % (
             tabulate(self[0].items(), ['Fields', 'Data'],
-                     aligns=['right', 'left'], sorted=True),
+                     aligns=['right', 'left'], sort=True),
             pretty_int(self.total - 1))
 
     def _reset_iter(self):
