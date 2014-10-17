@@ -1,7 +1,5 @@
 import unittest
-import os
 
-from solvebio.errors import SolveError
 from solvebio.resource import Sample
 
 
