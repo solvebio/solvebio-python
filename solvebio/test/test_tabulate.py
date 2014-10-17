@@ -1,34 +1,34 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import solvebio
 import unittest
 from solvebio.utils import tabulate as t
 from solvebio.utils import printing as p
+
 
 class TestTabulate(unittest.TestCase):
 
     def test_classify(self):
 
         self.assertEqual(t._isnumber('123.45'), True)
-        self.assertEqual(t._isnumber('123'),    True)
-        self.assertEqual(t._isnumber('spam'),   False)
-        self.assertEqual(t._isint('123'),       True)
-        self.assertEqual(t._isint('123.45'),    False)
+        self.assertEqual(t._isnumber('123'), True)
+        self.assertEqual(t._isnumber('spam'), False)
+        self.assertEqual(t._isint('123'), True)
+        self.assertEqual(t._isint('123.45'), False)
 
-        self.assertEqual(t._type(None),   t._none_type)
+        self.assertEqual(t._type(None), t._none_type)
         self.assertEqual(t._type(u'foo'), t._text_type)
-        self.assertEqual(t._type('1'),    t._int_type)
-        self.assertEqual(t._type(1),      t._int_type)
+        self.assertEqual(t._type('1'), t._int_type)
+        self.assertEqual(t._type(1), t._int_type)
         self.assertEqual(t._type('\x1b[31m42\x1b[0m'), t._int_type)
 
     def test_align(self):
-        self.assertEqual(t._afterpoint('123.45'),  2)
-        self.assertEqual(t._afterpoint('1001'),   -1)
+        self.assertEqual(t._afterpoint('123.45'), 2)
+        self.assertEqual(t._afterpoint('1001'), -1)
 
-        self.assertEqual(t._afterpoint('eggs'),   -1)
-        self.assertEqual(t._afterpoint('123e45'),  2)
+        self.assertEqual(t._afterpoint('eggs'), -1)
+        self.assertEqual(t._afterpoint('123e45'), 2)
 
-        self.assertEqual(t._padleft(6, u'abcd'),  u'  abcd')
+        self.assertEqual(t._padleft(6, u'abcd'), u'  abcd')
         self.assertEqual(t._padright(6, u"abcd"), u"abcd  ")
 
         self.assertEqual(t._padboth(6, "abcd"), " abcd ")
@@ -36,16 +36,15 @@ class TestTabulate(unittest.TestCase):
         self.assertEqual(t._padboth(7, "abcd"), " abcd  ")
 
         self.assertEqual(t._padright(2, 'abc'), 'abc')
-        self.assertEqual(t._padleft(2,  'abc'), 'abc')
-        self.assertEqual(t._padboth(2,  'abc'), 'abc')
-
+        self.assertEqual(t._padleft(2, 'abc'), 'abc')
+        self.assertEqual(t._padboth(2, 'abc'), 'abc')
 
         self.assertEqual(
             t._align_column(
                 ["12.345", "-1234.5", "1.23", "1234.5",
                  "1e+234", "1.0e234"], "decimal"),
-                 ['   12.345  ', '-1234.5    ', '    1.23   ',
-                      ' 1234.5    ', '    1e+234 ', '    1.0e234'])
+                ['   12.345  ', '-1234.5    ', '    1.23   ',
+                 ' 1234.5    ', '    1e+234 ', '    1.0e234'])
 
     def test_column_type(self):
         self.assertEqual(t._column_type(["1", "2"]), t._int_type)
@@ -58,14 +57,15 @@ class TestTabulate(unittest.TestCase):
         self.assertEqual(t._column_type([1, 2, None]), t._int_type)
 
     def test_tabulate(self):
-        tsv = t.simple_separated_format("\t")
         p.TTY_COLS = 80
+        tsv = t.simple_separated_format("\t")
         expected = """
 foo 	 1
 spam\t23
 """
         # [-1:1] below to remove leading and trailing "\n"s above
-        self.assertEqual(t.tabulate([["foo", 1], ["spam", 23]], [], tsv), expected[1:-1],
+        got = t.tabulate([["foo", 1], ["spam", 23]], [], tsv)
+        self.assertEqual(got, expected[1:-1],
                          'simple separated format table')
         ####################################################################
 
@@ -80,7 +80,7 @@ spam\t23
 
         # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(t.tabulate(tbl, hrow), expected[1:-1],
-                     'org mode with header and unicode')
+                         'org mode with header and unicode')
 
         ###################################################################
 
@@ -93,18 +93,18 @@ spam\t23
 |          gene_symbols | ['CPB1']    |
 """
         data = [
-            ("gene_symbols",          ["CPB1"]),
+            ("gene_symbols", ["CPB1"]),
             ("clinical_significance", "other"),
-            ("clinical_origin",       ["somatic"]),
-            ("alternate_alleles",     ["T"]),
-            ]
-        got  = t.tabulate(data,
-                          headers=('Fields', 'Data'),
-                          aligns= ('right', 'left'), sort=True)
+            ("clinical_origin", ["somatic"]),
+            ("alternate_alleles", ["T"]), ]
+        got = t.tabulate(data,
+                         headers=('Fields', 'Data'),
+                         aligns= ('right', 'left'), sort=True)
 
         # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(expected[1:-1], got,
-                         'mixed data with arrays; close to actual query output')
+                         'mixed data with arrays; close to actual' +
+                         'query output')
 
         expected = """
 |                Fields | Data        |
@@ -114,9 +114,9 @@ spam\t23
 |       clinical_origin | ['somatic'] |
 |     alternate_alleles | ['T']       |
 """
-        got  = t.tabulate(data,
-                          headers=('Fields', 'Data'),
-                          aligns= ('right', 'left'), sort=False)
+        got = t.tabulate(data,
+                         headers=('Fields', 'Data'),
+                         aligns= ('right', 'left'), sort=False)
         self.assertEqual(expected[1:-1], got,
                          'mixed data with arrays; unsorted')
 

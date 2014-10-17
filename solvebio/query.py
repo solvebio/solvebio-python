@@ -28,10 +28,12 @@ class Filter(object):
 
     Each set of kwargs in a `Filter` are ANDed together:
 
-        * `<field>='<value>'` matches if the field is that exact value
-        * `<field>__in=[<item1>, ...]` matches any of the terms <item1> and so on
-        * `<field>__range=[<start>, <end>]` matches anything from <start> to <end>
-        * `<field>__between=[<start>, <end>]` matches anything between <start> to <end> not include either <start> or <end>
+      * `<field>='<value>'` matches if the field is that exact value
+      * `<field>__in=[<item1>, ...]` matches any of the terms <item1> and so on
+      * `<field>__range=[<start>, <end>]` matches anything from <start>
+         to <end>
+      * `<field>__between=[<start>, <end>]` matches anything between <start> to
+         <end> not include either <start> or <end>
 
     String terms are not analyzed and are always assumed to be exact matches.
 
@@ -94,6 +96,7 @@ class Filter(object):
     def __invert__(self):
         f = Filter()
         self_filters = copy.deepcopy(self.filters)
+
         if len(self_filters) == 0:
             # no change
             f.filters = []
@@ -102,7 +105,7 @@ class Filter(object):
               and self_filters[0].get('not', {})):
             # if the filters are already a single dictionary containing a 'not'
             # then swap out the 'not'
-            f.filters = self_filters[0]['not']
+            f.filters = [self_filters[0]['not']]
         else:
             # length of self_filters should never be more than 1
             # 'not' blocks can contain only dicts or a single tuple filter
@@ -268,7 +271,7 @@ class PagingQuery(object):
 
         return u'\n%s\n\n... %s more results.' % (
             tabulate(self[0].items(), ['Fields', 'Data'],
-                     aligns=['right', 'left'], sorted=True),
+                     aligns=['right', 'left'], sort=True),
             pretty_int(self.total - 1))
 
     def _reset_iter(self):
