@@ -96,6 +96,7 @@ class Filter(object):
     def __invert__(self):
         f = Filter()
         self_filters = copy.deepcopy(self.filters)
+
         if len(self_filters) == 0:
             # no change
             f.filters = []
@@ -104,7 +105,7 @@ class Filter(object):
               and self_filters[0].get('not', {})):
             # if the filters are already a single dictionary containing a 'not'
             # then swap out the 'not'
-            f.filters = self_filters[0]['not']
+            f.filters = [self_filters[0]['not']]
         else:
             # length of self_filters should never be more than 1
             # 'not' blocks can contain only dicts or a single tuple filter

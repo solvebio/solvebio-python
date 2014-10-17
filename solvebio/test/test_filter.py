@@ -15,8 +15,7 @@ class FilterTest(unittest.TestCase):
         # test with one entry.
         f1 = solvebio.Filter(price='Free')
         self.assertEqual(repr(f1), "<Filter [('price', 'Free')]>")
-        ## Is the following right? Note: it doesn't match the above.
-        self.assertEqual(repr(~~f1), "<Filter ('price', 'Free')>",
+        self.assertEqual(repr(~~f1), "<Filter [('price', 'Free')]>",
                          '"not" of empty filter')
 
         a = solvebio.query.Filter(chr1="3")
