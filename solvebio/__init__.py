@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 SolveBio Python Client
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 This is the Python client & library for the SolveBio API.
 
@@ -69,6 +69,14 @@ _init_logging()
 from . import version
 from .errors import SolveError
 from .query import Query, PagingQuery, Filter, RangeFilter
+
+from solvebio.resource import Annotation as Annotation  # NOQA
+from solvebio.resource import Dataset as Dataset  # NOQA
+from solvebio.resource import DatasetField as DatasetField  # NOQA
+from solvebio.resource import Depository as Depository  # NOQA
+from solvebio.resource import DepositoryVersion as DepositoryVersion  # NOQA
+from solvebio.resource import Sample as Sample  # NOQA
+from solvebio.resource import User as User  # NOQA
 
 __all__ = ['version',
            'Annotation'
