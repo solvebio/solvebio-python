@@ -176,7 +176,7 @@ class DownloadableAPIResource(APIResource):
         response = client.request('get', download_url, allow_redirects=False)
         if 302 != response.status_code:
             # Some kind of error. We expect a redirect
-            raise SolveError(message='Could not download file: response code {0}'
+            raise SolveError('Could not download file: response code {0}'
                              .format(response.status_code))
         download_url = response.headers['location']
         download_path = cls.conjure_file(download_url, path)
