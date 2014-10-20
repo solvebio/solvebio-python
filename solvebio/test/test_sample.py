@@ -30,8 +30,8 @@ class SampleTest(unittest.TestCase):
 
     def test_sample_download(self):
         all = Sample.all()
-        if all.total > 1:
-            pass
+        if all.total == 0:
+            return unittest.skip("no samples found to download")
         sample = all.data[0]
         response = Sample.download(sample.id, tempfile.tempdir)
         self.assertEqual(response.status_code, 200,
