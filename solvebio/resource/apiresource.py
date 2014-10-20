@@ -9,7 +9,7 @@ import tempfile
 import urllib
 
 from ..client import client, _handle_api_error, _handle_request_error
-from .. import SolveError
+from ..errors import SolveError
 
 from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object

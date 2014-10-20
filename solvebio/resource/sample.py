@@ -1,4 +1,4 @@
-"Solvebio API Resource for Samples"
+"""Solvebio API Resource for Samples"""
 
 from .apiresource import DownloadableAPIResource, ListableAPIResource, \
     UploadableAPIResource
