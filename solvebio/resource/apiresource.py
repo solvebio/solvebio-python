@@ -253,7 +253,7 @@ class UploadableAPIResource(APIResource):
 
     @classmethod
     def create_from_file(cls, genome_build, vcf_file):
-        """Creates a from the specified file.  The data of
+        """Creates from the specified file.  The data of
         the should be in VCF format."""
 
         files = {'vcf_file': open(vcf_file, 'rb')}
@@ -264,7 +264,7 @@ class UploadableAPIResource(APIResource):
 
     @classmethod
     def create_from_url(cls, genome_build, vcf_url):
-        """Creates a from the specified URL.  The data of
+        """Creates from the specified URL.  The data of
         the should be in VCF format."""
 
         params = {'genome_build': genome_build,
