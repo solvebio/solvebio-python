@@ -46,9 +46,8 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     # parameters you want to define for configuration can thus be
     # specified here.
 
-    # Add common solvebio classes our namespace here, that inside the
-    # ipython shell users don't have run imports
-    from solvebio.resource import Annotation, Dataset, DatasetField  # NOQA
-    from solvebio.resource import Depository, DepositoryVersion, User  # NOQA
-
+    # Add common solvebio classes and methods our namespace here so that
+    # inside the ipython shell users don't have run imports
+    import solvebio  # noqa
+    from solvebio import *  # noqa
     InteractiveShellEmbed(config=cfg, banner1=banner1, exit_msg=exit_msg)()
