@@ -1,10 +1,10 @@
-"""DatasetField Class"""
+"""Solvebio DatasetField API Resource"""
 import re
 
 from ..client import client
 
 from .solveobject import convert_to_solve_object
-from .resource import CreateableAPIResource, ListableAPIResource, \
+from .apiresource import CreateableAPIResource, ListableAPIResource, \
     UpdateableAPIResource
 
 

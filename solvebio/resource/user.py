@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .resource import SingletonAPIResource
+from .apiresource import SingletonAPIResource
 
 
 class User(SingletonAPIResource):
