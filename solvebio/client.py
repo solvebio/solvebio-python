@@ -23,6 +23,7 @@ def _handle_api_error(response):
         raise SolveError(response=response)
     return
 
+
 def _handle_request_error(self, e):
     if isinstance(e, requests.exceptions.RequestException):
         msg = SolveError.default_message
@@ -39,6 +40,7 @@ def _handle_request_error(self, e):
             err += " with no error message"
     msg = textwrap.fill(msg) + "\n\n(Network error: %s)" % (err,)
     raise SolveError(message=msg)
+
 
 class SolveTokenAuth(AuthBase):
     """Custom auth handler for SolveBio API token authentication"""

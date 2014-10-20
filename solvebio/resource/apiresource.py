@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Abstract classes from which specific API resources should inheret from"""
 import urllib
 
 from ..client import client
@@ -6,12 +7,9 @@ from ..client import client
 from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object
 
-def all_items(cls):
-    "Lists all items in a class (that you have access to)"
-    response = client.request('get', cls.class_url())
-    return convert_to_solve_object(response)
 
 class APIResource(SolveObject):
+    """Abstract Class for an API Resource"""
 
     @classmethod
     def retrieve(cls, id, **params):
@@ -53,6 +51,7 @@ class APIResource(SolveObject):
 class ListObject(SolveObject):
 
     def all(self, **params):
+        "Lists all items in a class that you have access to"
         return self.request('get', self['url'], params)
 
     def create(self, **params):
@@ -101,7 +100,6 @@ class SingletonAPIResource(APIResource):
     @classmethod
     def class_url(cls):
         "Returns a versioned URI string for this class"
-        # FIXME: DRY with other class_url routines
         return "/v1/{0}".format(class_to_api_name(cls.class_name()))
 
     def instance_url(self):

@@ -3,7 +3,7 @@
 
 from .depository import Depository
 from .depositoryversion import DepositoryVersion
-from .resource import ListObject
+from .apiresource import ListObject
 from .annotation import Annotation
 from .sample import Sample
 from .user import User

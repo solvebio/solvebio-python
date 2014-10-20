@@ -4,9 +4,9 @@ import requests
 from ..client import client, _handle_api_error, _handle_request_error
 
 from ..import SolveError
-from .util import json
 from .solveobject import convert_to_solve_object
-from .resource import APIResource, all_items
+from .apiresource import ListObject, SingletonAPIResource
+
 
 def conjure_file(url, path):
     """Make up a file name based on info in url and path.
@@ -30,14 +30,12 @@ def conjure_file(url, path):
     return path
 
 
-class Sample(APIResource):
+class Sample(ListObject, SingletonAPIResource):
     """
     Samples are VCF files uploaded to the SolveBio API. We currently
     support uncompressed (extension '.vcf') and gzip-compressed (extension
     '.vcf.gz') VCF files. Any other extension will be rejected.
     """
-
-    all = classmethod(all_items)
 
     @classmethod
     def create(cls, genome_build, **params):
@@ -64,7 +62,7 @@ class Sample(APIResource):
 
         files = {'vcf_file': open(vcf_file, 'rb')}
         params = {'genome_build': genome_build}
-        response = client.request('post', Sample.class_url(), params=params,
+        response = client.request('post', cls.class_url(), params=params,
                                   files=files)
         return convert_to_solve_object(response)
 
@@ -76,7 +74,7 @@ class Sample(APIResource):
         params = {'genome_build': genome_build,
                   'vcf_url': vcf_url}
         try:
-            response = client.request('post', Sample.class_url(), params=params)
+            response = client.request('post', cls.class_url(), params=params)
         except SolveError as response:
             pass
         return convert_to_solve_object(response)
@@ -118,15 +116,3 @@ class Sample(APIResource):
             fileobj.write(response._content)
 
         return convert_to_solve_object(response)
-
-    @classmethod
-    def retrieve(cls, id):
-        "Retrieves a specific sample by ID."
-        response = client.request('get', cls(id).instance_url())
-        return convert_to_solve_object(response)
-
-    def instance_url(self):
-        return '{0}/{1}'.format(self.class_url(), self.id)
-
-    def __str__(self):
-        return json.dumps(self, sort_keys=True, indent=2)

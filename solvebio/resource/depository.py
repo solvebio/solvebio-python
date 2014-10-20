@@ -5,7 +5,7 @@ from ..client import client
 from ..help import open_help
 
 from .solveobject import convert_to_solve_object
-from .resource import CreateableAPIResource, ListableAPIResource, \
+from .apiresource import CreateableAPIResource, ListableAPIResource, \
     SearchableAPIResource, UpdateableAPIResource
 from .depositoryversion import DepositoryVersion
 
