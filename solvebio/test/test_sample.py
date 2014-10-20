@@ -26,8 +26,6 @@ class SampleTest(unittest.TestCase):
         self.assertEqual(Sample.class_url(), '/v1/samples',
                          'Sample.class_url()')
 
-        return
-
     def test_sample_download(self):
         all = Sample.all()
         if all.total == 0:

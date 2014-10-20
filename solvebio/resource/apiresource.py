@@ -15,31 +15,6 @@ from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object
 
 
-def conjure_file(url, path):
-    """Make up a file name based on info in *url* and *path*.
-
-    :param url: str url to base filename
-    :param path: str can be a full path, a directory name, or None.
-            If path is *None*, we'll use
-            use the current directory plus any name we find in url.
-            If path is a directory well use that plus the name found in url.
-            If it a non-directory string, we'll ignore any filename found in
-           *url* and use that.
-    :returns: str a full path name
-    """
-    values = url.split('%3B%20filename%3D')
-    if len(values) != 2:
-        short_name = tempfile.mkstemp(suffix='gz')
-    else:
-        short_name = values[1]
-    if path:
-        if os.path.isdir(path):
-            path = os.path.join(path, short_name)
-    else:
-        path = short_name
-    return path
-
-
 class APIResource(SolveObject):
     """Abstract Class for an API Resource"""
 
@@ -155,6 +130,32 @@ class DeletableAPIResource(APIResource):
 
 class DownloadableAPIResource(APIResource):
 
+    @staticmethod
+    def conjure_file(url, path):
+        """Make up a file name based on info in *url* and *path*.
+
+        :param url: str url to base filename
+        :param path: str can be a full path, a directory name, or None.
+          If path is *None*, we'll use
+          use the current directory plus any name we find in url.
+          If path is a directory well use that plus the name found in url.
+          If it a non-directory string, we'll ignore any filename found in
+          *url* and use that.
+        :returns: str a full path name
+        """
+
+        values = url.split('%3B%20filename%3D')
+        if len(values) != 2:
+            short_name = tempfile.mkstemp(suffix='.gz')
+        else:
+            short_name = values[1]
+        if path:
+            if os.path.isdir(path):
+                path = os.path.join(path, short_name)
+            else:
+                path = short_name
+        return path
+
     @classmethod
     def delete(cls, id):
         """Delete the sample with the id. The id is that returned by a
@@ -175,9 +176,10 @@ class DownloadableAPIResource(APIResource):
         response = client.request('get', download_url, allow_redirects=False)
         if 302 != response.status_code:
             # Some kind of error. We expect a redirect
-            return None
+            raise SolveError(message='Could not download file: response code {0}'
+                             .format(response.status_code))
         download_url = response.headers['location']
-        download_path = conjure_file(download_url, path)
+        download_path = cls.conjure_file(download_url, path)
 
         try:
             response = requests.request(method='get', url=download_url)

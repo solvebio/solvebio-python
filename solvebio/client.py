@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import solvebio
-from solvebio import version
-from solvebio.credentials import get_credentials
-from solvebio.errors import SolveError
+from .version import VERSION
+from .credentials import get_credentials
+from .errors import SolveError
 
 import json
 import platform
@@ -81,7 +81,7 @@ class SolveClient(object):
             'Accept': 'application/json',
             'Accept-Encoding': 'gzip,deflate',
             'User-Agent': 'SolveBio Python Client %s [Python %s/%s]' % (
-                version.VERSION,
+                VERSION,
                 platform.python_implementation(),
                 platform.python_version()
             )
@@ -104,14 +104,15 @@ class SolveClient(object):
                 the request as appropriate, depending on the method value.
           :param timeout: int a timeout value in seconds for the request
           :param raw: bool whether to return the response encoded to json
-          :param files: lis File content in the form of a file handle can be passed
-                 in *files* to upload a file. Generally files are passed
+          :param files: lis File content in the form of a file handle can be
+                 passed in *files* to upload a file. Generally files are passed
                  via POST requests
           :param headers: dict Custom headers can be provided here;
                  generally though this will be set correctly by
                  default dependent on the method type. If the content type
                  is JSON, we'll JSON-encode params.
-          :param allow_redirects: bool if set *False* we won't follow any redirects
+          :param allow_redirects: bool if set *False* we won't follow any
+                 redirects
         """
         # Support auth-less requests (ie for OAuth2)
         if auth_class:
