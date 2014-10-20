@@ -8,6 +8,7 @@ This is the Python client & library for the SolveBio API.
 Have questions or comments? email us at: contact@solvebio.com
 
 """
+__docformat__ = 'restructuredtext'
 import os as _os
 import logging as _logging
 from .help import open_help as _open_help
