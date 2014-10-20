@@ -48,9 +48,6 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
 
     # Add common solvebio classes and methods our namespace here so that
     # inside the ipython shell users don't have run imports
-    import solvebio.resource  # NOQA
-    from solvebio.utils import tabulate  # NOQA
-    from solvebio.resource import Annotation, Dataset, DatasetField  # NOQA
-    from solvebio.resource import Depository, DepositoryVersion, User  # NOQA
-
+    import solvebio
+    from solvebio import *
     InteractiveShellEmbed(config=cfg, banner1=banner1, exit_msg=exit_msg)()
