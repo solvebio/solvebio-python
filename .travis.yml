@@ -4,7 +4,8 @@ python:
 env:
 - "SOLVEBIO_API_KEY=0cedb161d845e6a58ec6781478b8314c536e632f"
 script:
-- python ./setup.py test
+- python ./setup.py test && flake8
+install: pip install flake8
 notifications:
   slack:
     secure: WvTImIlFKtCSTrcpk11RB467ybQBmZatk1k9CEEb5qkRRX0IUhmmNzV4xKIJR40Hf1u84uW6j5AeD/OChHycU+1C/OmMgyFAIYMAkE8db+dGtpdlQO5a5Jj9xzK8nfUKrw6Y3JzDTn+mQkeFyRP6D8fj3WPWOV5G9EOTY62sLiQ=
