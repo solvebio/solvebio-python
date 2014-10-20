@@ -6,7 +6,7 @@ from ..client import client, _handle_api_error, _handle_request_error
 from ..import SolveError
 from .util import json
 from .solveobject import convert_to_solve_object
-from .resource import APIResource
+from .resource import APIResource, all_items
 
 def conjure_file(url, path):
     """Make up a file name based on info in url and path.
@@ -37,11 +37,7 @@ class Sample(APIResource):
     '.vcf.gz') VCF files. Any other extension will be rejected.
     """
 
-    @classmethod
-    def all(cls):
-        "Lists all samples (that you have access to) in a paginated form."
-        response = client.request('get', Sample.class_url())
-        return convert_to_solve_object(response)
+    all = classmethod(all_items)
 
     @classmethod
     def create(cls, genome_build, **params):

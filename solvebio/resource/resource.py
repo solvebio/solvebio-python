@@ -6,6 +6,10 @@ from ..client import client
 from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object
 
+def all_items(cls):
+    "Lists all items in a class (that you have access to)"
+    response = client.request('get', cls.class_url())
+    return convert_to_solve_object(response)
 
 class APIResource(SolveObject):
 
