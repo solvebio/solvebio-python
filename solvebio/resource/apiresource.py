@@ -20,11 +20,11 @@ def conjure_file(url, path):
 
     :param url: str url to base filename
     :param path: str can be a full path, a directory name, or None.
-                 If path is *None*, we'll use
-                 use the current directory plus any name we find in url.
-                 If path is a directory well use that plus the name found in url.
-                 If it a non-directory string, we'll ignore any filename found in
-                 *url* and use that.
+            If path is *None*, we'll use
+            use the current directory plus any name we find in url.
+            If path is a directory well use that plus the name found in url.
+            If it a non-directory string, we'll ignore any filename found in
+           *url* and use that.
     :returns: str a full path name
     """
     values = url.split('%3B%20filename%3D')

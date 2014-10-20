@@ -1,20 +1,28 @@
 import unittest
+import tempfile
 import os
 
 from solvebio.resource import Annotation
 
 
-@unittest.skipUnless('TEST_SOLVEBIO_API_UPDATE' in os.environ,
-                     'Annotation Update')
 class AnnotationAccessTest(unittest.TestCase):
 
     def test_annotation(self):
         self.assertEqual(Annotation.class_url(), '/v1/annotations',
                          'Annotation.class_url()')
 
+
+    def test_annotation_download(self):
         all = Annotation.all()
-        self.assertTrue(all.total > 1,
-                        "Annotation.all() returns more than one value")
+        if all.total == 0:
+            return unittest.skip("no annotations found to download")
+        ann = all.data[0]
+        response = Annotation.download(ann.id, tempfile.tempdir)
+        self.assertEqual(response.status_code, 200,
+                         "Download annotation file status ok")
+        self.assertTrue(os.path.exists(response.filename),
+                        "Download annotation file on filesystem")
+        os.remove(response.filename)
         return
 
 if __name__ == "__main__":
