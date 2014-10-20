@@ -62,7 +62,26 @@ class SolveClient(object):
         }
 
     def request(self, method, url, params=None, raw=False,
-                auth_class=SolveTokenAuth, timeout=80, headers={}):
+                auth_class=SolveTokenAuth, timeout=80,
+                files=None, headers={}):
+        """
+        Issues an HTTP Request across the wire via the Python requests
+        library.
+           * *method* is an HTTP method: GET, PUT, POST, DELETE, ...
+           * *url* is the place to connect to. If the url doesn't start
+             with a protocol (https:// or http://), we'll slap
+             solvebio.api_host in the front.
+          *  *params* will go into the parameters or data section of
+             the request as appropriate, depending on the method value.
+          *  *timeout* is a timeout value in seconds for the request
+          *  File content in the form of a file handle can be passed
+             in *files* to upload a file. Generally files are passed
+             via POST requests
+          *  Custom headers can be provided through the *headers*
+             dictionary; generally though this will be set correctly by
+             default dependent on the method type. If the content type
+             is JSON, we'll JSON-encode params.
+        """
         # Support auth-less requests (ie for OAuth2)
         if auth_class:
             _auth = auth_class(self._api_key)
@@ -74,8 +93,13 @@ class SolveClient(object):
         _headers.update(headers)
 
         if method.upper() in ('POST', 'PUT', 'PATCH'):
-            # use only data payload for write requests
-            if _headers.get('Content-Type', None) == 'application/json':
+            # We use only data payload for write requests, set that up and
+            # nuke params.
+            if files is not None:
+                # Don't use application/json for file uploads or GET requests
+                _headers.pop('Content-Type', None)
+                data = params
+            elif _headers.get('Content-Type', None) == 'application/json':
                 data = json.dumps(params)
             else:
                 data = params
@@ -91,19 +115,19 @@ class SolveClient(object):
             url = urljoin(api_host, url)
 
         logger.debug('API %s Request: %s' % (method.upper(), url))
-
         try:
             response = requests.request(
                 method=method.upper(), url=url, params=params,
                 data=data, verify=True, timeout=timeout,
-                auth=_auth, headers=_headers)
+                auth=_auth, headers=_headers, files=files)
         except Exception as e:
             self._handle_request_error(e)
 
         if not (200 <= response.status_code < 300):
             self._handle_api_error(response)
 
-        if raw:
+        # 204 is used on deletion. There is no JSON here.
+        if raw or response.status_code == 204:
             return response
 
         return response.json()

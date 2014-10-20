@@ -1,0 +1,7 @@
+##fileformat=VCFv4.1
+##fileDate=140926
+##source=dandan
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	GENOTYPE
+1	82154	rs4477212	a	.	.	.	.	GT	0/0
+1	798959	rs11240777	g	.	.	.	.	GT	0/0

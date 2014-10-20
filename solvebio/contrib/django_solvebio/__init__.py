@@ -62,7 +62,8 @@ import re
 import logging
 logger = logging.getLogger('django_solvebio')
 
-from solvebio import Dataset, SolveError
+from solvebio.resource import Dataset
+from solvebio.errors import SolveError
 from models import DatasetAlias
 import app_settings
 
