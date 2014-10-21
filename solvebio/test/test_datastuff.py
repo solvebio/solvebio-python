@@ -1,6 +1,6 @@
 """Test Dataset and DatasetField"""
 import unittest
-from solvebio.resource import Dataset
+from solvebio.resource import Dataset, DatasetField
 
 
 class DatasetTest(unittest.TestCase):
@@ -12,6 +12,12 @@ class DatasetTest(unittest.TestCase):
         dataset = datasets.data[0]
         self.assertTrue('id' in dataset,
                         'Should be able to get id in dataset')
+
+        dataset2 = Dataset.retrieve(dataset.id)
+        self.assertEqual(dataset, dataset2,
+                         "Retrieving dataset id {0} found by all()"
+                         .format(dataset.id))
+
         for field in ['class_name', 'created_at',
                       'data_url',
                       'depository', 'depository_id',
@@ -27,9 +33,16 @@ class DatasetTest(unittest.TestCase):
         if fields.total == 0:
             return unittest.skip('no fields of dataset {0} found'
                                  .format(dataset.name))
+
         dataset_field = fields.data[0]
         self.assertTrue('id' in dataset_field,
                         'Should be able to get id in list of dataset fields')
+
+        dataset_field2 = DatasetField.retrieve(dataset_field.id)
+        self.assertEqual(dataset_field, dataset_field2,
+                         "Retrieving DatasetField id {0} found by all()"
+                         .format(dataset_field.id))
+
         for field in ['class_name', 'created_at',
                       'dataset', 'dataset_id',
                       'description', 'facets_url',
