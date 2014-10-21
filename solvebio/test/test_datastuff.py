@@ -1,9 +1,9 @@
-"""Test Dataset and DatasetField"""
+"""Test Dataset, DatasetField, and Facets"""
 import unittest
 from solvebio.resource import Dataset, DatasetField
 
 
-class DatasetTest(unittest.TestCase):
+class DataStuffTest(unittest.TestCase):
 
     def test_dataset(self):
         datasets = Dataset.all()
