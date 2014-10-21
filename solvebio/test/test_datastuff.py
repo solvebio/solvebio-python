@@ -10,6 +10,7 @@ class DataStuffTest(unittest.TestCase):
         datasets = Dataset.all()
         if datasets.total == 0:
             return unittest.skip('no datasets found')
+        # print "datasets.total %s" % [datasets.total]  # compare with ruby
         dataset = datasets.data[0]
         self.assertTrue('id' in dataset,
                         'Should be able to get id in dataset')
@@ -35,6 +36,7 @@ class DataStuffTest(unittest.TestCase):
             return unittest.skip('no fields of dataset {0} found'
                                  .format(dataset.name))
 
+        # print "fields.total %s" % [fields.total]  # compare with ruby
         dataset_field = fields.data[0]
         self.assertTrue('id' in dataset_field,
                         'Should be able to get id in list of dataset fields')
@@ -53,6 +55,7 @@ class DataStuffTest(unittest.TestCase):
                             'Should find field {0} in fields {1}'
                             .format(field, dataset_field.id))
         facets = dataset_field.facets()
+        # print "faces.total %s" % [facets.total] #  compare with ruby
         # We can get small or large numbers like 0 or 4902851621.0
         self.assertTrue(isinstance(facets.total, Number) and
                         facets.total >= 0,
