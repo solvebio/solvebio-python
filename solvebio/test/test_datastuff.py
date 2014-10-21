@@ -1,6 +1,7 @@
 """Test Dataset, DatasetField, and Facets"""
 import unittest
 from solvebio.resource import Dataset, DatasetField
+from numbers import Number
 
 
 class DataStuffTest(unittest.TestCase):
@@ -52,7 +53,9 @@ class DataStuffTest(unittest.TestCase):
                             'Should find field {0} in fields {1}'
                             .format(field, dataset_field.id))
         facets = dataset_field.facets()
-        self.assertTrue(isinstance(facets.total, int),
+        # We can get small or large numbers like 0 or 4902851621.0
+        self.assertTrue(isinstance(facets.total, Number) and
+                        facets.total >= 0,
                         'facet should have an integer total field')
 
 if __name__ == "__main__":
