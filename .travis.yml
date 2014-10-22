@@ -9,7 +9,7 @@ env:
 
 script:
   - python ./setup.py test
-  - flake8 solvebio
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then flake8 solvebio; fi
 
 install:
   - pip install flake8
