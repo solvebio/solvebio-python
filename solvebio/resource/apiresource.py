@@ -124,8 +124,11 @@ class CreateableAPIResource(APIResource):
 class DeletableAPIResource(APIResource):
 
     def delete(self, **params):
-        self.refresh_from(self.request('delete', self.instance_url(), params))
-        return self
+        try:
+            response = self.request('delete', self.instance_url(), params)
+        except SolveError as response:
+            pass
+        return convert_to_solve_object(response)
 
 
 class DownloadableAPIResource(APIResource):
@@ -155,17 +158,6 @@ class DownloadableAPIResource(APIResource):
             else:
                 path = short_name
         return path
-
-    @classmethod
-    def delete(cls, id):
-        """Delete the sample with the id. The id is that returned by a
-        create, or found by listing all samples."""
-
-        try:
-            response = client.request('delete', cls(id).instance_url())
-        except SolveError as response:
-            pass
-        return convert_to_solve_object(response)
 
     @classmethod
     def download(cls, id, path=None):

@@ -1,11 +1,11 @@
 """Solvebio API Resource for Samples"""
 
-from .apiresource import DownloadableAPIResource, ListableAPIResource, \
-    UploadableAPIResource
+from .apiresource import DeletableAPIResource, DownloadableAPIResource, \
+     ListableAPIResource, UploadableAPIResource
 
 
-class Sample(DownloadableAPIResource, ListableAPIResource,
-             UploadableAPIResource):
+class Sample(DeletableAPIResource, DownloadableAPIResource,
+             ListableAPIResource, UploadableAPIResource):
     """
     Samples are VCF files uploaded to the SolveBio API. We currently
     support uncompressed, extension `.vcf`, and gzip-compressed, extension

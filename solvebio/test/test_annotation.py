@@ -42,7 +42,7 @@ class AnnotationTest(unittest.TestCase):
         self.assertTrue(all.total > 1,
                         "Annotation.all() returns more than one value")
 
-        Sample.delete(sample_id)
+        my_sample.delete()
         return
 
 if __name__ == "__main__":
