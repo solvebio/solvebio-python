@@ -1,5 +1,6 @@
 """Solvebio API Resource for Samples"""
 
+from .annotation import Annotation
 from .apiresource import DeletableAPIResource, DownloadableAPIResource, \
     ListableAPIResource
 from ..client import client
@@ -56,3 +57,6 @@ class Sample(DeletableAPIResource, DownloadableAPIResource,
         except SolveError as response:
             pass
         return convert_to_solve_object(response)
+
+    def annotate(self):
+        return Annotation.create(sample_id=self.id)
