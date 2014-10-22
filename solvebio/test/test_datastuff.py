@@ -1,5 +1,5 @@
 """Test Dataset, DatasetField, and Facets"""
-import unittest
+from test_helper import unittest
 from solvebio.resource import Dataset, DatasetField
 
 
