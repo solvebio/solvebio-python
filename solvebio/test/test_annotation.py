@@ -1,4 +1,4 @@
-import unittest
+from test_helper import unittest
 import os
 
 import solvebio

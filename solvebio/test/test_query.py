@@ -1,5 +1,5 @@
 """Test Non-Paging Queries"""
-import unittest
+from test_helper import unittest
 import os
 
 from query_helper import SolveBioTestCase, TEST_DATASET_NAME
