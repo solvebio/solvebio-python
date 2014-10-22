@@ -1,7 +1,7 @@
 """Solvebio API Resource for Samples"""
 
 from .apiresource import DeletableAPIResource, DownloadableAPIResource, \
-     ListableAPIResource, UploadableAPIResource
+    ListableAPIResource, UploadableAPIResource
 
 
 class Sample(DeletableAPIResource, DownloadableAPIResource,
