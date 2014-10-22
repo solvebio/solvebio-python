@@ -8,7 +8,6 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     except ImportError:
         print("The SolveBio Python shell requires IPython.\n"
               "To install, type: 'pip install ipython'")
-        return
 
     try:
         # see if we're already inside IPython

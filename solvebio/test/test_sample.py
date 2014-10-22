@@ -20,7 +20,6 @@ class SampleTest(unittest.TestCase):
                               lambda: Sample.create('hg19', *params))
 
         # TODO: check unauthorized access
-        return
 
     def test_sample(self):
         self.assertEqual(Sample.class_url(), '/v1/samples',
@@ -37,7 +36,6 @@ class SampleTest(unittest.TestCase):
         self.assertTrue(os.path.exists(response.filename),
                         "Download sample file on filesystem")
         os.remove(response.filename)
-        return
 
 
 if __name__ == "__main__":

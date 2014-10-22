@@ -43,7 +43,6 @@ class AnnotationTest(unittest.TestCase):
                         "Annotation.all() returns more than one value")
 
         my_sample.delete()
-        return
 
 if __name__ == "__main__":
     unittest.main()

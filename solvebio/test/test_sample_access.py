@@ -24,7 +24,6 @@ class SampleAccessTest(unittest.TestCase):
             ('vcf_md5', 'a03e39e96671a01208cffd234812556d'),
             ('vcf_size', 12124), ]
         self.check_response(Sample.retrieve(1), expect, 'Sample.retrieve(1)')
-        return
 
     def test_insert_delete(self):
         all = Sample.all()
@@ -54,7 +53,6 @@ class SampleAccessTest(unittest.TestCase):
         response = Sample.delete(response.id)
         all = Sample.all()
         self.assertEqual(all.total, total, "After deleting a file")
-        return
 
 if __name__ == "__main__":
     unittest.main()

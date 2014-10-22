@@ -27,7 +27,6 @@ class AnnotationAccessTest(unittest.TestCase):
         except SolveError as err:
             self.assertEqual(err.status_code, 404)
 
-        return
 
 if __name__ == "__main__":
     unittest.main()
