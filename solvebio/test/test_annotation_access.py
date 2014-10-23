@@ -18,7 +18,7 @@ class AnnotationAccessTest(unittest.TestCase):
             return unittest.skip("no annotations found to download")
         ann = all.data[0]
         try:
-            response = Annotation.download(ann.id, tempfile.tempdir)
+            response = ann.download(tempfile.tempdir)
             self.assertEqual(response.status_code, 200,
                              "Download annotation file status ok")
             self.assertTrue(os.path.exists(response.filename),

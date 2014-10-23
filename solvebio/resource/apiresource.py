@@ -156,19 +156,18 @@ class DownloadableAPIResource(APIResource):
                 path = short_name
         return path
 
-    @classmethod
-    def download(cls, id, path=None):
+    def download(self, path=None):
         """Download the sample with the id. The id is that returned by a
         create, or found by listing all samples."""
 
-        download_url = cls(id).instance_url() + '/download'
+        download_url = self.instance_url() + '/download'
         response = client.request('get', download_url, allow_redirects=False)
         if 302 != response.status_code:
             # Some kind of error. We expect a redirect
             raise SolveError('Could not download file: response code {0}'
                              .format(response.status_code))
         download_url = response.headers['location']
-        download_path = cls.conjure_file(download_url, path)
+        download_path = self.conjure_file(download_url, path)
 
         try:
             response = requests.request(method='get', url=download_url)
