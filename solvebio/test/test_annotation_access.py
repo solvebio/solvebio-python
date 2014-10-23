@@ -7,6 +7,7 @@ from solvebio.errors import SolveError
 
 import hashlib
 
+
 def md5_file(fileobj, blocksize=65535):
     hasher = hashlib.md5()
     fileobj.seek(0)

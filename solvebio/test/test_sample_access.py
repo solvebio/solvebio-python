@@ -43,7 +43,6 @@ class SampleAccessTest(unittest.TestCase):
             ('vcf_md5', '83acd96171c72ab2bb35e9c52961afd9'),
             ('vcf_size', 592), ]
 
-
         self.check_response(response, expect,
                             'create sample.vcf.gz from a file')
         self.assertEqual(all.total, total, "After uploading a file")
