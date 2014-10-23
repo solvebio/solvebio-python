@@ -124,10 +124,7 @@ class CreateableAPIResource(APIResource):
 class DeletableAPIResource(APIResource):
 
     def delete(self, **params):
-        try:
-            response = self.request('delete', self.instance_url(), params)
-        except SolveError as response:
-            pass
+        response = self.request('delete', self.instance_url(), params)
         return convert_to_solve_object(response)
 
 
