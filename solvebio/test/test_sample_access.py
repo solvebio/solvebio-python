@@ -1,11 +1,12 @@
 import unittest
 import os
 
+import solvebio
 from solvebio.resource import Sample
 
 
-@unittest.skipUnless('TEST_SOLVEBIO_API_UPDATE' in os.environ,
-                     'Sample Access')
+@unittest.skipIf(solvebio.api_host == 'https://api.solvebio.com',
+                                      "annotation creation")
 class SampleAccessTest(unittest.TestCase):
 
     # FIXME: DRY routine with test_sample_access.py
@@ -14,29 +15,17 @@ class SampleAccessTest(unittest.TestCase):
                   key in [x[0] for x in expect]]
         self.assertEqual(subset, expect, msg)
 
-    def test_retrieve(self):
-        expect = [
-            ('class_name', 'Sample'),
-            ('annotations_count', 4),
-            ('id', 1),
-            ('description', ''),
-            ('genome_build', 'hg19'),
-            ('vcf_md5', 'a03e39e96671a01208cffd234812556d'),
-            ('vcf_size', 12124), ]
-        self.check_response(Sample.retrieve(1), expect, 'Sample.retrieve(1)')
-
     def test_insert_delete(self):
         all = Sample.all()
         total = all.total
-        vcf_url = "https://github.com/solvebio/solvebio-python/" + \
-                  "raw/feature/annotation/solvebio/test/data/sample.vcf.gz"
+        vcf_url = "http://downloads.solvebio.com/vcf/small_sample.vcf.gz"
         expect = [
             ('class_name', 'Sample'),
             ('annotations_count', 0),
             ('description', ''),
             ('genome_build', 'hg19'),
-            ('vcf_md5', '83acd96171c72ab2bb35e9c52961afd9'),
-            ('vcf_size', 592), ]
+            ('vcf_md5', 'a03e39e96671a01208cffd234812556d'),
+            ('vcf_size', 12124), ]
         response = Sample.create(genome_build='hg19', vcf_url=vcf_url)
         self.check_response(response, expect,
                             'create sample.vcf.gz from url')
@@ -46,11 +35,23 @@ class SampleAccessTest(unittest.TestCase):
         vcf_file = os.path.join(os.path.dirname(__file__),
                                 "data/sample.vcf.gz")
         response = Sample.create(genome_build='hg19', vcf_file=vcf_file)
+        expect = [
+            ('class_name', 'Sample'),
+            ('annotations_count', 0),
+            ('description', ''),
+            ('genome_build', 'hg19'),
+            ('vcf_md5', '83acd96171c72ab2bb35e9c52961afd9'),
+            ('vcf_size', 592), ]
+
+
         self.check_response(response, expect,
                             'create sample.vcf.gz from a file')
         self.assertEqual(all.total, total, "After uploading a file")
 
-        response = Sample.delete(response.id)
+        sample = Sample.retrieve(response.id)
+        delete_response = sample.delete()
+        self.assertEqual(delete_response.deleted, True,
+                         'response.deleted should be True')
         all = Sample.all()
         self.assertEqual(all.total, total, "After deleting a file")
 
