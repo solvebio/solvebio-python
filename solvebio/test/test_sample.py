@@ -1,6 +1,6 @@
+from test_helper import unittest
 import os
 import tempfile
-import unittest
 
 
 from solvebio.resource import Sample
