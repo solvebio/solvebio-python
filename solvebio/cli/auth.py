@@ -50,12 +50,14 @@ def login(args):
         response = client.request('post', '/v1/auth/token', data)
     except SolveError as e:
         print 'Login failed: %s' % e.message
+        return False
     else:
         save_credentials(email.lower(), response['token'])
         # reset the default client's auth token
         solvebio.api_key = response['token']
         _send_install_report()
         print 'You are now logged-in.'
+    return True
 
 
 def logout(args):
