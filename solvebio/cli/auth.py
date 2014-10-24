@@ -49,14 +49,14 @@ def login(args):
     try:
         response = client.request('post', '/v1/auth/token', data)
     except SolveError as e:
-        print 'Login failed: %s' % e.message
+        print('Login failed: %s' % e.message)
         return False
     else:
         save_credentials(email.lower(), response['token'])
         # reset the default client's auth token
         solvebio.api_key = response['token']
         _send_install_report()
-        print 'You are now logged-in.'
+        print('You are now logged-in.')
     return True
 
 
@@ -64,9 +64,9 @@ def logout(args):
     if get_credentials():
         delete_credentials()
         client.auth = None
-        print 'You have been logged out.'
+        print('You have been logged out.')
     else:
-        print 'You are not logged-in.'
+        print('You are not logged-in.')
 
 
 def whoami(args):
