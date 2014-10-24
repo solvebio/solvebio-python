@@ -16,21 +16,19 @@ logger = logging.getLogger('solvebio')
 
 
 def _handle_api_error(response):
-    if response.status_code in [400, 401, 403, 404]:
-        raise SolveError(response=response)
-    else:
+    if response.status_code not in [400, 401, 403, 404]:
         logger.info('API Error: %d' % response.status_code)
-        raise SolveError(response=response)
+    raise SolveError(response=response)
 
 
-def _handle_request_error(self, e):
+def _handle_request_error(e):
     if isinstance(e, requests.exceptions.RequestException):
         msg = SolveError.default_message
         err = "%s: %s" % (type(e).__name__, str(e))
     else:
-        msg = ("Unexpected error communicating with SolveBio. "
+        msg = ("Unexpected error communicating with SolveBio.\n"
                "It looks like there's probably a configuration "
-               "issue locally. If this problem persists, let us "
+               "issue locally.\nIf this problem persists, let us "
                "know at contact@solvebio.com.")
         err = "A %s was raised" % (type(e).__name__,)
         if str(e):
