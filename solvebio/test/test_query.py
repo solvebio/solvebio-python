@@ -18,7 +18,7 @@ class BaseQueryTest(SolveBioTestCase):
 
     def test_limit(self):
         """
-        When paging is off, len(results) should return the number of
+        When paging is off, results.total should return the number of
         results retrieved.
         """
         limit = 10

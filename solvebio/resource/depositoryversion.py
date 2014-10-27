@@ -51,7 +51,7 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
             return Dataset.retrieve(
                 '/'.join([self['full_name'], name]))
 
-        response = client.request('get', self.datasets_url, params)
+        response = client.request('get', self.datasets_url, params=params)
         return convert_to_solve_object(response)
 
     def help(self):

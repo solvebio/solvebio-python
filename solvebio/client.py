@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+import json
 import solvebio
+
 from .version import VERSION
 from .credentials import get_credentials
 from .errors import SolveError
 
-import json
 import platform
 import requests
 import textwrap
@@ -23,7 +24,7 @@ def _handle_api_error(response):
         raise SolveError(response=response)
 
 
-def _handle_request_error(self, e):
+def _handle_request_error(e):
     if isinstance(e, requests.exceptions.RequestException):
         msg = SolveError.default_message
         err = "%s: %s" % (type(e).__name__, str(e))
@@ -102,57 +103,83 @@ class SolveClient(object):
         print(prepped.body)
         print(prepped.headers)
 
-    # FIXME: refactor to not overload params with data and params depending
-    # on the method. Also make it possible to do the simpler things that are
-    # done in Sample.download
-    def request(self, method, url, params=None, raw=False,
-                auth_class=SolveTokenAuth, timeout=80,
-                files=None, headers={}, allow_redirects=True):
+    def request(self, method, url, **kwargs):
         """
         Issues an HTTP Request across the wire via the Python requests
         library.
-          :param method: str an HTTP method: GET, PUT, POST, DELETE, ...
-          :param url: str the place to connect to. If the url doesn't start
-                with a protocol (https:// or http://), we'll slap
+
+        Parameters
+        ----------
+
+        method : str
+           an HTTP method: GET, PUT, POST, DELETE, ...
+
+        url : str
+           the place to connect to. If the url doesn't start
+           with a protocol (https:// or http://), we'll slap
                 solvebio.api_host in the front.
-          :param params: dict will go into the parameters or data section of
-                the request as appropriate, depending on the method value.
-          :param timeout: int a timeout value in seconds for the request
-          :param raw: bool whether to return the response encoded to json
-          :param files: lis File content in the form of a file handle can be
-                 passed in *files* to upload a file. Generally files are passed
-                 via POST requests
-          :param headers: dict Custom headers can be provided here;
-                 generally though this will be set correctly by
-                 default dependent on the method type. If the content type
-                 is JSON, we'll JSON-encode params.
-          :param allow_redirects: bool if set *False* we won't follow any
-                 redirects
+
+        allow_redirects: bool, optional
+           set *False* we won't follow any redirects
+
+        auth_class: function, optional
+           Function to call to get an Authorization key. if not given
+           we'll use self.api_key.
+
+        headers: dict, optional
+
+          Custom headers can be provided here; generally though this
+          will be set correctly by default dependent on the
+          method type. If the content type is JSON, we'll
+          JSON-encode params.
+
+        param : dict, optional
+           passed as *params* in the requests.request
+
+        timeout : int, optional
+          timeout value in seconds for the request
+
+        raw: bool, optional
+          unless *True* the response encoded to json
+
+        files: file
+          File content in the form of a file handle which is to be
+          uploaded. Files are passed in POST requests
+
+        Returns
+        -------
+        response object. If *raw* is not *True* and
+        repsonse if valid the object will be JSON encoded. Otherwise
+        it will be the request.reposne object.
         """
-        # Support auth-less requests (ie for OAuth2)
-        if auth_class:
-            _auth = auth_class(self._api_key)
-        else:
-            _auth = None
 
-        # Support header modifications
-        _headers = dict(self._headers)
-        _headers.update(headers)
+        opts = {
+            'allow_redirects': True,
+            'auth':  SolveTokenAuth(),
+            'data': {},
+            'files': None,
+            'headers': dict(self._headers),
+            'params': {},
+            'timeout': 80,
+            'verify': True
+            }
 
-        if method.upper() in ('POST', 'PUT', 'PATCH'):
-            # We use only data payload for write requests, set that up and
-            # nuke params.
-            if files is not None:
-                # Don't use application/json for file uploads or GET requests
-                _headers.pop('Content-Type', None)
-                data = params
-            elif _headers.get('Content-Type', None) == 'application/json':
-                data = json.dumps(params)
-            else:
-                data = params
-            params = None
+        opts.update(kwargs)
+
+        if 'raw' in kwargs:
+            raw = kwargs['raw']
+            opts.pop('raw')
         else:
-            data = None
+            raw = False
+
+        method = method.upper()
+
+        if opts['files']:
+            # Don't use application/json for file uploads or GET requests
+            opts['headers'].pop('Content-Type', None)
+        else:
+            opts['data'] = json.dumps(opts['data'])
+
 
         api_host = self._api_host or solvebio.api_host
 
@@ -161,16 +188,14 @@ class SolveClient(object):
         elif not url.startswith(api_host):
             url = urljoin(api_host, url)
 
-        logger.debug('API %s Request: %s' % (method.upper(), url))
-        # self.debug_request(method, url, params, data, _auth,
-        #                    headers, files)
+        logger.debug('API %s Request: %s' % (method, url))
+        # self.debug_request(method, url, kwargs['params'], kwargs['data'],
+        #                   kwargs['_auth'], kwargs['headers'],
+        #                   kwargs['files'])
 
         try:
-            response = requests.request(
-                method=method.upper(), url=url, params=params,
-                data=data, verify=True, timeout=timeout,
-                auth=_auth, headers=_headers, files=files,
-                allow_redirects=allow_redirects)
+            response = requests.request(method, url, **opts)
+
         except Exception as e:
             _handle_request_error(e)
 

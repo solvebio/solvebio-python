@@ -117,7 +117,7 @@ class CreateableAPIResource(APIResource):
     @classmethod
     def create(cls, **params):
         url = cls.class_url()
-        response = client.request('post', url, params)
+        response = client.request('post', url, data=params)
         return convert_to_solve_object(response)
 
 
@@ -191,7 +191,7 @@ class ListableAPIResource(APIResource):
     @classmethod
     def all(cls, **params):
         url = cls.class_url()
-        response = client.request('get', url, params)
+        response = client.request('get', url, params=params)
         return convert_to_solve_object(response)
 
 
@@ -201,7 +201,7 @@ class SearchableAPIResource(APIResource):
     def search(cls, query='', **params):
         params.update({'q': query})
         url = cls.class_url()
-        response = client.request('get', url, params)
+        response = client.request('get', url, params=params)
         return convert_to_solve_object(response)
 
 
@@ -209,7 +209,7 @@ class UpdateableAPIResource(APIResource):
 
     def save(self):
         self.refresh_from(self.request('patch', self.instance_url(),
-                                       self.serialize(self)))
+                                       data=self.serialize(self)))
         return self
 
     def serialize(self, obj):
