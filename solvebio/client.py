@@ -87,6 +87,21 @@ class SolveClient(object):
             )
         }
 
+    @staticmethod
+    def debug_request(method, url, params, data, _auth, _headers, files):
+        from requests import Request, Session
+        s = Session()
+        req = Request(method=method.upper(),
+                      url=url,
+                      params=params,
+                      data=data,
+                      auth=_auth,
+                      headers=_headers,
+                      files=files)
+        prepped = s.prepare_request(req)
+        print(prepped.body)
+        print(prepped.headers)
+
     # FIXME: refactor to not overload params with data and params depending
     # on the method. Also make it possible to do the simpler things that are
     # done in Sample.download
@@ -147,6 +162,9 @@ class SolveClient(object):
             url = urljoin(api_host, url)
 
         logger.debug('API %s Request: %s' % (method.upper(), url))
+        # self.debug_request(method, url, params, data, _auth,
+        #                    headers, files)
+
         try:
             response = requests.request(
                 method=method.upper(), url=url, params=params,
