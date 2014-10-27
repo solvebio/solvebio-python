@@ -1,6 +1,7 @@
 import unittest
 import tempfile
 import os
+import solvebio
 
 from solvebio.resource import Annotation
 from solvebio.errors import SolveError
@@ -38,8 +39,11 @@ class AnnotationAccessTest(unittest.TestCase):
             self.assertTrue(os.path.exists(response.filename),
                             "Download annotation file on filesystem")
             vcf_md5 = md5_file(open(response.filename, 'rb'))
-            self.assertEqual(vcf_md5, 'e5ae61b8c6f334195d954423d1072ac1',
-                             "vcf_mdf on download")
+            if solvebio.api_key == '0cedb161d845e6a58ec6781478b8314c536e632f':
+                self.assertEqual(vcf_md5, 'e5ae61b8c6f334195d954423d1072ac1',
+                                 "vcf_mdf on download")
+            else:
+                unittest.skip('MD5 test only works with test user')
             os.remove(response.filename)
         except SolveError as err:
             self.assertEqual(err.status_code, 404)

@@ -160,6 +160,7 @@ class SolveClient(object):
             'files': None,
             'headers': dict(self._headers),
             'params': {},
+            'params': {},
             'timeout': 80,
             'verify': True
             }
@@ -189,9 +190,9 @@ class SolveClient(object):
             url = urljoin(api_host, url)
 
         logger.debug('API %s Request: %s' % (method, url))
-        # self.debug_request(method, url, kwargs['params'], kwargs['data'],
-        #                   kwargs['_auth'], kwargs['headers'],
-        #                   kwargs['files'])
+        # self.debug_request(method, url, opts['params'], opts['data'],
+        #                   opts['auth'], opts['headers'],
+        #                   opts['files'])
 
         try:
             response = requests.request(method, url, **opts)
