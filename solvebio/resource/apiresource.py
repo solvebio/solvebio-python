@@ -117,7 +117,7 @@ class CreateableAPIResource(APIResource):
     @classmethod
     def create(cls, **params):
         url = cls.class_url()
-        response = client.request('post', url, data=params)
+        response = client.post(url, data=params)
         return convert_to_solve_object(response)
 
 
@@ -161,7 +161,7 @@ class DownloadableAPIResource(APIResource):
         create, or found by listing all samples."""
 
         download_url = self.instance_url() + '/download'
-        response = client.request('get', download_url, allow_redirects=False)
+        response = client.get(download_url, params={}, allow_redirects=False)
         if 302 != response.status_code:
             # Some kind of error. We expect a redirect
             raise SolveError('Could not download file: response code {0}'
@@ -191,7 +191,7 @@ class ListableAPIResource(APIResource):
     @classmethod
     def all(cls, **params):
         url = cls.class_url()
-        response = client.request('get', url, params=params)
+        response = client.get(url, params)
         return convert_to_solve_object(response)
 
 
@@ -201,7 +201,7 @@ class SearchableAPIResource(APIResource):
     def search(cls, query='', **params):
         params.update({'q': query})
         url = cls.class_url()
-        response = client.request('get', url, params=params)
+        response = client.get(url, params)
         return convert_to_solve_object(response)
 
 

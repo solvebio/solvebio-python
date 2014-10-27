@@ -74,7 +74,10 @@ class SolveObject(dict):
                 k, convert_to_solve_object(v))
 
     def request(self, method, url, params=None):
-        response = client.request(method, url, params=params)
+        if method.upper() in ('POST', 'PUT', 'PATCH'):
+            response = client.request(method, url, data=params)
+        else:
+            response = client.request(method, url, params=params)
         return convert_to_solve_object(response)
 
     def __repr__(self):

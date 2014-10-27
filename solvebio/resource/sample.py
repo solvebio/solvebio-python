@@ -41,8 +41,7 @@ class Sample(DeletableAPIResource, DownloadableAPIResource,
 
         files = {'vcf_file': open(vcf_file, 'rb')}
         params = {'genome_build': genome_build}
-        response = client.request('post', cls.class_url(), data=params,
-                                  files=files)
+        response = client.post(cls.class_url(), params, files=files)
         return convert_to_solve_object(response)
 
     @classmethod
@@ -53,7 +52,7 @@ class Sample(DeletableAPIResource, DownloadableAPIResource,
         params = {'genome_build': genome_build,
                   'vcf_url': vcf_url}
         try:
-            response = client.request('post', cls.class_url(), data=params)
+            response = client.post(cls.class_url(), params)
         except SolveError as response:
             pass
         return convert_to_solve_object(response)

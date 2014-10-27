@@ -103,6 +103,18 @@ class SolveClient(object):
         print(prepped.body)
         print(prepped.headers)
 
+    def get(self, url, params, **kwargs):
+        """Issues an HTTP GET across the wire via the Python requests
+        library. See *request()* for information on keyword args."""
+        kwargs['params'] = params
+        return self.request('GET', url, **kwargs)
+
+    def post(self,  url, data, **kwargs):
+        """Issues an HTTP POST across the wire via the Python requests
+        library. See *request* for information on keyword args."""
+        kwargs['data'] = data
+        return self.request('POST', url, **kwargs)
+
     def request(self, method, url, **kwargs):
         """
         Issues an HTTP Request across the wire via the Python requests
@@ -160,18 +172,17 @@ class SolveClient(object):
             'files': None,
             'headers': dict(self._headers),
             'params': {},
-            'params': {},
             'timeout': 80,
             'verify': True
             }
-
-        opts.update(kwargs)
 
         if 'raw' in kwargs:
             raw = kwargs['raw']
             opts.pop('raw')
         else:
             raw = False
+
+        opts.update(kwargs)
 
         method = method.upper()
 
@@ -182,6 +193,7 @@ class SolveClient(object):
             opts['data'] = json.dumps(opts['data'])
 
 
+        # Expand URL with API host if none was given
         api_host = self._api_host or solvebio.api_host
 
         if not api_host:
@@ -194,6 +206,9 @@ class SolveClient(object):
         #                   opts['auth'], opts['headers'],
         #                   opts['files'])
 
+
+        # And just when you thought we forgot about running the actual
+        # request...
         try:
             response = requests.request(method, url, **opts)
 

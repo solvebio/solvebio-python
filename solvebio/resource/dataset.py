@@ -52,7 +52,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
             return DatasetField.retrieve(
                 '/'.join([self['full_name'], name]))
 
-        response = client.request('get', self.fields_url, params=params)
+        response = client.get(self.fields_url, params)
         return convert_to_solve_object(response)
 
     def _data_url(self):
