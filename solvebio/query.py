@@ -406,7 +406,7 @@ class PagingQuery(object):
         _params.update(**params)
         # logger.debug('querying dataset: %s' % str(_params))
 
-        response = client.request('post', self._data_url, data=_params)
+        response = client.post(self._data_url, _params)
         logger.debug(
             'query response took: %(took)d ms, total: %(total)d' % response)
         self._response = response
@@ -480,5 +480,5 @@ class BatchQuery(object):
     def execute(self, **params):
         _params = self._build_query()
         _params.update(**params)
-        response = client.request('post', '/v1/batch_query', data=_params)
+        response = client.post('/v1/batch_query', _params)
         return response

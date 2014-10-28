@@ -109,11 +109,17 @@ class SolveClient(object):
         kwargs['params'] = params
         return self.request('GET', url, **kwargs)
 
-    def post(self,  url, data, **kwargs):
+    def post(self, url, data, **kwargs):
         """Issues an HTTP POST across the wire via the Python requests
         library. See *request* for information on keyword args."""
         kwargs['data'] = data
         return self.request('POST', url, **kwargs)
+
+    def delete(self, url, data, **kwargs):
+        """Issues an HTTP DELETE across the wire via the Python requests
+        library. See *request* for information on keyword args."""
+        kwargs['data'] = data
+        return self.request('DELETE', url, **kwargs)
 
     def request(self, method, url, **kwargs):
         """
@@ -167,14 +173,13 @@ class SolveClient(object):
 
         opts = {
             'allow_redirects': True,
-            'auth':  SolveTokenAuth(),
+            'auth': SolveTokenAuth(),
             'data': {},
             'files': None,
             'headers': dict(self._headers),
             'params': {},
             'timeout': 80,
-            'verify': True
-            }
+            'verify': True}
 
         if 'raw' in kwargs:
             raw = kwargs['raw']
@@ -192,7 +197,6 @@ class SolveClient(object):
         else:
             opts['data'] = json.dumps(opts['data'])
 
-
         # Expand URL with API host if none was given
         api_host = self._api_host or solvebio.api_host
 
@@ -205,7 +209,6 @@ class SolveClient(object):
         # self.debug_request(method, url, opts['params'], opts['data'],
         #                   opts['auth'], opts['headers'],
         #                   opts['files'])
-
 
         # And just when you thought we forgot about running the actual
         # request...
