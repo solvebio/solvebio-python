@@ -73,11 +73,8 @@ class SolveObject(dict):
             super(SolveObject, self).__setitem__(
                 k, convert_to_solve_object(v))
 
-    def request(self, method, url, params=None):
-        if method.upper() in ('POST', 'PUT', 'PATCH'):
-            response = client.request(method, url, data=params)
-        else:
-            response = client.request(method, url, params=params)
+    def request(self, method, url, **kwargs):
+        response = client.request(method, url, **kwargs)
         return convert_to_solve_object(response)
 
     def __repr__(self):

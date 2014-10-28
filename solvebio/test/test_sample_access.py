@@ -27,7 +27,6 @@ class SampleAccessTest(unittest.TestCase):
             ('vcf_md5', 'a03e39e96671a01208cffd234812556d'),
             ('vcf_size', 12124), ]
         response = Sample.create(genome_build='hg19', vcf_url=vcf_url)
-
         self.check_response(response, expect,
                             'create sample.vcf.gz from url')
         all = Sample.all()

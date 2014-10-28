@@ -58,19 +58,19 @@ class ListObject(SolveObject):
 
     def all(self, **params):
         """Lists all items in a class that you have access to"""
-        return self.request('get', self['url'], params)
+        return self.request('get', self['url'], params=params)
 
     def create(self, **params):
-        return self.request('post', self['url'], params)
+        return self.request('post', self['url'], data=params)
 
     def next_page(self, **params):
         if self['links']['next']:
-            return self.request('get', self['links']['next'], params)
+            return self.request('get', self['links']['next'], params=params)
         return None
 
     def prev_page(self, **params):
         if self['links']['prev']:
-            self.request('get', self['links']['prev'], params)
+            self.request('get', self['links']['prev'], params=params)
         return None
 
     def objects(self):
@@ -124,7 +124,7 @@ class CreateableAPIResource(APIResource):
 class DeletableAPIResource(APIResource):
 
     def delete(self, **params):
-        response = self.request('delete', self.instance_url(), params)
+        response = self.request('delete', self.instance_url(), params=params)
         return convert_to_solve_object(response)
 
 
@@ -161,11 +161,14 @@ class DownloadableAPIResource(APIResource):
         create, or found by listing all samples."""
 
         download_url = self.instance_url() + '/download'
-        response = client.get(download_url, params={}, allow_redirects=False)
+        response = self.request('get', download_url, params={},
+                                allow_redirects=False)
+
         if 302 != response.status_code:
             # Some kind of error. We expect a redirect
             raise SolveError('Could not download file: response code {0}'
                              .format(response.status_code))
+
         download_url = response.headers['location']
         download_path = self.conjure_file(download_url, path)
 
