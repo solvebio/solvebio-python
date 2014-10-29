@@ -1,15 +1,15 @@
-"""Test Depository, DepositoryVersions"""
-from test_helper import unittest
 from solvebio.resource import Depository, DepositoryVersion
 
+from .helper import SolveBioTestCase
 
-class DepoStuffTest(unittest.TestCase):
 
-    def test_depostuff(self):
+class DepositoryTests(SolveBioTestCase):
+    """
+    Test Depository and DepositoryVersions.
+    """
+
+    def test_depositories(self):
         depos = Depository.all()
-        if depos.total == 0:
-            return unittest.skip('no depositories found')
-        # print "depos.total %s" % [depos.total]  # compare with ruby
         depo = depos.data[0]
         self.assertTrue('id' in depo,
                         'Should be able to get id in deposiory')
@@ -41,6 +41,3 @@ class DepoStuffTest(unittest.TestCase):
                             'title', 'updated_at', 'url'])
 
         self.assertSetEqual(set(depo_version), check_fields)
-
-if __name__ == "__main__":
-    unittest.main()

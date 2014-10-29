@@ -31,7 +31,7 @@ class FilterTest(unittest.TestCase):
                          "prior 'or' doesn't mung filter")
 
         filters3 = Filter(omim_id=144650) | Filter(omim_id=144600) \
-            | Filter(omim_id=145300)
+          | Filter(omim_id=145300)
         self.assertEqual(repr(filters3),
                          "<Filter [{'or': [('omim_id', 144650)," +
                          " ('omim_id', 144600), ('omim_id', 145300)]}]>")

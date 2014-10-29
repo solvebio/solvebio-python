@@ -130,36 +130,10 @@ class DeletableAPIResource(APIResource):
 
 class DownloadableAPIResource(APIResource):
 
-    @staticmethod
-    def conjure_file(url, path):
-        """Make up a file name based on info in *url* and *path*.
-
-        :param url: str url to base filename
-        :param path: str can be a full path, a directory name, or None.
-          If path is *None*, we'll use
-          use the current directory plus any name we find in url.
-          If path is a directory well use that plus the name found in url.
-          If it a non-directory string, we'll ignore any filename found in
-          *url* and use that.
-        :returns: str a full path name
-        """
-
-        values = url.split('%3B%20filename%3D')
-        if len(values) != 2:
-            short_name = tempfile.mkstemp(suffix='.gz')
-        else:
-            short_name = values[1]
-        if path:
-            if os.path.isdir(path):
-                path = os.path.join(path, short_name)
-            else:
-                path = short_name
-        return path
-
     def download(self, path=None):
-        """Download the sample with the id. The id is that returned by a
-        create, or found by listing all samples."""
-
+        """
+        Download the file to the specified path (or a temp. dir).
+        """
         download_url = self.instance_url() + '/download'
         response = self.request('get', download_url, params={},
                                 allow_redirects=False)
@@ -170,7 +144,12 @@ class DownloadableAPIResource(APIResource):
                              .format(response.status_code))
 
         download_url = response.headers['location']
-        download_path = self.conjure_file(download_url, path)
+        filename = download_url.split('%3B%20filename%3D')[1]
+
+        if path is None:
+            path = tempfile.gettempdir()
+
+        filename = os.path.join(path, filename)
 
         try:
             response = requests.request(method='get', url=download_url)
@@ -180,11 +159,11 @@ class DownloadableAPIResource(APIResource):
         if not (200 <= response.status_code < 400):
             _handle_api_error(response)
 
-        with open(download_path, 'wb') as fileobj:
+        with open(filename, 'wb') as fileobj:
             fileobj.write(response._content)
 
         response = convert_to_solve_object(response)
-        response.filename = download_path
+        response.filename = filename
         return response
 
 
