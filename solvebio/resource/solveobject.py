@@ -73,8 +73,8 @@ class SolveObject(dict):
             super(SolveObject, self).__setitem__(
                 k, convert_to_solve_object(v))
 
-    def request(self, method, url, params=None):
-        response = client.request(method, url, params)
+    def request(self, method, url, **kwargs):
+        response = client.request(method, url, **kwargs)
         return convert_to_solve_object(response)
 
     def __repr__(self):

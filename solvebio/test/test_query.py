@@ -18,7 +18,7 @@ class BaseQueryTest(SolveBioTestCase):
 
     def test_limit(self):
         """
-        When paging is off, len(results) should return the number of
+        When paging is off, len(total) should return the number of
         results retrieved.
         """
         limit = 10
@@ -33,8 +33,8 @@ class BaseQueryTest(SolveBioTestCase):
 
     def test_limit_empty(self):
         """
-        test Query when limit is specified and is GREATER THAN total available
-        results.
+        test Query when limit is specified and is GREATER THAN total
+        available results.
         """
         limit = 100
         # bogus filter

@@ -58,19 +58,19 @@ class ListObject(SolveObject):
 
     def all(self, **params):
         """Lists all items in a class that you have access to"""
-        return self.request('get', self['url'], params)
+        return self.request('get', self['url'], params=params)
 
     def create(self, **params):
-        return self.request('post', self['url'], params)
+        return self.request('post', self['url'], data=params)
 
     def next_page(self, **params):
         if self['links']['next']:
-            return self.request('get', self['links']['next'], params)
+            return self.request('get', self['links']['next'], params=params)
         return None
 
     def prev_page(self, **params):
         if self['links']['prev']:
-            self.request('get', self['links']['prev'], params)
+            self.request('get', self['links']['prev'], params=params)
         return None
 
     def objects(self):
@@ -117,15 +117,15 @@ class CreateableAPIResource(APIResource):
     @classmethod
     def create(cls, **params):
         url = cls.class_url()
-        response = client.request('post', url, params)
+        response = client.post(url, data=params)
         return convert_to_solve_object(response)
 
 
 class DeletableAPIResource(APIResource):
 
     def delete(self, **params):
-        self.refresh_from(self.request('delete', self.instance_url(), params))
-        return self
+        response = self.request('delete', self.instance_url(), params=params)
+        return convert_to_solve_object(response)
 
 
 class DownloadableAPIResource(APIResource):
@@ -156,30 +156,21 @@ class DownloadableAPIResource(APIResource):
                 path = short_name
         return path
 
-    @classmethod
-    def delete(cls, id):
-        """Delete the sample with the id. The id is that returned by a
-        create, or found by listing all samples."""
-
-        try:
-            response = client.request('delete', cls(id).instance_url())
-        except SolveError as response:
-            pass
-        return convert_to_solve_object(response)
-
-    @classmethod
-    def download(cls, id, path=None):
+    def download(self, path=None):
         """Download the sample with the id. The id is that returned by a
         create, or found by listing all samples."""
 
-        download_url = cls(id).instance_url() + '/download'
-        response = client.request('get', download_url, allow_redirects=False)
+        download_url = self.instance_url() + '/download'
+        response = self.request('get', download_url, params={},
+                                allow_redirects=False)
+
         if 302 != response.status_code:
             # Some kind of error. We expect a redirect
             raise SolveError('Could not download file: response code {0}'
                              .format(response.status_code))
+
         download_url = response.headers['location']
-        download_path = cls.conjure_file(download_url, path)
+        download_path = self.conjure_file(download_url, path)
 
         try:
             response = requests.request(method='get', url=download_url)
@@ -203,7 +194,7 @@ class ListableAPIResource(APIResource):
     @classmethod
     def all(cls, **params):
         url = cls.class_url()
-        response = client.request('get', url, params)
+        response = client.get(url, params)
         return convert_to_solve_object(response)
 
 
@@ -213,7 +204,7 @@ class SearchableAPIResource(APIResource):
     def search(cls, query='', **params):
         params.update({'q': query})
         url = cls.class_url()
-        response = client.request('get', url, params)
+        response = client.get(url, params)
         return convert_to_solve_object(response)
 
 
@@ -221,7 +212,7 @@ class UpdateableAPIResource(APIResource):
 
     def save(self):
         self.refresh_from(self.request('patch', self.instance_url(),
-                                       self.serialize(self)))
+                                       data=self.serialize(self)))
         return self
 
     def serialize(self, obj):
@@ -232,47 +223,3 @@ class UpdateableAPIResource(APIResource):
                     continue
                 params[k] = getattr(obj, k) or ""
         return params
-
-
-class UploadableAPIResource(APIResource):
-    """Defines *create()*, *create_from_file()* and
-    *create_from_url()* methods which allow one to upload a (VCF) file
-    to be stored on the system.
-    """
-
-    @classmethod
-    def create(cls, genome_build, **params):
-        if 'vcf_url' in params:
-            if 'vcf_file' in params:
-                raise TypeError('Specified both vcf_url and vcf_file; ' +
-                                'use only one')
-            return cls.create_from_url(genome_build, params['vcf_url'])
-        elif 'vcf_file' in params:
-            return cls.create_from_file(genome_build, params['vcf_file'])
-        else:
-            raise TypeError('Must specify exactly one of vcf_url or ' +
-                            'vcf_file parameter')
-
-    @classmethod
-    def create_from_file(cls, genome_build, vcf_file):
-        """Creates from the specified file.  The data of
-        the should be in VCF format."""
-
-        files = {'vcf_file': open(vcf_file, 'rb')}
-        params = {'genome_build': genome_build}
-        response = client.request('post', cls.class_url(), params=params,
-                                  files=files)
-        return convert_to_solve_object(response)
-
-    @classmethod
-    def create_from_url(cls, genome_build, vcf_url):
-        """Creates from the specified URL.  The data of
-        the should be in VCF format."""
-
-        params = {'genome_build': genome_build,
-                  'vcf_url': vcf_url}
-        try:
-            response = client.request('post', cls.class_url(), params=params)
-        except SolveError as response:
-            pass
-        return convert_to_solve_object(response)

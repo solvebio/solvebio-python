@@ -42,8 +42,10 @@ class AnnotationTest(unittest.TestCase):
         self.assertTrue(all.total > 1,
                         "Annotation.all() returns more than one value")
 
-        Sample.delete(sample_id)
-        return
+        response = my_sample.annotate()
+        # FIXME: test annotate() more.
+
+        my_sample.delete()
 
 if __name__ == "__main__":
     unittest.main()

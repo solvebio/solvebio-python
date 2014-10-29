@@ -27,7 +27,7 @@ class PagingQueryTest(SolveBioTestCase):
         limit = 100
         total = 7
         results = self.dataset.query(paging=True, limit=limit) \
-          .filter(hg19_start__range=(140000000, 140050000))
+            .filter(hg19_start__range=(140000000, 140050000))
 
         self.assertEqual(len(results), total)
 
