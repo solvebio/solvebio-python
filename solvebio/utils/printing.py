@@ -9,7 +9,7 @@ logger = logging.getLogger('solvebio')
 
 try:
     # Switch from the default input ASCII encoding to the default locale.
-    # The Python runtime will use this  it has to decode a
+    # The Python runtime will use this when it has to decode a
     # string buffer to unicode. This is not needed in Python3.
 
     # However reload(sys), used below resets stdin, stdout, and stderr
