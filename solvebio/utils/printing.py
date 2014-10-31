@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger('solvebio')
 
+std_handles = [sys.stdin, sys.stdout, sys.stderr]
 try:
     # Switch from the default input ASCII encoding to the default locale.
     # The Python runtime will use this when it has to decode a
@@ -16,7 +17,6 @@ try:
     # which is bad if they've already been reassigned. An ipython
     # notebook shell, for example, sets up its own stdout.
     # See github issue #43 and #21.
-    std_handles = [sys.stdin, sys.stdout, sys.stderr]
     reload(sys).setdefaultencoding(locale.getdefaultlocale()[1])
     locale.setlocale(locale.LC_ALL, '')
 except:
