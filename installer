@@ -158,7 +158,7 @@ if [ $? -eq 0 ]; then
     echo "Run 'solvebio login' to start."
     echo
     echo "Check out the Get Started guide:"
-    echo "https://www.solvebio.com/documentation/get-started"
+    echo "https://www.solvebio.com/docs/get-started"
     echo "If you need some help, email us at contact@solvebio.com"
     echo
     echo "#####################################"
