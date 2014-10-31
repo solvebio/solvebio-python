@@ -10,7 +10,7 @@ setup(
     name='solvebio',
     version=VERSION,
     description='The SolveBio Python client',
-    long_description=open('README.txt').read(),
+    long_description=open('README.md').read(),
     author='Solve, Inc.',
     author_email='contact@solvebio.com',
     url='https://github.com/solvebio/solvebio-python',

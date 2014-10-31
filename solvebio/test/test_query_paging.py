@@ -1,11 +1,13 @@
 """Test Paging Queries"""
-import unittest
-import sys
-import solvebio
-sys.path.insert(0, '.')
+from test_helper import unittest
+import os
 from query_helper import SolveBioTestCase, TEST_DATASET_NAME
-from solvebio import Dataset, Filter, BatchQuery, SolveError
+from solvebio.resource import Dataset
 
+
+@unittest.skipIf('SOLVEBIO_API_HOST' in os.environ and
+                 os.environ['SOLVEBIO_API_HOST'] == 'http://127.0.0.1:8000',
+                 "showing class skipping")
 class PagingQueryTest(SolveBioTestCase):
     def setUp(self):
         super(PagingQueryTest, self).setUp()
@@ -25,7 +27,7 @@ class PagingQueryTest(SolveBioTestCase):
         limit = 100
         total = 7
         results = self.dataset.query(paging=True, limit=limit) \
-          .filter(hg19_start__range = (140000000, 140050000))
+          .filter(hg19_start__range=(140000000, 140050000))
 
         self.assertEqual(len(results), total)
 
@@ -36,7 +38,7 @@ class PagingQueryTest(SolveBioTestCase):
     def test_slice(self):
         limit = 100
         results = self.dataset.query(paging=True, limit=limit) \
-            .filter(hg19_start__range = (140000000, 140050000))[2:5]
+            .filter(hg19_start__range=(140000000, 140050000))[2:5]
         self.assertEqual(len(results), 3)
 
         results = self.dataset.query(paging=True, limit=limit) \
@@ -49,7 +51,7 @@ class PagingQueryTest(SolveBioTestCase):
 
         def _query():
             return self.dataset.query(paging=True, limit=20) \
-              .filter(hg19_start__range = (140000000, 140060000))[2:10]
+                .filter(hg19_start__range=(140000000, 140060000))[2:10]
 
         results_slice = _query()[idx0:idx1]
         results_paging = []
