@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Handles Querying and Filtering Datasets"""
+
 from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
@@ -26,10 +28,12 @@ class Filter(object):
 
     Each set of kwargs in a `Filter` are ANDed together:
 
-        * `<field>='<value>'` matches if the field is that exact value
-        * `<field>__in=[<item1>, ...]` matches any of the terms <item1> and so on
-        * `<field>__range=[<start>, <end>]` matches anything from <start> to <end>
-        * `<field>__between=[<start>, <end>]` matches anything between <start> to <end> not include either <start> or <end>
+      * `<field>='<value>'` matches if the field is that exact value
+      * `<field>__in=[<item1>, ...]` matches any of the terms <item1> and so on
+      * `<field>__range=[<start>, <end>]` matches anything from <start>
+         to <end>
+      * `<field>__between=[<start>, <end>]` matches anything between <start> to
+         <end> not include either <start> or <end>
 
     String terms are not analyzed and are always assumed to be exact matches.
 
@@ -92,6 +96,7 @@ class Filter(object):
     def __invert__(self):
         f = Filter()
         self_filters = copy.deepcopy(self.filters)
+
         if len(self_filters) == 0:
             # no change
             f.filters = []
@@ -100,7 +105,7 @@ class Filter(object):
               and self_filters[0].get('not', {})):
             # if the filters are already a single dictionary containing a 'not'
             # then swap out the 'not'
-            f.filters = self_filters[0]['not']
+            f.filters = [self_filters[0]['not']]
         else:
             # length of self_filters should never be more than 1
             # 'not' blocks can contain only dicts or a single tuple filter
@@ -264,10 +269,9 @@ class PagingQuery(object):
         if self.total == 0 or self._limit == 0:
             return u'query returned 0 results'
 
-        sorted_items = sorted(self[0].items() , key=lambda x: x[0])
         return u'\n%s\n\n... %s more results.' % (
-            tabulate(sorted_items, ['Fields', 'Data'],
-                     aligns=['right', 'left']),
+            tabulate(self[0].items(), ['Fields', 'Data'],
+                     aligns=['right', 'left'], sort=True),
             pretty_int(self.total - 1))
 
     def _reset_iter(self):
@@ -402,7 +406,7 @@ class PagingQuery(object):
         _params.update(**params)
         # logger.debug('querying dataset: %s' % str(_params))
 
-        response = client.request('post', self._data_url, _params)
+        response = client.post(self._data_url, _params)
         logger.debug(
             'query response took: %(took)d ms, total: %(total)d' % response)
         self._response = response
@@ -476,5 +480,5 @@ class BatchQuery(object):
     def execute(self, **params):
         _params = self._build_query()
         _params.update(**params)
-        response = client.request('post', '/v1/batch_query', _params)
+        response = client.post('/v1/batch_query', _params)
         return response

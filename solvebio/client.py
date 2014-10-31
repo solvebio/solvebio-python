@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-import solvebio
-from solvebio import version
-from solvebio.credentials import get_credentials
-from solvebio.errors import SolveError
-
 import json
+import solvebio
+
+from .version import VERSION
+from .credentials import get_credentials
+from .errors import SolveError
+
 import platform
 import requests
 import textwrap
@@ -13,6 +14,30 @@ from urlparse import urljoin
 from requests.auth import AuthBase
 
 logger = logging.getLogger('solvebio')
+
+
+def _handle_api_error(response):
+    if response.status_code not in [400, 401, 403, 404]:
+        logger.info('API Error: %d' % response.status_code)
+    raise SolveError(response=response)
+
+
+def _handle_request_error(e):
+    if isinstance(e, requests.exceptions.RequestException):
+        msg = SolveError.default_message
+        err = "%s: %s" % (type(e).__name__, str(e))
+    else:
+        msg = ("Unexpected error communicating with SolveBio.\n"
+               "It looks like there's probably a configuration "
+               "issue locally.\nIf this problem persists, let us "
+               "know at contact@solvebio.com.")
+        err = "A %s was raised" % (type(e).__name__,)
+        if str(e):
+            err += " with error message %s" % (str(e),)
+        else:
+            err += " with no error message"
+    msg = textwrap.fill(msg) + "\n\n(Network error: %s)" % (err,)
+    raise SolveError(message=msg)
 
 
 class SolveTokenAuth(AuthBase):
@@ -55,34 +80,122 @@ class SolveClient(object):
             'Accept': 'application/json',
             'Accept-Encoding': 'gzip,deflate',
             'User-Agent': 'SolveBio Python Client %s [Python %s/%s]' % (
-                version.VERSION,
+                VERSION,
                 platform.python_implementation(),
                 platform.python_version()
             )
         }
 
-    def request(self, method, url, params=None, raw=False,
-                auth_class=SolveTokenAuth, timeout=80, headers={}):
-        # Support auth-less requests (ie for OAuth2)
-        if auth_class:
-            _auth = auth_class(self._api_key)
+    @staticmethod
+    def debug_request(method, url, params, data, _auth, _headers, files):
+        from requests import Request, Session
+        s = Session()
+        req = Request(method=method.upper(),
+                      url=url,
+                      params=params,
+                      data=data,
+                      auth=_auth,
+                      headers=_headers,
+                      files=files)
+        prepped = s.prepare_request(req)
+        print(prepped.body)
+        print(prepped.headers)
+
+    def get(self, url, params, **kwargs):
+        """Issues an HTTP GET across the wire via the Python requests
+        library. See *request()* for information on keyword args."""
+        kwargs['params'] = params
+        return self.request('GET', url, **kwargs)
+
+    def post(self, url, data, **kwargs):
+        """Issues an HTTP POST across the wire via the Python requests
+        library. See *request* for information on keyword args."""
+        kwargs['data'] = data
+        return self.request('POST', url, **kwargs)
+
+    def delete(self, url, data, **kwargs):
+        """Issues an HTTP DELETE across the wire via the Python requests
+        library. See *request* for information on keyword args."""
+        kwargs['data'] = data
+        return self.request('DELETE', url, **kwargs)
+
+    def request(self, method, url, **kwargs):
+        """
+        Issues an HTTP Request across the wire via the Python requests
+        library.
+
+        Parameters
+        ----------
+
+        method : str
+           an HTTP method: GET, PUT, POST, DELETE, ...
+
+        url : str
+           the place to connect to. If the url doesn't start
+           with a protocol (https:// or http://), we'll slap
+                solvebio.api_host in the front.
+
+        allow_redirects: bool, optional
+           set *False* we won't follow any redirects
+
+        auth_class: function, optional
+           Function to call to get an Authorization key. if not given
+           we'll use self.api_key.
+
+        headers: dict, optional
+
+          Custom headers can be provided here; generally though this
+          will be set correctly by default dependent on the
+          method type. If the content type is JSON, we'll
+          JSON-encode params.
+
+        param : dict, optional
+           passed as *params* in the requests.request
+
+        timeout : int, optional
+          timeout value in seconds for the request
+
+        raw: bool, optional
+          unless *True* the response encoded to json
+
+        files: file
+          File content in the form of a file handle which is to be
+          uploaded. Files are passed in POST requests
+
+        Returns
+        -------
+        response object. If *raw* is not *True* and
+        repsonse if valid the object will be JSON encoded. Otherwise
+        it will be the request.reposne object.
+        """
+
+        opts = {
+            'allow_redirects': True,
+            'auth': SolveTokenAuth(),
+            'data': {},
+            'files': None,
+            'headers': dict(self._headers),
+            'params': {},
+            'timeout': 80,
+            'verify': True}
+
+        if 'raw' in kwargs:
+            raw = kwargs['raw']
+            opts.pop('raw')
         else:
-            _auth = None
+            raw = False
 
-        # Support header modifications
-        _headers = dict(self._headers)
-        _headers.update(headers)
+        opts.update(kwargs)
 
-        if method.upper() in ('POST', 'PUT', 'PATCH'):
-            # use only data payload for write requests
-            if _headers.get('Content-Type', None) == 'application/json':
-                data = json.dumps(params)
-            else:
-                data = params
-            params = None
+        method = method.upper()
+
+        if opts['files']:
+            # Don't use application/json for file uploads or GET requests
+            opts['headers'].pop('Content-Type', None)
         else:
-            data = None
+            opts['data'] = json.dumps(opts['data'])
 
+        # Expand URL with API host if none was given
         api_host = self._api_host or solvebio.api_host
 
         if not api_host:
@@ -90,46 +203,26 @@ class SolveClient(object):
         elif not url.startswith(api_host):
             url = urljoin(api_host, url)
 
-        logger.debug('API %s Request: %s' % (method.upper(), url))
+        logger.debug('API %s Request: %s' % (method, url))
+        # self.debug_request(method, url, opts['params'], opts['data'],
+        #                   opts['auth'], opts['headers'],
+        #                   opts['files'])
 
+        # And just when you thought we forgot about running the actual
+        # request...
         try:
-            response = requests.request(
-                method=method.upper(), url=url, params=params,
-                data=data, verify=True, timeout=timeout,
-                auth=_auth, headers=_headers)
+            response = requests.request(method, url, **opts)
+
         except Exception as e:
-            self._handle_request_error(e)
+            _handle_request_error(e)
 
-        if not (200 <= response.status_code < 300):
-            self._handle_api_error(response)
+        if not (200 <= response.status_code < 400):
+            _handle_api_error(response)
 
-        if raw:
+        # 204 is used on deletion. There is no JSON here.
+        if raw or response.status_code in [204, 301, 302]:
             return response
 
         return response.json()
-
-    def _handle_request_error(self, e):
-        if isinstance(e, requests.exceptions.RequestException):
-            msg = SolveError.default_message
-            err = "%s: %s" % (type(e).__name__, str(e))
-        else:
-            msg = ("Unexpected error communicating with SolveBio. "
-                   "It looks like there's probably a configuration "
-                   "issue locally. If this problem persists, let us "
-                   "know at contact@solvebio.com.")
-            err = "A %s was raised" % (type(e).__name__,)
-            if str(e):
-                err += " with error message %s" % (str(e),)
-            else:
-                err += " with no error message"
-        msg = textwrap.fill(msg) + "\n\n(Network error: %s)" % (err,)
-        raise SolveError(message=msg)
-
-    def _handle_api_error(self, response):
-        if response.status_code in [400, 401, 403, 404]:
-            raise SolveError(response=response)
-        else:
-            logger.info('API Error: %d' % response.status_code)
-            raise SolveError(response=response)
 
 client = SolveClient()

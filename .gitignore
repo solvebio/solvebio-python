@@ -6,7 +6,9 @@
 *.cache
 ChangeLog
 MANIFEST
+Makefile
 dist/
+tmp/
 build/
 docs/_build/
 docs/locale/

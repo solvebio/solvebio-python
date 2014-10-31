@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 SolveBio Python Client
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 This is the Python client & library for the SolveBio API.
 
 Have questions or comments? email us at: contact@solvebio.com
 
 """
+__docformat__ = 'restructuredtext'
 import os as _os
 import logging as _logging
 from .help import open_help as _open_help
@@ -68,10 +69,21 @@ _init_logging()
 
 from . import version
 from .errors import SolveError
-from .resource import (User, Depository, DepositoryVersion, Dataset,
-                       DatasetField)
 from .query import Query, PagingQuery, BatchQuery, Filter, RangeFilter
+from .resource import (Depository, DepositoryVersion, Annotation, Sample,
+                       User, Dataset, DatasetField)
 
-__all__ = ['version', 'Depository', 'DepositoryVersion', 'Dataset',
-           'DatasetField', 'User', 'Filter', 'RangeFilter', 'Query',
-           'PagingQuery', 'BatchQuery', 'SolveError']
+__all__ = ['version',
+           'Annotation',
+           'BatchQuery',
+           'Dataset',
+           'DatasetField',
+           'Depository',
+           'DepositoryVersion',
+           'Filter',
+           'PagingQuery',
+           'Query',
+           'RangeFilter',
+           'SolveError',
+           'Sample',
+           'User']

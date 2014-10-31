@@ -12,6 +12,7 @@ class SolveError(Exception):
         self.status_code = None
         self.message = message or self.default_message
         self.field_errors = []
+        self.response = response  # For clients that want the full story.
 
         if response is not None:
             self.status_code = response.status_code
