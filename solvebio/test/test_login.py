@@ -4,20 +4,12 @@ import solvebio
 import solvebio.cli.auth as auth
 
 
-def bad_creds(login=None):
-    return 'rocky@foo.bar', 'weird'
-
-
-def fake_delete_credentials():
-    return
-
-
 class TestLogin(unittest.TestCase):
     def setUp(self):
         self.api_host = solvebio.api_host
+        # temporarily replace with dummy methods for testing
         self._ask_for_credentials = auth._ask_for_credentials
         self.delete_credentials = auth.delete_credentials
-
         auth._ask_for_credentials = lambda login=None: ('fake@foo.bar',
                                                         'p4ssw0rd')
         auth.delete_credentials = lambda: None
