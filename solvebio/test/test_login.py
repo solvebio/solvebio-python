@@ -5,7 +5,7 @@ import solvebio
 import solvebio.cli.auth as Mauth
 
 
-def bad_creds():
+def bad_creds(login=None):
     return 'rocky@foo.bar', 'weird'
 
 

@@ -57,7 +57,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     from solvebio.cli.auth import logout as logout_with_args
     from solvebio.cli.auth import whoami as whoami_with_args
 
-    login = lambda: login_with_args(None)  # noqa
+    login = lambda args=None: login_with_args(args)  # noqa
     logout = lambda: logout_with_args(None)  # noqa
     whoami = lambda: whoami_with_args(None)  # noqa
     InteractiveShellEmbed(config=cfg, banner1=banner1, exit_msg=exit_msg)()
