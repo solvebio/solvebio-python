@@ -1,12 +1,40 @@
-from test_helper import unittest
 import os
-import tempfile
-
 
 from solvebio.resource import Sample
+from .helper import SolveBioTestCase
 
 
-class SampleTest(unittest.TestCase):
+class SampleTest(SolveBioTestCase):
+    sample_meta = [
+        ('class_name', 'Sample'),
+        ('annotations_count', 0),
+        ('description', ''),
+        ('genome_build', 'hg19'),
+        ('vcf_md5', '83acd96171c72ab2bb35e9c52961afd9'),
+        ('vcf_size', 592),
+    ]
+
+    def test_sample_url(self):
+        self.assertEqual(Sample.class_url(), '/v1/samples',
+                         'Sample.class_url()')
+
+    def test_create_from_url(self):
+        vcf_url = "https://github.com/solvebio/solvebio-python/" + \
+                  "raw/dev/solvebio/test/data/sample.vcf.gz"
+        sample = Sample.create(genome_build='hg19', vcf_url=vcf_url)
+        self.check_response(sample, self.sample_meta,
+                            'Create Sample from URL')
+        self.check_response(Sample.retrieve(sample.id), self.sample_meta,
+                            'Sample.retrieve(1)')
+
+    def test_create_from_file(self):
+        vcf_file = os.path.join(os.path.dirname(__file__),
+                                "data/sample.vcf.gz")
+        sample = Sample.create(genome_build='hg19', vcf_file=vcf_file)
+        self.check_response(sample, self.sample_meta,
+                            'Create a Sample from a file')
+        self.check_response(Sample.retrieve(sample.id), self.sample_meta,
+                            'Sample.retrieve(1)')
 
     def test_sample_error_params(self):
         for params in [(), ('hg19')]:
@@ -15,30 +43,7 @@ class SampleTest(unittest.TestCase):
                               lambda: Sample.create_from_file(*params))
             self.assertRaises(TypeError,
                               lambda: Sample.create_from_url(*params))
+
         for params in [{}, {'vcf_file': 'a', 'vcf_url': 'b'}]:
             self.assertRaises(TypeError,
                               lambda: Sample.create('hg19', *params))
-
-        # TODO: check unauthorized access
-        return
-
-    def test_sample(self):
-        self.assertEqual(Sample.class_url(), '/v1/samples',
-                         'Sample.class_url()')
-
-    def test_sample_download(self):
-        all = Sample.all()
-        if all.total == 0:
-            return unittest.skip("no samples found to download")
-        sample = all.data[0]
-        response = Sample.download(sample.id, tempfile.tempdir)
-        self.assertEqual(response.status_code, 200,
-                         "Download sample file status ok")
-        self.assertTrue(os.path.exists(response.filename),
-                        "Download sample file on filesystem")
-        os.remove(response.filename)
-        return
-
-
-if __name__ == "__main__":
-    unittest.main()

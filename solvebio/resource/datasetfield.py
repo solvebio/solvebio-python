@@ -32,7 +32,7 @@ class DatasetField(CreateableAPIResource, ListableAPIResource,
         return super(DatasetField, cls).retrieve(id, **params)
 
     def facets(self, **params):
-        response = client.request('get', self.facets_url, params)
+        response = client.get(self.facets_url, params)
         return convert_to_solve_object(response)
 
     def help(self):

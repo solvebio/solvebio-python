@@ -4,9 +4,6 @@ python:
   - '2.6'
   - '2.7'
 
-env:
-  - "SOLVEBIO_API_KEY=0cedb161d845e6a58ec6781478b8314c536e632f"
-
 script:
   - python ./setup.py test
   - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then flake8 solvebio; fi

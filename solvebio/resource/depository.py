@@ -41,7 +41,7 @@ class Depository(CreateableAPIResource, ListableAPIResource,
             return DepositoryVersion.retrieve(
                 '/'.join([self['full_name'], name]))
 
-        response = client.request('get', self.versions_url, params)
+        response = client.get(self.versions_url, params)
         return convert_to_solve_object(response)
 
     def help(self):

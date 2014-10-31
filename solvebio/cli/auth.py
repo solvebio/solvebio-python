@@ -56,7 +56,7 @@ def login(args):
         'password': password
     }
     try:
-        response = client.request('post', '/v1/auth/token', data)
+        response = client.post('/v1/auth/token', data)
     except SolveError as e:
         print('Login failed: %s' % e.message)
         return False
