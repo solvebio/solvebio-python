@@ -9,7 +9,7 @@ from solvebio.credentials import (get_credentials, delete_credentials,
 
 def _ask_for_credentials(default_email=None):
     while True:
-        if default_email:
+        if default_email and isinstance(default_email, str):
             prompt = 'Email address ({0}): '.format(default_email)
         else:
             prompt = 'Email address: '
