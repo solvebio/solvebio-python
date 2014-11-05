@@ -54,8 +54,9 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                 '/'.join([self['full_name'], name]))
 
         response = client.get(self.fields_url, params)
-        tab_fn = lambda : \
-                 tabulate(([(d['name'], d['data_type'], d['description']) for d in response['data']]),
+        tab_fn = lambda:\
+                 tabulate(([(d['name'], d['data_type'], d['description'])
+                            for d in response['data']]),
                           ['Field', 'Data Type', 'Description'],
                           aligns=['left', 'left', 'left'], sort=True)
         results = convert_to_solve_object(response)
