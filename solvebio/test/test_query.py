@@ -9,7 +9,18 @@ class BaseQueryTest(SolveBioTestCase):
     def setUp(self):
         super(BaseQueryTest, self).setUp()
         self.dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
-        # self.paging = False
+
+    def test_count(self):
+        q = self.dataset.query()
+        self.assertEqual(q.count(), len(q))
+
+        # with a filter
+        q = self.dataset.query().filter(omim_ids=123631)
+        self.assertEqual(q.count(), len(q))
+
+        # with a bogus filter
+        q = self.dataset.query().filter(omim_ids=999999)
+        self.assertEqual(q.count(), len(q))
 
     def test_limit(self):
         """

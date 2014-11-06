@@ -230,6 +230,18 @@ class PagingQuery(object):
         return self._clone(
             filters=[RangeFilter(chromosome, start, end, strand, overlap)])
 
+    def count(self):
+        """
+        Returns the total number of results returned by a Query.
+        """
+        if self._limit <= 0:
+            return 0
+
+        # execute query with limit 1 to fetch total
+        self._limit = 1
+        self[0:1]
+        return self.total
+
     def _process_filters(self, filters):
         """Takes a list of filters and returns JSON
 
