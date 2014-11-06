@@ -604,7 +604,9 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
         tablefmt = _table_formats.get(tablefmt, _table_formats["orgmode"])
 
     # make sure values don't have newlines or tabs in them
-    rows = [(r[0], r[1].replace('\n', '').replace('\t', '')) for r in rows]
+    for r in rows:
+        for c in r:
+            c.replace('\n', '').replace('\t', '')
     return _format_table(tablefmt, headers, rows, minwidths, aligns)
 
 if __name__ == "__main__":

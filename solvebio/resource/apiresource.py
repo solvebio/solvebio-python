@@ -76,6 +76,14 @@ class ListObject(SolveObject):
     def objects(self):
         return convert_to_solve_object(self['data'])
 
+    def tabulate_set(self, fn):
+        self.tabulate = fn
+
+    def __str__(self):
+        if self.tabulate:
+            return self.tabulate()
+        return super(ListObject, self).__str__()
+
     def __iter__(self):
         self._i = 0
         return self

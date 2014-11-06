@@ -36,6 +36,52 @@ class DatasetTests(SolveBioTestCase):
                             'name', 'updated_at',
                             'url'])
         self.assertSetEqual(set(dataset_field.keys()), check_fields)
+        expected = """
+| Field                        | Data Type   | Description   |
+|------------------------------+-------------+---------------|
+| accession_numbers            | string      |               |
+| approved_name                | string      |               |
+| approved_symbol              | string      |               |
+| ccds_ids                     | string      |               |
+| chromosome                   | string      |               |
+| date_approved                | date        |               |
+| date_modified                | date        |               |
+| date_name_changed            | date        |               |
+| date_symbol_changed          | date        |               |
+| ensembl_gene_id              | string      |               |
+| ensembl_id_ensembl           | string      |               |
+| entrez_gene_id               | string      |               |
+| entrez_gene_id_ncbi          | string      |               |
+| enzyme_ids                   | string      |               |
+| gene_family_description      | string      |               |
+| gene_family_tag              | string      |               |
+| hgnc_id                      | long        |               |
+| locus                        | string      |               |
+| locus_group                  | string      |               |
+| locus_specific_databases     | string      |               |
+| locus_type                   | string      |               |
+| mouse_genome_database_id     | long        |               |
+| mouse_genome_database_id_mgi | long        |               |
+| name_synonyms                | string      |               |
+| omim_id_ncbi                 | string      |               |
+| omim_ids                     | long        |               |
+| previous_names               | string      |               |
+| previous_symbols             | string      |               |
+| pubmed_ids                   | string      |               |
+| rat_genome_database_id_rgd   | long        |               |
+| record_type                  | string      |               |
+| refseq_id_ncbi               | string      |               |
+| refseq_ids                   | string      |               |
+| specialist_database_id       | string      |               |
+| specialist_database_links    | string      |               |
+| status                       | string      |               |
+| synonyms                     | string      |               |
+| ucsc_id_ucsc                 | string      |               |
+| uniprot_id_uniprot           | string      |               |
+| vega_ids                     | string      |               |
+"""
+        self.assertEqual("{0}".format(fields), expected[1:-1],
+                         'tabulated dataset fields')
 
     def test_dataset_facets(self):
         field = Dataset.retrieve(self.TEST_DATASET_NAME).fields('hgnc_id')

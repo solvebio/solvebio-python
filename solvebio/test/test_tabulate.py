@@ -102,7 +102,7 @@ spam\t23
                          aligns= ('right', 'left'), sort=True)
 
         # [-1:1] below to remove leading and trailing "\n"s above
-        self.assertEqual(expected[1:-1], got,
+        self.assertEqual(got, expected[1:-1],
                          'mixed data with arrays; close to actual' +
                          'query output')
 
@@ -117,7 +117,7 @@ spam\t23
         got = t.tabulate(data,
                          headers=('Fields', 'Data'),
                          aligns= ('right', 'left'), sort=False)
-        self.assertEqual(expected[1:-1], got,
+        self.assertEqual(got, expected[1:-1],
                          'mixed data with arrays; unsorted')
 
 if __name__ == "__main__":
