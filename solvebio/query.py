@@ -291,7 +291,7 @@ class PagingQuery(object):
 
     def __getattr__(self, key):
         if self._response is None:
-            logger.debug('warmup (__getattr__): %s' % key)
+            logger.debug('warmup (__getattr__: %s)' % key)
             self.execute()
 
         if key in self._response:
