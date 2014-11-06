@@ -9,6 +9,7 @@ class DepositoryTests(SolveBioTestCase):
     """
 
     def test_depositories(self):
+        # TODO: use TEST_DATASET_NAME.split('/')[0]
         depos = Depository.all()
         depo = depos.data[0]
         self.assertTrue('id' in depo,
@@ -30,7 +31,8 @@ class DepositoryTests(SolveBioTestCase):
 
         self.assertSetEqual(set(depo), check_fields)
 
-        depo_version_id = depo.versions().data[0].id
+        depo_versions = depo.versions()
+        depo_version_id = depo_versions.data[0].id
         depo_version = DepositoryVersion.retrieve(depo_version_id)
 
         check_fields = set(['class_name', 'created_at',

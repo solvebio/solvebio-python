@@ -10,6 +10,7 @@ import urllib
 
 from ..client import client, _handle_api_error, _handle_request_error
 from ..errors import SolveError
+from ..utils.tabulate import tabulate
 
 from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object
@@ -76,12 +77,13 @@ class ListObject(SolveObject):
     def objects(self):
         return convert_to_solve_object(self['data'])
 
-    def tabulate_set(self, fn):
-        self.tabulate = fn
+    def tabulate(self, fields, **kwargs):
+        self._tabulate = lambda data:\
+            tabulate([[d[i] for i in fields] for d in data], **kwargs)
 
     def __str__(self):
-        if self.tabulate:
-            return self.tabulate()
+        if getattr(self, '_tabulate', None):
+            return '\n' + self._tabulate(self['data'])
         return super(ListObject, self).__str__()
 
     def __iter__(self):

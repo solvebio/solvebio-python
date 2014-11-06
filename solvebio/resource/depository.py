@@ -42,7 +42,13 @@ class Depository(CreateableAPIResource, ListableAPIResource,
                 '/'.join([self['full_name'], name]))
 
         response = client.get(self.versions_url, params)
-        return convert_to_solve_object(response)
+        results = convert_to_solve_object(response)
+        results.tabulate(
+            ['full_name', 'title', 'description'],
+            headers=['Depository Version', 'Title', 'Description'],
+            aligns=['left', 'left', 'left'], sort=True)
+
+        return results
 
     def help(self):
         open_help(self['full_name'])

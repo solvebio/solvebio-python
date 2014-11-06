@@ -37,6 +37,7 @@ class DatasetTests(SolveBioTestCase):
                             'url'])
         self.assertSetEqual(set(dataset_field.keys()), check_fields)
         expected = """
+
 | Field                        | Data Type   | Description   |
 |------------------------------+-------------+---------------|
 | accession_numbers            | string      |               |

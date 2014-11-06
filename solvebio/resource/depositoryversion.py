@@ -52,7 +52,13 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
                 '/'.join([self['full_name'], name]))
 
         response = client.get(self.datasets_url, params)
-        return convert_to_solve_object(response)
+        results = convert_to_solve_object(response)
+        results.tabulate(
+            ['full_name', 'title', 'description'],
+            headers=['Dataset', 'Title', 'Description'],
+            aligns=['left', 'left', 'left'], sort=True)
+
+        return results
 
     def help(self):
         open_help(self['full_name'])

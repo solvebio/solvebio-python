@@ -4,7 +4,7 @@ import re
 from ..client import client
 from ..help import open_help
 from ..query import Query, PagingQuery
-from ..utils.tabulate import tabulate
+# from ..utils.tabulate import tabulate
 
 from .solveobject import convert_to_solve_object
 from .apiresource import CreateableAPIResource, ListableAPIResource, \
@@ -54,13 +54,12 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                 '/'.join([self['full_name'], name]))
 
         response = client.get(self.fields_url, params)
-        tab_fn = lambda:\
-                 tabulate(([(d['name'], d['data_type'], d['description'])
-                            for d in response['data']]),
-                          ['Field', 'Data Type', 'Description'],
-                          aligns=['left', 'left', 'left'], sort=True)
         results = convert_to_solve_object(response)
-        results.tabulate_set(tab_fn)
+        results.tabulate(
+            ['name', 'data_type', 'description'],
+            headers=['Field', 'Data Type', 'Description'],
+            aligns=['left', 'left', 'left'], sort=True)
+
         return results
 
     def _data_url(self):
