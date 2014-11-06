@@ -353,6 +353,11 @@ class PagingQuery(object):
                          (i_offset, self._limit))
             self.execute(offset=i_offset, limit=self._limit)
             _result_start = self._i % self._limit
+
+            # if no results when fetching next page, terminate
+            if not self.results:
+                raise StopIteration()
+
         return self.results[_result_start]
 
     # slice operations

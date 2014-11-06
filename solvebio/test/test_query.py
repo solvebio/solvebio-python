@@ -5,11 +5,11 @@ from helper import SolveBioTestCase
 
 
 class BaseQueryTest(SolveBioTestCase):
-    """Test Non-Paging Queries"""
+    """Test Paging Queries"""
     def setUp(self):
         super(BaseQueryTest, self).setUp()
         self.dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
-        self.paging = False
+        # self.paging = False
 
     def test_limit(self):
         """
@@ -17,14 +17,9 @@ class BaseQueryTest(SolveBioTestCase):
         results retrieved.
         """
         limit = 10
-        results = self.dataset.query(paging=self.paging, limit=limit)
-        self.assertEqual(len(results), limit)
-
-        for i in range(0, len(results)):
-            # Python 2.6 compatability
-            self.assertNotEqual(results[i], None)
-        self.assertEqual(i, limit - 1)
-        self.assertRaises(IndexError, lambda: results[limit])
+        results = self.dataset.query(limit=limit)
+        self.assertEqual(len(results), results.total)
+        self.assertRaises(IndexError, lambda: results[results.total + 1])
 
     def test_limit_empty(self):
         """
@@ -33,7 +28,7 @@ class BaseQueryTest(SolveBioTestCase):
         """
         limit = 100
         # bogus filter
-        results = self.dataset.query(paging=self.paging, limit=limit) \
+        results = self.dataset.query(limit=limit) \
             .filter(omim_ids=999999)
         self.assertEqual(len(results), 0)
 
@@ -42,7 +37,7 @@ class BaseQueryTest(SolveBioTestCase):
 
         self.assertRaises(IndexError, lambda: results[0])
 
-        results = self.dataset.query(paging=self.paging, limit=limit) \
+        results = self.dataset.query(limit=limit) \
             .filter(omim_ids=123631)
         self.assertEqual(1, len(results))
 
@@ -51,36 +46,94 @@ class BaseQueryTest(SolveBioTestCase):
         test Filtered Query in which limit is specified but is GREATER THAN
         the number of total available results
         """
-        limit = 10
-        num_filters = 2
-        filters = Filter(omim_ids=123631) | Filter(omim_ids=123670)
+        limit = 1
+        num_filters = 4
+        filters = \
+            Filter(omim_ids=123631) | \
+            Filter(omim_ids=123670) | \
+            Filter(omim_ids=123690) | \
+            Filter(omim_ids=306250)
         results = self.dataset.query(
-            paging=self.paging, limit=limit, filters=filters)
+            limit=limit, filters=filters)
         self.assertEqual(len(results), num_filters)
-
-        for i in range(0, len(results)):
-            # Python 2.6 compatability
-            self.assertNotEqual(results[i], None)
-        self.assertEqual(i, num_filters - 1)
-
         self.assertRaises(IndexError, lambda: results[num_filters])
 
     def test_slice_ranges(self):
         limit = 50
 
-        query = self.dataset.query(paging=self.paging, limit=limit)
-        self.assertEqual(len(query), limit)
+        results = self.dataset.query(limit=limit)
+        self.assertEqual(len(results), results.total)
 
-        query = self.dataset.query(paging=self.paging, limit=limit)
-        self.assertEqual(len(query[0:limit]), limit)
+        results = self.dataset.query(limit=limit)
+        self.assertEqual(len(results[0:limit]), limit)
 
-        query = self.dataset.query(paging=self.paging, limit=limit)
-        self.assertEqual(len(query[:limit]), limit)
+        results = self.dataset.query(limit=limit)
+        self.assertEqual(len(results[:limit]), limit)
 
-        query = self.dataset.query(paging=self.paging, limit=limit)
-        self.assertEqual(len(query[limit:]), limit)
+        results = self.dataset.query(limit=limit)
+        self.assertEqual(len(results[limit:]), results.total - limit)
 
         # equality test
-        r0 = self.dataset.query(paging=self.paging, limit=limit)[0:limit][-1]
-        r1 = self.dataset.query(paging=self.paging, limit=limit)[limit - 1:][0]
+        r0 = self.dataset.query(limit=limit)[0:limit][-1]
+        r1 = self.dataset.query(limit=limit)[limit - 1:][0]
         self.assertEqual(r0['hgnc_id'], r1['hgnc_id'])
+
+    def test_paging(self):
+        limit = 1
+        # There should be 4 results with this filter
+        total = 4
+        results = self.dataset.query(limit=limit) \
+            .filter(hgnc_id__in=[2396, 2404, 2409, 2411])
+
+        # In paging queries, len(results) should return the total number
+        # of results available on the server.
+        self.assertEqual(len(results), results.total)
+
+        for (i, r) in enumerate(results):
+            continue
+
+        self.assertEqual(i, total - 1)
+
+    def test_slice(self):
+        # Test slices larger than 'limit'
+        results = self.dataset.query(limit=1) \
+            .filter(hgnc_id__range=(1000, 2000))[1:4]
+        self.assertEqual(len(results), 3)
+
+    def test_paging_and_slice_equivalence(self):
+        idx0 = 3
+        idx1 = 5
+
+        def _query():
+            return self.dataset.query(limit=10) \
+                .filter(hgnc_id__range=(1000, 5000))
+
+        results_slice = _query()[idx0:idx1]
+        results_paging = []
+
+        for (i, r) in enumerate(_query()):
+            if i == idx1:
+                break
+            elif i >= idx0:
+                results_paging.append(r)
+
+        self.assertEqual(len(results_paging), len(results_slice))
+
+        for i in range(0, len(results_slice)):
+            id_a = results_paging[i]['hgnc_id']
+            id_b = results_slice[i]['hgnc_id']
+            self.assertEqual(id_a, id_b)
+
+    def test_caching(self):
+        idx0 = 60
+        idx1 = 81
+
+        q = self.dataset.query(limit=100)
+        results_slice = q[idx0:idx1]
+        results_cached = q[idx0:idx1]
+
+        self.assertEqual(len(results_slice), len(results_cached))
+        for i in range(0, len(results_slice)):
+            id_a = results_slice[i]['chromosome']
+            id_b = results_cached[i]['chromosome']
+            self.assertEqual(id_a, id_b)
