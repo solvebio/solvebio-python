@@ -86,21 +86,6 @@ class SolveClient(object):
             )
         }
 
-    @staticmethod
-    def debug_request(method, url, params, data, _auth, _headers, files):
-        from requests import Request, Session
-        s = Session()
-        req = Request(method=method.upper(),
-                      url=url,
-                      params=params,
-                      data=data,
-                      auth=_auth,
-                      headers=_headers,
-                      files=files)
-        prepped = s.prepare_request(req)
-        print(prepped.body)
-        print(prepped.headers)
-
     def get(self, url, params, **kwargs):
         """Issues an HTTP GET across the wire via the Python requests
         library. See *request()* for information on keyword args."""
@@ -177,16 +162,12 @@ class SolveClient(object):
             'headers': dict(self._headers),
             'params': {},
             'timeout': 80,
-            'verify': True}
+            'verify': True
+        }
 
-        if 'raw' in kwargs:
-            raw = kwargs['raw']
-            opts.pop('raw')
-        else:
-            raw = False
-
+        raw = kwargs.pop('raw', False)
+        debug = kwargs.pop('debug', False)
         opts.update(kwargs)
-
         method = method.upper()
 
         if opts['files']:
@@ -204,15 +185,12 @@ class SolveClient(object):
             url = urljoin(api_host, url)
 
         logger.debug('API %s Request: %s' % (method, url))
-        # self.debug_request(method, url, opts['params'], opts['data'],
-        #                   opts['auth'], opts['headers'],
-        #                   opts['files'])
 
-        # And just when you thought we forgot about running the actual
-        # request...
+        if debug:
+            self._log_raw_request(method, url, **opts)
+
         try:
             response = requests.request(method, url, **opts)
-
         except Exception as e:
             _handle_request_error(e)
 
@@ -224,5 +202,14 @@ class SolveClient(object):
             return response
 
         return response.json()
+
+    def _log_raw_request(self, method, url, **kwargs):
+        from requests import Request, Session
+        req = Request(method=method.upper(), url=url,
+                      data=kwargs['data'], params=kwargs['params'])
+        prepped = Session().prepare_request(req, )
+        logger.debug(prepped.headers)
+        logger.debug(prepped.body)
+
 
 client = SolveClient()

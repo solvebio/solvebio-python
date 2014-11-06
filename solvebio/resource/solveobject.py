@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from ..client import client
+import sys
 
+from ..client import client
 from .util import json
 
 
@@ -79,7 +80,7 @@ class SolveObject(dict):
 
     def __repr__(self):
         if isinstance(self.get('class_name'), basestring):
-            ident_parts = [self.get('class_name').encode('utf8')]
+            ident_parts = [self.get('class_name')]
         else:
             ident_parts = [type(self).__name__]
 
@@ -88,10 +89,16 @@ class SolveObject(dict):
 
         if self.ALLOW_FULL_NAME_ID and \
                 isinstance(self.get('full_name'), unicode):
-            ident_parts.append('full_name=%s' % (self.get('full_name'),))
+            ident_parts.append(
+                'full_name=%s' % (self.get('full_name'),))
 
-        return '<%s at %s> JSON: %s' % (
+        _repr = '<%s at %s> JSON: %s' % (
             ' '.join(ident_parts), hex(id(self)), str(self))
+
+        if sys.version_info[0] < 3:
+            return _repr.encode('utf-8')
+
+        return _repr
 
     def __str__(self):
         return json.dumps(self, sort_keys=True, indent=2)
