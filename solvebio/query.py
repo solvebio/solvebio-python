@@ -215,7 +215,6 @@ class Query(object):
     def __init__(self, dataset_id, **params):
         self._dataset_id = dataset_id
         self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
-        # results per request
         self._limit = \
             params.get('limit', float('inf'))
         self._result_class = params.get('result_class', dict)
@@ -373,18 +372,15 @@ class Query(object):
             raise IndexError()
 
         if isinstance(key, slice):
-            # self._page_i = self._page_slice.start
             _delta = key.stop - key.start
             # slice args must be an integer or None
             if _delta == float('inf'):
                 _delta = None
             return list(self)[slice(0, _delta)]
         else:
-            # self._page_i = key
-            return list(self)[self._page_i]
+            return list(self)[self._pager.offset]
 
     def __iter__(self):
-        # self._page_i = 0
         return self
 
     def next(self):
@@ -401,7 +397,6 @@ class Query(object):
         if len(self.results) == 0:
             raise StopIteration()
 
-        # if self._page_i >= 0 and self._page_i < _page_len:
         if self._pager.has_next():
             _result_start = self._pager.offset
             logger.debug('page slice: [%s, %s)' %
@@ -445,7 +440,6 @@ class Query(object):
         """
         _params = self._build_query()
 
-        # offset = self._page_i + self._page_slice.start
         offset = self._pager.absolute_offset
         limit = min(self._page_size, self._limit - self._pager.absolute_offset)
 
@@ -464,11 +458,8 @@ class Query(object):
 
         self._response = response
 
-        # update page
-        self._page = self.results
+        # reset pager
         self._pager.reset(offset, offset + limit, 0)
-        # self._page_slice = \
-        #     slice(offset, offset + len(self._response['results']))
 
         return _params, response
 
