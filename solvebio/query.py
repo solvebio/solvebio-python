@@ -204,7 +204,7 @@ class Pager(object):
         return self.start + self.offset
 
     def has_next(self):
-        return self.offset < (self.stop - self.start)
+        return abs(self.offset) < (self.stop - self.start)
 
     def __repr__(self):
         return 'range: %s, offset: %s' % \
@@ -357,8 +357,6 @@ class Query(object):
         # warmup result set...
         if self._response is None:
             logger.debug('warmup (__getitem__: %s)' % key)
-            key = bounded_slice(key)
-            self._pager.reset(key.start, key.stop, 0)
             self.execute()
 
         # slice range / key validation
@@ -388,7 +386,7 @@ class Query(object):
                 _delta = None
             return list(self)[slice(0, _delta)]
         else:
-            return list(self)[self._pager.offset]
+            return list(self)[0]
 
     def __iter__(self):
         return self
