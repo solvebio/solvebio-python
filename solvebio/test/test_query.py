@@ -219,7 +219,6 @@ class BaseQueryTest(SolveBioTestCase):
 
         # forwards
         for (i, idx) in enumerate(idxs):
-            print 'i/idx: %s/%s' % (i, idx)
             self.assertEqual(cached[i], q[idx])
 
         # backwards
