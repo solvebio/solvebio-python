@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Handles Querying and Filtering Datasets"""
+from itertools import islice
 
 from .client import client
 from .utils.printing import pretty_int
@@ -204,7 +205,7 @@ class Pager(object):
         return self.start + self.offset
 
     def has_next(self):
-        return abs(self.offset) < (self.stop - self.start)
+        return self.offset >= 0 and self.offset < (self.stop - self.start)
 
     def __repr__(self):
         return 'range: %s, offset: %s' % \
@@ -351,14 +352,6 @@ class Query(object):
         """
         Retrieve an item or slice from the set of results
         """
-        # reset pager offset...
-        self._pager.reset_absolute(as_slice(key).start)
-
-        # warmup result set...
-        if self._response is None:
-            logger.debug('warmup (__getitem__: %s)' % key)
-            self.execute()
-
         # slice range / key validation
         if not isinstance(key, (slice, int, long)):
             raise TypeError
@@ -376,17 +369,17 @@ class Query(object):
         elif key < 0:
             raise ValueError('Negative indexing is not supported')
 
-        elif key >= len(self):
-            raise IndexError()
+        # reset pager offset
+        self._pager.reset_absolute(as_slice(key).start)
 
         if isinstance(key, slice):
             _delta = key.stop - key.start
             # slice args must be an integer or None
             if _delta == float('inf'):
                 _delta = None
-            return list(self)[slice(0, _delta)]
+            return list(islice(self, _delta))
         else:
-            return list(self)[0]
+            return list(islice(self, 1))[0]
 
     def __iter__(self):
         return self
@@ -396,13 +389,9 @@ class Query(object):
         Allows the Query object to be an iterable.
         Iterates through the internal cache using a cursor.
         """
-        # increment
-        return self._next()
-
-    def _next(self):
         # prevents an additional query when requesting a slice
         #  range that is out of bounds (i.e. results[limit:])
-        if self._pager.offset_absolute == len(self):
+        if self._pager.offset_absolute >= self._limit:
             raise StopIteration()
 
         if self._pager.has_next():
@@ -426,7 +415,6 @@ class Query(object):
 
     def _build_query(self):
         q = {
-            'limit': self._page_size,
             'debug': self._debug
         }
 

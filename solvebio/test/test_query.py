@@ -208,10 +208,10 @@ class BaseQueryTest(SolveBioTestCase):
             id_b = results_cached[i]['chromosome']
             self.assertEqual(id_a, id_b)
 
-    def test_jump_around(self):
+    def test_get_by_index(self):
         limit = 100
         page_size = 10
-        idxs = [0, 1]
+        idxs = [0, 1, 10, 20, 50, 99]
         q = self.dataset.query(limit=limit, page_size=page_size)
         cached = []
         for idx in idxs:
@@ -219,6 +219,7 @@ class BaseQueryTest(SolveBioTestCase):
 
         # forwards
         for (i, idx) in enumerate(idxs):
+            print 'i/idx: %s/%s' % (i, idx)
             self.assertEqual(cached[i], q[idx])
 
         # backwards
