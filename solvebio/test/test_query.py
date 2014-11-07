@@ -164,47 +164,46 @@ class BaseQueryTest(SolveBioTestCase):
         r1 = self.dataset.query(limit=limit)[limit - 1:][0]
         self.assertEqual(r0['hgnc_id'], r1['hgnc_id'])
 
-    # def test_slice_ranges_with_small_limit(self):
-    #     # Test slices larger than 'limit'
-    #     limit = 1
-    #     results = self.dataset.query(limit=limit) \
-    #         .filter(hgnc_id__range=(1000, 2000))[0:4]
-    #     self.assertEqual(len(results), limit)
+    def test_slice_ranges_with_small_limit(self):
+        # Test slices larger than 'limit'
+        limit = 1
+        results = self.dataset.query(limit=limit) \
+            .filter(hgnc_id__range=(1000, 2000))[0:4]
+        self.assertEqual(len(results), limit)
 
-    # def test_paging_and_slice_equivalence(self):
-    #     idx0 = 3
-    #     idx1 = 5
+    def test_paging_and_slice_equivalence(self):
+        idx0 = 3
+        idx1 = 5
 
-    #     def _query():
-    #         return self.dataset.query(limit=10) \
-    #             .filter(hgnc_id__range=(1000, 5000))
+        def _query():
+            return self.dataset.query(limit=10) \
+                .filter(hgnc_id__range=(1000, 5000))
 
-    #     results_slice = _query()[idx0:idx1]
-    #     results_paging = []
+        results_slice = _query()[idx0:idx1]
+        results_paging = []
 
-    #     for (i, r) in enumerate(_query()):
-    #         if i == idx1:
-    #             break
-    #         elif i >= idx0:
-    #             results_paging.append(r)
+        for (i, r) in enumerate(_query()):
+            if i == idx1:
+                break
+            elif i >= idx0:
+                results_paging.append(r)
 
-    #     self.assertEqual(len(results_paging), len(results_slice))
+        self.assertEqual(len(results_paging), len(results_slice))
 
-    #     for i in range(0, len(results_slice)):
-    #         id_a = results_paging[i]['hgnc_id']
-    #         id_b = results_slice[i]['hgnc_id']
-    #         self.assertEqual(id_a, id_b)
+        for i in range(0, len(results_slice)):
+            id_a = results_paging[i]['hgnc_id']
+            id_b = results_slice[i]['hgnc_id']
+            self.assertEqual(id_a, id_b)
 
-    # def test_caching(self):
-    #     idx0 = 60
-    #     idx1 = 81
+    def test_caching(self):
+        idx0 = 60
+        idx1 = 81
 
-    #     q = self.dataset.query(limit=100)
-    #     results_slice = q[idx0:idx1]
-    #     results_cached = q[idx0:idx1]
-
-    #     self.assertEqual(len(results_slice), len(results_cached))
-    #     for i in range(0, len(results_slice)):
-    #         id_a = results_slice[i]['chromosome']
-    #         id_b = results_cached[i]['chromosome']
-    #         self.assertEqual(id_a, id_b)
+        q = self.dataset.query(limit=100)
+        results_slice = q[idx0:idx1]
+        results_cached = q[idx0:idx1]
+        self.assertEqual(len(results_slice), len(results_cached))
+        for i in range(0, len(results_slice)):
+            id_a = results_slice[i]['chromosome']
+            id_b = results_cached[i]['chromosome']
+            self.assertEqual(id_a, id_b)
