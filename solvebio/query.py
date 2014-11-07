@@ -188,20 +188,27 @@ class Pager(object):
     def __init__(self, start, stop, offset=0):
         self.reset(start, stop, offset)
 
-    def advance(self):
-        self.offset += 1
+    def advance(self, incr=1):
+        self.offset += incr
 
     def reset(self, start, stop, offset):
         self.start = start
         self.stop = stop
         self.offset = 0
 
+    def reset_absolute(self, _offset_absolute):
+        self.offset = _offset_absolute - self.start
+
     @property
-    def absolute_offset(self):
+    def offset_absolute(self):
         return self.start + self.offset
 
     def has_next(self):
         return self.offset < (self.stop - self.start)
+
+    def __repr__(self):
+        return 'range: %s, offset: %s' % \
+            (slice(self.start, self.stop), self.offset)
 
 
 class Query(object):
@@ -344,6 +351,9 @@ class Query(object):
         """
         Retrieve an item or slice from the set of results
         """
+        # reset pager offset...
+        self._pager.reset_absolute(as_slice(key).start)
+
         # warmup result set...
         if self._response is None:
             logger.debug('warmup (__getitem__: %s)' % key)
@@ -394,7 +404,7 @@ class Query(object):
     def _next(self):
         # prevents an additional query when requesting a slice
         #  range that is out of bounds (i.e. results[limit:])
-        if len(self.results) == 0:
+        if self._pager.offset_absolute == len(self):
             raise StopIteration()
 
         if self._pager.has_next():
@@ -440,8 +450,8 @@ class Query(object):
         """
         _params = self._build_query()
 
-        offset = self._pager.absolute_offset
-        limit = min(self._page_size, self._limit - self._pager.absolute_offset)
+        offset = self._pager.offset_absolute
+        limit = min(self._page_size, self._limit - self._pager.offset_absolute)
 
         logger.debug('executing query. from/limit: %6d/%d' %
                      (offset, limit))
@@ -458,7 +468,7 @@ class Query(object):
 
         self._response = response
 
-        # reset pager
+        # reset pager if have results
         self._pager.reset(offset, offset + limit, 0)
 
         return _params, response
