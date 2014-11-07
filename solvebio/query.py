@@ -204,7 +204,7 @@ class Pager(object):
         return self.offset < (self.stop - self.start)
 
 
-class PagingQuery(object):
+class Query(object):
     """
     A Query API request wrapper that generates a request from Filter objects,
     and can iterate through streaming result sets.
@@ -227,7 +227,7 @@ class PagingQuery(object):
         self._response = None
         self._pager = Pager(0, -1, 0)
         self._page_size = \
-            int(params.get('page_size', PagingQuery.DEFAULT_PAGE_SIZE))
+            int(params.get('page_size', Query.DEFAULT_PAGE_SIZE))
 
         # parameter error checking
         if self._limit < 0:
@@ -471,39 +471,6 @@ class PagingQuery(object):
         #     slice(offset, offset + len(self._response['results']))
 
         return _params, response
-
-
-class Query(PagingQuery):
-    def __init__(self, dataset_id, **params):
-        PagingQuery.__init__(self, dataset_id, **params)
-
-    def __len__(self):
-        return min(self.total, len(self.results))
-
-    def _bounded_slice(self, _slice):
-        _start = _slice.start
-        _stop = _slice.stop
-        if _start is None and _stop is None:
-            # e.g. q[:] --> [0, limit)
-            return slice(0, self._limit)
-        elif _start is None:
-            # e.g. q[:50] --> [0, min(50, limit) )
-            return slice(0, min(_stop, self._limit))
-        elif _stop is None:
-            # e.g. q[50:] --> [50, 50 + limit)
-            return slice(_start, _start + self._limit)
-        return slice(_start, _stop)
-
-    def _next(self):
-        if self._page_i == len(self) or self._page_i == self._limit:
-            raise StopIteration()
-        return PagingQuery._next(self)
-
-    def __getitem__(self, key):
-        if isinstance(key, (int, long)) \
-                and key >= self._window_slice.stop:
-            raise IndexError()
-        return PagingQuery.__getitem__(self, key)
 
 
 class BatchQuery(object):
