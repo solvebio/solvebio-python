@@ -164,18 +164,60 @@ class RangeFilter(Filter):
         return '<RangeFilter {0}>'.format(self.filters)
 
 
+# slice utils
+def bounded_slice(_slice):
+    return slice(
+        _slice.start if _slice.start is not None else 0,
+        _slice.stop if _slice.stop is not None else float('inf')
+    )
+
+
+def as_slice(slice_or_idx):
+    if isinstance(slice_or_idx, slice):
+        return bounded_slice(slice_or_idx)
+    else:
+        return slice(slice_or_idx, slice_or_idx + 1)
+
+
+class Pager(object):
+    @classmethod
+    def from_slice(klass, _slice, offset=0):
+        return \
+            Pager(_slice.start, _slice.stop, offset=offset)
+
+    def __init__(self, start, stop, offset=0):
+        self.reset(start, stop, offset)
+
+    def advance(self):
+        self.offset += 1
+
+    def reset(self, start, stop, offset):
+        self.start = start
+        self.stop = stop
+        self.offset = 0
+
+    @property
+    def absolute_offset(self):
+        return self.start + self.offset
+
+    def has_next(self):
+        return self.offset < (self.stop - self.start)
+
+
 class PagingQuery(object):
     """
     A Query API request wrapper that generates a request from Filter objects,
     and can iterate through streaming result sets.
     """
-    MAXIMUM_LIMIT = 100
+    DEFAULT_WARNING_LIMIT = 100
+    DEFAULT_PAGE_SIZE = 1000
 
     def __init__(self, dataset_id, **params):
         self._dataset_id = dataset_id
         self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
         # results per request
-        self._limit = int(params.get('limit', PagingQuery.MAXIMUM_LIMIT))
+        self._limit = \
+            params.get('limit', float('inf'))
         self._result_class = params.get('result_class', dict)
         self._debug = params.get('debug', False)
         self._fields = params.get('fields', None)
@@ -183,8 +225,9 @@ class PagingQuery(object):
 
         # init
         self._response = None
-        self._reset_iter()
-        self._reset_slice_window()
+        self._pager = Pager(0, -1, 0)
+        self._page_size = \
+            int(params.get('page_size', PagingQuery.DEFAULT_PAGE_SIZE))
 
         # parameter error checking
         if self._limit < 0:
@@ -239,7 +282,7 @@ class PagingQuery(object):
 
         # execute query with limit 1 to fetch total
         self._limit = 1
-        self[0:1]
+        self[:]
         return self.total
 
     def _process_filters(self, filters):
@@ -278,16 +321,13 @@ class PagingQuery(object):
         return bool(len(self))
 
     def __repr__(self):
-        if self.total == 0 or self._limit == 0:
+        if self._limit == 0 or len(self):
             return u'query returned 0 results'
 
         return u'\n%s\n\n... %s more results.' % (
             tabulate(self[0].items(), ['Fields', 'Data'],
                      aligns=['right', 'left'], sort=True),
             pretty_int(self.total - 1))
-
-    def _reset_iter(self):
-        self._i = -1
 
     def __getattr__(self, key):
         if self._response is None:
@@ -305,40 +345,46 @@ class PagingQuery(object):
         """
         Retrieve an item or slice from the set of results
         """
-        self._request_slice = self._as_slice(key)
-
         # warmup result set...
         if self._response is None:
-            logger.debug('warmup (__getitem__): %s' % key)
+            logger.debug('warmup (__getitem__: %s)' % key)
+            key = bounded_slice(key)
+            self._pager.reset(key.start, key.stop, 0)
             self.execute()
 
+        # slice range / key validation
         if not isinstance(key, (slice, int, long)):
             raise TypeError
+
         if self._limit < 0:
             raise ValueError('Indexing not supporting when limit == 0.')
+
         if isinstance(key, slice):
-            key = self._bounded_slice(key)
+            key = bounded_slice(key)
             start = 0 if key.start is None else key.start
             stop = float('inf') if key.stop is None else key.stop
             if start < 0 or stop < 0 or start > stop:
                 raise ValueError('Negative indexing is not supported')
+
         elif key < 0:
             raise ValueError('Negative indexing is not supported')
 
-        _results = list(self)[:]
-        # reset request slice
-        self._request_slice = slice(0, float('inf'))
+        elif key >= len(self):
+            raise IndexError()
+
         if isinstance(key, slice):
+            # self._page_i = self._page_slice.start
             _delta = key.stop - key.start
             # slice args must be an integer or None
             if _delta == float('inf'):
                 _delta = None
-            return _results[slice(0, _delta)]
+            return list(self)[slice(0, _delta)]
         else:
-            return _results[0]
+            # self._page_i = key
+            return list(self)[self._page_i]
 
     def __iter__(self):
-        self._reset_iter()
+        # self._page_i = 0
         return self
 
     def next(self):
@@ -347,59 +393,37 @@ class PagingQuery(object):
         Iterates through the internal cache using a cursor.
         """
         # increment
-        self._i += 1
         return self._next()
 
     def _next(self):
-        _delta = self._request_slice.stop - self._request_slice.start
-        if self._i == len(self) or self._i == _delta:
+        # prevents an additional query when requesting a slice
+        #  range that is out of bounds (i.e. results[limit:])
+        if len(self.results) == 0:
             raise StopIteration()
 
-        i_offset = self._i + self._request_slice.start
-        if self._has_slice(self._as_slice(i_offset)):
-            _result_start = i_offset - self._window_slice.start
-            logger.debug('  window slice: [%s, %s)' %
+        # if self._page_i >= 0 and self._page_i < _page_len:
+        if self._pager.has_next():
+            _result_start = self._pager.offset
+            logger.debug('page slice: [%s, %s)' %
                          (_result_start, _result_start + 1))
-        else:
-            logger.debug('executing query. offset/limit: %6d/%d' %
-                         (i_offset, self._limit))
-            self.execute(offset=i_offset, limit=self._limit)
-            _result_start = self._i % self._limit
 
-            # if no results when fetching next page, terminate
-            if not self.results:
-                raise StopIteration()
+        else:
+            self.execute()
+            # reset page index
+            _result_start = 0
+
+        # if no results when fetching next page, terminate
+        if len(self.results) == 0:
+            raise StopIteration()
+
+        # increment page index
+        self._pager.advance()
 
         return self.results[_result_start]
 
-    # slice operations
-    def _as_slice(self, slice_or_idx):
-        if isinstance(slice_or_idx, slice):
-            return self._bounded_slice(slice_or_idx)
-        else:
-            return slice(slice_or_idx, slice_or_idx + 1)
-
-    def _bounded_slice(self, _slice):
-        return slice(
-            _slice.start if _slice.start is not None else 0,
-            _slice.stop if _slice.stop is not None else float('inf')
-        )
-
-    def _has_slice(self, slice_or_idx):
-        return slice_or_idx.start >= self._window_slice.start and \
-            slice_or_idx.stop <= self._window_slice.stop
-
-    def _reset_request_slice(self):
-        self._request_slice = slice(0, float('inf'))
-
-    def _reset_slice_window(self):
-        self._window = []
-        self._window_slice = slice(0, float('inf'))
-        self._reset_request_slice()
-
     def _build_query(self):
         q = {
-            'limit': self._limit,
+            'limit': self._page_size,
             'debug': self._debug
         }
 
@@ -415,24 +439,36 @@ class PagingQuery(object):
 
         return q
 
-    def execute(self, **params):
+    def execute(self):
         """
         Executes a query and returns the request parameters and response.
         """
         _params = self._build_query()
-        _params.update(**params)
-        # logger.debug('querying dataset: %s' % str(_params))
+
+        # offset = self._page_i + self._page_slice.start
+        offset = self._pager.absolute_offset
+        limit = min(self._page_size, self._limit - self._pager.absolute_offset)
+
+        logger.debug('executing query. from/limit: %6d/%d' %
+                     (offset, limit))
+
+        _params.update(
+            offset=offset,
+            limit=limit
+        )
 
         response = client.post(self._data_url, _params)
         logger.debug(
             'query response took: %(took)d ms, total: %(total)d' % response)
+        response['total'] = min(self._limit, response['total'])
+
         self._response = response
 
-        # update window
-        _offset = _params.get('offset', 0)
-        _len = len(self._response['results'])
-        self._window = self.results
-        self._window_slice = slice(_offset, _offset + _len)
+        # update page
+        self._page = self.results
+        self._pager.reset(offset, offset + limit, 0)
+        # self._page_slice = \
+        #     slice(offset, offset + len(self._response['results']))
 
         return _params, response
 
@@ -459,7 +495,7 @@ class Query(PagingQuery):
         return slice(_start, _stop)
 
     def _next(self):
-        if self._i == len(self) or self._i == self._limit:
+        if self._page_i == len(self) or self._page_i == self._limit:
             raise StopIteration()
         return PagingQuery._next(self)
 
