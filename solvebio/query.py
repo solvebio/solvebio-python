@@ -318,14 +318,14 @@ class Query(object):
         return rv
 
     def __len__(self):
-        # return self.total
         return min(self._limit, self.total)
 
     def __nonzero__(self):
         return bool(len(self))
 
     def __repr__(self):
-        return u'query returned %s results' % len(self)
+        if len(self) == 0:
+            return u'Query returned 0 results.'
 
         return u'\n%s\n\n... %s more results.' % (
             tabulate(self[0].items(), ['Fields', 'Data'],
@@ -352,9 +352,6 @@ class Query(object):
         if not isinstance(key, (slice, int, long)):
             raise TypeError
 
-        # if self._limit < 0:
-        #     raise ValueError('Indexing not supporting when limit == 0.')
-
         if isinstance(key, slice):
             key = bounded_slice(key)
             start = 0 if key.start is None else key.start
@@ -370,12 +367,13 @@ class Query(object):
 
         if isinstance(key, slice):
             _delta = key.stop - key.start
-            # slice args must be an integer or None
+
             if _delta == float('inf'):
                 _delta = None
+
             return list(islice(self, _delta))
-        else:
-            return list(islice(self, 1))[0]
+
+        return list(islice(self, 1))[0]
 
     def __iter__(self):
         return self
