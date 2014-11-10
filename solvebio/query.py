@@ -285,8 +285,9 @@ class Query(object):
         Returns the total number of results returned by a Query.
         """
         # execute query with limit 0 to fetch total
-        self._limit = 0
-        return self.total
+        query_clone = self._clone()
+        query_clone._limit = 0
+        return query_clone.total
 
     def _process_filters(self, filters):
         """Takes a list of filters and returns JSON
