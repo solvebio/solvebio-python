@@ -284,12 +284,8 @@ class Query(object):
         """
         Returns the total number of results returned by a Query.
         """
-        if self._limit <= 0:
-            return 0
-
-        # execute query with limit 1 to fetch total
-        self._limit = 1
-        self[:]
+        # execute query with limit 0 to fetch total
+        self._limit = 0
         return self.total
 
     def _process_filters(self, filters):
@@ -322,14 +318,14 @@ class Query(object):
         return rv
 
     def __len__(self):
-        return self.total
+        # return self.total
+        return min(self._limit, self.total)
 
     def __nonzero__(self):
         return bool(len(self))
 
     def __repr__(self):
-        if self._limit == 0 or len(self):
-            return u'query returned 0 results'
+        return u'query returned %s results' % len(self)
 
         return u'\n%s\n\n... %s more results.' % (
             tabulate(self[0].items(), ['Fields', 'Data'],
@@ -356,8 +352,8 @@ class Query(object):
         if not isinstance(key, (slice, int, long)):
             raise TypeError
 
-        if self._limit < 0:
-            raise ValueError('Indexing not supporting when limit == 0.')
+        # if self._limit < 0:
+        #     raise ValueError('Indexing not supporting when limit == 0.')
 
         if isinstance(key, slice):
             key = bounded_slice(key)
@@ -450,7 +446,6 @@ class Query(object):
         response = client.post(self._data_url, _params)
         logger.debug(
             'query response took: %(took)d ms, total: %(total)d' % response)
-        response['total'] = min(self._limit, response['total'])
 
         self._response = response
 

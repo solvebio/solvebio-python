@@ -10,18 +10,6 @@ class BaseQueryTest(SolveBioTestCase):
         super(BaseQueryTest, self).setUp()
         self.dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
 
-    def test_count(self):
-        q = self.dataset.query()
-        self.assertEqual(q.count(), len(q))
-
-        # with a filter
-        q = self.dataset.query().filter(omim_ids=123631)
-        self.assertEqual(q.count(), len(q))
-
-        # # with a bogus filter
-        q = self.dataset.query().filter(omim_ids=999999)
-        self.assertEqual(q.count(), len(q))
-
     def test_basic(self):
         """
         When paging is off, len(results) should return the number of
@@ -37,9 +25,64 @@ class BaseQueryTest(SolveBioTestCase):
         """
         limit = 100
         results = self.dataset.query(limit=limit)
-        self.assertEqual(results.total, limit)
         self.assertEqual(len(results), limit)
         self.assertRaises(IndexError, lambda: results[results.total + 1])
+
+    def test_count(self):
+        q = self.dataset.query()
+        total = q.count()
+        self.assertGreater(total, 0)
+
+        # with a filter
+        q = self.dataset.query().filter(omim_ids=123631)
+        self.assertEqual(q.count(), 1)
+
+        # with a bogus filter
+        q = self.dataset.query().filter(omim_ids=999999)
+        self.assertEqual(q.count(), 0)
+
+    def test_count_with_limit(self):
+        q = self.dataset.query()
+        total = q.count()
+        self.assertGreater(total, 0)
+
+        for limit in [0, 10, 1000]:
+            # with a filter
+            q = self.dataset.query(limit=limit).filter(omim_ids=123631)
+            self.assertEqual(q.count(), 1)
+
+            # with a bogus filter
+            q = self.dataset.query(limit=limit).filter(omim_ids=999999)
+            self.assertEqual(q.count(), 0)
+
+    def test_len(self):
+        q = self.dataset.query()
+        total = q.count()
+        self.assertGreater(total, 0)
+        self.assertEqual(len(q), total)
+
+        # with a filter
+        q = self.dataset.query().filter(omim_ids=123631)
+        self.assertEqual(len(q), 1)
+
+        # with a bogus filter
+        q = self.dataset.query().filter(omim_ids=999999)
+        self.assertEqual(len(q), 0)
+
+    def test_len_with_limit(self):
+        q = self.dataset.query()
+        total = q.count()
+        self.assertGreater(total, 0)
+        self.assertEqual(len(q), total)
+
+        for limit in [0, 10, 1000]:
+            # with a filter
+            q = self.dataset.query(limit=limit).filter(omim_ids=123631)
+            self.assertEqual(len(q), 1 if limit > 0 else 0)
+
+            # with a bogus filter
+            q = self.dataset.query(limit=limit).filter(omim_ids=999999)
+            self.assertEqual(len(q), 0)
 
     def test_empty(self):
         """
