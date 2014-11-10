@@ -226,7 +226,6 @@ class Query(object):
         self._limit = \
             params.get('limit', float('inf'))
         self._result_class = params.get('result_class', dict)
-        self._debug = params.get('debug', False)
         self._fields = params.get('fields', None)
         self._filters = list()
 
@@ -243,8 +242,7 @@ class Query(object):
     def _clone(self, filters=None):
         new = self.__class__(self._dataset_id,
                              limit=self._limit,
-                             result_class=self._result_class,
-                             debug=self._debug)
+                             result_class=self._result_class)
         new._fields = self._fields
         new._filters += self._filters
 
@@ -408,10 +406,8 @@ class Query(object):
 
         return self.results[_result_start]
 
-    def _build_query(self):
-        q = {
-            'debug': self._debug
-        }
+    def _build_query(self, **kwargs):
+        q = {}
 
         if self._filters:
             filters = self._process_filters(self._filters)
@@ -422,6 +418,9 @@ class Query(object):
 
         if self._fields is not None:
             q['fields'] = self._fields
+
+        # Add or modify query parameters (used by BatchQuery)
+        q.update(**kwargs)
 
         return q
 
@@ -434,14 +433,13 @@ class Query(object):
         offset = self._pager.offset_absolute
         limit = min(self._page_size, self._limit - self._pager.offset_absolute)
 
-        logger.debug('executing query. from/limit: %6d/%d' %
-                     (offset, limit))
-
         _params.update(
             offset=offset,
             limit=limit
         )
 
+        logger.debug('executing query. from/limit: %6d/%d' %
+                     (offset, limit))
         response = client.post(self._data_url, _params)
         logger.debug(
             'query response took: %(took)d ms, total: %(total)d' % response)
@@ -472,9 +470,12 @@ class BatchQuery(object):
         query = {'queries': []}
 
         for i in self._queries:
-            q = i._build_query()
-            q.update({'dataset': i._dataset_id})
-            query['queries'].append(q)
+            _params = i._build_query(
+                offset=i._pager.offset_absolute,
+                limit=min(i._page_size, i._limit - i._pager.offset_absolute),
+                dataset=i._dataset_id
+            )
+            query['queries'].append(_params)
 
         return query
 
