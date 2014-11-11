@@ -181,28 +181,49 @@ def as_slice(slice_or_idx):
 
 
 class Pager(object):
+    """
+    Stateful cursor object that tracks of the range and offset of a Query.
+    """
+
+    @property
+    def offset_absolute(self):
+        return self.start + self.offset
+
     @classmethod
     def from_slice(klass, _slice, offset=0):
         return \
             Pager(_slice.start, _slice.stop, offset=offset)
 
     def __init__(self, start, stop, offset=0):
+        """
+        Creates a new pager object.
+        """
         self.reset(start, stop, offset)
 
     def advance(self, incr=1):
         self.offset += incr
 
     def reset(self, start, stop, offset):
+        """
+        Reset.
+
+        :Parameters:
+          - `start`: Absolute start position
+          - `stop`: Absolute stop position
+          - `offset` (optional): Pager offset relative to `start`
+        """
         self.start = start
         self.stop = stop
         self.offset = 0
 
-    def reset_absolute(self, _offset_absolute):
-        self.offset = _offset_absolute - self.start
+    def reset_absolute(self, offset_absolute):
+        """
+        Reset the internal offset from an absolute position.
 
-    @property
-    def offset_absolute(self):
-        return self.start + self.offset
+        :Parameters:
+          - `offset_absolute`: Absolute pager offset
+        """
+        self.offset = offset_absolute - self.start
 
     def has_next(self):
         return self.offset >= 0 and self.offset < (self.stop - self.start)
@@ -217,23 +238,43 @@ class Query(object):
     A Query API request wrapper that generates a request from Filter objects,
     and can iterate through streaming result sets.
     """
-    DEFAULT_WARNING_LIMIT = 100
     DEFAULT_PAGE_SIZE = 1000
 
-    def __init__(self, dataset_id, **params):
+    def __init__(
+            self,
+            dataset_id,
+            result_class=dict,
+            fields=None,
+            filters=None,
+            limit=float('inf'),
+            page_size=DEFAULT_PAGE_SIZE):
+        """
+        Creates a new Query object.
+
+        :Parameters:
+          - `dataset_id`: Unique ID of dataset to query.
+          - `result_class` (optional): Class of object returned by query.
+          - `fields` (optional): List of specific fields to retrieve.
+          - `filters` (optional): List of filter objects.
+          - `limit` (optional): Maximum number of query results to return.
+          - `page_size` (optional): Number of results to fetch per query page.
+        """
         self._dataset_id = dataset_id
         self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
-        self._limit = \
-            params.get('limit', float('inf'))
-        self._result_class = params.get('result_class', dict)
-        self._fields = params.get('fields', None)
-        self._filters = list()
+        self._limit = limit
+        self._result_class = result_class
+        self._fields = fields
+        if filters:
+            if isinstance(filters, Filter):
+                filters = [filters]
+        else:
+            filters = []
+        self._filters = filters
 
-        # init
+        # init response and pager
         self._response = None
         self._pager = Pager(0, -1, 0)
-        self._page_size = \
-            int(params.get('page_size', Query.DEFAULT_PAGE_SIZE))
+        self._page_size = int(page_size)
 
         # parameter error checking
         if self._limit < 0:
@@ -282,7 +323,7 @@ class Query(object):
         """
         Returns the total number of results returned by a Query.
         """
-        # execute query with limit 0 to fetch total
+        # clone self and query with limit = 0 to get total
         query_clone = self._clone()
         query_clone._limit = 0
         return query_clone.total
@@ -290,9 +331,10 @@ class Query(object):
     def _process_filters(self, filters):
         """Takes a list of filters and returns JSON
 
-        :arg filters: list of Filters, (key, val) tuples, or dicts
+        :Parameters:
+        - `filters`: List of Filters, (key, val) tuples, or dicts
 
-        :returns: list of JSON API filters
+        Returns: List of JSON API filters
         """
         rv = []
         for f in filters:
@@ -317,6 +359,9 @@ class Query(object):
         return rv
 
     def __len__(self):
+        """
+        Returns: The total number of results returned by query.
+        """
         return min(self._limit, self.total)
 
     def __nonzero__(self):
@@ -345,12 +390,18 @@ class Query(object):
 
     def __getitem__(self, key):
         """
-        Retrieve an item or slice from the set of results
+        Retrieve an item or slice from the result set.
+
+        Query's do not support negative indexing.
+
+        :Parameters:
+        - `key`: The requested slice range or index.
         """
-        # slice range / key validation
+        # validate type
         if not isinstance(key, (slice, int, long)):
             raise TypeError
 
+        # validate not negative indexing
         if isinstance(key, slice):
             key = bounded_slice(key)
             start = 0 if key.start is None else key.start
@@ -361,17 +412,23 @@ class Query(object):
         elif key < 0:
             raise ValueError('Negative indexing is not supported')
 
-        # reset pager offset
+        # Reset the pager offset so that it is internally referencing
+        # the start of the requested key. If the offset is out of bounds
+        # (i.e. less than 0 or greater than pager stop) the query will
+        # request a new result page (see: next())
         self._pager.reset_absolute(as_slice(key).start)
 
+        # pager.offset_absolute is now key.start (if slice) or key (if int)
         if isinstance(key, slice):
             _delta = key.stop - key.start
 
             if _delta == float('inf'):
                 _delta = None
 
+            # return list
             return list(islice(self, _delta))
 
+        # return single element
         return list(islice(self, 1))[0]
 
     def __iter__(self):
@@ -380,7 +437,15 @@ class Query(object):
     def next(self):
         """
         Allows the Query object to be an iterable.
-        Iterates through the internal cache using a cursor.
+
+        This method will iterate through a cached result set
+        and fetch successive pages as required.
+
+        A `StopIteration` exception will be raised when there aren't
+        any more results available or when the requested result
+        slice range or limit has been fetched.
+
+        Returns: The next result.
         """
         # prevents an additional query when requesting a slice
         #  range that is out of bounds (i.e. results[limit:])
@@ -426,7 +491,9 @@ class Query(object):
 
     def execute(self):
         """
-        Executes a query and returns the request parameters and response.
+        Executes a query.
+
+        Returns: The request parameters and the raw query response.
         """
         _params = self._build_query()
 
