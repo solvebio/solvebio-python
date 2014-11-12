@@ -238,6 +238,9 @@ class Query(object):
     A Query API request wrapper that generates a request from Filter objects,
     and can iterate through streaming result sets.
     """
+
+    # The maximum number of results fetched in one go. Note however
+    # that iterating over a query can cause more fetches.
     DEFAULT_PAGE_SIZE = 1000
 
     def __init__(
@@ -321,7 +324,11 @@ class Query(object):
 
     def count(self):
         """
-        Returns the total number of results returned by a Query.
+        Returns the total number of results returned by a query.
+        The count is dependent on the filters, but independent of any limit.
+        It is like SQL:
+           SELECT COUNT(*) FROM <depository> [WHERE condition].
+        See also __len__ for a function that is dependent on limit.
         """
         # clone self and query with limit = 0 to get total
         query_clone = self._clone()
@@ -360,7 +367,14 @@ class Query(object):
 
     def __len__(self):
         """
-        Returns: The total number of results returned by query.
+        Returns the total number of results returned in a query. It is the number
+        of items you can iterate over.
+
+        In contrast to count(), the result does take into account any limit given.
+        In SQL it is like:
+              SELECT COUNT(*) FROM (
+                 SELECT * FROM <table> [WHERE condition] [LIMIT number]
+              )
         """
         return min(self._limit, self.total)
 
