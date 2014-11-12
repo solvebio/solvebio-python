@@ -367,11 +367,12 @@ class Query(object):
 
     def __len__(self):
         """
-        Returns the total number of results returned in a query. It is the number
-        of items you can iterate over.
+        Returns the total number of results returned in a query. It is the
+        number of items you can iterate over.
 
-        In contrast to count(), the result does take into account any limit given.
-        In SQL it is like:
+        In contrast to count(), the result does take into account any limit
+        given. In SQL it is like:
+
               SELECT COUNT(*) FROM (
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
