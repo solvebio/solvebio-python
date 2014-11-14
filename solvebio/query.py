@@ -3,6 +3,7 @@
 from itertools import islice
 
 from .client import client
+from .cursor import Cursor
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
 
@@ -180,59 +181,6 @@ def as_slice(slice_or_idx):
         return slice(slice_or_idx, slice_or_idx + 1)
 
 
-class Pager(object):
-    """
-    Stateful cursor object that tracks of the range and offset of a Query.
-    """
-
-    @property
-    def offset_absolute(self):
-        return self.start + self.offset
-
-    @classmethod
-    def from_slice(klass, _slice, offset=0):
-        return \
-            Pager(_slice.start, _slice.stop, offset=offset)
-
-    def __init__(self, start, stop, offset=0):
-        """
-        Creates a new pager object.
-        """
-        self.reset(start, stop, offset)
-
-    def advance(self, incr=1):
-        self.offset += incr
-
-    def reset(self, start, stop, offset):
-        """
-        Reset.
-
-        :Parameters:
-          - `start`: Absolute start position
-          - `stop`: Absolute stop position
-          - `offset` (optional): Pager offset relative to `start`
-        """
-        self.start = start
-        self.stop = stop
-        self.offset = 0
-
-    def reset_absolute(self, offset_absolute):
-        """
-        Reset the internal offset from an absolute position.
-
-        :Parameters:
-          - `offset_absolute`: Absolute pager offset
-        """
-        self.offset = offset_absolute - self.start
-
-    def has_next(self):
-        return self.offset >= 0 and self.offset < (self.stop - self.start)
-
-    def __repr__(self):
-        return 'range: %s, offset: %s' % \
-            (slice(self.start, self.stop), self.offset)
-
-
 class Query(object):
     """
     A Query API request wrapper that generates a request from Filter objects,
@@ -274,9 +222,9 @@ class Query(object):
             filters = []
         self._filters = filters
 
-        # init response and pager
+        # init response and cursor
         self._response = None
-        self._pager = Pager(0, -1, 0)
+        self._cursor = Cursor(0, -1, 0)
         self._page_size = int(page_size)
 
         # parameter error checking
@@ -427,13 +375,13 @@ class Query(object):
         elif key < 0:
             raise ValueError('Negative indexing is not supported')
 
-        # Reset the pager offset so that it is internally referencing
+        # Reset the cursor offset so that it is internally referencing
         # the start of the requested key. If the offset is out of bounds
-        # (i.e. less than 0 or greater than pager stop) the query will
+        # (i.e. less than 0 or greater than cursor stop) the query will
         # request a new result page (see: next())
-        self._pager.reset_absolute(as_slice(key).start)
+        self._cursor.reset_absolute(as_slice(key).start)
 
-        # pager.offset_absolute is now key.start (if slice) or key (if int)
+        # cursor.offset_absolute is now key.start (if slice) or key (if int)
         if isinstance(key, slice):
             _delta = key.stop - key.start
 
@@ -464,11 +412,11 @@ class Query(object):
         """
         # prevents an additional query when requesting a slice
         #  range that is out of bounds (i.e. results[limit:])
-        if self._pager.offset_absolute >= self._limit:
+        if self._cursor.offset_absolute >= self._limit:
             raise StopIteration()
 
-        if self._pager.has_next():
-            _result_start = self._pager.offset
+        if self._cursor.has_next():
+            _result_start = self._cursor.offset
             logger.debug('page slice: [%s, %s)' %
                          (_result_start, _result_start + 1))
 
@@ -482,7 +430,7 @@ class Query(object):
             raise StopIteration()
 
         # increment page index
-        self._pager.advance()
+        self._cursor.advance()
 
         return self.results[_result_start]
 
@@ -512,8 +460,9 @@ class Query(object):
         """
         _params = self._build_query()
 
-        offset = self._pager.offset_absolute
-        limit = min(self._page_size, self._limit - self._pager.offset_absolute)
+        offset = self._cursor.offset_absolute
+        limit = min(self._page_size,
+                    self._limit - self._cursor.offset_absolute)
 
         _params.update(
             offset=offset,
@@ -528,8 +477,8 @@ class Query(object):
 
         self._response = response
 
-        # reset pager if have results
-        self._pager.reset(offset, offset + limit, 0)
+        # reset cursor if have results
+        self._cursor.reset(offset, offset + limit, 0)
 
         return _params, response
 
@@ -553,8 +502,8 @@ class BatchQuery(object):
 
         for i in self._queries:
             _params = i._build_query(
-                offset=i._pager.offset_absolute,
-                limit=min(i._page_size, i._limit - i._pager.offset_absolute),
+                offset=i._cursor.offset_absolute,
+                limit=min(i._page_size, i._limit - i._cursor.offset_absolute),
                 dataset=i._dataset_id
             )
             query['queries'].append(_params)
