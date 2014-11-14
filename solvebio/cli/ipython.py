@@ -50,7 +50,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     # inside the ipython shell users don't have run imports
     import solvebio  # noqa
     from solvebio import (version, Depository, DepositoryVersion, Dataset,  # noqa
-                          DatasetField, Query, PagingQuery, Filter,  # noqa
+                          DatasetField, Query, Filter,  # noqa
                           RangeFilter, Sample, Annotation, User)  # noqa
 
     from solvebio.cli.auth import login as login_with_args
