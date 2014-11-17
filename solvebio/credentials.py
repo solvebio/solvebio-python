@@ -14,10 +14,11 @@ class netrc(_netrc):
     def path():
         try:
             path = os.path.join(
-                os.environ.get('NETRC_PATH', os.environ['HOME']), ".netrc")
+                os.environ.get('NETRC_PATH', os.path.join(os.environ['HOME'], '.solvebio')),
+                               ".netrc")
         except KeyError:
             raise IOError("Could not find .netrc: neither $NETRC_PATH "
-                          "nor $HOME are set")
+                          "nor is '$HOME/.solvebio/.netrc set")
 
         # create an empty .netrc if it doesn't exist
         if not os.path.exists(path):
