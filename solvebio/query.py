@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """Handles Querying and Filtering Datasets"""
+from itertools import islice
 
 from .client import client
+from .cursor import Cursor
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
 
@@ -164,27 +166,66 @@ class RangeFilter(Filter):
         return '<RangeFilter {0}>'.format(self.filters)
 
 
-class PagingQuery(object):
+# slice utils
+def bounded_slice(_slice):
+    return slice(
+        _slice.start if _slice.start is not None else 0,
+        _slice.stop if _slice.stop is not None else float('inf')
+    )
+
+
+def as_slice(slice_or_idx):
+    if isinstance(slice_or_idx, slice):
+        return bounded_slice(slice_or_idx)
+    else:
+        return slice(slice_or_idx, slice_or_idx + 1)
+
+
+class Query(object):
     """
     A Query API request wrapper that generates a request from Filter objects,
     and can iterate through streaming result sets.
     """
-    MAXIMUM_LIMIT = 100
 
-    def __init__(self, dataset_id, **params):
+    # The maximum number of results fetched in one go. Note however
+    # that iterating over a query can cause more fetches.
+    DEFAULT_PAGE_SIZE = 1000
+
+    def __init__(
+            self,
+            dataset_id,
+            result_class=dict,
+            fields=None,
+            filters=None,
+            limit=float('inf'),
+            page_size=DEFAULT_PAGE_SIZE):
+        """
+        Creates a new Query object.
+
+        :Parameters:
+          - `dataset_id`: Unique ID of dataset to query.
+          - `result_class` (optional): Class of object returned by query.
+          - `fields` (optional): List of specific fields to retrieve.
+          - `filters` (optional): List of filter objects.
+          - `limit` (optional): Maximum number of query results to return.
+          - `page_size` (optional): Number of results to fetch per query page.
+        """
         self._dataset_id = dataset_id
         self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
-        # results per request
-        self._limit = int(params.get('limit', PagingQuery.MAXIMUM_LIMIT))
-        self._result_class = params.get('result_class', dict)
-        self._debug = params.get('debug', False)
-        self._fields = params.get('fields', None)
-        self._filters = list()
+        self._limit = limit
+        self._result_class = result_class
+        self._fields = fields
+        if filters:
+            if isinstance(filters, Filter):
+                filters = [filters]
+        else:
+            filters = []
+        self._filters = filters
 
-        # init
+        # init response and cursor
         self._response = None
-        self._reset_iter()
-        self._reset_slice_window()
+        self._cursor = Cursor(0, -1, 0)
+        self._page_size = int(page_size)
 
         # parameter error checking
         if self._limit < 0:
@@ -193,8 +234,7 @@ class PagingQuery(object):
     def _clone(self, filters=None):
         new = self.__class__(self._dataset_id,
                              limit=self._limit,
-                             result_class=self._result_class,
-                             debug=self._debug)
+                             result_class=self._result_class)
         new._fields = self._fields
         new._filters += self._filters
 
@@ -230,12 +270,26 @@ class PagingQuery(object):
         return self._clone(
             filters=[RangeFilter(chromosome, start, end, strand, overlap)])
 
+    def count(self):
+        """
+        Returns the total number of results returned by a query.
+        The count is dependent on the filters, but independent of any limit.
+        It is like SQL:
+           SELECT COUNT(*) FROM <depository> [WHERE condition].
+        See also __len__ for a function that is dependent on limit.
+        """
+        # clone self and query with limit = 0 to get total
+        query_clone = self._clone()
+        query_clone._limit = 0
+        return query_clone.total
+
     def _process_filters(self, filters):
         """Takes a list of filters and returns JSON
 
-        :arg filters: list of Filters, (key, val) tuples, or dicts
+        :Parameters:
+        - `filters`: List of Filters, (key, val) tuples, or dicts
 
-        :returns: list of JSON API filters
+        Returns: List of JSON API filters
         """
         rv = []
         for f in filters:
@@ -260,26 +314,34 @@ class PagingQuery(object):
         return rv
 
     def __len__(self):
-        return self.total
+        """
+        Returns the total number of results returned in a query. It is the
+        number of items you can iterate over.
+
+        In contrast to count(), the result does take into account any limit
+        given. In SQL it is like:
+
+              SELECT COUNT(*) FROM (
+                 SELECT * FROM <table> [WHERE condition] [LIMIT number]
+              )
+        """
+        return min(self._limit, self.total)
 
     def __nonzero__(self):
         return bool(len(self))
 
     def __repr__(self):
-        if self.total == 0 or self._limit == 0:
-            return u'query returned 0 results'
+        if len(self) == 0:
+            return u'Query returned 0 results.'
 
         return u'\n%s\n\n... %s more results.' % (
             tabulate(self[0].items(), ['Fields', 'Data'],
                      aligns=['right', 'left'], sort=True),
             pretty_int(self.total - 1))
 
-    def _reset_iter(self):
-        self._i = -1
-
     def __getattr__(self, key):
         if self._response is None:
-            logger.debug('warmup (__getattr__): %s' % key)
+            logger.debug('warmup (__getattr__: %s)' % key)
             self.execute()
 
         if key in self._response:
@@ -291,100 +353,89 @@ class PagingQuery(object):
 
     def __getitem__(self, key):
         """
-        Retrieve an item or slice from the set of results
+        Retrieve an item or slice from the result set.
+
+        Query's do not support negative indexing.
+
+        :Parameters:
+        - `key`: The requested slice range or index.
         """
-        self._request_slice = self._as_slice(key)
-
-        # warmup result set...
-        if self._response is None:
-            logger.debug('warmup (__getitem__): %s' % key)
-            self.execute()
-
+        # validate type
         if not isinstance(key, (slice, int, long)):
             raise TypeError
-        if self._limit < 0:
-            raise ValueError('Indexing not supporting when limit == 0.')
+
+        # validate not negative indexing
         if isinstance(key, slice):
-            key = self._bounded_slice(key)
+            key = bounded_slice(key)
             start = 0 if key.start is None else key.start
             stop = float('inf') if key.stop is None else key.stop
             if start < 0 or stop < 0 or start > stop:
                 raise ValueError('Negative indexing is not supported')
+
         elif key < 0:
             raise ValueError('Negative indexing is not supported')
 
-        _results = list(self)[:]
-        # reset request slice
-        self._request_slice = slice(0, float('inf'))
+        # Reset the cursor offset so that it is internally referencing
+        # the start of the requested key. If the offset is out of bounds
+        # (i.e. less than 0 or greater than cursor stop) the query will
+        # request a new result page (see: next())
+        self._cursor.reset_absolute(as_slice(key).start)
+
+        # cursor.offset_absolute is now key.start (if slice) or key (if int)
         if isinstance(key, slice):
             _delta = key.stop - key.start
-            # slice args must be an integer or None
+
             if _delta == float('inf'):
                 _delta = None
-            return _results[slice(0, _delta)]
-        else:
-            return _results[0]
+
+            # return list
+            return list(islice(self, _delta))
+
+        # return single element
+        return list(islice(self, 1))[0]
 
     def __iter__(self):
-        self._reset_iter()
         return self
 
     def next(self):
         """
         Allows the Query object to be an iterable.
-        Iterates through the internal cache using a cursor.
-        """
-        # increment
-        self._i += 1
-        return self._next()
 
-    def _next(self):
-        _delta = self._request_slice.stop - self._request_slice.start
-        if self._i == len(self) or self._i == _delta:
+        This method will iterate through a cached result set
+        and fetch successive pages as required.
+
+        A `StopIteration` exception will be raised when there aren't
+        any more results available or when the requested result
+        slice range or limit has been fetched.
+
+        Returns: The next result.
+        """
+        # prevents an additional query when requesting a slice
+        #  range that is out of bounds (i.e. results[limit:])
+        if self._cursor.offset_absolute >= self._limit:
             raise StopIteration()
 
-        i_offset = self._i + self._request_slice.start
-        if self._has_slice(self._as_slice(i_offset)):
-            _result_start = i_offset - self._window_slice.start
-            logger.debug('  window slice: [%s, %s)' %
+        if self._cursor.has_next():
+            _result_start = self._cursor.offset
+            logger.debug('page slice: [%s, %s)' %
                          (_result_start, _result_start + 1))
+
         else:
-            logger.debug('executing query. offset/limit: %6d/%d' %
-                         (i_offset, self._limit))
-            self.execute(offset=i_offset, limit=self._limit)
-            _result_start = self._i % self._limit
+            self.execute()
+            # reset page index
+            _result_start = 0
+
+        # if no results when fetching next page, terminate
+        if len(self.results) == 0:
+            raise StopIteration()
+
+        # increment page index
+        self._cursor.advance()
+
         return self.results[_result_start]
 
-    # slice operations
-    def _as_slice(self, slice_or_idx):
-        if isinstance(slice_or_idx, slice):
-            return self._bounded_slice(slice_or_idx)
-        else:
-            return slice(slice_or_idx, slice_or_idx + 1)
-
-    def _bounded_slice(self, _slice):
-        return slice(
-            _slice.start if _slice.start is not None else 0,
-            _slice.stop if _slice.stop is not None else float('inf')
-        )
-
-    def _has_slice(self, slice_or_idx):
-        return slice_or_idx.start >= self._window_slice.start and \
-            slice_or_idx.stop <= self._window_slice.stop
-
-    def _reset_request_slice(self):
-        self._request_slice = slice(0, float('inf'))
-
-    def _reset_slice_window(self):
-        self._window = []
-        self._window_slice = slice(0, float('inf'))
-        self._reset_request_slice()
-
-    def _build_query(self):
-        q = {
-            'limit': self._limit,
-            'debug': self._debug
-        }
+    def _build_query(self, **kwargs):
+        q = {}
 
         if self._filters:
             filters = self._process_filters(self._filters)
@@ -396,61 +447,40 @@ class PagingQuery(object):
         if self._fields is not None:
             q['fields'] = self._fields
 
+        # Add or modify query parameters (used by BatchQuery)
+        q.update(**kwargs)
+
         return q
 
-    def execute(self, **params):
+    def execute(self):
         """
-        Executes a query and returns the request parameters and response.
+        Executes a query.
+
+        Returns: The request parameters and the raw query response.
         """
         _params = self._build_query()
-        _params.update(**params)
-        # logger.debug('querying dataset: %s' % str(_params))
 
+        offset = self._cursor.offset_absolute
+        limit = min(self._page_size,
+                    self._limit - self._cursor.offset_absolute)
+
+        _params.update(
+            offset=offset,
+            limit=limit
+        )
+
+        logger.debug('executing query. from/limit: %6d/%d' %
+                     (offset, limit))
         response = client.post(self._data_url, _params)
         logger.debug(
             'query response took: %(took)d ms, total: %(total)d' % response)
+
         self._response = response
 
-        # update window
-        _offset = _params.get('offset', 0)
-        _len = len(self._response['results'])
-        self._window = self.results
-        self._window_slice = slice(_offset, _offset + _len)
+        # reset cursor if have results
+        self._cursor.reset(offset, offset + limit, 0)
 
         return _params, response
-
-
-class Query(PagingQuery):
-    def __init__(self, dataset_id, **params):
-        PagingQuery.__init__(self, dataset_id, **params)
-
-    def __len__(self):
-        return min(self.total, len(self.results))
-
-    def _bounded_slice(self, _slice):
-        _start = _slice.start
-        _stop = _slice.stop
-        if _start is None and _stop is None:
-            # e.g. q[:] --> [0, limit)
-            return slice(0, self._limit)
-        elif _start is None:
-            # e.g. q[:50] --> [0, min(50, limit) )
-            return slice(0, min(_stop, self._limit))
-        elif _stop is None:
-            # e.g. q[50:] --> [50, 50 + limit)
-            return slice(_start, _start + self._limit)
-        return slice(_start, _stop)
-
-    def _next(self):
-        if self._i == len(self) or self._i == self._limit:
-            raise StopIteration()
-        return PagingQuery._next(self)
-
-    def __getitem__(self, key):
-        if isinstance(key, (int, long)) \
-                and key >= self._window_slice.stop:
-            raise IndexError()
-        return PagingQuery.__getitem__(self, key)
 
 
 class BatchQuery(object):
@@ -471,9 +501,12 @@ class BatchQuery(object):
         query = {'queries': []}
 
         for i in self._queries:
-            q = i._build_query()
-            q.update({'dataset': i._dataset_id})
-            query['queries'].append(q)
+            _params = i._build_query(
+                offset=i._cursor.offset_absolute,
+                limit=min(i._page_size, i._limit - i._cursor.offset_absolute),
+                dataset=i._dataset_id
+            )
+            query['queries'].append(_params)
 
         return query
 

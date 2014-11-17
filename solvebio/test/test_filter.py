@@ -41,7 +41,7 @@ class FilterTest(unittest.TestCase):
         filters = [('omid', None)]
         expect = filters
         dataset_name = 'omim/0.0.1-1/omim'
-        x = solvebio.PagingQuery(dataset_name)
+        x = solvebio.Query(dataset_name)
         self.assertEqual(repr(x._process_filters(filters)), repr(expect))
 
 
