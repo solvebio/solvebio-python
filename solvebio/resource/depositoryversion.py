@@ -62,15 +62,3 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
 
     def help(self):
         open_help(self['full_name'])
-
-    def release(self, released_at=None):
-        """Set the released flag and optional release date and save"""
-        if released_at:
-            self.released_at = released_at
-        self.released = True
-        self.save()
-
-    def unrelease(self):
-        """Unset the released flag and save"""
-        self.released = False
-        self.save()
