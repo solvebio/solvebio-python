@@ -58,7 +58,6 @@ class TestCredentials(unittest.TestCase):
         auths = creds.get_credentials()
         self.assertIsNotNone(auths, 'Should not newly set credentials for '
                           'host {0}'.format(solvebio.api_host))
-        print auths
         self.assertEqual(auths, pair, 'Should get back creds we saved')
 
 

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
+import re
+import time
 import solvebio
 
 from .version import VERSION
@@ -182,10 +184,30 @@ class SolveClient(object):
         if debug:
             self._log_raw_request(method, url, **opts)
 
-        try:
-            response = requests.request(method, url, **opts)
-        except Exception as e:
-            _handle_request_error(e)
+        done = False
+        while not done:
+            done = True
+            try:
+                response = requests.request(method, url, **opts)
+            except Exception as e:
+                _handle_request_error(e)
+
+            if 429 == response.status_code:
+                body = response.json()
+                if 'detail' in body:
+                    message = body['detail']
+                    match = re.match('^Request was throttled. '
+                                     'Expected available in ([\d]+) seconds.',
+                                     message)
+                    if match is not None:
+                        try:
+                            delay = int(match.group(1))
+                            logger.info(message)
+                            logger.info('API sleeping for %d seconds' % delay)
+                            time.sleep(delay)
+                            done = False
+                        except:
+                            pass
 
         if not (200 <= response.status_code < 400):
             _handle_api_error(response)

@@ -6,7 +6,6 @@ Annotation, ... ) inheret
 import os
 import requests
 import tempfile
-import time
 import urllib
 
 from ..client import client, _handle_api_error, _handle_request_error
@@ -27,14 +26,7 @@ class APIResource(SolveObject):
         return instance
 
     def refresh(self):
-        retry = False
-        while retry:
-            try:
-                self.refresh_from(self.request('get', self.instance_url()))
-            except SolveError as e:
-                if e.status_code == 429:
-                    time.sleep(e.delay)
-                    retry = True
+        self.refresh_from(self.request('get', self.instance_url()))
         return self
 
     @classmethod

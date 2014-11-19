@@ -1,5 +1,4 @@
 import logging
-import re
 logger = logging.getLogger('solvebio')
 
 
@@ -29,22 +28,12 @@ class SolveError(Exception):
                     'API Response (%d): %s'
                     % (self.status_code, self.json_body))
 
-                if self.status_code in [400, 401, 403, 404, 429]:
+                if self.status_code in [400, 401, 403, 404]:
                     self.message = 'Bad request.'
 
                     if 'detail' in self.json_body:
                         self.message = '%s' % self.json_body['detail']
-                        from trepan.api import debug; debug()
-                        if self.status_code == 429:
-                            match = re.match('^Request was throttled. '
-                                             'Expected available in ([\d]+) seconds.',
-                                             self.message)
-                            if match is not None:
-                                try:
-                                    self.delay = int(match.group(1))
-                                except:
-                                    self.delay = 60
-                            return
+
                     if 'non_field_errors' in self.json_body:
                         self.message = '%s.' % \
                             ', '.join(self.json_body['non_field_errors'])

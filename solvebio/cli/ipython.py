@@ -1,4 +1,4 @@
-from solvebio.credentials import get_credentials
+from solvebio.cli.credentials import get_credentials
 
 
 def launch_ipython_shell(args):  # pylint: disable=unused-argument
