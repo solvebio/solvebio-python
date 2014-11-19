@@ -10,6 +10,7 @@ from solvebio.cli.credentials import (get_credentials, delete_credentials,
 
 last_email = None  # Last email address tried in login()
 
+
 def _ask_for_credentials(default_email=None):
     while True:
         if default_email and isinstance(default_email, str):
@@ -76,6 +77,7 @@ def login(email=None):
         print('You are now logged-in.')
     return True
 
+
 def login_if_needed():
     """
     If the credentials file has our api host key use that. Otherwise,
@@ -97,8 +99,7 @@ def login_if_needed():
         last_email = email
         data = {
             'email': email,
-            'password': password
-            }
+            'password': password}
     try:
         response = client.post('/v1/auth/token', data)
     except SolveError as e:
@@ -114,6 +115,7 @@ def login_if_needed():
 
 # In the routines below, args is needed because we use a funky
 # options-processing routine that requires it.
+
 
 def opts_login(args):
     """
