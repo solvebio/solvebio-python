@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import getpass
+from urlparse import urlparse
 
 import solvebio
 from solvebio.client import client, SolveError
@@ -7,14 +8,19 @@ from solvebio.cli.credentials import (get_credentials, delete_credentials,
                                       save_credentials)
 
 
+last_email = None  # Last email address tried in login()
+
 def _ask_for_credentials(default_email=None):
     while True:
         if default_email and isinstance(default_email, str):
-            prompt = 'Email address ({0}): '.format(default_email)
+            prompt = 'Email address ({0})'.format(default_email)
         else:
-            prompt = 'Email address: '
+            prompt = 'Email address'
 
-        email = raw_input(prompt)
+        if solvebio.api_host != 'https://api.solvebio.com':
+            prompt += ' for %s' % urlparse(solvebio.api_host).netloc
+
+        email = raw_input(prompt + ': ')
         if email == '':
             email = default_email
         password = getpass.getpass('Password (typing will be hidden): ')
@@ -43,14 +49,16 @@ def _send_install_report():
         pass
 
 
-def login(args):
+def login(email=None):
     """
     Prompt user for login information (email/password).
     Email and password are used to get the user's auth_token key.
     """
-    delete_credentials()
-
-    email, password = _ask_for_credentials(args)
+    if email is None:
+        global last_email
+        email = last_email
+    email, password = _ask_for_credentials(email)
+    last_email = email
     data = {
         'email': email,
         'password': password
@@ -68,8 +76,55 @@ def login(args):
         print('You are now logged-in.')
     return True
 
+def login_if_needed():
+    """
+    If the credentials file has our api host key use that. Otherwise,
+    ask for credentials.
+    """
 
-def logout(args):
+    creds = get_credentials()
+    global last_email
+    if creds:
+        last_email = creds[0]
+        msg = "\nYou are logged in as %s" % last_email
+        if solvebio.api_host != 'https://api.solvebio.com':
+            msg += ' on %s' % urlparse(solvebio.api_host).netloc
+        print msg
+        return True
+    else:
+        # Didn't find an for this api host, ask for one...
+        email, password = _ask_for_credentials()
+        last_email = email
+        data = {
+            'email': email,
+            'password': password
+            }
+    try:
+        response = client.post('/v1/auth/token', data)
+    except SolveError as e:
+        print('Login failed: %s' % e.message)
+        return False
+    else:
+        save_credentials(email.lower(), response['token'])
+        # reset the default client's auth token
+        solvebio.api_key = response['token']
+        _send_install_report()
+        print('You are now logged-in.')
+    return True
+
+# In the routines below, args is needed because we use a funky
+# options-processing routine that requires it.
+
+def opts_login(args):
+    """
+    Prompt user for login information (email/password).
+    Email and password are used to get the user's auth_token key.
+    """
+    delete_credentials()
+    return login()
+
+
+def opts_logout(args):
     if get_credentials():
         delete_credentials()
         client.auth = None
@@ -78,7 +133,7 @@ def logout(args):
         print('You are not logged-in.')
 
 
-def whoami(args):
+def opts_whoami(args):
     creds = get_credentials()
     if creds:
         print creds[0]

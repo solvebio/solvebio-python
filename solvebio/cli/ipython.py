@@ -1,6 +1,3 @@
-from solvebio.cli.credentials import get_credentials
-
-
 def launch_ipython_shell(args):  # pylint: disable=unused-argument
     """Open the SolveBio shell (IPython wrapper)"""
     try:
@@ -19,13 +16,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
         prompt_config.in_template = '[SolveBio] In <\\#>: '
         prompt_config.in2_template = '   .\\D.: '
         prompt_config.out_template = 'Out<\\#>: '
-        banner1 = 'SolveBio Python shell started.'
-        creds = get_credentials()
-
-        if creds:
-            banner1 += "\nYou are logged in as {}".format(creds[0])
-        else:
-            banner1 += '\nYou are not logged in. Please run "solvebio login".'
+        banner1 = '\nSolveBio Python shell started.'
 
         exit_msg = 'Quitting SolveBio shell.'
     else:
@@ -53,11 +44,11 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
                           DatasetField, Query, Filter,  # noqa
                           RangeFilter, Sample, Annotation, User)  # noqa
 
-    from solvebio.cli.auth import login as login_with_args
-    from solvebio.cli.auth import logout as logout_with_args
-    from solvebio.cli.auth import whoami as whoami_with_args
+    # Add some convenience functions to the interactive shell
+    from solvebio.cli.auth import opts_logout, opts_whoami
+    from solvebio.cli.auth import login as simple_login
 
-    login = lambda args=None: login_with_args(args)  # noqa
-    logout = lambda: logout_with_args(None)  # noqa
-    whoami = lambda: whoami_with_args(None)  # noqa
+    login = simple_login # noqa
+    logout = lambda: opts_logout(None)  # noqa
+    whoami = lambda: opts_whoami(None)  # noqa
     InteractiveShellEmbed(config=cfg, banner1=banner1, exit_msg=exit_msg)()
