@@ -3,8 +3,8 @@ import getpass
 
 import solvebio
 from solvebio.client import client, SolveError
-from solvebio.credentials import (get_credentials, delete_credentials,
-                                  save_credentials)
+from solvebio.cli.credentials import (get_credentials, delete_credentials,
+                                      save_credentials)
 
 
 def _ask_for_credentials(default_email=None):

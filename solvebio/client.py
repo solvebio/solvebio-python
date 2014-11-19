@@ -3,7 +3,6 @@ import json
 import solvebio
 
 from .version import VERSION
-from .credentials import get_credentials
 from .errors import SolveError
 
 import platform
@@ -17,7 +16,7 @@ logger = logging.getLogger('solvebio')
 
 
 def _handle_api_error(response):
-    if response.status_code not in [400, 401, 403, 404]:
+    if response.status_code not in [400, 401, 403, 404, 429]:
         logger.info('API Error: %d' % response.status_code)
     raise SolveError(response=response)
 
@@ -60,12 +59,6 @@ class SolveTokenAuth(AuthBase):
         """
         if solvebio.api_key:
             return solvebio.api_key
-
-        try:
-            return get_credentials()[1]
-        except:
-            pass
-
         return None
 
 

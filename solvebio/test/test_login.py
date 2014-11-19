@@ -1,8 +1,20 @@
 # -*- coding: utf-8 -*-
+import contextlib
+import sys
 import unittest
 import solvebio
 import solvebio.cli.auth as auth
 
+@contextlib.contextmanager
+def nostdout():
+    savestderr = sys.stdout
+    class Devnull(object):
+        def write(self, _): pass
+    sys.stdout = Devnull()
+    try:
+        yield
+    finally:
+        sys.stdout = savestderr
 
 class TestLogin(unittest.TestCase):
     def setUp(self):
@@ -20,9 +32,10 @@ class TestLogin(unittest.TestCase):
         auth.delete_credentials = self.delete_credentials
 
     def test_bad_login(self):
-        self.assertEqual(auth.login('foo'), False, "Invalid login")
+        with nostdout():
+            self.assertEqual(auth.login('foo'), False, 'Invalid login')
 
-        # Test invalid host
-        solvebio.api_host = 'https://some.fake.domain.foobar'
-        self.assertEqual(auth.login('foo'), False,
-                         "Invalid login")
+            # Test invalid host
+            solvebio.api_host = 'https://some.fake.domain.foobar'
+            self.assertEqual(auth.login('foo'), False,
+                             "Invalid login")
