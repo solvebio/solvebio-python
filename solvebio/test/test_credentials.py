@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-import contextlib
 import os
-import sys
 import shutil
 import unittest
 import solvebio
 import solvebio.cli.credentials as creds
+
 
 class TestCredentials(unittest.TestCase):
     def setUp(self):
@@ -57,9 +56,5 @@ class TestCredentials(unittest.TestCase):
         creds.save_credentials(*pair)
         auths = creds.get_credentials()
         self.assertIsNotNone(auths, 'Should not newly set credentials for '
-                          'host {0}'.format(solvebio.api_host))
+                             'host {0}'.format(solvebio.api_host))
         self.assertEqual(auths, pair, 'Should get back creds we saved')
-
-
-if __name__ == '__main__':
-    unittest.main()

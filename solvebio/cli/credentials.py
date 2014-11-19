@@ -26,8 +26,8 @@ class netrc(_netrc):
             try:
                 open(path, 'a').close()
             except IOError:
-                raise Exception("Could not create a SolveBio credentials file at '%s', "
-                                "permission denied." % path)
+                raise Exception("Could not create a SolveBio credentials file"
+                                " at '%s', permission denied." % path)
         return path
 
     def save(self, path):

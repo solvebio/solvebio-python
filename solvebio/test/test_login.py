@@ -5,16 +5,20 @@ import unittest
 import solvebio
 import solvebio.cli.auth as auth
 
+
 @contextlib.contextmanager
 def nostdout():
     savestderr = sys.stdout
+
     class Devnull(object):
-        def write(self, _): pass
+        def write(self, _):
+            pass
     sys.stdout = Devnull()
     try:
         yield
     finally:
         sys.stdout = savestderr
+
 
 class TestLogin(unittest.TestCase):
     def setUp(self):
