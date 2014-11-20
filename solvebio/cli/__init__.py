@@ -9,11 +9,7 @@ Have questions or comments? email us at: contact@solvebio.com
 
 """
 
-from solvebio.cli.auth import login, login_if_needed, opts_logout, opts_whoami
-
-import sys
-if len(sys.argv) <= 1:
-    login_if_needed()
+from solvebio.cli.auth import login, opts_logout, opts_whoami
 
 # Add some convenience functions for an interactive shell
 

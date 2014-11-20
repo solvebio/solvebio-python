@@ -31,6 +31,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
         # pylint: disable=import-error,no-name-in-module
         from IPython.frontend.terminal.embed import InteractiveShellEmbed
 
+
     # Now create an instance of the embeddable shell. The first
     # argument is a string with options exactly as you would type them
     # if you were starting IPython at the system command line. Any
@@ -46,8 +47,9 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
 
     # Add some convenience functions to the interactive shell
     from solvebio.cli.auth import opts_logout, opts_whoami
-    from solvebio.cli.auth import login as simple_login
+    from solvebio.cli.auth import login as simple_login, login_if_needed
 
+    login_if_needed()
     login = simple_login  # noqa
     logout = lambda: opts_logout(None)  # noqa
     whoami = lambda: opts_whoami(None)  # noqa
