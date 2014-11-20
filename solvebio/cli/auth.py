@@ -56,11 +56,13 @@ def login(email=None, api_key=None):
     Email and password are used to get the user's auth_token key.
     """
     if api_key is not None:
-        solvebio.api_key = api_key
+        old_api_key = api_key
         try:
+            solvebio.api_key = api_key
             response = client.get('/v1/user', {})
         except SolveError as e:
             print('Login failed: %s' % e.message)
+            solvebio.api_key = old_api_key
             return False
         email = response['email']
         save_credentials(email, api_key)
@@ -143,8 +145,10 @@ def opts_logout(args):
         delete_credentials()
         client.auth = None
         print('You have been logged out.')
+        return True
     else:
         print('You are not logged-in.')
+        return False
 
 
 def opts_whoami(args):
