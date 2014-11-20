@@ -69,7 +69,7 @@ _init_logging()
 
 from . import version
 from .errors import SolveError
-from .query import Query, BatchQuery, Filter, RangeFilter
+from .query import Query, BatchQuery, Filter, GenomicFilter
 from .resource import (Depository, DepositoryVersion, Annotation, Sample,
                        User, Dataset, DatasetField)
 
@@ -82,7 +82,7 @@ __all__ = ['version',
            'DepositoryVersion',
            'Filter',
            'Query',
-           'RangeFilter',
+           'GenomicFilter',
            'SolveError',
            'Sample',
            'User']

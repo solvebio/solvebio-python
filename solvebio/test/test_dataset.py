@@ -20,7 +20,7 @@ class DatasetTests(SolveBioTestCase):
                             'description',
                             'fields_url', 'full_name',
                             'id', 'name', 'title', 'updated_at',
-                            'url'])
+                            'url', 'is_genomic', 'genome_builds'])
         self.assertSetEqual(set(dataset.keys()), check_fields)
 
     def test_dataset_fields(self):
