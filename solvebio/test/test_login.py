@@ -53,7 +53,7 @@ class TestLogin(unittest.TestCase):
             self.assertTrue(auth.login(email=None,
                                        api_key=api_key))
 
-            calls =  mock_auth.mock_calls
+            calls = mock_auth.mock_calls
             self.assertEqual(len(calls), 1)
             self.assertTrue(calls[0][1][0].endswith('@solvebio.com'))
             self.assertEqual(calls[0][1][1], api_key)
