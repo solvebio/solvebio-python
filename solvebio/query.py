@@ -117,53 +117,68 @@ class Filter(object):
         return f
 
 
-class RangeFilter(Filter):
+class GenomicFilter(Filter):
     """
-    Helper class that generates Range Filters from UCSC-style ranges.
+    Helper class that generates filters on genomic coordinates.
+
+    Range filtering only works on "genomic" datasets
+    (where dataset.is_genomic is True).
     """
-    SUPPORTED_BUILDS = ('hg18', 'hg19', 'hg38')
+    # Standardized fields for genomic coordinates in SolveBio
+    FIELD_START = 'genomic_coordinates.start'
+    FIELD_STOP = 'genomic_coordinates.stop'
+    FIELD_CHR = 'genomic_coordinates.chromosome'
 
     @classmethod
-    def from_string(cls, string, overlap=False):
+    def from_string(cls, string, exact=False):
         """
-        Handles UCSC-style range queries (hg19:chr1:100-200)
+        Handles UCSC-style range queries (chr1:100-200)
         """
         try:
-            build, chromosome, pos = string.split(':')
+            chromosome, pos = string.split(':')
         except ValueError:
-            raise ValueError(
-                'Please use UCSC-style format: "hg19:chr2:1000-2000"')
+            raise ValueError('Please use UCSC-style format: "chr2:1000-2000"')
 
         if '-' in pos:
-            start, end = pos.replace(',', '').split('-')
+            start, stop = pos.replace(',', '').split('-')
         else:
-            start = end = pos.replace(',', '')
+            start = stop = pos.replace(',', '')
 
-        return cls(build, chromosome, start, end, overlap=overlap)
+        return cls(chromosome, start, stop, exact=exact)
 
-    def __init__(self, build, chromosome, start, end, overlap=False):
+    def __init__(self, chromosome, start, stop=None, exact=False):
         """
-        Shortcut to do range queries on supported datasets.
+        This class supports single position and range filters.
+
+        By default, the filter will match any record that overlaps with
+        the position or range specified. Exact matches must be explicitly
+        specified using the `exact` parameter.
         """
-        if build.lower() not in self.SUPPORTED_BUILDS:
-            raise Exception('Build {0} not supported for range filters. '
-                            'Supported builds are: {1}'
-                            .format(build, ', '.join(self.SUPPORTED_BUILDS)))
+        try:
+            start = int(start)
+            if stop is None:
+                stop = start
+            else:
+                stop = int(stop)
+        except ValueError:
+            raise ValueError('Start and stop positions must be integers')
 
-        f = Filter(**{'{0}_start__range'.format(build): [start, end]})
-
-        if overlap:
-            f = f | Filter(**{'{0}_end__range'.format(build): [start, end]})
+        if exact:
+            f = Filter(**{self.FIELD_START: start, self.FIELD_STOP: stop})
         else:
-            f = f & Filter(**{'{0}_end__range'.format(build): [start, end]})
+            f = Filter(**{self.FIELD_START + '__lte': start,
+                          self.FIELD_STOP + '__gte': stop})
+            if start != stop:
+                f = f | Filter(**{self.FIELD_START + '__range':
+                                  [start, stop + 1]})
+                f = f | Filter(**{self.FIELD_STOP + '__range':
+                                  [start, stop + 1]})
 
-        f = f & Filter(**{'{0}_chromosome'.format(build):
-                          str(chromosome).replace('chr', '')})
-
+        f = f & Filter(chromosome=str(chromosome).replace('chr', ''))
         self.filters = f.filters
 
     def __repr__(self):
-        return '<RangeFilter {0}>'.format(self.filters)
+        return '<GenomicFilter {0}>'.format(self.filters)
 
 
 # slice utils
@@ -266,13 +281,19 @@ class Query(object):
         """
         return self._clone(filters=list(filters) + [Filter(**kwargs)])
 
-    def range(self, chromosome, start, end, strand=None, overlap=True):
+    def range(self, chromosome, start, stop, exact=False):
         """
-        Shortcut to do range queries on supported datasets.
+        Shortcut to do range filters on genomic datasets.
         """
-        # TODO: ensure dataset supports range queries?
         return self._clone(
-            filters=[RangeFilter(chromosome, start, end, strand, overlap)])
+            filters=[GenomicFilter(chromosome, start, stop, exact)])
+
+    def position(self, chromosome, position, exact=False):
+        """
+        Shortcut to do a single position filter on genomic datasets.
+        """
+        return self._clone(
+            filters=[GenomicFilter(chromosome, position, exact=exact)])
 
     def count(self):
         """
