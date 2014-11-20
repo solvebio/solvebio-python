@@ -198,12 +198,14 @@ class Query(object):
             fields=None,
             filters=None,
             limit=float('inf'),
-            page_size=DEFAULT_PAGE_SIZE):
+            page_size=DEFAULT_PAGE_SIZE,
+            genome_build=None):
         """
         Creates a new Query object.
 
         :Parameters:
           - `dataset_id`: Unique ID of dataset to query.
+          - `genome_build`: The genome build to use for the query.
           - `result_class` (optional): Class of object returned by query.
           - `fields` (optional): List of specific fields to retrieve.
           - `filters` (optional): List of filter objects.
@@ -211,6 +213,7 @@ class Query(object):
           - `page_size` (optional): Number of results to fetch per query page.
         """
         self._dataset_id = dataset_id
+        self._genome_build = genome_build
         self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
         self._limit = limit
         self._result_class = result_class
@@ -233,6 +236,7 @@ class Query(object):
 
     def _clone(self, filters=None):
         new = self.__class__(self._dataset_id,
+                             genome_build=self._genome_build,
                              limit=self._limit,
                              result_class=self._result_class)
         new._fields = self._fields
@@ -446,6 +450,9 @@ class Query(object):
 
         if self._fields is not None:
             q['fields'] = self._fields
+
+        if self._genome_build is not None:
+            q['genome_build'] = self._genome_build
 
         # Add or modify query parameters (used by BatchQuery)
         q.update(**kwargs)
