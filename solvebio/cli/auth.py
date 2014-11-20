@@ -50,32 +50,44 @@ def _send_install_report():
         pass
 
 
-def login(email=None):
+def login(email=None, api_key=None):
     """
     Prompt user for login information (email/password).
     Email and password are used to get the user's auth_token key.
     """
-    if email is None:
-        global last_email
-        email = last_email
-    email, password = _ask_for_credentials(email)
-    last_email = email
-    data = {
-        'email': email,
-        'password': password
-    }
-    try:
-        response = client.post('/v1/auth/token', data)
-    except SolveError as e:
-        print('Login failed: %s' % e.message)
-        return False
-    else:
-        save_credentials(email.lower(), response['token'])
-        # reset the default client's auth token
-        solvebio.api_key = response['token']
+    if api_key is not None:
+        solvebio.api_key = api_key
+        try:
+            response = client.get('/v1/user', {})
+        except SolveError as e:
+            print('Login failed: %s' % e.message)
+            return False
+        email = response['email']
+        save_credentials(email, api_key)
         _send_install_report()
-        print('You are now logged-in.')
-    return True
+        print('You are now logged-in as %s.' % email)
+        return True
+    else:
+        if email is None:
+            global last_email
+            email = last_email
+        email, password = _ask_for_credentials(email)
+        last_email = email
+        data = {
+            'email': email,
+            'password': password}
+        try:
+            response = client.post('/v1/auth/token', data)
+        except SolveError as e:
+            print('Login failed: %s' % e.message)
+            return False
+        else:
+            save_credentials(email.lower(), response['token'])
+            # reset the default client's auth token
+            solvebio.api_key = response['token']
+            _send_install_report()
+            print('You are now logged-in.')
+            return True
 
 
 def login_if_needed():
