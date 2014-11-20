@@ -31,7 +31,6 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
         # pylint: disable=import-error,no-name-in-module
         from IPython.frontend.terminal.embed import InteractiveShellEmbed
 
-
     # Now create an instance of the embeddable shell. The first
     # argument is a string with options exactly as you would type them
     # if you were starting IPython at the system command line. Any
