@@ -36,7 +36,7 @@ class ClientRateLimit(unittest.TestCase):
             elapsed_time = time.time() - start_time
             self.assertTrue(isinstance(depo, solvebio.Depository),
                             "Got a depository back (eventually)")
-            self.assertGreater(elapsed_time, 1.0,
+            self.assertTrue(elapsed_time > 1.0,
                                "Should have delayed for over a second; "
                                "(was %s)" % elapsed_time)
             self.assertEqual(self.call_count, 1)

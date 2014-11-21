@@ -197,7 +197,7 @@ class SolveClient(object):
                 except:
                     pass
                 else:
-                    logger.info('Too many requests sleeping for %d' % delay)
+                    logger.info('Too many requests; sleeping for %d' % delay)
                     time.sleep(delay)
                     done = False
 

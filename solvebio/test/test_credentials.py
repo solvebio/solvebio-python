@@ -31,30 +31,33 @@ class TestCredentials(unittest.TestCase):
         self.assertTrue(os.path.exists(cred_file),
                         "cred file created when it doesn't exist first")
 
-        self.assertIsNone(creds.get_credentials(),
+        self.assertEqual(creds.get_credentials(), None,
                           'Should not find credentials')
 
         test_credentials_file = os.path.join(datadir, 'test_creds')
         shutil.copy(test_credentials_file, cred_file)
 
         auths = creds.get_credentials()
-        self.assertIsNotNone(auths, 'Should find credentials')
+        self.assertFalse(auths is not None, 'Should find credentials')
 
         solvebio.api_host = 'https://example.com'
 
         auths = creds.get_credentials()
-        self.assertIsNone(auths, 'Should not find credentials for host {0}'
-                          .format(solvebio.api_host))
+        self.assertEqual(auths, None,
+                         'Should not find credentials for host {0}'
+                         .format(solvebio.api_host))
 
         solvebio.api_host = 'https://api.solvebio.com'
         creds.delete_credentials()
         auths = creds.get_credentials()
-        self.assertIsNone(auths, 'Should not find removed credentials for '
-                          'host {0}'.format(solvebio.api_host))
+        self.assertEqual(auths, None,
+                         'Should not find removed credentials for '
+                         'host {0}'.format(solvebio.api_host))
 
         pair = ('testagain@solvebio.com', 'b00b00',)
         creds.save_credentials(*pair)
         auths = creds.get_credentials()
-        self.assertIsNotNone(auths, 'Should not newly set credentials for '
-                             'host {0}'.format(solvebio.api_host))
+        self.assertFalse(auths is not None,
+                         'Should not newly set credentials for '
+                         'host {0}'.format(solvebio.api_host))
         self.assertEqual(auths, pair, 'Should get back creds we saved')
