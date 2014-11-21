@@ -38,7 +38,7 @@ class TestCredentials(unittest.TestCase):
         shutil.copy(test_credentials_file, cred_file)
 
         auths = creds.get_credentials()
-        self.assertFalse(auths is not None, 'Should find credentials')
+        self.assertTrue(auths is not None, 'Should find credentials')
 
         solvebio.api_host = 'https://example.com'
 
@@ -57,7 +57,7 @@ class TestCredentials(unittest.TestCase):
         pair = ('testagain@solvebio.com', 'b00b00',)
         creds.save_credentials(*pair)
         auths = creds.get_credentials()
-        self.assertFalse(auths is not None,
+        self.assertTrue(auths is not None,
                          'Should not newly set credentials for '
                          'host {0}'.format(solvebio.api_host))
         self.assertEqual(auths, pair, 'Should get back creds we saved')
