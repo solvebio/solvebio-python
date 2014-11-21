@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import getpass
-from urlparse import urlparse
 
 import solvebio
 from solvebio.client import client, SolveError

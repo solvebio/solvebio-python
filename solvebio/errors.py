@@ -3,7 +3,8 @@ logger = logging.getLogger('solvebio')
 
 
 class SolveError(Exception):
-    """Exceptions tailed to the kinds of errors from a SolveBio API request"""
+    """Exceptions tailored to the kinds of errors from a SolveBio API
+    request"""
     default_message = ('Unexpected error communicating with SolveBio. '
                        'If this problem persists, let us know at '
                        'contact@solvebio.com.')
