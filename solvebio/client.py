@@ -17,7 +17,7 @@ logger = logging.getLogger('solvebio')
 
 
 def _handle_api_error(response):
-    if response.status_code not in [400, 401, 403, 404, 429]:
+    if response.status_code not in [400, 401, 403, 404]:
         logger.info('API Error: %d' % response.status_code)
     raise SolveError(response=response)
 
