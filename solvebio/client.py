@@ -192,14 +192,11 @@ class SolveClient(object):
                 _handle_request_error(e)
 
             if 429 == response.status_code:
-                print "Got 429"
                 try:
                     delay = int(response.headers['retry-after'])
                 except:
-                    print "Bad conversion"
                     pass
                 else:
-                    print "Sleeping"
                     time.sleep(delay)
                     done = False
 
