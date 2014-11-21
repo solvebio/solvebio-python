@@ -19,7 +19,10 @@ class DatasetTests(SolveBioTestCase):
                             'depository_version', 'depository_version_id',
                             'description',
                             'fields_url', 'full_name',
-                            'id', 'name', 'title', 'updated_at',
+                            # REINSTATE this after next API is updated
+                            # 'genomic_builds', 'is_genomic',
+                            'id',
+                            'name', 'title', 'updated_at',
                             'url'])
         self.assertSetEqual(set(dataset.keys()), check_fields)
 
