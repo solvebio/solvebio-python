@@ -19,7 +19,8 @@ class FakeResponse():
 class ClientRateLimit(unittest.TestCase):
     """Test of rate-limiting an API request"""
 
-    call_count = 0
+    def setUp(self):
+        self.call_count = 0
 
     def fake_response(self):
         if self.call_count == 0:

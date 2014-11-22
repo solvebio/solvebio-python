@@ -27,7 +27,7 @@ def _ask_for_credentials(default_email=None):
         if email and password:
             return (email, password)
         else:
-            print 'Email and password are both required.'
+            print('Email and password are both required.')
             if default_email is None:
                 default_email = email
 
@@ -49,6 +49,12 @@ def _send_install_report():
         pass
 
 
+def login_msg(email):
+    msg = "\nYou are logged in as %s" % email
+    if solvebio.api_host != 'https://api.solvebio.com':
+        msg += ' on %s' % solvebio.api_host
+    print(msg)
+
 def login(email=None, api_key=None):
     """
     Prompt user for login information (email/password).
@@ -66,7 +72,7 @@ def login(email=None, api_key=None):
         email = response['email']
         save_credentials(email, api_key)
         _send_install_report()
-        print('You are now logged-in as %s.' % email)
+        login_msg(email)
         return True
     else:
         if email is None:
@@ -83,11 +89,12 @@ def login(email=None, api_key=None):
             print('Login failed: %s' % e.message)
             return False
         else:
-            save_credentials(email.lower(), response['token'])
+            email = email.lower()
+            save_credentials(email, response['token'])
             # reset the default client's auth token
             solvebio.api_key = response['token']
             _send_install_report()
-            print('You are now logged-in.')
+            login_msg(email)
             return True
 
 
@@ -101,10 +108,7 @@ def login_if_needed():
     global last_email
     if creds:
         last_email = creds[0]
-        msg = "\nYou are logged in as %s" % last_email
-        if solvebio.api_host != 'https://api.solvebio.com':
-            msg += ' on %s' % solvebio.api_host
-        print msg
+        login_msg
         return True
     else:
         return login(api_key=solvebio.api_key)
@@ -136,6 +140,6 @@ def opts_logout(args):
 def opts_whoami(args):
     creds = get_credentials()
     if creds:
-        print creds[0]
+        print(creds[0])
     else:
-        print 'You are not logged-in.'
+        print('You are not logged-in.')

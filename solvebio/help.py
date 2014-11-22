@@ -11,5 +11,5 @@ def open_help(path):
     try:
         webbrowser.open(url)
     except webbrowser.Error:
-        print ('The SolveBio Python client was unable to open the following '
+        print('The SolveBio Python client was unable to open the following '
                'URL: %s' % url)
