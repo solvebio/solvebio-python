@@ -55,6 +55,7 @@ def login_msg(email):
         msg += ' on %s' % solvebio.api_host
     print(msg)
 
+
 def login(email=None, api_key=None):
     """
     Prompt user for login information (email/password).
