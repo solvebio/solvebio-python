@@ -39,7 +39,7 @@ class DepositoryTests(SolveBioTestCase):
                             'datasets_url', 'depository',
                             'depository_id', 'description',
                             'full_name', 'id', 'latest',
-                            'name', 'released', 'released_at',
+                            'name', 'is_released', 'released_at',
                             'title', 'updated_at', 'url'])
 
         self.assertSetEqual(set(depo_version), check_fields)

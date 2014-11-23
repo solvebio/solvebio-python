@@ -42,7 +42,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     import solvebio  # noqa
     from solvebio import (version, Depository, DepositoryVersion, Dataset,  # noqa
                           DatasetField, Query, Filter,  # noqa
-                          RangeFilter, Sample, Annotation, User)  # noqa
+                          GenomicFilter, Sample, Annotation, User)  # noqa
 
     # Add some convenience functions to the interactive shell
     from solvebio.cli.auth import opts_logout, opts_whoami
