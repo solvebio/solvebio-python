@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
+import time
 import solvebio
 
 from .version import VERSION
-from .credentials import get_credentials
 from .errors import SolveError
 
 import platform
@@ -60,12 +60,6 @@ class SolveTokenAuth(AuthBase):
         """
         if solvebio.api_key:
             return solvebio.api_key
-
-        try:
-            return get_credentials()[1]
-        except:
-            pass
-
         return None
 
 
@@ -189,10 +183,23 @@ class SolveClient(object):
         if debug:
             self._log_raw_request(method, url, **opts)
 
-        try:
-            response = requests.request(method, url, **opts)
-        except Exception as e:
-            _handle_request_error(e)
+        done = False
+        while not done:
+            done = True
+            try:
+                response = requests.request(method, url, **opts)
+            except Exception as e:
+                _handle_request_error(e)
+
+            if 429 == response.status_code:
+                try:
+                    delay = int(response.headers['retry-after'])
+                except:
+                    pass
+                else:
+                    logger.info('Too many requests; sleeping for %d' % delay)
+                    time.sleep(delay)
+                    done = False
 
         if not (200 <= response.status_code < 400):
             _handle_api_error(response)

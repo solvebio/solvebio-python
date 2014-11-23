@@ -21,6 +21,11 @@ def help():
     _open_help('/docs')
 
 
+def login():
+    import solvebio.cli.auth
+    solvebio.cli.auth.login_if_needed()
+
+
 def _init_logging():
     loglevel_base = _os.environ.get('SOLVEBIO_LOGLEVEL', 'WARN')
     loglevel_stream = _os.environ.get('SOLVEBIO_LOGLEVEL', 'WARN')

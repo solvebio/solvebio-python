@@ -53,6 +53,10 @@ Development
     cd solve-python/
     python setup.py develop
 
+To run tests install tox and run that:
+
+    pip install tox
+    tox
 
 To tag new versions:
 
