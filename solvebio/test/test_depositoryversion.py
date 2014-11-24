@@ -22,7 +22,7 @@ class DepositoryTests(SolveBioTestCase):
 |       Fields | Data                                                          |
 |--------------+---------------------------------------------------------------|
 | datasets_url |
-"""[1:-2]
+"""[1:-2]  # noqa
         self.assertTrue(repr(dv).startswith(expected_start),
                          'DepositoryVersion tabulate')
 
