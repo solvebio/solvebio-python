@@ -1,11 +1,11 @@
-from solvebio.resource import Depository, DepositoryVersion
+from solvebio.resource import Depository
 
 from .helper import SolveBioTestCase
 
 
 class DepositoryTests(SolveBioTestCase):
     """
-    Test Depository and DepositoryVersions.
+    Test Depository.
     """
 
     def test_depositories(self):
@@ -13,7 +13,7 @@ class DepositoryTests(SolveBioTestCase):
         depos = Depository.all()
         depo = depos.data[0]
         self.assertTrue('id' in depo,
-                        'Should be able to get id in deposiory')
+                        'Should be able to get id in depository')
 
         depo2 = Depository.retrieve(depo.id)
         self.assertEqual(depo, depo2,
@@ -30,16 +30,11 @@ class DepositoryTests(SolveBioTestCase):
                             'url', 'versions_count', 'versions_url'])
 
         self.assertSetEqual(set(depo), check_fields)
+        expected_start = """
+|         Fields | Data                                                        |
+|----------------+-------------------------------------------------------------|
+|    description |
+"""[1:-2]  # noqa
 
-        depo_versions = depo.versions()
-        depo_version_id = depo_versions.data[0].id
-        depo_version = DepositoryVersion.retrieve(depo_version_id)
-
-        check_fields = set(['class_name', 'created_at',
-                            'datasets_url', 'depository',
-                            'depository_id', 'description',
-                            'full_name', 'id', 'latest',
-                            'name', 'is_released', 'released_at',
-                            'title', 'updated_at', 'url'])
-
-        self.assertSetEqual(set(depo_version), check_fields)
+        self.assertTrue(repr(depo).startswith(expected_start),
+                        'depository tabulate')
