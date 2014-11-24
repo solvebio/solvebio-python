@@ -109,7 +109,7 @@ def login_if_needed():
     global last_email
     if creds:
         last_email = creds[0]
-        login_msg
+        login_msg(last_email)
         return True
     else:
         return login(api_key=solvebio.api_key)

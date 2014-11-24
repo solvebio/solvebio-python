@@ -6,8 +6,8 @@ import argparse
 
 import solvebio
 
-from . import auth
-from .ipython import launch_ipython_shell
+import auth
+from ipython import launch_ipython_shell
 
 
 class SolveArgumentParser(argparse.ArgumentParser):

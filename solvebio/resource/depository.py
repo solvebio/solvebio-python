@@ -52,3 +52,12 @@ class Depository(CreateableAPIResource, ListableAPIResource,
 
     def help(self):
         open_help(self['full_name'])
+
+    def __repr__(self):
+        if self.total == 0:
+            return u'0 results.'
+
+        return u'\n%s\n\n... %s more results.' % (
+            tabulate(self[0].items(), ['Fields', 'Data'],
+                     aligns=['right', 'left'], sort=True),
+            pretty_int(self.total - 1))
