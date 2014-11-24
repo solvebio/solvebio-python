@@ -35,7 +35,6 @@ def _ask_for_credentials(default_email=None):
 def _send_install_report():
     import platform
     data = {
-        'hostname': platform.node(),
         'python_version': platform.python_version(),
         'python_implementation': platform.python_implementation(),
         'platform': platform.platform(),
