@@ -11,22 +11,22 @@ class BaseQueryTest(SolveBioTestCase):
         self.dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
 
     def test_basic(self):
-        """
-        When paging is off, len(results) should return the number of
-        results retrieved.
-        """
         results = self.dataset.query()
         self.assertEqual(len(results), results.total)
 
+        # test that iteration returns the correct number of results
+        #  as well
+        self.assertEqual(len(results), len([r for r in results]))
+
     def test_basic_with_limit(self):
-        """
-        When paging is off, len(results) should return the number of
-        results retrieved.
-        """
         limit = 100
         results = self.dataset.query(limit=limit)
         self.assertEqual(len(results), limit)
         self.assertRaises(IndexError, lambda: results[results.total + 1])
+
+        # test that iteration returns the correct number of results
+        #  as well
+        self.assertEqual(len([r for r in results]), limit)
 
     def test_count(self):
         q = self.dataset.query()

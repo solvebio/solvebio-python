@@ -242,8 +242,9 @@ class Query(object):
 
         # init response and cursor
         self._response = None
-        self._cursor = Cursor(0, -1, 0)
+        self._cursor = Cursor(0, -1, 0, limit)
         self._page_size = int(page_size)
+        self._is_range_request = False
 
         # parameter error checking
         if self._limit < 0:
@@ -350,7 +351,7 @@ class Query(object):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
-        return min(self._limit, self.total)
+        return min(self._cursor.limit, self.total)
 
     def __nonzero__(self):
         return bool(len(self))
@@ -406,6 +407,9 @@ class Query(object):
         # request a new result page (see: next())
         self._cursor.reset_absolute(as_slice(key).start)
 
+        # indicate that is a range request came (from __getitem__)
+        self._is_range_request = True
+
         # cursor.offset_absolute is now key.start (if slice) or key (if int)
         if isinstance(key, slice):
             _delta = key.stop - key.start
@@ -420,6 +424,14 @@ class Query(object):
         return list(islice(self, 1))[0]
 
     def __iter__(self):
+        # if __iter__ not is initiated by __getitem__ (above),
+        #  must result cursor offset to 0
+        #  e.g. [r for r in results] will NOT call __getitem__ and
+        #  requires that we start iteration from the 0th element
+        if not self._is_range_request:
+            self._cursor.reset_absolute(0)
+        self._is_range_request = False
+
         return self
 
     def next(self):
@@ -437,7 +449,7 @@ class Query(object):
         """
         # prevents an additional query when requesting a slice
         #  range that is out of bounds (i.e. results[limit:])
-        if self._cursor.offset_absolute >= self._limit:
+        if not self._cursor.can_advance():
             raise StopIteration()
 
         if self._cursor.has_next():
@@ -489,8 +501,10 @@ class Query(object):
         _params = self._build_query()
 
         offset = self._cursor.offset_absolute
-        limit = min(self._page_size,
-                    self._limit - self._cursor.offset_absolute)
+        limit = min(
+            self._page_size,
+            self._cursor.limit - self._cursor.offset_absolute
+        )
 
         _params.update(
             offset=offset,
@@ -505,8 +519,7 @@ class Query(object):
 
         self._response = response
 
-        # reset cursor if have results
-        self._cursor.reset(offset, offset + limit, 0)
+        self._cursor.reset(offset, offset + limit, 0, len(self))
 
         return _params, response
 
@@ -531,7 +544,10 @@ class BatchQuery(object):
         for i in self._queries:
             _params = i._build_query(
                 offset=i._cursor.offset_absolute,
-                limit=min(i._page_size, i._limit - i._cursor.offset_absolute),
+                limit=min(
+                    i._page_size,
+                    i.cursor._limit - i._cursor.offset_absolute
+                ),
                 dataset=i._dataset_id
             )
             query['queries'].append(_params)
