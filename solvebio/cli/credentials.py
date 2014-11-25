@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Deals with reading SolveBio's netrc-style credentials file"""
 import solvebio
 
 from netrc import netrc as _netrc, NetrcParseError

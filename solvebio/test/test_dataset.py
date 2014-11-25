@@ -12,7 +12,6 @@ class DatasetTests(SolveBioTestCase):
         dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
         self.assertTrue('id' in dataset,
                         'Should be able to get id in dataset')
-
         check_fields = set(['class_name', 'created_at',
                             'data_url',
                             'depository', 'depository_id',

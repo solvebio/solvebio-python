@@ -32,6 +32,10 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
     ALLOW_FULL_NAME_ID = True
     FULL_NAME_REGEX = r'^[\w\d\-\.]+/[\w\d\-\.]+$'
 
+    # Fields that get shown by tabulate
+    TAB_FIELDS = ['datasets_url', 'depository', 'description', 'full_name',
+                  'latest', 'url']
+
     @classmethod
     def retrieve(cls, id, **params):
         """Supports lookup by full name"""

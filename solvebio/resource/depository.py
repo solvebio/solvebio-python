@@ -22,6 +22,10 @@ class Depository(CreateableAPIResource, ListableAPIResource,
     ALLOW_FULL_NAME_ID = True
     FULL_NAME_REGEX = r'^[\w\d\-\.]+$'
 
+    # Fields that get shown by tabulate
+    TAB_FIELDS = ['description', 'full_name', 'latest_version', 'name',
+                  'title', 'url']
+
     @classmethod
     def retrieve(cls, id, **params):
         """Supports lookup by ID or full name"""
