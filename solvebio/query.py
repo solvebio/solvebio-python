@@ -546,7 +546,7 @@ class BatchQuery(object):
                 offset=i._cursor.offset_absolute,
                 limit=min(
                     i._page_size,
-                    i.cursor._limit - i._cursor.offset_absolute
+                    i._cursor.limit - i._cursor.offset_absolute
                 ),
                 dataset=i._dataset_id
             )
