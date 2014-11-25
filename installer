@@ -2,7 +2,7 @@
 #
 # This is the guided installer for the SolveBio Python Client:
 #
-#    curl -kL install.solvebio.com | bash
+#    curl -kL install.solve.bio/python | bash
 #
 
 echo
