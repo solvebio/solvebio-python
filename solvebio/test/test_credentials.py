@@ -8,6 +8,7 @@ import solvebio.cli.credentials as creds
 import solvebio.cli.auth as auth
 import contextlib
 
+
 @contextlib.contextmanager
 def nostdout():
     savestderr = sys.stdout
@@ -20,6 +21,7 @@ def nostdout():
         yield
     finally:
         sys.stdout = savestderr
+
 
 class TestCredentials(unittest.TestCase):
     def setUp(self):
@@ -78,7 +80,7 @@ class TestCredentials(unittest.TestCase):
 
         self.assertEqual(auths, pair, 'Should get back creds we saved')
 
-        # Make login_if_needed is setting the api key when it finds
+        # Make sure login_if_needed is setting the api key when it finds
         # credentials
         solvebio.api_key = None
         with nostdout():
