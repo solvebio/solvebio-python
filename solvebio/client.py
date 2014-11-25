@@ -58,9 +58,7 @@ class SolveTokenAuth(AuthBase):
         """
         Helper function to get the current user's API key or None.
         """
-        if solvebio.api_key:
-            return solvebio.api_key
-        return None
+        return solvebio.api_key
 
 
 class SolveClient(object):
