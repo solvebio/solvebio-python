@@ -35,6 +35,8 @@ def _ask_for_credentials(default_email=None):
 def _send_install_report():
     import platform
     data = {
+        'solvebio_version': 'solvebio-python {0}'
+                            .format(solvebio.version.VERSION),
         'python_version': platform.python_version(),
         'python_implementation': platform.python_implementation(),
         'platform': platform.platform(),
