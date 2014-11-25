@@ -186,6 +186,14 @@ class ListableAPIResource(APIResource):
         response = client.get(url, params)
         return convert_to_solve_object(response)
 
+    def __repr__(self):
+        if hasattr(self, 'TAB_FIELDS'):
+            items = [(name, self[name]) for name in self.TAB_FIELDS]
+        else:
+            items = self.items()
+        return tabulate(items, ['Fields', 'Data'],
+                        aligns=['right', 'left'], sort=True)
+
 
 class SearchableAPIResource(APIResource):
 
