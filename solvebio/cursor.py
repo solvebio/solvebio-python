@@ -8,7 +8,7 @@ class Cursor(object):
         return self.start + self.offset
 
     @classmethod
-    def from_slice(klass, _slice, offset=0):
+    def from_slice(cls, _slice, offset=0):
         return \
             Cursor(_slice.start, _slice.stop, offset=offset)
 

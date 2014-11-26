@@ -5,7 +5,6 @@ import sys
 import unittest
 import solvebio
 import solvebio.cli.credentials as creds
-import solvebio.cli.auth as auth
 import contextlib
 
 
@@ -79,11 +78,3 @@ class TestCredentials(unittest.TestCase):
                          'host {0}'.format(solvebio.api_host))
 
         self.assertEqual(auths, pair, 'Should get back creds we saved')
-
-        # Make sure login_if_needed is setting the api key when it finds
-        # credentials
-        solvebio.api_key = None
-        with nostdout():
-            self.assertTrue(auth.login_if_needed(),
-                            "Should return credentials")
-        self.assertNotEqual(solvebio.api_key, None)

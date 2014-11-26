@@ -45,11 +45,24 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
                           GenomicFilter, Sample, Annotation, User)  # noqa
 
     # Add some convenience functions to the interactive shell
-    from solvebio.cli.auth import opts_logout, opts_whoami
-    from solvebio.cli.auth import login as simple_login, login_if_needed
+    from solvebio.cli.auth import login as _login, logout as _logout, \
+        whoami as _whoami, get_credentials
 
-    login_if_needed()
-    login = simple_login  # noqa
-    logout = lambda: opts_logout(None)  # noqa
-    whoami = lambda: opts_whoami(None)  # noqa
+    login = lambda: _login(None)  # noqa
+    logout = lambda: _logout(None)  # noqa
+    whoami = lambda: _whoami(None)  # noqa
+
+    # If an API key is set in solvebio.api_key, use that.
+    # Otherwise, look for credentials in the local file,
+    # Otherwise, ask the user to log in.
+    if solvebio.api_key or get_credentials():
+        _, solvebio.api_key = whoami()
+    else:
+        login()
+
+    if not solvebio.api_key:
+        print("SolveBio requires a valid account. "
+              "To sign up, visit: https://www.solvebio.com/signup")
+        return
+
     InteractiveShellEmbed(config=cfg, banner1=banner1, exit_msg=exit_msg)()

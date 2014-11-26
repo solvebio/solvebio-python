@@ -46,11 +46,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
         subcmd = self.add_subparsers(
             **subcmd_params)  # pylint: disable=star-args
         login_parser = subcmd.add_parser('login', help=self.HELP['login'])
-        login_parser.set_defaults(func=auth.opts_login)
+        login_parser.set_defaults(func=auth.login)
         logout_parser = subcmd.add_parser('logout', help=self.HELP['logout'])
-        logout_parser.set_defaults(func=auth.opts_logout)
+        logout_parser.set_defaults(func=auth.logout)
         whoami_parser = subcmd.add_parser('whoami', help=self.HELP['whoami'])
-        whoami_parser.set_defaults(func=auth.opts_whoami)
+        whoami_parser.set_defaults(func=auth.whoami)
         shell_parser = subcmd.add_parser('shell', help=self.HELP['shell'])
         shell_parser.set_defaults(func=launch_ipython_shell)
 
