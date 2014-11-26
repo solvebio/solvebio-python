@@ -183,23 +183,16 @@ class SolveClient(object):
         if debug:
             self._log_raw_request(method, url, **opts)
 
-        done = False
-        while not done:
-            done = True
-            try:
-                response = requests.request(method, url, **opts)
-            except Exception as e:
-                _handle_request_error(e)
+        try:
+            response = requests.request(method, url, **opts)
+        except Exception as e:
+            _handle_request_error(e)
 
-            if 429 == response.status_code:
-                try:
-                    delay = int(response.headers['retry-after'])
-                except:
-                    pass
-                else:
-                    logger.info('Too many requests; sleeping for %d' % delay)
-                    time.sleep(delay)
-                    done = False
+        if 429 == response.status_code:
+            delay = int(response.headers['retry-after'])
+            logger.warn('Too many requests. Retrying...')
+            time.sleep(delay + 1)
+            return self.request(method, url, **kwargs)
 
         if not (200 <= response.status_code < 400):
             _handle_api_error(response)

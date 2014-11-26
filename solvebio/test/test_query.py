@@ -11,21 +11,22 @@ class BaseQueryTest(SolveBioTestCase):
         self.dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
 
     def test_basic(self):
-        results = self.dataset.query()
+        results = self.dataset.query().filter(
+            omim_ids__in=[123631, 123670, 123690, 306250])
         self.assertEqual(len(results), results.total)
 
-        # test that iteration returns the correct number of results
-        #  as well
+        # Test that iteration returns the correct number of results.
+        # Test iterating through result-sets that are smaller than
+        # the page size.
         self.assertEqual(len(results), len([r for r in results]))
 
     def test_basic_with_limit(self):
-        limit = 100
+        limit = 10
         results = self.dataset.query(limit=limit)
         self.assertEqual(len(results), limit)
         self.assertRaises(IndexError, lambda: results[results.total + 1])
 
-        # test that iteration returns the correct number of results
-        #  as well
+        # test that iteration returns the correct number of results.
         self.assertEqual(len([r for r in results]), limit)
 
     def test_count(self):
