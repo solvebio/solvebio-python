@@ -201,10 +201,9 @@ class Query(object):
     A Query API request wrapper that generates a request from Filter objects,
     and can iterate through streaming result sets.
     """
-
     # The maximum number of results fetched in one go. Note however
     # that iterating over a query can cause more fetches.
-    DEFAULT_PAGE_SIZE = 1000
+    DEFAULT_PAGE_SIZE = 100
 
     def __init__(
             self,
@@ -249,11 +248,14 @@ class Query(object):
         # parameter error checking
         if self._limit < 0:
             raise Exception('\'limit\' parameter must be >= 0')
+        if self._page_size <= 0:
+            raise Exception('\'page_size\' parameter must be > 0')
 
     def _clone(self, filters=None):
         new = self.__class__(self._dataset_id,
                              genome_build=self._genome_build,
                              limit=self._limit,
+                             page_size=self._page_size,
                              result_class=self._result_class)
         new._fields = self._fields
         new._filters += self._filters
