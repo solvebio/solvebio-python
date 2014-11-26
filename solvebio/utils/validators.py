@@ -4,11 +4,12 @@ from ..errors import SolveError
 
 
 def validate_api_host_url(url):
-    '''Validate SolveBio API host url.
+    """
+    Validate SolveBio API host url.
 
     Valid urls must not be empty and
     must contain either HTTP or HTTPS scheme.
-    '''
+    """
     if not url:
         raise SolveError('No SolveBio API host is set')
 
