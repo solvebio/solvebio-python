@@ -5,6 +5,7 @@ import solvebio
 
 from .version import VERSION
 from .errors import SolveError
+from .utils.validators import validate_api_host_url
 
 import platform
 import requests
@@ -173,9 +174,10 @@ class SolveClient(object):
         # Expand URL with API host if none was given
         api_host = self._api_host or solvebio.api_host
 
-        if not api_host:
-            raise SolveError(message='No SolveBio API host is set')
-        elif not url.startswith(api_host):
+        # validate API host
+        validate_api_host_url(api_host)
+
+        if not url.startswith(api_host):
             url = urljoin(api_host, url)
 
         logger.debug('API %s Request: %s' % (method, url))
