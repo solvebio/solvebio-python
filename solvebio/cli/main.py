@@ -8,7 +8,6 @@ import solvebio
 
 from . import auth
 from .ipython import launch_ipython_shell
-from ..errors import SolveError
 from ..utils.validators import validate_api_host_url
 
 

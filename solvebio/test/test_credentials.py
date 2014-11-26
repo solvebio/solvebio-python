@@ -1,9 +1,26 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
+import sys
 import unittest
 import solvebio
 import solvebio.cli.credentials as creds
+import solvebio.cli.auth as auth
+import contextlib
+
+
+@contextlib.contextmanager
+def nostdout():
+    savestderr = sys.stdout
+
+    class Devnull(object):
+        def write(self, _):
+            pass
+    sys.stdout = Devnull()
+    try:
+        yield
+    finally:
+        sys.stdout = savestderr
 
 
 class TestCredentials(unittest.TestCase):
@@ -58,6 +75,15 @@ class TestCredentials(unittest.TestCase):
         creds.save_credentials(*pair)
         auths = creds.get_credentials()
         self.assertTrue(auths is not None,
-                         'Should not newly set credentials for '
+                         'Should get newly set credentials for '
                          'host {0}'.format(solvebio.api_host))
+
         self.assertEqual(auths, pair, 'Should get back creds we saved')
+
+        # Make sure login_if_needed is setting the api key when it finds
+        # credentials
+        solvebio.api_key = None
+        with nostdout():
+            self.assertTrue(auth.login_if_needed(),
+                            "Should return credentials")
+        self.assertNotEqual(solvebio.api_key, None)

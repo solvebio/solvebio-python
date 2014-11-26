@@ -12,16 +12,13 @@ class Cursor(object):
         return \
             Cursor(_slice.start, _slice.stop, offset=offset)
 
-    def __init__(self, start, stop, offset=0):
+    def __init__(self, start, stop, offset=0, limit=float('inf')):
         """
         Creates a new cursor object.
         """
-        self.reset(start, stop, offset)
+        self.reset(start, stop, offset, limit)
 
-    def advance(self, incr=1):
-        self.offset += incr
-
-    def reset(self, start, stop, offset):
+    def reset(self, start, stop, offset=0, limit=float('inf')):
         """
         Reset.
 
@@ -29,10 +26,12 @@ class Cursor(object):
           - `start`: Absolute start position
           - `stop`: Absolute stop position
           - `offset` (optional): Cursor offset relative to `start`
+          - `limit` (optional): Maximum absolute stop position
         """
         self.start = start
         self.stop = stop
-        self.offset = 0
+        self.offset = offset
+        self.limit = limit
 
     def reset_absolute(self, offset_absolute):
         """
@@ -45,6 +44,12 @@ class Cursor(object):
 
     def has_next(self):
         return self.offset >= 0 and self.offset < (self.stop - self.start)
+
+    def can_advance(self):
+        return self.offset_absolute < self.limit
+
+    def advance(self, incr=1):
+        self.offset += incr
 
     def __repr__(self):
         return 'range: %s, offset: %s' % \
