@@ -3,10 +3,7 @@ from solvebio.resource import DepositoryVersion
 from .helper import SolveBioTestCase
 
 
-class DepositoryTests(SolveBioTestCase):
-    """
-    Test DepositoryVersions.
-    """
+class DepositoryVersionTests(SolveBioTestCase):
 
     def test_depositoryversions(self):
         dvs = DepositoryVersion.all()
@@ -18,13 +15,6 @@ class DepositoryTests(SolveBioTestCase):
         self.assertEqual(dv, dv2,
                          "Retrieving depository id {0} found by all()"
                          .format(dv.id))
-        expected_start = """
-|       Fields | Data                                                          |
-|--------------+---------------------------------------------------------------|
-| datasets_url |
-"""[1:-2]  # noqa
-        self.assertTrue(repr(dv).startswith(expected_start),
-                         'DepositoryVersion tabulate')
 
         check_fields = set(['class_name', 'created_at',
                             'datasets_url', 'depository',

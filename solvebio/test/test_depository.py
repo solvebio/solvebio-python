@@ -4,9 +4,6 @@ from .helper import SolveBioTestCase
 
 
 class DepositoryTests(SolveBioTestCase):
-    """
-    Test Depository.
-    """
 
     def test_depositories(self):
         # TODO: use TEST_DATASET_NAME.split('/')[0]
@@ -30,11 +27,3 @@ class DepositoryTests(SolveBioTestCase):
                             'url', 'versions_count', 'versions_url'])
 
         self.assertSetEqual(set(depo), check_fields)
-        expected_start = """
-|         Fields | Data                                                        |
-|----------------+-------------------------------------------------------------|
-|    description |
-"""[1:-2]  # noqa
-
-        self.assertTrue(repr(depo).startswith(expected_start),
-                        'depository tabulate')

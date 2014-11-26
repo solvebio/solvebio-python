@@ -18,8 +18,7 @@ class DatasetTests(SolveBioTestCase):
                             'depository_version', 'depository_version_id',
                             'description',
                             'fields_url', 'full_name',
-                            # TODO: uncomment this after next API is updated
-                            # 'genomic_builds', 'is_genomic',
+                            'genomic_builds', 'is_genomic',
                             'id',
                             'name', 'title', 'updated_at',
                             'url'])
