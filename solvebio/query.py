@@ -244,7 +244,7 @@ class Query(object):
         self._response = None
         self._cursor = Cursor(0, -1, 0, limit)
         self._page_size = int(page_size)
-        self._is_range_request = False
+        self._is_offset_iter = False
 
         # parameter error checking
         if self._limit < 0:
@@ -407,8 +407,8 @@ class Query(object):
         # request a new result page (see: next())
         self._cursor.reset_absolute(as_slice(key).start)
 
-        # indicate that is a range request came (from __getitem__)
-        self._is_range_request = True
+        # indicate that this query may be offset or sliced
+        self._is_offset_iter = True
 
         # cursor.offset_absolute is now key.start (if slice) or key (if int)
         if isinstance(key, slice):
@@ -424,13 +424,13 @@ class Query(object):
         return list(islice(self, 1))[0]
 
     def __iter__(self):
-        # if __iter__ not is initiated by __getitem__ (above),
-        #  must result cursor offset to 0
-        #  e.g. [r for r in results] will NOT call __getitem__ and
-        #  requires that we start iteration from the 0th element
-        if not self._is_range_request:
+        # If __iter__ is not initiated by __getitem__ (above),
+        # then reset cursor offset to 0.
+        # e.g. [r for r in results] will NOT call __getitem__ and
+        # requires that we start iteration from the 0th element
+        if not self._is_offset_iter:
             self._cursor.reset_absolute(0)
-        self._is_range_request = False
+        self._is_offset_iter = False
 
         return self
 
