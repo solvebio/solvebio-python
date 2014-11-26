@@ -174,7 +174,7 @@ class GenomicFilter(Filter):
                 f = f | Filter(**{self.FIELD_STOP + '__range':
                                   [start, stop + 1]})
 
-        f = f & Filter(chromosome=str(chromosome).replace('chr', ''))
+        f = f & Filter(**{self.FIELD_CHR: str(chromosome).replace('chr', '')})
         self.filters = f.filters
 
     def __repr__(self):
