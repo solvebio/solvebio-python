@@ -25,7 +25,7 @@ class ClientRateLimit(unittest.TestCase):
     def fake_response(self):
         if self.call_count == 0:
             self.call_count += 1
-            return FakeResponse({'retry-after': '1'}, 429)
+            return FakeResponse({'retry-after': '0'}, 429)
         else:
             return FakeResponse({}, 200)
 
