@@ -189,9 +189,9 @@ class SolveClient(object):
             _handle_request_error(e)
 
         if 429 == response.status_code:
-            delay = int(response.headers['retry-after'])
-            logger.warn('Too many requests. Retrying...')
-            time.sleep(delay + 1)
+            delay = int(response.headers['retry-after']) + 1
+            logger.warn('Too many requests. Retrying in {0}s.'.format(delay))
+            time.sleep(delay)
             return self.request(method, url, **kwargs)
 
         if not (200 <= response.status_code < 400):
