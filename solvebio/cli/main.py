@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import os
 import sys
 import argparse
@@ -9,6 +8,7 @@ import solvebio
 
 from . import auth
 from .ipython import launch_ipython_shell
+from ..utils.validators import validate_api_host_url
 
 
 class SolveArgumentParser(argparse.ArgumentParser):
@@ -28,7 +28,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
         self._optionals.title = 'SolveBio Options'
         self.add_argument('--version', action='version',
                           version=self.HELP['version'])
-        self.add_argument('--api-host', help=self.HELP['api_host'])
+        self.add_argument('--api-host', help=self.HELP['api_host'],
+                            type=self.api_host_url)
         self.add_argument('--api-key', help=self.HELP['api_key'])
 
     def _add_subcommands(self):
@@ -78,6 +79,10 @@ class SolveArgumentParser(argparse.ArgumentParser):
             sys.stdout, sys.stderr = sys.__stdout__, sys.__stderr__
         self._add_subcommands()
         return super(SolveArgumentParser, self).parse_args(args, namespace)
+
+    def api_host_url(self, value):
+        validate_api_host_url(value)
+        return value
 
 
 def main(argv=sys.argv[1:]):

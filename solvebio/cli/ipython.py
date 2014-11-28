@@ -1,6 +1,3 @@
-from solvebio.credentials import get_credentials
-
-
 def launch_ipython_shell(args):  # pylint: disable=unused-argument
     """Open the SolveBio shell (IPython wrapper)"""
     try:
@@ -8,6 +5,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     except ImportError:
         print("The SolveBio Python shell requires IPython.\n"
               "To install, type: 'pip install ipython'")
+        return False
 
     try:
         # see if we're already inside IPython
@@ -18,13 +16,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
         prompt_config.in_template = '[SolveBio] In <\\#>: '
         prompt_config.in2_template = '   .\\D.: '
         prompt_config.out_template = 'Out<\\#>: '
-        banner1 = 'SolveBio Python shell started.'
-        creds = get_credentials()
-
-        if creds:
-            banner1 += "\nYou are logged in as {}".format(creds[0])
-        else:
-            banner1 += '\nYou are not logged in. Please run "solvebio login".'
+        banner1 = '\nSolveBio Python shell started.'
 
         exit_msg = 'Quitting SolveBio shell.'
     else:
@@ -49,14 +41,28 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     # inside the ipython shell users don't have run imports
     import solvebio  # noqa
     from solvebio import (version, Depository, DepositoryVersion, Dataset,  # noqa
-                          DatasetField, Query, PagingQuery, Filter,  # noqa
-                          RangeFilter, Sample, Annotation, User)  # noqa
+                          DatasetField, Query, Filter,  # noqa
+                          GenomicFilter, Sample, Annotation, User)  # noqa
 
-    from solvebio.cli.auth import login as login_with_args
-    from solvebio.cli.auth import logout as logout_with_args
-    from solvebio.cli.auth import whoami as whoami_with_args
+    # Add some convenience functions to the interactive shell
+    from solvebio.cli.auth import login as _login, logout as _logout, \
+        whoami as _whoami, get_credentials
 
-    login = lambda args=None: login_with_args(args)  # noqa
-    logout = lambda: logout_with_args(None)  # noqa
-    whoami = lambda: whoami_with_args(None)  # noqa
+    login = lambda: _login(None)  # noqa
+    logout = lambda: _logout(None)  # noqa
+    whoami = lambda: _whoami(None)  # noqa
+
+    # If an API key is set in solvebio.api_key, use that.
+    # Otherwise, look for credentials in the local file,
+    # Otherwise, ask the user to log in.
+    if solvebio.api_key or get_credentials():
+        _, solvebio.api_key = whoami()
+    else:
+        login()
+
+    if not solvebio.api_key:
+        print("SolveBio requires a valid account. "
+              "To sign up, visit: https://www.solvebio.com/signup")
+        return
+
     InteractiveShellEmbed(config=cfg, banner1=banner1, exit_msg=exit_msg)()

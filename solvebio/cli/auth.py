@@ -3,33 +3,31 @@ import getpass
 
 import solvebio
 from solvebio.client import client, SolveError
-from solvebio.credentials import (get_credentials, delete_credentials,
-                                  save_credentials)
+from solvebio.cli.credentials import (get_credentials, delete_credentials,
+                                      save_credentials)
 
 
-def _ask_for_credentials(default_email=None):
-    while True:
-        if default_email and isinstance(default_email, str):
-            prompt = 'Email address ({0}): '.format(default_email)
-        else:
-            prompt = 'Email address: '
+def _print_msg(msg):
+    if solvebio.api_host != 'https://api.solvebio.com':
+        msg += ' ({0})'.format(solvebio.api_host)
+    print(msg + '.')
 
-        email = raw_input(prompt)
-        if email == '':
-            email = default_email
-        password = getpass.getpass('Password (typing will be hidden): ')
-        if email and password:
-            return (email, password)
-        else:
-            print 'Email and password are both required.'
-            if default_email is None:
-                default_email = email
+
+def _ask_for_credentials():
+    """
+    Asks the user for their email and password.
+    """
+    _print_msg('Enter your SolveBio credentials')
+    email = raw_input('Email: ')
+    password = getpass.getpass('Password (typing will be hidden): ')
+    return (email, password)
 
 
 def _send_install_report():
     import platform
     data = {
-        'hostname': platform.node(),
+        'solvebio_version': 'solvebio-python {0}'
+                            .format(solvebio.version.VERSION),
         'python_version': platform.python_version(),
         'python_implementation': platform.python_implementation(),
         'platform': platform.platform(),
@@ -46,41 +44,68 @@ def _send_install_report():
 def login(args):
     """
     Prompt user for login information (email/password).
-    Email and password are used to get the user's auth_token key.
+    Email and password are used to get the user's API key.
     """
-    delete_credentials()
+    email, password = _ask_for_credentials()
 
-    email, password = _ask_for_credentials(args)
-    data = {
-        'email': email,
-        'password': password
-    }
-    try:
-        response = client.post('/v1/auth/token', data)
-    except SolveError as e:
-        print('Login failed: %s' % e.message)
+    if not email or not password:
+        print("Email and password are both required.")
         return False
-    else:
-        save_credentials(email.lower(), response['token'])
-        # reset the default client's auth token
-        solvebio.api_key = response['token']
-        _send_install_report()
-        print('You are now logged-in.')
+
+    try:
+        response = client.post('/v1/auth/token', {
+            'email': email,
+            'password': password
+        })
+    except SolveError as e:
+        print('Login failed: {0}'.format(e))
+        return False
+
+    delete_credentials()
+    save_credentials(email.lower(), response['token'])
+    solvebio.api_key = response['token']
+    _send_install_report()
+    _print_msg('You are now logged-in as {0}'.format(email))
     return True
 
 
 def logout(args):
+    """
+    Delete's the user's locally-stored credentials.
+    """
     if get_credentials():
         delete_credentials()
-        client.auth = None
-        print('You have been logged out.')
-    else:
-        print('You are not logged-in.')
+        _print_msg('You have been logged out')
+        return True
+
+    _print_msg('You are not logged-in')
+    return False
 
 
 def whoami(args):
-    creds = get_credentials()
-    if creds:
-        print creds[0]
+    """
+    Retrieves the email for the logged-in user.
+    Uses local credentials or api_key if found.
+    """
+    email, api_key = None, solvebio.api_key
+
+    # Existing api_key overrides local credentials file
+    if solvebio.api_key:
+        try:
+            user = client.get('/v1/user', {})
+            email = user['email']
+        except SolveError as e:
+            solvebio.api_key = api_key = None
+            _print_msg("Error: {0}".format(e))
     else:
-        print 'You are not logged-in.'
+        try:
+            email, api_key = get_credentials()
+        except:
+            pass
+
+    if email:
+        _print_msg('You are logged in as {0}'.format(email))
+    else:
+        _print_msg('You are not logged-in')
+
+    return email, api_key

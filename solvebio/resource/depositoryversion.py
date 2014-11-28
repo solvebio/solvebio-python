@@ -32,6 +32,10 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
     ALLOW_FULL_NAME_ID = True
     FULL_NAME_REGEX = r'^[\w\d\-\.]+/[\w\d\-\.]+$'
 
+    # Fields that get shown by tabulate
+    TAB_FIELDS = ['datasets_url', 'depository', 'description', 'full_name',
+                  'latest', 'url']
+
     @classmethod
     def retrieve(cls, id, **params):
         """Supports lookup by full name"""
@@ -52,19 +56,13 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
                 '/'.join([self['full_name'], name]))
 
         response = client.get(self.datasets_url, params)
-        return convert_to_solve_object(response)
+        results = convert_to_solve_object(response)
+        results.tabulate(
+            ['full_name', 'title', 'description'],
+            headers=['Dataset', 'Title', 'Description'],
+            aligns=['left', 'left', 'left'], sort=True)
+
+        return results
 
     def help(self):
         open_help(self['full_name'])
-
-    def release(self, released_at=None):
-        """Set the released flag and optional release date and save"""
-        if released_at:
-            self.released_at = released_at
-        self.released = True
-        self.save()
-
-    def unrelease(self):
-        """Unset the released flag and save"""
-        self.released = False
-        self.save()

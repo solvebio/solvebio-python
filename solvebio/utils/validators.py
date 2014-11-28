@@ -1,0 +1,26 @@
+from urlparse import urlparse
+
+from ..errors import SolveError
+
+
+def validate_api_host_url(url):
+    """
+    Validate SolveBio API host url.
+
+    Valid urls must not be empty and
+    must contain either HTTP or HTTPS scheme.
+    """
+    if not url:
+        raise SolveError('No SolveBio API host is set')
+
+    parsed = urlparse(url)
+    if parsed.scheme not in ['http', 'https']:
+        raise SolveError(
+            'Invalid API host: %s. '
+            'Missing url scheme (HTTP or HTTPS).' % url
+        )
+
+    elif not parsed.netloc:
+        raise SolveError('Invalid API host: %s.' % url)
+
+    return True

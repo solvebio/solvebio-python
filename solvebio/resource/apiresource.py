@@ -10,6 +10,7 @@ import urllib
 
 from ..client import client, _handle_api_error, _handle_request_error
 from ..errors import SolveError
+from ..utils.tabulate import tabulate
 
 from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object
@@ -75,6 +76,15 @@ class ListObject(SolveObject):
 
     def objects(self):
         return convert_to_solve_object(self['data'])
+
+    def tabulate(self, fields, **kwargs):
+        self._tabulate = lambda data:\
+            tabulate([[d[i] for i in fields] for d in data], **kwargs)
+
+    def __str__(self):
+        if getattr(self, '_tabulate', None):
+            return '\n' + self._tabulate(self['data'])
+        return super(ListObject, self).__str__()
 
     def __iter__(self):
         self._i = 0
@@ -175,6 +185,14 @@ class ListableAPIResource(APIResource):
         url = cls.class_url()
         response = client.get(url, params)
         return convert_to_solve_object(response)
+
+    def __repr__(self):
+        if hasattr(self, 'TAB_FIELDS'):
+            items = [(name, self[name]) for name in self.TAB_FIELDS]
+        else:
+            items = self.items()
+        return tabulate(items, ['Fields', 'Data'],
+                        aligns=['right', 'left'], sort=True)
 
 
 class SearchableAPIResource(APIResource):

@@ -22,6 +22,10 @@ class Depository(CreateableAPIResource, ListableAPIResource,
     ALLOW_FULL_NAME_ID = True
     FULL_NAME_REGEX = r'^[\w\d\-\.]+$'
 
+    # Fields that get shown by tabulate
+    TAB_FIELDS = ['description', 'full_name', 'latest_version', 'name',
+                  'title', 'url']
+
     @classmethod
     def retrieve(cls, id, **params):
         """Supports lookup by ID or full name"""
@@ -42,7 +46,13 @@ class Depository(CreateableAPIResource, ListableAPIResource,
                 '/'.join([self['full_name'], name]))
 
         response = client.get(self.versions_url, params)
-        return convert_to_solve_object(response)
+        results = convert_to_solve_object(response)
+        results.tabulate(
+            ['full_name', 'title', 'description'],
+            headers=['Depository Version', 'Title', 'Description'],
+            aligns=['left', 'left', 'left'], sort=True)
+
+        return results
 
     def help(self):
         open_help(self['full_name'])

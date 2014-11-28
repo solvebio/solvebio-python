@@ -16,7 +16,7 @@ try:
     # However reload(sys), used below resets stdin, stdout, and stderr
     # which is bad if they've already been reassigned. An ipython
     # notebook shell, for example, sets up its own stdout.
-    # See github issue #43 and #21.
+    # See GitHub issue #43 and #21.
     reload(sys).setdefaultencoding(locale.getdefaultlocale()[1])
     locale.setlocale(locale.LC_ALL, '')
 except:
@@ -26,7 +26,6 @@ finally:
 
 
 # Set rows and columns and colors
-
 
 def set_from_env(name, default_value):
     try:
@@ -83,7 +82,3 @@ def blue(text):
     if not TTY_COLORS:
         return text
     return '\033[34m' + text + '\033[39m'
-
-
-def solve_bio():
-    return blue('SolveBio')

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import json
+import time
 import solvebio
 
 from .version import VERSION
-from .credentials import get_credentials
 from .errors import SolveError
+from .utils.validators import validate_api_host_url
 
 import platform
 import requests
@@ -58,15 +59,7 @@ class SolveTokenAuth(AuthBase):
         """
         Helper function to get the current user's API key or None.
         """
-        if solvebio.api_key:
-            return solvebio.api_key
-
-        try:
-            return get_credentials()[1]
-        except:
-            pass
-
-        return None
+        return solvebio.api_key
 
 
 class SolveClient(object):
@@ -85,21 +78,6 @@ class SolveClient(object):
                 platform.python_version()
             )
         }
-
-    @staticmethod
-    def debug_request(method, url, params, data, _auth, _headers, files):
-        from requests import Request, Session
-        s = Session()
-        req = Request(method=method.upper(),
-                      url=url,
-                      params=params,
-                      data=data,
-                      auth=_auth,
-                      headers=_headers,
-                      files=files)
-        prepped = s.prepare_request(req)
-        print(prepped.body)
-        print(prepped.headers)
 
     def get(self, url, params, **kwargs):
         """Issues an HTTP GET across the wire via the Python requests
@@ -177,16 +155,12 @@ class SolveClient(object):
             'headers': dict(self._headers),
             'params': {},
             'timeout': 80,
-            'verify': True}
+            'verify': True
+        }
 
-        if 'raw' in kwargs:
-            raw = kwargs['raw']
-            opts.pop('raw')
-        else:
-            raw = False
-
+        raw = kwargs.pop('raw', False)
+        debug = kwargs.pop('debug', False)
         opts.update(kwargs)
-
         method = method.upper()
 
         if opts['files']:
@@ -198,23 +172,27 @@ class SolveClient(object):
         # Expand URL with API host if none was given
         api_host = self._api_host or solvebio.api_host
 
-        if not api_host:
-            raise SolveError(message='No SolveBio API host is set')
-        elif not url.startswith(api_host):
+        # validate API host
+        validate_api_host_url(api_host)
+
+        if not url.startswith(api_host):
             url = urljoin(api_host, url)
 
         logger.debug('API %s Request: %s' % (method, url))
-        # self.debug_request(method, url, opts['params'], opts['data'],
-        #                   opts['auth'], opts['headers'],
-        #                   opts['files'])
 
-        # And just when you thought we forgot about running the actual
-        # request...
+        if debug:
+            self._log_raw_request(method, url, **opts)
+
         try:
             response = requests.request(method, url, **opts)
-
         except Exception as e:
             _handle_request_error(e)
+
+        if 429 == response.status_code:
+            delay = int(response.headers['retry-after']) + 1
+            logger.warn('Too many requests. Retrying in {0}s.'.format(delay))
+            time.sleep(delay)
+            return self.request(method, url, **kwargs)
 
         if not (200 <= response.status_code < 400):
             _handle_api_error(response)
@@ -224,5 +202,14 @@ class SolveClient(object):
             return response
 
         return response.json()
+
+    def _log_raw_request(self, method, url, **kwargs):
+        from requests import Request, Session
+        req = Request(method=method.upper(), url=url,
+                      data=kwargs['data'], params=kwargs['params'])
+        prepped = Session().prepare_request(req, )
+        logger.debug(prepped.headers)
+        logger.debug(prepped.body)
+
 
 client = SolveClient()

@@ -3,7 +3,7 @@ import re
 
 from ..client import client
 from ..help import open_help
-from ..query import Query, PagingQuery
+from ..query import Query
 
 from .solveobject import convert_to_solve_object
 from .apiresource import CreateableAPIResource, ListableAPIResource, \
@@ -53,7 +53,13 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                 '/'.join([self['full_name'], name]))
 
         response = client.get(self.fields_url, params)
-        return convert_to_solve_object(response)
+        results = convert_to_solve_object(response)
+        results.tabulate(
+            ['name', 'data_type', 'description'],
+            headers=['Field', 'Data Type', 'Description'],
+            aligns=['left', 'left', 'left'], sort=True)
+
+        return results
 
     def _data_url(self):
         if 'data_url' not in self:
@@ -66,10 +72,9 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
             return self.instance_url() + u'/data'
         return self['data_url']
 
-    def query(self, paging=False, **params):
+    def query(self, **params):
         self._data_url()  # raises an exception if there's no ID
-        query_klass = PagingQuery if paging else Query
-        q = query_klass(self['id'], **params)
+        q = Query(self['id'], **params)
         return q.filter(params.get('filters')) if params.get('filters') else q
 
     def help(self):

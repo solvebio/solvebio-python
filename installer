@@ -2,29 +2,29 @@
 #
 # This is the guided installer for the SolveBio Python Client:
 #
-#    curl -kL install.solvebio.com | bash
+#    curl -kL install.solve.bio/python | bash
 #
 
 echo
-echo " ____        _           ____  _"
-echo "/ ___|  ___ | |_   _____| __ )(_) ___"
-echo "\___ \ / _ \| \ \ / / _ \  _ \| |/ _ \\"
-echo " ___) | (_) | |\ V /  __/ |_) | | (_) |"
-echo "|____/ \___/|_| \_/ \___|____/|_|\___/"
+echo "     ____        _           ____  _"
+echo "    / ___|  ___ | |_   _____| __ )(_) ___"
+echo "    \___ \ / _ \| \ \ / / _ \  _ \| |/ _ \\"
+echo "     ___) | (_) | |\ V /  __/ |_) | | (_) |"
+echo "    |____/ \___/|_| \_/ \___|____/|_|\___/"
 echo
-echo "Copyright © 2014 Solve, Inc. <http://www.solvebio.com>. All rights reserved."
+echo "    Copyright © 2014 Solve, Inc. <https://www.solvebio.com>. All rights reserved."
 echo
 
 shopt -s extglob
 
 function fail_exit() {
     echo
-    echo "#####################################"
+    echo "    #####################################"
     echo
-    echo "Failed to install SolveBio."
-    echo "Need some help? Email us at contact@solvebio.com"
+    echo "    Failed to install SolveBio."
+    echo "    Contact us at support@solvebio.com"
     echo
-    echo "#####################################"
+    echo "    #####################################"
     echo
     exit
 }
@@ -34,14 +34,14 @@ trap ctrl_c INT
 function ctrl_c() {
     echo
     echo
-    echo "Installation was aborted..."
+    echo "    Installation was aborted..."
     fail_exit
 }
 
-echo "Installing the SolveBio Python Client..."
+echo "    Installing the SolveBio Python Client..."
 
 # Check Python versions
-echo "Looking for a supported Python installation..."
+echo "    Looking for a supported Python installation..."
 PATHS=`echo $PATH | sed -e 's/:/ /g'`
 
 # For each path in $PATH, look for python
@@ -66,17 +66,16 @@ for path in $PATHS; do
 done
 
 if [ "$PYTHON_FOUND" == '1' ]; then
-    echo "Found Python ${PYTHON_VERSION} at ${PYTHON}!"
+    echo "    Found Python ${PYTHON_VERSION} at ${PYTHON}!"
     # TODO: allow optional Python path
     # echo -n "Which Python do you want to use (press enter for: ${PYTHON}) ? "
     # read PYTHON_ALT
     # if [[ -x $PYTHON_ALT ]]; then
     #     PYTHON=$PYTHON_ALT
     # fi
-    echo "Using ${PYTHON}..."
+    echo "    Using ${PYTHON}..."
 else
-    echo "The SolveBio Python Client requires Python >= 2.6.5 and < 3.0"
-    # TODO: instructions for installing Python
+    echo "Error: SolveBio for Python requires Python >= 2.6.5 and < 3.0"
     fail_exit
 fi
 
@@ -86,7 +85,7 @@ OPENSSL_VERSION=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION" 2> /dev/null
 if [ "$OPENSSL_VERSION" == "" ]; then
     echo
     echo
-    echo "SolveBio for Python requires a more recent version of Python-OpenSSL."
+    echo "Error: SolveBio for Python requires a more recent version of Python-OpenSSL."
     fail_exit
 fi
 
@@ -97,71 +96,66 @@ OPENSSL_VERSION_PATCH=`$PYTHON -c "import ssl; print ssl.OPENSSL_VERSION_INFO[2]
 if [ "$OPENSSL_VERSION_MAJOR" -lt "1" ]; then
     if [ "$OPENSSL_VERSION_MINOR" -lt "9" ] || [ "$OPENSSL_VERSION_PATCH" -lt "8" ]; then
         echo
-        echo "SolveBio for Python requires OpenSSL >= 0.9.8"
-        echo "Your Python SSL module is linked to $OPENSSL_VERSION"
+        echo "Error: SolveBio for Python requires OpenSSL >= 0.9.8"
+        echo "       Your Python SSL module is linked to $OPENSSL_VERSION"
         fail_exit
     fi
 fi
 
 # Install readline with easy_install
 echo
-echo "Installing readline (enhances IPython) with easy_install."
-echo "Your system (sudo) password may be required."
+echo "    Installing readline with easy_install (via sudo)."
 echo
-sudo $PYTHON -m easy_install readline
+echo "    IMPORTANT: Your computer's password may be required. It will NOT be sent to SolveBio."
+sudo $PYTHON -m easy_install -q readline
 
 # Check for working pip
 PIP_VERSION=`$PYTHON -m pip --version 2>&1`
 if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
-    echo "It looks like pip is not installed. We will now attempt to install it."
-    echo "(Your user or system password may be required)"
-    sudo $PYTHON -m easy_install pip
-    # TODO: use this instead: curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
+    echo "    It looks like pip is not installed. We will now attempt to install it."
+    sudo $PYTHON -m easy_install -q pip
 
     PIP_VERSION=`$PYTHON -m pip --version 2>&1`
     if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
         echo
-        echo "There seems to be a problem installing pip..."
+        echo "Error: There seems to be a problem installing pip..."
+        echo "       To install pip manually, run the following command:"
+        echo "       curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | ${PYTHON}"
+        echo
         fail_exit
     else
-        echo "pip install successful!"
+        echo "    pip was successfully installed!"
     fi
 fi
 
-PIP_FLAGS=""
+PIP_FLAGS="-q"
 # disable the use of wheels if pip supports them
 if [ $($PYTHON -m pip install --help | grep "\-\-no\-use\-wheel" -c) -ne 0 ]; then
   # force-reinstall in case the user has the .whl installed already
-  PIP_FLAGS="--force-reinstall --no-use-wheel"
+  PIP_FLAGS="-q --force-reinstall --no-use-wheel"
 fi
 
 # Are we installing or upgrading?
 if [ $(pip freeze | grep solvebio -c) -ne 0 ]; then
-  echo "SolveBio for Python is already installed, we will try to upgrade it..."
+  echo "    SolveBio for Python is already installed, we will try to upgrade it..."
   PIP_FLAGS="${PIP_FLAGS} --upgrade"
   ACTION="Upgrading"
 else
   ACTION="Installing"
 fi
 
-echo
-echo "${ACTION} the SolveBio module via pip..."
-echo "(Your user or system password may be required)"
+echo "    ${ACTION} the SolveBio module via pip..."
 sudo $PYTHON -m pip install solvebio $PIP_FLAGS && SUCCESS="1"
 
 if [ $? -eq 0 ]; then
     echo
-    echo "#####################################"
+    echo "    ##############################################"
     echo
-    echo "Success! SolveBio for Python is now installed."
+    echo "    Success! SolveBio for Python is now installed."
     echo
-    echo "Run 'solvebio login' to start."
+    echo "    Please run 'solvebio login' to finish the setup."
     echo
-    echo "Check out the Get Started guide:"
-    echo "https://www.solvebio.com/docs/get-started"
-    echo "If you need some help, email us at contact@solvebio.com"
-    echo
-    echo "#####################################"
+    echo "    ##############################################"
     echo
 else
     fail_exit

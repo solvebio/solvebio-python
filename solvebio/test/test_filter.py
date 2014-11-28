@@ -1,19 +1,19 @@
 import unittest
 
 import solvebio
-from solvebio import Filter
+from solvebio import Filter, GenomicFilter
 
 
 class FilterTest(unittest.TestCase):
 
     def test_filter_basic(self):
-        f = solvebio.Filter()
+        f = Filter()
         self.assertEqual(repr(f), '<Filter []>', 'empty filter')
         self.assertEqual(repr(~f), '<Filter []>', '"not" of empty filter')
 
         # Because the order in listing keys is arbitrary, we only
         # test with one entry.
-        f1 = solvebio.Filter(price='Free')
+        f1 = Filter(price='Free')
         self.assertEqual(repr(f1), "<Filter [('price', 'Free')]>")
         self.assertEqual(repr(~~f1), "<Filter [('price', 'Free')]>",
                          '"not" of empty filter')
@@ -38,11 +38,27 @@ class FilterTest(unittest.TestCase):
 
     def test_process_filters(self):
         # FIXME: add more and put in a loop.
-        filters = [('omid', None)]
+        filters = [('omim_id', None)]
         expect = filters
         dataset_name = 'omim/0.0.1-1/omim'
-        x = solvebio.PagingQuery(dataset_name)
+        x = solvebio.Query(dataset_name)
         self.assertEqual(repr(x._process_filters(filters)), repr(expect))
+
+
+class GenomicFilterTest(unittest.TestCase):
+    def test_single_position(self):
+        f = GenomicFilter('chr1', 100)
+        self.assertEqual(repr(f), "<GenomicFilter [{'and': [('genomic_coordinates.start__lte', 100), ('genomic_coordinates.stop__gte', 100), ('genomic_coordinates.chromosome', '1')]}]>")  # noqa
+
+        f = GenomicFilter('chr1', 100, exact=True)
+        self.assertEqual(repr(f), "<GenomicFilter [{'and': [('genomic_coordinates.stop', 100), ('genomic_coordinates.start', 100), ('genomic_coordinates.chromosome', '1')]}]>")  # noqa
+
+    def test_range(self):
+        f = GenomicFilter('chr1', 100, 200)
+        self.assertEqual(repr(f), "<GenomicFilter [{'and': [{'or': [{'and': [('genomic_coordinates.start__lte', 100), ('genomic_coordinates.stop__gte', 200)]}, ('genomic_coordinates.start__range', [100, 201]), ('genomic_coordinates.stop__range', [100, 201])]}, ('genomic_coordinates.chromosome', '1')]}]>")  # noqa
+
+        f = GenomicFilter('chr1', 100, 200, exact=True)
+        self.assertEqual(repr(f), "<GenomicFilter [{'and': [('genomic_coordinates.stop', 200), ('genomic_coordinates.start', 100), ('genomic_coordinates.chromosome', '1')]}]>")  # noqa
 
 
 if __name__ == "__main__":

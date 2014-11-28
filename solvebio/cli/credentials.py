@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Deals with reading SolveBio's netrc-style credentials file"""
 import solvebio
 
 from netrc import netrc as _netrc, NetrcParseError
@@ -12,20 +13,22 @@ class netrc(_netrc):
     """
     @staticmethod
     def path():
-        try:
-            path = os.path.join(
-                os.environ.get('NETRC_PATH', os.environ['HOME']), ".netrc")
-        except KeyError:
-            raise IOError("Could not find .netrc: neither $NETRC_PATH "
-                          "nor $HOME are set")
 
-        # create an empty .netrc if it doesn't exist
+        try:
+            path = os.path.join(os.environ['HOME'], '.solvebio', 'credentials')
+        except KeyError:
+            raise IOError("Could not find credentials file: $HOME is not set")
+
+        if not os.path.isdir(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+
+        # create an empty credentials file if it doesn't exist
         if not os.path.exists(path):
             try:
                 open(path, 'a').close()
             except IOError:
-                raise Exception("Could not create a netrc file at '%s', "
-                                "permission denied." % path)
+                raise Exception("Could not create a SolveBio credentials file"
+                                " at '%s', permission denied." % path)
         return path
 
     def save(self, path):
@@ -58,8 +61,8 @@ class CredentialsError(BaseException):
 
 def get_credentials():
     """
-    Returns the tuple user / password given a path for the .netrc file.
-    Raises CredentialsError if no valid netrc file is found.
+    Returns the tuple user / password given a path for the credentials file.
+    Raises CredentialsError if no valid credentials file is found.
     """
     try:
         netrc_path = netrc.path()
@@ -67,7 +70,7 @@ def get_credentials():
             urlparse(solvebio.api_host).netloc)
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError(
-            'Could not open .netrc file: ' + str(e))
+            'Could not open credentials file: ' + str(e))
 
     if auths:
         return (auths[0], auths[2])
