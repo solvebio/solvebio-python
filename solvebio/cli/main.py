@@ -18,7 +18,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
         'logout': 'Logout and delete saved credentials',
         'whoami': 'Show your SolveBio email address',
         'shell': 'Open the SolveBio Python shell',
-        'version': '%(prog)s {}'.format(solvebio.version.VERSION),
+        'version': solvebio.version.VERSION,
         'api_host': 'Override the default SolveBio API host',
         'api_key': 'Manually provide a SolveBio API key'
     }
