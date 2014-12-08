@@ -26,8 +26,8 @@ def _ask_for_credentials():
 def _send_install_report():
     import platform
     data = {
-        'solvebio_version': 'solvebio-python {0}'
-                            .format(solvebio.version.VERSION),
+        'client': 'python',
+        'client_version': solvebio.version.VERSION,
         'python_version': platform.python_version(),
         'python_implementation': platform.python_implementation(),
         'platform': platform.platform(),
@@ -36,7 +36,7 @@ def _send_install_report():
         'pyexe_build': platform.architecture()[0]
     }
     try:
-        client.request('post', '/v1/reports/install', data)
+        client.request('post', '/v1/reports/install', data=data)
     except:
         pass
 

@@ -155,15 +155,19 @@ class GenomicFilter(Filter):
         specified using the `exact` parameter.
         """
         try:
-            start = int(start)
+            # Allows start=None to filter items with no position
+            if start is not None:
+                start = int(start)
+
             if stop is None:
                 stop = start
             else:
                 stop = int(stop)
         except ValueError:
-            raise ValueError('Start and stop positions must be integers')
+            raise ValueError(
+                'Start and stop positions must be integers (or None)')
 
-        if exact:
+        if exact or start is None:
             f = Filter(**{self.FIELD_START: start, self.FIELD_STOP: stop})
         else:
             f = Filter(**{self.FIELD_START + '__lte': start,
@@ -174,7 +178,11 @@ class GenomicFilter(Filter):
                 f = f | Filter(**{self.FIELD_STOP + '__range':
                                   [start, stop + 1]})
 
-        f = f & Filter(**{self.FIELD_CHR: str(chromosome).replace('chr', '')})
+        if chromosome is None:
+            f = f & Filter(**{self.FIELD_CHR: None})
+        else:
+            f = f & \
+                Filter(**{self.FIELD_CHR: str(chromosome).replace('chr', '')})
         self.filters = f.filters
 
     def __repr__(self):
