@@ -237,7 +237,6 @@ class Query(object):
         self._dataset_id = dataset_id
         self._genome_build = genome_build
         self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
-        self._limit = limit
         self._result_class = result_class
         self._fields = fields
         if filters:
@@ -249,6 +248,7 @@ class Query(object):
 
         # init response and cursor
         self._response = None
+        self._limit = limit
         self._cursor = Cursor(0, -1, 0, limit)
         self._page_size = int(page_size)
         self._is_offset_iter = False
@@ -513,7 +513,8 @@ class Query(object):
         offset = self._cursor.offset_absolute
         limit = min(
             self._page_size,
-            self._cursor.limit - self._cursor.offset_absolute
+            self._cursor.limit - self._cursor.offset_absolute,
+            self._limit  # self._limit is overridden in count()
         )
 
         _params.update(

@@ -24,7 +24,6 @@ def convert_to_solve_object(resp):
 
 class SolveObject(dict):
     """Base class for all SolveBio API resource objects"""
-    ALLOW_FULL_NAME_ID = False  # Treat full_name parameter as an ID?
 
     def __init__(self, id=None, **params):
         super(SolveObject, self).__init__()
@@ -34,11 +33,6 @@ class SolveObject(dict):
 
         if id:
             self['id'] = id
-        elif self.ALLOW_FULL_NAME_ID and params.get('full_name'):
-            self['full_name'] = params.get('full_name')
-            # no ID was provided so temporarily set the id as full_name
-            # this will get updated when the resource is refreshed
-            self['id'] = params.get('full_name')
 
     def __setattr__(self, k, v):
         if k[0] == '_' or k in self.__dict__:
@@ -87,8 +81,7 @@ class SolveObject(dict):
         if isinstance(self.get('id'), int):
             ident_parts.append('id=%d' % (self.get('id'),))
 
-        if self.ALLOW_FULL_NAME_ID and \
-                isinstance(self.get('full_name'), unicode):
+        if isinstance(self.get('full_name'), unicode):
             ident_parts.append(
                 'full_name=%s' % (self.get('full_name'),))
 

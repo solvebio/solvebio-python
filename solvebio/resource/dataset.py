@@ -1,6 +1,4 @@
 """Solvebio Dataset API Resource"""
-import re
-
 from ..client import client
 from ..help import open_help
 from ..query import Query
@@ -17,22 +15,6 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
     Datasets are access points to data. Dataset names are unique
     within versions of a depository.
     """
-    ALLOW_FULL_NAME_ID = True
-    FULL_NAME_REGEX = r'^([\w\d\-\.]+/){2}[\w\d\-\.]+$'
-
-    @classmethod
-    def retrieve(cls, id, **params):
-        """Supports lookup by full name"""
-        if isinstance(id, unicode) or isinstance(id, str):
-            _id = unicode(id).strip()
-            id = None
-            if re.match(cls.FULL_NAME_REGEX, _id):
-                params.update({'full_name': _id})
-            else:
-                raise Exception('Unrecognized full name.')
-
-        return super(Dataset, cls).retrieve(id, **params)
-
     def depository_version(self):
         from .depositoryversion import DepositoryVersion
         return DepositoryVersion.retrieve(self['depository_version'])
