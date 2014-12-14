@@ -1,6 +1,4 @@
 """Solvebio Depository API resource"""
-import re
-
 from ..client import client
 from ..help import open_help
 
