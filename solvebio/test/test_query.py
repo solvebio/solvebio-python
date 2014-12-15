@@ -93,7 +93,7 @@ class BaseQueryTest(SolveBioTestCase):
         # bogus filter
         results = self.dataset.query().filter(omim_ids=999999)
         self.assertEqual(len(results), 0)
-        self.assertEqual(results[:], [])
+        self.assertEqual(results[:]._buffer, [])
         self.assertRaises(IndexError, lambda: results[0])
 
     def test_empty_with_limit(self):
@@ -106,7 +106,7 @@ class BaseQueryTest(SolveBioTestCase):
         results = self.dataset.query(limit=limit) \
             .filter(omim_ids=999999)
         self.assertEqual(len(results), 0)
-        self.assertEqual(results[:], [])
+        self.assertEqual(results[:]._buffer, [])
         self.assertRaises(IndexError, lambda: results[0])
 
     def test_filter(self):
@@ -185,9 +185,9 @@ class BaseQueryTest(SolveBioTestCase):
         self.assertEqual(len(results[:limit]), limit)
 
         results = self.dataset.query(limit=limit)
-        self.assertEqual(len(results[limit:]), 0)
+        self.assertEqual(len(results[limit:]), limit)
 
-        r0 = self.dataset.query(limit=limit)[0:limit][-1]
+        r0 = self.dataset.query(limit=limit)[0:limit][limit - 1]
         r1 = self.dataset.query(limit=limit)[limit - 1:][0]
         self.assertEqual(r0['hgnc_id'], r1['hgnc_id'])
 
@@ -202,9 +202,9 @@ class BaseQueryTest(SolveBioTestCase):
         self.assertEqual(len(results[:limit]), limit)
 
         results = self.dataset.query(limit=limit, page_size=page_size)
-        self.assertEqual(len(results[limit:]), 0)
+        self.assertEqual(len(results[limit:]), limit)
 
-        r0 = self.dataset.query(limit=limit)[0:limit][-1]
+        r0 = self.dataset.query(limit=limit)[0:limit][limit - 1]
         r1 = self.dataset.query(limit=limit)[limit - 1:][0]
         self.assertEqual(r0['hgnc_id'], r1['hgnc_id'])
 
