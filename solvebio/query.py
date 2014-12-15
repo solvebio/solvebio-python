@@ -423,7 +423,7 @@ class Query(object):
                 # Make sure the new relative start position is within
                 # the previous slice.
                 if start >= self._slice.stop:
-                    raise IndexError('list index out of range')
+                    return []
 
             # We need to make a few requests to get the data.
             # We should respect the user's limit if it is smaller than slice.
