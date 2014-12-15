@@ -1,6 +1,4 @@
 """Solvebio DepositoryVersion Resource"""
-import re
-
 from ..client import client
 from ..help import open_help
 
@@ -28,26 +26,9 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
     when minor, backwards-compatible changes are made within a depository.
     EXTENSION labels pre-release and build metadata.
     """
-
-    ALLOW_FULL_NAME_ID = True
-    FULL_NAME_REGEX = r'^[\w\d\-\.]+/[\w\d\-\.]+$'
-
     # Fields that get shown by tabulate
     TAB_FIELDS = ['datasets_url', 'depository', 'description', 'full_name',
                   'latest', 'url']
-
-    @classmethod
-    def retrieve(cls, id, **params):
-        """Supports lookup by full name"""
-        if isinstance(id, unicode) or isinstance(id, str):
-            _id = unicode(id).strip()
-            id = None
-            if re.match(cls.FULL_NAME_REGEX, _id):
-                params.update({'full_name': _id})
-            else:
-                raise Exception('Unrecognized full name.')
-
-        return super(DepositoryVersion, cls).retrieve(id, **params)
 
     def datasets(self, name=None, **params):
         if name:

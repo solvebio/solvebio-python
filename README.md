@@ -4,29 +4,30 @@ Status](https://travis-ci.org/solvebio/solvebio-python.svg)](https://travis-ci.o
 SolveBio Python Client
 ======================
 
-The solve Python package and command-line interface (CLI) are used to work in our bioinformatics environment.
+This is the SolveBio Python package and command-line interface (CLI).
 
-For more information about SolveBio see http://www.solvebio.com
+For more information about SolveBio visit [solvebio.com](https://www.solvebio.com).
 
 
-Automatic Installer
+Guided Installation
 -------------------
 
 To use our guided installer, open up your terminal paste this:
 
-    curl -kL install.solvebio.com | bash
+    curl -kL install.solvebio.com/python | bash
 
 
 
 Manual Installation
 -------------------
 
-You may want to first install `readline` for a better experience:
+You may want to first install `gnureadline` and `IPython`:
 
-    easy_install readline
+    pip install gnureadline
+    pip install ipython
 
 
-Now just install `solvebio` from PyPI:
+Install `solvebio` using `pip`:
 
     pip install solvebio
 
@@ -36,7 +37,9 @@ To log in, type:
     solvebio login
 
 Enter your credentials and you should be good to go!
-Just type `solvebio` to enter the SolveBio Python shell.
+
+Just type `solvebio` to enter the SolveBio Python shell or `solvebio tutorial`
+for a quick guide on using SolveBio.
 
 
 Installing from Git
