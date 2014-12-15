@@ -369,7 +369,7 @@ class Query(object):
         return u'\n%s\n\n... %s more results.' % (
             tabulate(self._buffer[0].items(), ['Fields', 'Data'],
                      aligns=['right', 'left'], sort=True),
-            pretty_int(self.total - 1))
+            pretty_int(len(self) - 1))
 
     def __getattr__(self, key):
         if self._response is None:
