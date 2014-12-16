@@ -31,8 +31,7 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
         ('full_name', 'Name'),
         ('depository', 'Depository'),
         ('title', 'Title'),
-        ('description', 'Description'),
-        ('is_latest', 'Latest?')
+        ('description', 'Description')
     )
 
     def datasets(self, name=None, **params):
