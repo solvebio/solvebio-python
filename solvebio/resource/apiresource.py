@@ -11,6 +11,7 @@ import urllib
 from ..client import client, _handle_api_error, _handle_request_error
 from ..errors import SolveError
 from ..utils.tabulate import tabulate
+from ..utils.printing import pager
 
 from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object
@@ -194,6 +195,10 @@ class ListableAPIResource(APIResource):
             results.set_tabulate(fields, headers=headers)
 
         return results
+
+    @classmethod
+    def pager(cls, **params):
+        return pager(cls.all, **params)
 
     def __repr__(self):
         return tabulate(self.items(), ['Fields', 'Data'],
