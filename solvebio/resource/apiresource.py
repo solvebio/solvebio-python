@@ -77,7 +77,7 @@ class ListObject(SolveObject):
     def objects(self):
         return convert_to_solve_object(self['data'])
 
-    def tabulate(self, fields, **kwargs):
+    def set_tabulate(self, fields, **kwargs):
         self._tabulate = lambda data:\
             tabulate([[d[i] for i in fields] for d in data], **kwargs)
 
@@ -184,14 +184,19 @@ class ListableAPIResource(APIResource):
     def all(cls, **params):
         url = cls.class_url()
         response = client.get(url, params)
-        return convert_to_solve_object(response)
+        results = convert_to_solve_object(response)
+
+        # If the object has LIST_FIELDS, setup tabulate
+        list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
+
+        if list_fields:
+            fields, headers = zip(*list_fields)
+            results.set_tabulate(fields, headers=headers)
+
+        return results
 
     def __repr__(self):
-        if hasattr(self, 'TAB_FIELDS'):
-            items = [(name, self[name]) for name in self.TAB_FIELDS]
-        else:
-            items = self.items()
-        return tabulate(items, ['Fields', 'Data'],
+        return tabulate(self.items(), ['Fields', 'Data'],
                         aligns=['right', 'left'], sort=True)
 
 

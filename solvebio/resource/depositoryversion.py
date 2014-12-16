@@ -27,8 +27,13 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
     EXTENSION labels pre-release and build metadata.
     """
     # Fields that get shown by tabulate
-    TAB_FIELDS = ['datasets_url', 'depository', 'description', 'full_name',
-                  'latest', 'url']
+    LIST_FIELDS = (
+        ('full_name', 'Name'),
+        ('depository', 'Depository'),
+        ('title', 'Title'),
+        ('description', 'Description'),
+        ('is_latest', 'Latest?')
+    )
 
     def datasets(self, name=None, **params):
         if name:
@@ -38,7 +43,7 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
 
         response = client.get(self.datasets_url, params)
         results = convert_to_solve_object(response)
-        results.tabulate(
+        results.set_tabulate(
             ['full_name', 'title', 'description'],
             headers=['Dataset', 'Title', 'Description'],
             aligns=['left', 'left', 'left'], sort=True)

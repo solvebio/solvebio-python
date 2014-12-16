@@ -82,3 +82,38 @@ def blue(text):
     if not TTY_COLORS:
         return text
     return '\033[34m' + text + '\033[39m'
+
+
+def pager(fn, **kwargs):
+    try:
+        import tty
+        fd = sys.stdin.fileno()
+        old = tty.tcgetattr(fd)
+        tty.setcbreak(fd)
+        getchar = lambda: sys.stdin.read(1)
+    except (ImportError, AttributeError):
+        tty = None
+        getchar = lambda: sys.stdin.readline()[:-1][:1]
+
+    try:
+        page = 1
+        res = fn(page=page, **kwargs)
+        has_next = res.links['next']
+        sys.stdout.write(str(res) + '\n')
+
+        while has_next:
+            sys.stdout.write('-- More --')
+            sys.stdout.flush()
+            c = getchar()
+            page += 1
+            res = fn(page=page, **kwargs)
+            has_next = res.links['next']
+
+            if c in ('q', 'Q'):
+                sys.stdout.write('\r          \r')
+                break
+
+            sys.stdout.write('\n' + str(res) + '\n')
+    finally:
+        if tty:
+            tty.tcsetattr(fd, tty.TCSAFLUSH, old)

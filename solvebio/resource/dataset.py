@@ -15,6 +15,13 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
     Datasets are access points to data. Dataset names are unique
     within versions of a depository.
     """
+    LIST_FIELDS = (
+        ('full_name', 'Name'),
+        ('depository', 'Depository'),
+        ('title', 'Title'),
+        ('description', 'Description'),
+    )
+
     def depository_version(self):
         from .depositoryversion import DepositoryVersion
         return DepositoryVersion.retrieve(self['depository_version'])
@@ -36,7 +43,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
 
         response = client.get(self.fields_url, params)
         results = convert_to_solve_object(response)
-        results.tabulate(
+        results.set_tabulate(
             ['name', 'data_type', 'description'],
             headers=['Field', 'Data Type', 'Description'],
             aligns=['left', 'left', 'left'], sort=True)
