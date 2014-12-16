@@ -47,6 +47,8 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     # Add some convenience functions to the interactive shell
     from solvebio.cli.auth import login as _login, logout as _logout, \
         whoami as _whoami, get_credentials
+    # Load the helper functions
+    from solvebio.cli.helpers import datasets, all_datasets  # noqa
 
     login = lambda: _login(None)  # noqa
     logout = lambda: _logout(None)  # noqa
