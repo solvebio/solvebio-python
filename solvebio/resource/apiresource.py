@@ -72,7 +72,7 @@ class ListObject(SolveObject):
 
     def prev_page(self, **params):
         if self['links']['prev']:
-            self.request('get', self['links']['prev'], params=params)
+            return self.request('get', self['links']['prev'], params=params)
         return None
 
     def objects(self):
@@ -189,7 +189,6 @@ class ListableAPIResource(APIResource):
 
         # If the object has LIST_FIELDS, setup tabulate
         list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
-
         if list_fields:
             fields, headers = zip(*list_fields)
             results.set_tabulate(fields, headers=headers)
@@ -212,7 +211,15 @@ class SearchableAPIResource(APIResource):
         params.update({'q': query})
         url = cls.class_url()
         response = client.get(url, params)
-        return convert_to_solve_object(response)
+        results = convert_to_solve_object(response)
+
+        # If the object has LIST_FIELDS, setup tabulate
+        list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
+        if list_fields:
+            fields, headers = zip(*list_fields)
+            results.set_tabulate(fields, headers=headers)
+
+        return results
 
 
 class UpdateableAPIResource(APIResource):
