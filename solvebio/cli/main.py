@@ -7,6 +7,7 @@ import argparse
 import solvebio
 
 from . import auth
+from .tutorial import print_tutorial
 from .ipython import launch_ipython_shell
 from ..utils.validators import validate_api_host_url
 
@@ -18,6 +19,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
         'logout': 'Logout and delete saved credentials',
         'whoami': 'Show your SolveBio email address',
         'shell': 'Open the SolveBio Python shell',
+        'tutorial': 'Show the SolveBio Python Tutorial',
         'version': solvebio.version.VERSION,
         'api_host': 'Override the default SolveBio API host',
         'api_key': 'Manually provide a SolveBio API key'
@@ -51,6 +53,9 @@ class SolveArgumentParser(argparse.ArgumentParser):
         logout_parser.set_defaults(func=auth.logout)
         whoami_parser = subcmd.add_parser('whoami', help=self.HELP['whoami'])
         whoami_parser.set_defaults(func=auth.whoami)
+        tutorial_parser = subcmd.add_parser(
+            'tutorial', help=self.HELP['tutorial'])
+        tutorial_parser.set_defaults(func=print_tutorial)
         shell_parser = subcmd.add_parser('shell', help=self.HELP['shell'])
         shell_parser.set_defaults(func=launch_ipython_shell)
 

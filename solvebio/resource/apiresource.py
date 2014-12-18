@@ -11,6 +11,7 @@ import urllib
 from ..client import client, _handle_api_error, _handle_request_error
 from ..errors import SolveError
 from ..utils.tabulate import tabulate
+from ..utils.printing import pager
 
 from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object
@@ -71,13 +72,13 @@ class ListObject(SolveObject):
 
     def prev_page(self, **params):
         if self['links']['prev']:
-            self.request('get', self['links']['prev'], params=params)
+            return self.request('get', self['links']['prev'], params=params)
         return None
 
     def objects(self):
         return convert_to_solve_object(self['data'])
 
-    def tabulate(self, fields, **kwargs):
+    def set_tabulate(self, fields, **kwargs):
         self._tabulate = lambda data:\
             tabulate([[d[i] for i in fields] for d in data], **kwargs)
 
@@ -184,14 +185,22 @@ class ListableAPIResource(APIResource):
     def all(cls, **params):
         url = cls.class_url()
         response = client.get(url, params)
-        return convert_to_solve_object(response)
+        results = convert_to_solve_object(response)
+
+        # If the object has LIST_FIELDS, setup tabulate
+        list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
+        if list_fields:
+            fields, headers = zip(*list_fields)
+            results.set_tabulate(fields, headers=headers)
+
+        return results
+
+    @classmethod
+    def pager(cls, **params):
+        return pager(cls.all, **params)
 
     def __repr__(self):
-        if hasattr(self, 'TAB_FIELDS'):
-            items = [(name, self[name]) for name in self.TAB_FIELDS]
-        else:
-            items = self.items()
-        return tabulate(items, ['Fields', 'Data'],
+        return tabulate(self.items(), ['Fields', 'Data'],
                         aligns=['right', 'left'], sort=True)
 
 
@@ -202,7 +211,15 @@ class SearchableAPIResource(APIResource):
         params.update({'q': query})
         url = cls.class_url()
         response = client.get(url, params)
-        return convert_to_solve_object(response)
+        results = convert_to_solve_object(response)
+
+        # If the object has LIST_FIELDS, setup tabulate
+        list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
+        if list_fields:
+            fields, headers = zip(*list_fields)
+            results.set_tabulate(fields, headers=headers)
+
+        return results
 
 
 class UpdateableAPIResource(APIResource):
