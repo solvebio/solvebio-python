@@ -33,9 +33,8 @@ class DatasetTests(SolveBioTestCase):
         check_fields = set(['class_name', 'created_at',
                             'data_type', 'dataset', 'dataset_id',
                             'description', 'facets_url',
-                            'full_name', 'id',
                             'name', 'updated_at',
-                            'url'])
+                            'id', 'url'])
         self.assertSetEqual(set(dataset_field.keys()), check_fields)
         expected = """
 
@@ -86,7 +85,6 @@ class DatasetTests(SolveBioTestCase):
                          'tabulated dataset fields')
 
     def test_dataset_facets(self):
-        field = Dataset.retrieve(self.TEST_DATASET_NAME).fields('hgnc_id')
+        field = Dataset.retrieve(self.TEST_DATASET_NAME).fields('status')
         facets = field.facets()
-        self.assertTrue(facets.total >= 0,
-                        'facet should have an total field >= 0')
+        self.assertTrue(len(facets['values']) >= 0)
