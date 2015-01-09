@@ -20,7 +20,7 @@ class SampleTest(SolveBioTestCase):
 
     def test_create_from_url(self):
         vcf_url = "https://github.com/solvebio/solvebio-python/" + \
-                  "raw/dev/solvebio/test/data/sample.vcf.gz"
+                  "raw/master/solvebio/test/data/sample.vcf.gz"
         sample = Sample.create(genome_build='hg19', vcf_url=vcf_url)
         self.check_response(sample, self.sample_meta,
                             'Create Sample from URL')
