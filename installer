@@ -112,15 +112,17 @@ fi
 # Detect if in Virtualenv (use sudo if not)
 VIRTUALENV=`$PYTHON -c "import sys; print sys.real_prefix" 2>> $LOG`
 if [ "$VIRTUALENV" == "" ]; then
-    PYTHON="sudo ${PYTHON}"
+    PYTHON_SUDO="sudo ${PYTHON}"
     echo "    IMPORTANT: Your computer's password may be required. It will NOT be sent to SolveBio."
+else
+    PYTHON_SUDO=$PYTHON
 fi
 
 # Check for working pip
 PIP_VERSION=`$PYTHON -m pip --version 2>&1`
 if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
     echo "    It looks like pip is not installed. We will now attempt to install it."
-    $PYTHON -m easy_install -q pip 2>&1 >> $LOG
+    $PYTHON_SUDO -m easy_install -q pip 2>&1 >> $LOG
 
     PIP_VERSION=`$PYTHON -m pip --version 2>&1`
     if [[ ! "$PIP_VERSION" =~ (^pip .*) ]]; then
@@ -146,7 +148,7 @@ fi
 READLINE=`$PYTHON -c "import gnureadline; print gnureadline.__name__" 2>> $LOG`
 if [ "$READLINE" != "gnureadline" ]; then
     echo "    Installing gnureadline..."
-    $PYTHON -m pip install gnureadline $PIP_FLAGS 2>&1 >> $LOG
+    $PYTHON_SUDO -m pip install gnureadline $PIP_FLAGS 2>&1 >> $LOG
 
     if [ $? -ne 0 ]; then
         fail_exit
@@ -156,7 +158,7 @@ fi
 IPYTHON=`$PYTHON -c "import IPython; print IPython.__name__" 2>> $LOG`
 if [ "$IPYTHON" != "IPython" ]; then
     echo "    Installing IPython..."
-    $PYTHON -m pip install ipython $PIP_FLAGS 2>&1 >> $LOG
+    $PYTHON_SUDO -m pip install ipython $PIP_FLAGS 2>&1 >> $LOG
 
     if [ $? -ne 0 ]; then
         fail_exit
@@ -164,7 +166,7 @@ if [ "$IPYTHON" != "IPython" ]; then
 fi
 
 echo "    Installing SolveBio for Python..."
-$PYTHON -m pip install solvebio $PIP_FLAGS --upgrade 2>&1 >> $LOG
+$PYTHON_SUDO -m pip install solvebio $PIP_FLAGS --upgrade 2>&1 >> $LOG
 
 INSTALL_COUNT=`$PYTHON -m pip freeze | grep "^solvebio=" -c`
 if [ "$INSTALL_COUNT" -ge "0" ]; then
