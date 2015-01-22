@@ -24,6 +24,7 @@ class DepositoryTests(SolveBioTestCase):
                             'latest_version',
                             'latest_version_id',
                             'name', 'title', 'updated_at',
-                            'url', 'versions_count', 'versions_url'])
+                            'url', 'versions_count', 'versions_url',
+                            'permissions'])
 
         self.assertSetEqual(set(depo), check_fields)
