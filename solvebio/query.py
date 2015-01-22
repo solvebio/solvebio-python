@@ -3,7 +3,6 @@ from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
 
-import copy
 import logging
 
 logger = logging.getLogger('solvebio')
@@ -67,21 +66,18 @@ class Filter(object):
         """
         f = Filter()
 
-        self_filters = copy.deepcopy(self.filters)
-        other_filters = copy.deepcopy(other.filters)
-
         if not self.filters:
-            f.filters = other_filters
+            f.filters = other.filters
         elif not other.filters:
-            f.filters = self_filters
+            f.filters = self.filters
         elif conn in self.filters[0]:
-            f.filters = self_filters
-            f.filters[0][conn].extend(other_filters)
+            f.filters = self.filters
+            f.filters[0][conn].extend(other.filters)
         elif conn in other.filters[0]:
-            f.filters = other_filters
-            f.filters[0][conn].extend(self_filters)
+            f.filters = other.filters
+            f.filters[0][conn].extend(self.filters)
         else:
-            f.filters = [{conn: self_filters + other_filters}]
+            f.filters = [{conn: self.filters + other.filters}]
 
         return f
 
@@ -93,22 +89,21 @@ class Filter(object):
 
     def __invert__(self):
         f = Filter()
-        self_filters = copy.deepcopy(self.filters)
 
-        if len(self_filters) == 0:
+        if len(self.filters) == 0:
             # no change
             f.filters = []
-        elif (len(self_filters) == 1
-              and isinstance(self_filters[0], dict)
-              and self_filters[0].get('not', {})):
+        elif (len(self.filters) == 1
+              and isinstance(self.filters[0], dict)
+              and self.filters[0].get('not', {})):
             # if the filters are already a single dictionary containing a 'not'
             # then swap out the 'not'
-            f.filters = [self_filters[0]['not']]
+            f.filters = [self.filters[0]['not']]
         else:
-            # length of self_filters should never be more than 1
+            # length of self.filters should never be more than 1
             # 'not' blocks can contain only dicts or a single tuple filter
             # so we get the first element from the filter list
-            f.filters = [{'not': self_filters[0]}]
+            f.filters = [{'not': self.filters[0]}]
 
         return f
 

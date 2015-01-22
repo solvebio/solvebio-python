@@ -46,12 +46,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     from solvebio.utils.printing import pager  # noqa
 
     # Add some convenience functions to the interactive shell
-    from solvebio.cli.auth import login as _login, logout as _logout, \
-        whoami as _whoami, get_credentials
-
-    login = lambda: _login(None)  # noqa
-    logout = lambda: _logout(None)  # noqa
-    whoami = lambda: _whoami(None)  # noqa
+    from solvebio.cli.auth import login, logout, whoami, get_credentials  # noqa
 
     # If an API key is set in solvebio.api_key, use that.
     # Otherwise, look for credentials in the local file,

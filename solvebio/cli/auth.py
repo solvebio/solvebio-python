@@ -41,7 +41,7 @@ def _send_install_report():
         pass
 
 
-def login(args):
+def login(*args):
     """
     Prompt user for login information (email/password).
     Email and password are used to get the user's API key.
@@ -69,7 +69,7 @@ def login(args):
     return True
 
 
-def logout(args):
+def logout(*args):
     """
     Delete's the user's locally-stored credentials.
     """
@@ -82,7 +82,7 @@ def logout(args):
     return False
 
 
-def whoami(args):
+def whoami(*args):
     """
     Retrieves the email for the logged-in user.
     Uses local credentials or api_key if found.
