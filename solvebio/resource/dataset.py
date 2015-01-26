@@ -63,8 +63,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
 
     def query(self, **params):
         self._data_url()  # raises an exception if there's no ID
-        q = Query(self['id'], **params)
-        return q.filter(params.get('filters')) if params.get('filters') else q
+        return Query(self['id'], **params)
 
     def help(self):
         open_help(self['full_name'])

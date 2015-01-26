@@ -72,17 +72,22 @@ from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
 from .resource import (Depository, DepositoryVersion, Annotation, Sample,
                        User, Dataset, DatasetField)
+from .cli.auth import get_credentials
 
-__all__ = ['version',
-           'Annotation',
-           'BatchQuery',
-           'Dataset',
-           'DatasetField',
-           'Depository',
-           'DepositoryVersion',
-           'Filter',
-           'Query',
-           'GenomicFilter',
-           'SolveError',
-           'Sample',
-           'User']
+
+__all__ = [
+    'version',
+    'get_credentials',
+    'Annotation',
+    'BatchQuery',
+    'Dataset',
+    'DatasetField',
+    'Depository',
+    'DepositoryVersion',
+    'Filter',
+    'Query',
+    'GenomicFilter',
+    'SolveError',
+    'Sample',
+    'User'
+]

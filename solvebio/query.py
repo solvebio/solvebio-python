@@ -5,7 +5,6 @@ from .utils.tabulate import tabulate
 
 import copy
 import logging
-
 logger = logging.getLogger('solvebio')
 
 
@@ -51,7 +50,10 @@ class Filter(object):
     """
     def __init__(self, **filters):
         """Creates a Filter"""
+        # Set deepcopy to False for faster Filter building
+        self.deepcopy = True
         filters = filters.items()
+
         if len(filters) > 1:
             self.filters = [{'and': filters}]
         else:
@@ -66,9 +68,14 @@ class Filter(object):
         objects combined with the connector `conn`.
         """
         f = Filter()
+        f.deepcopy = self.deepcopy and other.filters
 
-        self_filters = copy.deepcopy(self.filters)
-        other_filters = copy.deepcopy(other.filters)
+        if f.deepcopy:
+            self_filters = copy.deepcopy(self.filters)
+            other_filters = copy.deepcopy(other.filters)
+        else:
+            self_filters = self.filters
+            other_filters = other.filters
 
         if not self.filters:
             f.filters = other_filters
@@ -93,19 +100,24 @@ class Filter(object):
 
     def __invert__(self):
         f = Filter()
-        self_filters = copy.deepcopy(self.filters)
+        f.deepcopy = self.deepcopy
 
-        if len(self_filters) == 0:
+        if f.deepcopy:
+            self_filters = copy.deepcopy(self.filters)
+        else:
+            self_filters = self.filters
+
+        if len(self.filters) == 0:
             # no change
             f.filters = []
-        elif (len(self_filters) == 1
-              and isinstance(self_filters[0], dict)
-              and self_filters[0].get('not', {})):
+        elif (len(self.filters) == 1
+              and isinstance(self.filters[0], dict)
+              and self.filters[0].get('not', {})):
             # if the filters are already a single dictionary containing a 'not'
             # then swap out the 'not'
             f.filters = [self_filters[0]['not']]
         else:
-            # length of self_filters should never be more than 1
+            # length of self.filters should never be more than 1
             # 'not' blocks can contain only dicts or a single tuple filter
             # so we get the first element from the filter list
             f.filters = [{'not': self_filters[0]}]
@@ -211,7 +223,7 @@ class Query(object):
           - `genome_build`: The genome build to use for the query.
           - `result_class` (optional): Class of object returned by query.
           - `fields` (optional): List of specific fields to retrieve.
-          - `filters` (optional): List of filter objects.
+          - `filters` (optional): Filter or List of filter objects.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
         """
@@ -259,7 +271,7 @@ class Query(object):
                              result_class=self._result_class)
         new._filters += self._filters
 
-        if filters is not None:
+        if filters:
             new._filters += filters
 
         return new
@@ -281,7 +293,12 @@ class Query(object):
         ``&`` (and), ``|`` (or) and ``~`` (not) operators. Then call
         filter once with the resulting Filter instance.
         """
-        return self._clone(filters=list(filters) + [Filter(**kwargs)])
+        f = list(filters)
+
+        if kwargs:
+            f += [Filter(**kwargs)]
+
+        return self._clone(filters=f)
 
     def range(self, chromosome, start, stop, exact=False):
         """
