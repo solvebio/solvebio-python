@@ -17,14 +17,15 @@ class DepositoryTests(SolveBioTestCase):
                          "Retrieving dataset id {0} found by all()"
                          .format(depo.id))
 
-        check_fields = set(['class_name', 'created_at',
-                            'description', 'external_resources',
-                            'full_name', 'id',
-                            'is_private', 'is_restricted',
-                            'latest_version',
-                            'latest_version_id',
-                            'name', 'title', 'updated_at',
-                            'url', 'versions_count', 'versions_url',
-                            'permissions'])
+        check_fields = ['class_name', 'created_at',
+                        'description', 'external_resources',
+                        'full_name', 'id',
+                        'is_private', 'is_restricted',
+                        'latest_version',
+                        'latest_version_id',
+                        'name', 'title', 'updated_at',
+                        'url', 'versions_count', 'versions_url',
+                        'permissions']
 
-        self.assertSetEqual(set(depo), check_fields)
+        for f in check_fields:
+            self.assertTrue(f in depo)

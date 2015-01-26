@@ -12,18 +12,21 @@ class DatasetTests(SolveBioTestCase):
         dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
         self.assertTrue('id' in dataset,
                         'Should be able to get id in dataset')
-        check_fields = set(['class_name', 'created_at',
-                            'data_url',
-                            'depository', 'depository_id',
-                            'depository_version', 'depository_version_id',
-                            'description',
-                            'fields_url', 'full_name',
-                            'genome_builds', 'is_genomic',
-                            'id',
-                            'name', 'title', 'updated_at',
-                            'url',
-                            'documents_count'])
-        self.assertSetEqual(set(dataset.keys()), check_fields)
+
+        check_fields = ['class_name', 'created_at',
+                        'data_url',
+                        'depository', 'depository_id',
+                        'depository_version', 'depository_version_id',
+                        'description',
+                        'fields_url', 'full_name',
+                        'genome_builds', 'is_genomic',
+                        'id',
+                        'name', 'title', 'updated_at',
+                        'url',
+                        'documents_count']
+
+        for f in check_fields:
+            self.assertTrue(f in dataset)
 
     def test_dataset_fields(self):
         fields = Dataset.retrieve(self.TEST_DATASET_NAME).fields()

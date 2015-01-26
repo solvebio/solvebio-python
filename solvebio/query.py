@@ -3,8 +3,8 @@ from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
 
+import copy
 import logging
-
 logger = logging.getLogger('solvebio')
 
 
@@ -50,7 +50,10 @@ class Filter(object):
     """
     def __init__(self, **filters):
         """Creates a Filter"""
+        # Set deepcopy to False for faster Filter building
+        self.deepcopy = True
         filters = filters.items()
+
         if len(filters) > 1:
             self.filters = [{'and': filters}]
         else:
@@ -65,19 +68,27 @@ class Filter(object):
         objects combined with the connector `conn`.
         """
         f = Filter()
+        f.deepcopy = self.deepcopy and other.filters
+
+        if f.deepcopy:
+            self_filters = copy.deepcopy(self.filters)
+            other_filters = copy.deepcopy(other.filters)
+        else:
+            self_filters = self.filters
+            other_filters = other.filters
 
         if not self.filters:
-            f.filters = other.filters
+            f.filters = other_filters
         elif not other.filters:
-            f.filters = self.filters
+            f.filters = self_filters
         elif conn in self.filters[0]:
-            f.filters = self.filters
-            f.filters[0][conn].extend(other.filters)
+            f.filters = self_filters
+            f.filters[0][conn].extend(other_filters)
         elif conn in other.filters[0]:
-            f.filters = other.filters
-            f.filters[0][conn].extend(self.filters)
+            f.filters = other_filters
+            f.filters[0][conn].extend(self_filters)
         else:
-            f.filters = [{conn: self.filters + other.filters}]
+            f.filters = [{conn: self_filters + other_filters}]
 
         return f
 
@@ -89,6 +100,12 @@ class Filter(object):
 
     def __invert__(self):
         f = Filter()
+        f.deepcopy = self.deepcopy
+
+        if f.deepcopy:
+            self_filters = copy.deepcopy(self.filters)
+        else:
+            self_filters = self.filters
 
         if len(self.filters) == 0:
             # no change
@@ -98,12 +115,12 @@ class Filter(object):
               and self.filters[0].get('not', {})):
             # if the filters are already a single dictionary containing a 'not'
             # then swap out the 'not'
-            f.filters = [self.filters[0]['not']]
+            f.filters = [self_filters[0]['not']]
         else:
             # length of self.filters should never be more than 1
             # 'not' blocks can contain only dicts or a single tuple filter
             # so we get the first element from the filter list
-            f.filters = [{'not': self.filters[0]}]
+            f.filters = [{'not': self_filters[0]}]
 
         return f
 
