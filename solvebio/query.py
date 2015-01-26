@@ -223,7 +223,7 @@ class Query(object):
           - `genome_build`: The genome build to use for the query.
           - `result_class` (optional): Class of object returned by query.
           - `fields` (optional): List of specific fields to retrieve.
-          - `filters` (optional): List of filter objects.
+          - `filters` (optional): Filter or List of filter objects.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
         """
@@ -271,7 +271,7 @@ class Query(object):
                              result_class=self._result_class)
         new._filters += self._filters
 
-        if filters is not None:
+        if filters:
             new._filters += filters
 
         return new
@@ -293,7 +293,12 @@ class Query(object):
         ``&`` (and), ``|`` (or) and ``~`` (not) operators. Then call
         filter once with the resulting Filter instance.
         """
-        return self._clone(filters=list(filters) + [Filter(**kwargs)])
+        f = list(filters)
+
+        if kwargs:
+            f += [Filter(**kwargs)]
+
+        return self._clone(filters=f)
 
     def range(self, chromosome, start, stop, exact=False):
         """
