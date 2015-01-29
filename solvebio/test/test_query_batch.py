@@ -1,4 +1,3 @@
-from solvebio.errors import SolveError
 from solvebio.query import BatchQuery
 from solvebio.resource import Dataset
 
@@ -11,13 +10,15 @@ class BatchQueryTest(SolveBioTestCase):
         super(BatchQueryTest, self).setUp()
 
     def test_invalid_batch_query(self):
-        def test(self):
-            BatchQuery([
-                self.dataset.query(limit=1, fields=['bogus_field']),
-                self.dataset.query(limit=10).filter(bogus_id__gt=100000)
-            ]).execute()
+        queries = [
+            self.dataset.query(limit=1, fields=['bogus_field']),
+            self.dataset.query(limit=10).filter(bogus_id__gt=100000)
+        ]
 
-        self.assertRaises(SolveError, test, self)
+        results = BatchQuery(queries).execute()
+        self.assertEqual(len(results), 2)
+        self.assertTrue('error' in results[0])
+        self.assertTrue('error' in results[1])
 
     def test_batch_query(self):
         queries = [
