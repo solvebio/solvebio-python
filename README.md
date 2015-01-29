@@ -14,7 +14,7 @@ Guided Installation
 
 To use our guided installer, open up your terminal paste this:
 
-    curl -kL install.solvebio.com/python | bash
+    curl -skL install.solvebio.com/python | bash
 
 
 
