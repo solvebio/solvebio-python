@@ -44,30 +44,36 @@ def _handle_request_error(e):
 class SolveTokenAuth(AuthBase):
     """Custom auth handler for SolveBio API token authentication"""
 
-    def __init__(self, token=None):
-        self.token = token or self._get_api_key()
+    def __init__(self, token=None, token_type='Token'):
+        self.token = token
+        self.token_type = token_type
+
+        if not self.token:
+            # Prefer the OAuth2 access token over the API key.
+            if solvebio.access_token:
+                self.token_type = 'Bearer'
+                self.token = solvebio.access_token
+            elif solvebio.api_key:
+                self.token_type = 'Token'
+                self.token = solvebio.api_key
 
     def __call__(self, r):
         if self.token:
-            r.headers['Authorization'] = 'Token %s' % self.token
+            r.headers['Authorization'] = '{0} {1}'.format(self.token_type,
+                                                          self.token)
         return r
 
     def __repr__(self):
-        return u'<SolveTokenAuth %s>' % self.token
-
-    def _get_api_key(self):
-        """
-        Helper function to get the current user's API key or None.
-        """
-        return solvebio.api_key
+        return u'<SolveTokenAuth {0} {1}>'.format(self.token_type, self.token)
 
 
 class SolveClient(object):
     """A requests-based HTTP client for SolveBio API resources"""
 
-    def __init__(self, api_key=None, api_host=None):
-        self._api_key = api_key
+    def __init__(self, api_host=None, token=None, token_type='Token'):
         self._api_host = api_host
+        self._token = token
+        self._token_type = token_type
         self._headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -116,9 +122,9 @@ class SolveClient(object):
         allow_redirects: bool, optional
            set *False* we won't follow any redirects
 
-        auth_class: function, optional
-           Function to call to get an Authorization key. if not given
-           we'll use self.api_key.
+        auth: function, optional
+           Function to call to get an Authorization key.
+           If not given we'll use self._token.
 
         headers: dict, optional
 
@@ -149,7 +155,7 @@ class SolveClient(object):
 
         opts = {
             'allow_redirects': True,
-            'auth': SolveTokenAuth(),
+            'auth': SolveTokenAuth(self._token, self._token_type),
             'data': {},
             'files': None,
             'headers': dict(self._headers),

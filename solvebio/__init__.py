@@ -5,15 +5,17 @@ SolveBio Python Client
 
 This is the Python client & library for the SolveBio API.
 
-Have questions or comments? email us at: contact@solvebio.com
-
+Have questions or comments? email us at: support@solvebio.com
 """
 __docformat__ = 'restructuredtext'
 import os as _os
 import logging as _logging
 from .help import open_help as _open_help
 
+# Read/Write API key
 api_key = _os.environ.get('SOLVEBIO_API_KEY', None)
+# OAuth2 access tokens
+access_token = _os.environ.get('SOLVEBIO_ACCESS_TOKEN', None)
 api_host = _os.environ.get('SOLVEBIO_API_HOST', 'https://api.solvebio.com')
 
 
