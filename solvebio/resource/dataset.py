@@ -66,4 +66,4 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         return Query(self['id'], **params)
 
     def help(self):
-        open_help(self['full_name'])
+        open_help('/library/{0}'.format(self['full_name']))

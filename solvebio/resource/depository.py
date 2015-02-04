@@ -42,4 +42,4 @@ class Depository(CreateableAPIResource, ListableAPIResource,
         return self.versions(self['latest_version'].split('/')[-1])
 
     def help(self):
-        open_help(self['full_name'])
+        open_help('/library/{0}'.format(self['full_name']))
