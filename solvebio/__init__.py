@@ -69,17 +69,40 @@ def _init_logging():
 
 _init_logging()
 
-from . import version
+from .version import VERSION  # noqa
 from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
 from .resource import (Depository, DepositoryVersion, Annotation, Sample,
                        User, Dataset, DatasetField)
-from .cli.auth import get_credentials
+
+
+def login(**kwargs):
+    """
+    Sets up the auth credentials using the provided key/token,
+    or checks the credentials file (if no token provided).
+
+    Lookup order:
+        1. access_token
+        2. api_key
+        3. local credentials
+
+    No errors are raised if no key is found.
+    """
+    from .cli.auth import get_credentials
+    global access_token, api_key
+
+    if kwargs.get('access_token'):
+        access_token = kwargs.get('access_token')
+    elif kwargs.get('api_key'):
+        api_key = kwargs.get('api_key')
+    elif get_credentials():
+        _, api_key = get_credentials()
+
+    if not (api_key or access_token):
+        print 'No credentials found. Requests to SolveBio may fail.'
 
 
 __all__ = [
-    'version',
-    'get_credentials',
     'Annotation',
     'BatchQuery',
     'Dataset',
