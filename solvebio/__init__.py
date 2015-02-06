@@ -90,13 +90,17 @@ def login(**kwargs):
     """
     from .cli.auth import get_credentials
     global access_token, api_key
+    # Clear any existing auth keys
+    access_token, api_key = None, None
 
     if kwargs.get('access_token'):
         access_token = kwargs.get('access_token')
     elif kwargs.get('api_key'):
         api_key = kwargs.get('api_key')
-    elif get_credentials():
-        _, api_key = get_credentials()
+    else:
+        creds = get_credentials()
+        if creds:
+            _, api_key = creds
 
     if not (api_key or access_token):
         print 'No credentials found. Requests to SolveBio may fail.'
