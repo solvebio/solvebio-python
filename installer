@@ -2,7 +2,7 @@
 #
 # This is the guided installer for the SolveBio Python Client:
 #
-#    curl -kL install.solve.bio/python | bash
+#    curl -skL install.solvebio.com/python | bash
 #
 
 echo
@@ -19,15 +19,18 @@ shopt -s extglob
 
 function fail_exit() {
     echo
-    echo "    #####################################"
+    echo "    ##################################################"
     echo
-    echo "    Failed to install SolveBio."
+    echo "    Sorry, SolveBio for Python could not be installed."
+    echo
+    echo "    You can try manually installing the module with:"
+    echo "        pip install solvebio"
+    echo
     echo "    Contact us at support@solvebio.com for help."
-    echo
     echo "    In your email, please copy/paste the output of:"
     echo "        cat ${LOG}"
     echo
-    echo "    #####################################"
+    echo "    ##################################################"
     echo
     exit
 }
@@ -144,14 +147,18 @@ if [ $($PYTHON -m pip install --help | grep "\-\-no\-use\-wheel" -c) -ne 0 ]; th
   PIP_FLAGS="--force-reinstall --no-use-wheel"
 fi
 
-# Detect/install gnureadline
-READLINE=`$PYTHON -c "import gnureadline; print gnureadline.__name__" 2>> $LOG`
-if [ "$READLINE" != "gnureadline" ]; then
-    echo "    Installing gnureadline..."
-    $PYTHON_SUDO -m pip install gnureadline $PIP_FLAGS 2>&1 >> $LOG
-
-    if [ $? -ne 0 ]; then
-        fail_exit
+# Detect/install gnureadline only on Mac OS X
+UNAME=`uname`
+if [[ "$UNAME" == 'Darwin' ]]; then
+    READLINE=`$PYTHON -c "import gnureadline; print gnureadline.__name__" 2>> $LOG`
+    if [ "$READLINE" != "gnureadline" ]; then
+        echo "    Installing gnureadline..."
+        $PYTHON_SUDO -m pip install gnureadline $PIP_FLAGS 2>&1 >> $LOG
+        if [ $? -ne 0 ]; then
+            echo
+            echo "Warning: gnureadline could not be installed."
+            echo
+        fi
     fi
 fi
 
