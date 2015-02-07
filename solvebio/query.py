@@ -212,6 +212,7 @@ class Query(object):
             genome_build=None,
             filters=None,
             fields=None,
+            facets=None,
             limit=float('inf'),
             page_size=DEFAULT_PAGE_SIZE,
             result_class=dict):
@@ -232,6 +233,7 @@ class Query(object):
         self._genome_build = genome_build
         self._result_class = result_class
         self._fields = fields
+        self._facets = facets
 
         if filters:
             if isinstance(filters, Filter):
@@ -267,6 +269,7 @@ class Query(object):
                              genome_build=self._genome_build,
                              limit=self._limit,
                              fields=self._fields,
+                             facets=self._facets,
                              page_size=self._page_size,
                              result_class=self._result_class)
         new._filters += self._filters
@@ -519,6 +522,9 @@ class Query(object):
 
         if self._fields is not None:
             q['fields'] = self._fields
+
+        if self._facets is not None:
+            q['facets'] = self._facets
 
         if self._genome_build is not None:
             q['genome_build'] = self._genome_build
