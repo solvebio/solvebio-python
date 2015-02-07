@@ -99,7 +99,7 @@ spam\t23
             ("alternate_alleles", ["T"]), ]
         got = t.tabulate(data,
                          headers=('Fields', 'Data'),
-                         aligns= ('right', 'left'), sort=True)
+                         aligns=('right', 'left'), sort=True)
 
         # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(got, expected[1:-1],
@@ -116,7 +116,7 @@ spam\t23
 """
         got = t.tabulate(data,
                          headers=('Fields', 'Data'),
-                         aligns= ('right', 'left'), sort=False)
+                         aligns=('right', 'left'), sort=False)
         self.assertEqual(got, expected[1:-1],
                          'mixed data with arrays; unsorted')
 

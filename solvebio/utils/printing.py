@@ -90,10 +90,14 @@ def pager(fn, **kwargs):
         fd = sys.stdin.fileno()
         old = tty.tcgetattr(fd)
         tty.setcbreak(fd)
-        getchar = lambda: sys.stdin.read(1)
+
+        def getchar():
+            sys.stdin.read(1)
     except (ImportError, AttributeError):
         tty = None
-        getchar = lambda: sys.stdin.readline()[:-1][:1]
+
+        def getchar():
+            sys.stdin.readline()[:-1][:1]
 
     try:
         page = 1
