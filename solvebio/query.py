@@ -110,9 +110,9 @@ class Filter(object):
         if len(self.filters) == 0:
             # no change
             f.filters = []
-        elif (len(self.filters) == 1
-              and isinstance(self.filters[0], dict)
-              and self.filters[0].get('not', {})):
+        elif (len(self.filters) == 1 and
+              isinstance(self.filters[0], dict) and
+              self.filters[0].get('not', {})):
             # if the filters are already a single dictionary containing a 'not'
             # then swap out the 'not'
             f.filters = [self_filters[0]['not']]

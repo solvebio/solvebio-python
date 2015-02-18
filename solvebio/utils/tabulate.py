@@ -562,8 +562,8 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
     # optimization: look for ANSI control codes once,
     # enable smart width functions only if a control code is found
     plain_text = u'\n'.join(
-        ['\t'.join(map(_text_type, headers))]
-        + [u'\t'.join(map(_text_type, row)) for row in list_of_lists])
+        ['\t'.join(map(_text_type, headers))] +
+        [u'\t'.join(map(_text_type, row)) for row in list_of_lists])
 
     has_invisible = re.search(_invisible_codes, plain_text)
     if has_invisible:
