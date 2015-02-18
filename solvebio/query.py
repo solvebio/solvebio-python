@@ -176,15 +176,17 @@ class GenomicFilter(Filter):
                 'Start and stop positions must be integers (or None)')
 
         if exact or start is None:
+            # Handle the case where start is None because sometimes
+            # a record will have only the chromosome set (no positions).
             f = Filter(**{self.FIELD_START: start, self.FIELD_STOP: stop})
         else:
             f = Filter(**{self.FIELD_START + '__lte': start,
                           self.FIELD_STOP + '__gte': stop})
             if start != stop:
                 f = f | Filter(**{self.FIELD_START + '__range':
-                                  [start, stop + 1]})
+                                  [start, stop]})
                 f = f | Filter(**{self.FIELD_STOP + '__range':
-                                  [start, stop + 1]})
+                                  [start, stop]})
 
         if chromosome is None:
             f = f & Filter(**{self.FIELD_CHR: None})

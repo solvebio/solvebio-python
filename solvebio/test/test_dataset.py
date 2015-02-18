@@ -91,4 +91,4 @@ class DatasetTests(SolveBioTestCase):
     def test_dataset_facets(self):
         field = Dataset.retrieve(self.TEST_DATASET_NAME).fields('status')
         facets = field.facets()
-        self.assertTrue(len(facets['values']) >= 0)
+        self.assertTrue(len(facets['facets']) >= 0)
