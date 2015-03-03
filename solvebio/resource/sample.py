@@ -7,6 +7,8 @@ from ..client import client
 from ..errors import SolveError
 from .solveobject import convert_to_solve_object
 
+import time
+
 
 class Sample(DeletableAPIResource, DownloadableAPIResource,
              ListableAPIResource):
@@ -57,5 +59,12 @@ class Sample(DeletableAPIResource, DownloadableAPIResource,
             pass
         return convert_to_solve_object(response)
 
-    def annotate(self):
-        return Annotation.create(sample_id=self.id)
+    def annotate(self, wait=False):
+        a = Annotation.create(sample_id=self.id)
+
+        if wait:
+            while a.status in ['queued', 'running']:
+                time.sleep(1)
+                a = Annotation.retrieve(a.id)
+
+        return a

@@ -17,8 +17,8 @@ class BatchQueryTest(SolveBioTestCase):
 
         results = BatchQuery(queries).execute()
         self.assertEqual(len(results), 2)
-        self.assertTrue('error' in results[0])
-        self.assertTrue('error' in results[1])
+        self.assertEqual(results[0]['status_code'], 400)
+        self.assertEqual(results[1]['status_code'], 400)
 
     def test_batch_query(self):
         queries = [
