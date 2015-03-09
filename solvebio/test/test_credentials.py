@@ -48,7 +48,7 @@ class TestCredentials(unittest.TestCase):
                         "cred file created when it doesn't exist first")
 
         self.assertEqual(creds.get_credentials(), None,
-                          'Should not find credentials')
+                         'Should not find credentials')
 
         test_credentials_file = os.path.join(datadir, 'test_creds')
         shutil.copy(test_credentials_file, cred_file)
@@ -74,7 +74,7 @@ class TestCredentials(unittest.TestCase):
         creds.save_credentials(*pair)
         auths = creds.get_credentials()
         self.assertTrue(auths is not None,
-                         'Should get newly set credentials for '
-                         'host {0}'.format(solvebio.api_host))
+                        'Should get newly set credentials for '
+                        'host {0}'.format(solvebio.api_host))
 
         self.assertEqual(auths, pair, 'Should get back creds we saved')

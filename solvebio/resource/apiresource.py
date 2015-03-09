@@ -141,12 +141,12 @@ class DeletableAPIResource(APIResource):
 
 class DownloadableAPIResource(APIResource):
 
-    def download(self, path=None):
+    def download(self, path=None, **kwargs):
         """
         Download the file to the specified path (or a temp. dir).
         """
         download_url = self.instance_url() + '/download'
-        response = self.request('get', download_url, params={},
+        response = self.request('get', download_url, params=kwargs,
                                 allow_redirects=False)
 
         if 302 != response.status_code:
@@ -157,7 +157,9 @@ class DownloadableAPIResource(APIResource):
         download_url = response.headers['location']
         filename = download_url.split('%3B%20filename%3D')[1]
 
-        if path is None:
+        if path:
+            path = os.path.dirname(os.path.expanduser(path))
+        else:
             path = tempfile.gettempdir()
 
         filename = os.path.join(path, filename)

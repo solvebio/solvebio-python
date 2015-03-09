@@ -110,9 +110,9 @@ class Filter(object):
         if len(self.filters) == 0:
             # no change
             f.filters = []
-        elif (len(self.filters) == 1
-              and isinstance(self.filters[0], dict)
-              and self.filters[0].get('not', {})):
+        elif (len(self.filters) == 1 and
+              isinstance(self.filters[0], dict) and
+              self.filters[0].get('not', {})):
             # if the filters are already a single dictionary containing a 'not'
             # then swap out the 'not'
             f.filters = [self_filters[0]['not']]
@@ -176,15 +176,17 @@ class GenomicFilter(Filter):
                 'Start and stop positions must be integers (or None)')
 
         if exact or start is None:
+            # Handle the case where start is None because sometimes
+            # a record will have only the chromosome set (no positions).
             f = Filter(**{self.FIELD_START: start, self.FIELD_STOP: stop})
         else:
             f = Filter(**{self.FIELD_START + '__lte': start,
                           self.FIELD_STOP + '__gte': stop})
             if start != stop:
                 f = f | Filter(**{self.FIELD_START + '__range':
-                                  [start, stop + 1]})
+                                  [start, stop]})
                 f = f | Filter(**{self.FIELD_STOP + '__range':
-                                  [start, stop + 1]})
+                                  [start, stop]})
 
         if chromosome is None:
             f = f & Filter(**{self.FIELD_CHR: None})
