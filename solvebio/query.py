@@ -214,7 +214,6 @@ class Query(object):
             genome_build=None,
             filters=None,
             fields=None,
-            facets=None,
             limit=float('inf'),
             page_size=DEFAULT_PAGE_SIZE,
             result_class=dict):
@@ -235,7 +234,6 @@ class Query(object):
         self._genome_build = genome_build
         self._result_class = result_class
         self._fields = fields
-        self._facets = facets
 
         if filters:
             if isinstance(filters, Filter):
@@ -271,7 +269,6 @@ class Query(object):
                              genome_build=self._genome_build,
                              limit=self._limit,
                              fields=self._fields,
-                             facets=self._facets,
                              page_size=self._page_size,
                              result_class=self._result_class)
         new._filters += self._filters
@@ -329,6 +326,25 @@ class Query(object):
         """
         # self.total will warm up the response if it needs to
         return self.total
+
+    def facets(self, facets):
+        """
+        Returns a dictionary with the requested facets.
+        The facets argument can be a list of strings:
+
+            facets=['<field>', '<field2>', ...]
+
+        or a dictionary in the following format:
+
+            {
+                '<field>[__<facet_type>]': {<options>}
+            }
+        """
+        q = self._clone()
+        q._limit = 0
+        facets = [facets] if isinstance(facets, basestring) else facets
+        q.execute(offset=0, facets=facets)
+        return q._response.get('facets')
 
     def __len__(self):
         """
@@ -525,24 +541,23 @@ class Query(object):
         if self._fields is not None:
             q['fields'] = self._fields
 
-        if self._facets is not None:
-            q['facets'] = self._facets
-
         if self._genome_build is not None:
             q['genome_build'] = self._genome_build
 
-        # Add or modify query parameters (used by BatchQuery)
+        # Add or modify query parameters
+        # (used by BatchQuery and facets)
         q.update(**kwargs)
 
         return q
 
-    def execute(self, offset=0):
+    def execute(self, offset=0, **query):
         """
-        Executes a query.
+        Executes a query. Additional query parameters can be passed
+        as keyword arguments.
 
         Returns: The request parameters and the raw query response.
         """
-        _params = self._build_query()
+        _params = self._build_query(**query)
         self._page_offset = offset
 
         _params.update(
