@@ -24,12 +24,12 @@ class DownloadTest(SolveBioTestCase):
         sample = Sample.create(genome_build='hg19', vcf_file=vcf_file)
 
         # Downloads to a temporary dir
-        response = sample.download()
-        self.assertEqual(response.status_code, 200,
-                         "Download sample file status ok")
-        self.assertTrue(os.path.exists(response.filename),
+        filename = sample.download()
+        self.assertTrue(filename,
+                        "Download sample file status ok")
+        self.assertTrue(os.path.exists(filename),
                         "Download sample file on filesystem")
-        vcf_md5 = md5_file(open(response.filename, 'rb'))
+        vcf_md5 = md5_file(open(filename, 'rb'))
         self.assertEqual(vcf_md5, sample.vcf_md5,
                          "Downloaded file MD5")
-        os.remove(response.filename)
+        os.remove(filename)
