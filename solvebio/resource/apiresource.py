@@ -9,7 +9,6 @@ import tempfile
 import urllib
 
 from ..client import client, _handle_api_error, _handle_request_error
-from ..errors import SolveError
 from ..utils.tabulate import tabulate
 from ..utils.printing import pager
 
