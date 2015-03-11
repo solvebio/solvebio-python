@@ -8,6 +8,7 @@ from ..errors import SolveError
 from .solveobject import convert_to_solve_object
 
 import time
+import os
 
 
 class Sample(DeletableAPIResource, DownloadableAPIResource,
@@ -18,45 +19,47 @@ class Sample(DeletableAPIResource, DownloadableAPIResource,
     `.vcf.gz`, VCF files. Any other extension will be rejected.
     """
 
-    """Defines *create()*, *create_from_file()* and
-    *create_from_url()* methods which allow one to upload a (VCF) file
-    to be stored on the system.
-    """
-
     @classmethod
     def create(cls, genome_build, **params):
+        if ('vcf_url' in params and 'vcf_file' in params) or \
+                ('vcf_url' not in params and 'vcf_file' not in params):
+            raise TypeError(
+                'Please specify either a "vcf_url" or "vcf_file".')
+
         if 'vcf_url' in params:
-            if 'vcf_file' in params:
-                raise TypeError('Specified both vcf_url and vcf_file; ' +
-                                'use only one')
-            return cls.create_from_url(genome_build, params['vcf_url'])
+            return cls.create_from_url(genome_build, **params)
         elif 'vcf_file' in params:
-            return cls.create_from_file(genome_build, params['vcf_file'])
-        else:
-            raise TypeError('Must specify exactly one of vcf_url or ' +
-                            'vcf_file parameter')
+            return cls.create_from_file(genome_build, **params)
 
     @classmethod
     def create_from_file(cls, genome_build, vcf_file):
-        """Creates from the specified file.  The data of
-        the should be in VCF format."""
-
-        files = {'vcf_file': open(vcf_file, 'rb')}
-        params = {'genome_build': genome_build}
+        """
+        Creates from the specified VCF file.
+        """
+        params = {
+            'genome_build': genome_build
+        }
+        files = {
+            'vcf_file': open(os.path.expanduser(vcf_file), 'rb')
+        }
         response = client.post(cls.class_url(), params, files=files)
         return convert_to_solve_object(response)
 
     @classmethod
     def create_from_url(cls, genome_build, vcf_url):
-        """Creates from the specified URL.  The data of
-        the should be in VCF format."""
+        """
+        Creates a Sample from the specified URL.
+        """
+        params = {
+            'genome_build': genome_build,
+            'vcf_url': vcf_url
+        }
 
-        params = {'genome_build': genome_build,
-                  'vcf_url': vcf_url}
         try:
             response = client.post(cls.class_url(), params)
         except SolveError as response:
             pass
+
         return convert_to_solve_object(response)
 
     def annotate(self, wait=False):
@@ -65,6 +68,6 @@ class Sample(DeletableAPIResource, DownloadableAPIResource,
         if wait:
             while a.status in ['queued', 'running']:
                 time.sleep(1)
-                a = Annotation.retrieve(a.id)
+                a.refresh()
 
         return a

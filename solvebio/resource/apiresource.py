@@ -143,18 +143,16 @@ class DownloadableAPIResource(APIResource):
 
     def download(self, path=None, **kwargs):
         """
-        Download the file to the specified path (or a temp. dir).
+        Download the file to the specified directory
+        (or a temp. dir if nothing is specified).
         """
         download_url = self.instance_url() + '/download'
-        response = self.request('get', download_url, params=kwargs,
-                                allow_redirects=False)
+        # Don't redirect, just return the signed S3 URL
+        kwargs.update({'redirect': ''})
+        response = self.request(
+            'get', download_url, params=kwargs, allow_redirects=False)
 
-        if 302 != response.status_code:
-            # Some kind of error. We expect a redirect
-            raise SolveError('Could not download file: response code {0}'
-                             .format(response.status_code))
-
-        download_url = response.headers['location']
+        download_url = response['url']
         filename = download_url.split('%3B%20filename%3D')[1]
 
         if path:
@@ -175,9 +173,7 @@ class DownloadableAPIResource(APIResource):
         with open(filename, 'wb') as fileobj:
             fileobj.write(response._content)
 
-        response = convert_to_solve_object(response)
-        response.filename = filename
-        return response
+        return filename
 
 
 class ListableAPIResource(APIResource):
