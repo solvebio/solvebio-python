@@ -327,22 +327,31 @@ class Query(object):
         # self.total will warm up the response if it needs to
         return self.total
 
-    def facets(self, facets):
+    def facets(self, *args, **kwargs):
         """
         Returns a dictionary with the requested facets.
-        The facets argument can be a list of strings:
 
-            facets=['<field>', '<field2>', ...]
+        The facets function supports string args, and keyword
+        args.
 
-        or a dictionary in the following format:
-
-            {
-                '<field>[__<facet_type>]': {<options>}
-            }
+        q.facets('field_1', 'field_2') will return facets for
+        field_1 and field_2.
+        q.facets(field_1={'limit': 0}, field_2={'limit': 10})
+        will return all facets for field_1 and 10 facets for field_2.
         """
+        # Combine args and kwargs into facet format.
+        facets = {a: {} for a in args}
+        facets.update(kwargs)
+
+        if not facets:
+            raise AttributeError('Faceting requires at least one field')
+
+        for f in facets.keys():
+            if not isinstance(f, basestring):
+                raise AttributeError('Facet field arguments must be strings')
+
         q = self._clone()
         q._limit = 0
-        facets = [facets] if isinstance(facets, basestring) else facets
         q.execute(offset=0, facets=facets)
         return q._response.get('facets')
 
