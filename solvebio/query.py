@@ -340,7 +340,7 @@ class Query(object):
         will return all facets for field_1 and 10 facets for field_2.
         """
         # Combine args and kwargs into facet format.
-        facets = {a: {} for a in args}
+        facets = dict((a, {}) for a in args)
         facets.update(kwargs)
 
         if not facets:
