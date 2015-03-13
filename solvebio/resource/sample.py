@@ -55,11 +55,7 @@ class Sample(DeletableAPIResource, DownloadableAPIResource,
             'vcf_url': vcf_url
         }
 
-        try:
-            response = client.post(cls.class_url(), params)
-        except SolveError as response:
-            pass
-
+        response = client.post(cls.class_url(), params)
         return convert_to_solve_object(response)
 
     def annotate(self, wait=False):
