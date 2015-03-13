@@ -4,7 +4,6 @@ from .annotation import Annotation
 from .apiresource import DeletableAPIResource, DownloadableAPIResource, \
     ListableAPIResource
 from ..client import client
-from ..errors import SolveError
 from .solveobject import convert_to_solve_object
 
 import time
