@@ -13,6 +13,7 @@ class BaseQueryTest(SolveBioTestCase):
     def test_basic(self):
         results = self.dataset.query().filter(
             omim_ids__in=[123631, 123670, 123690, 306250])
+        self.assertEqual(results.total, 4)
         self.assertEqual(len(results), results.total)
 
         # Test that iteration returns the correct number of results.
