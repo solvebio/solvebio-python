@@ -188,7 +188,7 @@ class ListableAPIResource(APIResource):
         list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
         if list_fields:
             fields, headers = zip(*list_fields)
-            results.set_tabulate(fields, headers=headers)
+            results.set_tabulate(fields, headers=headers, sort=False)
 
         return results
 
