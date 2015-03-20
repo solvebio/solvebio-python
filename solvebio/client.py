@@ -14,6 +14,15 @@ import logging
 from urlparse import urljoin
 from requests.auth import AuthBase
 
+# Try using pyopenssl if available.
+# Requires: pip install pyopenssl ndg-httpsclient pyasn1
+# See http://urllib3.readthedocs.org/en/latest/contrib.html#module-urllib3.contrib.pyopenssl  # noqa
+try:
+    import urllib3.contrib.pyopenssl
+    urllib3.contrib.pyopenssl.inject_into_urllib3()
+except ImportError:
+    pass
+
 logger = logging.getLogger('solvebio')
 
 
