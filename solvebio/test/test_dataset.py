@@ -97,12 +97,12 @@ class DatasetTests(SolveBioTestCase):
     #TODO support a Genomic test dataset (grab clinvar one from API build)
     def test_dataset_beacon(self):
         resp = Dataset.retrieve(self.TEST_DATASET_NAME).beacon(
-                                chromosome="6", coordinate=1234, allele='G')
+                                chromosome="6", coordinate=123, allele='G')
         self.assertTrue('total' in resp and resp['total'] == 0)
         self.assertTrue('exist' in resp and resp['exist'] == False)
         self.assertTrue('query' in resp and resp['query']['chromosome'] == '6')
         self.assertTrue('query' in resp and resp['query']['allele'] == 'G')
-        self.assertTrue('query' in resp and resp['query']['coordinate'] == 1234)
+        self.assertTrue('query' in resp and resp['query']['coordinate'] == 123)
 
     #TODO add another version of TEST_DATASET so we can test changelog
     def test_dataset_changelog(self):
