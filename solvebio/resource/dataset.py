@@ -61,7 +61,6 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
             return self.instance_url() + u'/data'
         return self['data_url']
 
-
     def query(self, **params):
         self._data_url()  # raises an exception if there's no ID
         return Query(self['id'], **params)
