@@ -23,3 +23,11 @@ class DepositoryVersionTests(SolveBioTestCase):
                             'name', 'is_released', 'released_at',
                             'title', 'updated_at', 'url'])
         self.assertSetEqual(set(dv), check_fields)
+
+    """
+    #TODO add another version of TEST_DATASET so we can test changelog
+    def test_depositoryversion_changelog(self):
+        dv = DepositoryVersion.all().data[0]
+        resp = dv.changelog()
+        self.assertTrue(resp, resp)
+    """

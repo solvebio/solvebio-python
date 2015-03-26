@@ -49,5 +49,20 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
 
         return results
 
+    def _changelog_url(self):
+        if 'changelog_url' not in self:
+            if 'id' not in self or not self['id']:
+                raise Exception(
+                    'No Dataset ID was provided. '
+                    'Please instantiate the Dataset '
+                    'object with an ID or full_name.')
+            # automatically construct the data_url from the ID
+            return self.instance_url() + u'/changelog'
+        return self['changelog_url']
+
+    def changelog(self, **params):
+        # raises an exception if there's no ID
+        return client.get(self._changelog_url(), params)
+
     def help(self):
         open_help('/library/{0}'.format(self['full_name']))
