@@ -61,9 +61,40 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
             return self.instance_url() + u'/data'
         return self['data_url']
 
+
     def query(self, **params):
         self._data_url()  # raises an exception if there's no ID
         return Query(self['id'], **params)
+
+    def _beacon_url(self):
+        if 'beacon_url' not in self:
+            if 'id' not in self or not self['id']:
+                raise Exception(
+                    'No Dataset ID was provided. '
+                    'Please instantiate the Dataset '
+                    'object with an ID or full_name.')
+            # automatically construct the data_url from the ID
+            return self.instance_url() + u'/beacon'
+        return self['beacon_url']
+
+    def beacon(self, **params):
+        # raises an exception if there's no ID
+        return client.get(self._beacon_url(), params)
+
+    def _changelog_url(self):
+        if 'changelog_url' not in self:
+            if 'id' not in self or not self['id']:
+                raise Exception(
+                    'No Dataset ID was provided. '
+                    'Please instantiate the Dataset '
+                    'object with an ID or full_name.')
+            # automatically construct the data_url from the ID
+            return self.instance_url() + u'/changelog'
+        return self['changelog_url']
+
+    def changelog(self, **params):
+        # raises an exception if there's no ID
+        return client.get(self._changelog_url(), params)
 
     def help(self):
         open_help('/library/{0}'.format(self['full_name']))
