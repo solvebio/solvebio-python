@@ -1,9 +1,8 @@
 import os
 
-import solvebio
 from solvebio.resource import Annotation, Sample
 
-from .helper import unittest, SolveBioTestCase
+from .helper import SolveBioTestCase
 
 
 class AnnotationTest(SolveBioTestCase):
