@@ -67,6 +67,8 @@ class GenomicFilterTest(unittest.TestCase):
             "<GenomicFilter [{'and': [{'or': [{'and': [('genomic_coordinates.start__lte', 100), ('genomic_coordinates.stop__gte', 200)]}, ('genomic_coordinates.start__range', [100, 200]), ('genomic_coordinates.stop__range', [100, 200])]}, ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
             "<GenomicFilter [{'and': [{'or': [{'and': [('genomic_coordinates.stop__gte', 200), ('genomic_coordinates.start__gte', 100)]}, ('genomic_coordinates.start__range', [100, 200]), ('genomic_coordinates.stop__range', [100, 200])]}, ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
         ]
+        if repr(f) not in expected:
+            print repr(f)
         self.assertTrue(repr(f) in expected)
 
         f = GenomicFilter('chr1', 100, 200, exact=True)
@@ -74,6 +76,8 @@ class GenomicFilterTest(unittest.TestCase):
             "<GenomicFilter [{'and': [('genomic_coordinates.stop', 200), ('genomic_coordinates.start', 100), ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
             "<GenomicFilter [{'and': [('genomic_coordinates.start', 100), ('genomic_coordinates.stop', 200), ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
         ]
+        if repr(f) not in expected:
+            print repr(f)
         self.assertTrue(repr(f) in expected)
 
 
