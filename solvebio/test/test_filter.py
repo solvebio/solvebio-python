@@ -48,17 +48,33 @@ class FilterTest(unittest.TestCase):
 class GenomicFilterTest(unittest.TestCase):
     def test_single_position(self):
         f = GenomicFilter('chr1', 100)
-        self.assertEqual(repr(f), "<GenomicFilter [{'and': [('genomic_coordinates.start__lte', 100), ('genomic_coordinates.stop__gte', 100), ('genomic_coordinates.chromosome', '1')]}]>")  # noqa
+        expected = [
+            "<GenomicFilter [{'and': [('genomic_coordinates.start__lte', 100), ('genomic_coordinates.stop__gte', 100), ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
+            "<GenomicFilter [{'and': [('genomic_coordinates.stop__gte', 100), ('genomic_coordinates.start__lte', 100), ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
+        ]
+        self.assertTrue(repr(f) in expected)
 
         f = GenomicFilter('chr1', 100, exact=True)
-        self.assertEqual(repr(f), "<GenomicFilter [{'and': [('genomic_coordinates.stop', 100), ('genomic_coordinates.start', 100), ('genomic_coordinates.chromosome', '1')]}]>")  # noqa
+        expected = [
+            "<GenomicFilter [{'and': [('genomic_coordinates.stop', 100), ('genomic_coordinates.start', 100), ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
+            "<GenomicFilter [{'and': [('genomic_coordinates.start', 100), ('genomic_coordinates.stop', 100), ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
+        ]
+        self.assertTrue(repr(f) in expected)  # noqa
 
     def test_range(self):
         f = GenomicFilter('chr1', 100, 200)
-        self.assertEqual(repr(f), "<GenomicFilter [{'and': [{'or': [{'and': [('genomic_coordinates.start__lte', 100), ('genomic_coordinates.stop__gte', 200)]}, ('genomic_coordinates.start__range', [100, 200]), ('genomic_coordinates.stop__range', [100, 200])]}, ('genomic_coordinates.chromosome', '1')]}]>")  # noqa
+        expected = [
+            "<GenomicFilter [{'and': [{'or': [{'and': [('genomic_coordinates.start__lte', 100), ('genomic_coordinates.stop__gte', 200)]}, ('genomic_coordinates.start__range', [100, 200]), ('genomic_coordinates.stop__range', [100, 200])]}, ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
+            "<GenomicFilter [{'and': [{'or': [{'and': [('genomic_coordinates.stop__gte', 100), ('genomic_coordinates.start__gte', 200)]}, ('genomic_coordinates.start__range', [100, 200]), ('genomic_coordinates.stop__range', [100, 200])]}, ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
+        ]
+        self.assertTrue(repr(f) in expected)
 
         f = GenomicFilter('chr1', 100, 200, exact=True)
-        self.assertEqual(repr(f), "<GenomicFilter [{'and': [('genomic_coordinates.stop', 200), ('genomic_coordinates.start', 100), ('genomic_coordinates.chromosome', '1')]}]>")  # noqa
+        expected = [
+            "<GenomicFilter [{'and': [('genomic_coordinates.stop', 200), ('genomic_coordinates.start', 100), ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
+            "<GenomicFilter [{'and': [('genomic_coordinates.start', 100), ('genomic_coordinates.stop', 200), ('genomic_coordinates.chromosome', '1')]}]>",  # noqa
+        ]
+        self.assertTrue(repr(f) in expected)
 
 
 if __name__ == "__main__":
