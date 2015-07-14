@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import os
 import sys
 import subprocess
@@ -6,6 +8,12 @@ import locale
 import logging
 
 logger = logging.getLogger('solvebio')
+
+try:
+    # reload() for Python3
+    from importlib import reload
+except ImportError:
+    pass
 
 std_handles = [sys.stdin, sys.stdout, sys.stderr]
 try:

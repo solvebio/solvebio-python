@@ -1,16 +1,48 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from setuptools import setup, find_packages
 
+import sys
+import warnings
+
 VERSION = 'undefined'
-for row in open('solvebio/version.py').readlines():
-    if row.startswith('VERSION'):
-        exec(row)
+install_requires = ['six']
+extra = {}
+
+with open('solvebio/version.py') as f:
+    for row in f.readlines():
+        if row.startswith('VERSION'):
+            exec(row)
+
+if sys.version_info < (2, 6):
+    warnings.warn(
+        'Python 2.5 is no longer officially supported by SolveBio. '
+        'If you have any questions, please file an issue on GitHub or '
+        'contact us at support@solvebio.com.',
+        DeprecationWarning)
+    install_requires.append('requests >= 0.8.8, < 0.10.1')
+    install_requires.append('ssl')
+else:
+    install_requires.append('requests>=2.0.0')
+
+# Adjustments for Python 2 vs 3
+if sys.version_info < (3, 0):
+    # Get simplejson if we don't already have json
+    try:
+        import json  # noqa
+    except ImportError:
+        install_requires.append('simplejson')
+else:
+    extra['use_2to3'] = True
+
+with open('README.md') as f:
+    long_description = f.read()
 
 setup(
     name='solvebio',
     version=VERSION,
     description='The SolveBio Python client',
-    long_description=open('README.md').read(),
+    long_description=long_description,
     author='Solve, Inc.',
     author_email='contact@solvebio.com',
     url='https://github.com/solvebio/solvebio-python',
@@ -18,7 +50,7 @@ setup(
     package_dir={"solvebio": "solvebio"},
     test_suite='solvebio.test.all',
     include_package_data=True,
-    install_requires=['requests>=2.0.0'],
+    install_requires=install_requires,
     platforms='any',
     entry_points={
         'console_scripts': ['solvebio = solvebio.cli.main:main']
@@ -30,4 +62,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Scientific/Engineering :: Bio-Informatics'
     ],
+    **extra
 )

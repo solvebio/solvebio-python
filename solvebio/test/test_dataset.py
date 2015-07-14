@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from solvebio.resource import Dataset
 
 from .helper import SolveBioTestCase

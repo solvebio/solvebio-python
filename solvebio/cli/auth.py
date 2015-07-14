@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import print_function
+from six.moves import input
+
 import getpass
 
 import solvebio
-from solvebio.client import client, SolveError
-from solvebio.cli.credentials import (get_credentials, delete_credentials,
-                                      save_credentials)
+from ..client import client, SolveError
+from .credentials import (
+    get_credentials,
+    delete_credentials,
+    save_credentials
+)
 
 
 def _print_msg(msg):
@@ -18,7 +25,7 @@ def _ask_for_credentials():
     Asks the user for their email and password.
     """
     _print_msg('Enter your SolveBio credentials')
-    email = raw_input('Email: ')
+    email = input('Email: ')
     password = getpass.getpass('Password (typing will be hidden): ')
     return (email, password)
 

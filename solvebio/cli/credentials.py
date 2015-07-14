@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
-"""Deals with reading SolveBio's netrc-style credentials file"""
+from __future__ import absolute_import
+import six
+
 import solvebio
 
 from netrc import netrc as _netrc, NetrcParseError
-from urlparse import urlparse
 import os
+
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 
 
 class netrc(_netrc):
@@ -37,10 +43,10 @@ class netrc(_netrc):
         for host in self.hosts.keys():
             attrs = self.hosts[host]
             rep = rep + "machine " + host + "\n\tlogin " \
-                + unicode(attrs[0]) + "\n"
+                + six.text_type(attrs[0]) + "\n"
             if attrs[1]:
-                rep = rep + "account " + unicode(attrs[1])
-            rep = rep + "\tpassword " + unicode(attrs[2]) + "\n"
+                rep = rep + "account " + six.text_type(attrs[1])
+            rep = rep + "\tpassword " + six.text_type(attrs[2]) + "\n"
         for macro in self.macros.keys():
             rep = rep + "macdef " + macro + "\n"
             for line in self.macros[macro]:

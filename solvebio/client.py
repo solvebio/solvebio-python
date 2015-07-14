@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
 import time
 import solvebio
@@ -11,8 +12,12 @@ import platform
 import requests
 import textwrap
 import logging
-from urlparse import urljoin
 from requests.auth import AuthBase
+
+try:
+    from urlparse import urljoin
+except ImportError:
+    from urllib.parse import urljoin
 
 # Try using pyopenssl if available.
 # Requires: pip install pyopenssl ndg-httpsclient pyasn1
