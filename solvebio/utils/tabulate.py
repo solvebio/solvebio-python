@@ -128,7 +128,7 @@ def simple_separated_format(separator):
 
     >>> tsv = simple_separated_format("\t") ; \
         tabulate([["foo", 1], ["spam", 23]], \
-            tablefmt=tsv) == u'foo \\t 1\\nspam\\t23'
+            tablefmt=tsv) == 'foo \\t 1\\nspam\\t23'
     True
 
     """

@@ -6,12 +6,13 @@ import sys
 import warnings
 
 VERSION = 'undefined'
-for row in open('solvebio/version.py').readlines():
-    if row.startswith('VERSION'):
-        exec(row)
-
-
 install_requires = ['six']
+extra = {}
+
+with open('solvebio/version.py') as f:
+    for row in f.readlines():
+        if row.startswith('VERSION'):
+            exec(row)
 
 if sys.version_info < (2, 6):
     warnings.warn(
@@ -25,8 +26,6 @@ else:
     install_requires.append('requests>=2.0.0')
 
 # Adjustments for Python 2 vs 3
-extra = {}
-
 if sys.version_info < (3, 0):
     # Get simplejson if we don't already have json
     try:
@@ -36,11 +35,14 @@ if sys.version_info < (3, 0):
 else:
     extra['use_2to3'] = True
 
+with open('README.md') as f:
+    long_description = f.read()
+
 setup(
     name='solvebio',
     version=VERSION,
     description='The SolveBio Python client',
-    long_description=open('README.md').read(),
+    long_description=long_description,
     author='Solve, Inc.',
     author_email='contact@solvebio.com',
     url='https://github.com/solvebio/solvebio-python',
