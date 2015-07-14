@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from solvebio.query import BatchQuery
 from solvebio.resource import Dataset
 

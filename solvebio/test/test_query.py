@@ -1,7 +1,10 @@
+from __future__ import absolute_import
 from solvebio.resource import Dataset
 from solvebio.query import Filter
 
-from helper import SolveBioTestCase
+from .helper import SolveBioTestCase
+from six.moves import map
+from six.moves import range
 
 
 class BaseQueryTest(SolveBioTestCase):

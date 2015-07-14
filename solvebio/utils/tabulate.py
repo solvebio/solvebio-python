@@ -24,17 +24,23 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import absolute_import
+import six
+from six.moves import map
+from six.moves import range
+from six.moves import zip
+
 from collections import namedtuple
 from platform import python_version_tuple
 import re
-from printing import TTY_COLS
+from .printing import TTY_COLS
 
 if python_version_tuple()[0] < "3":
     from itertools import izip_longest
     _none_type = type(None)
     _int_type = int
     _float_type = float
-    _text_type = unicode
+    _text_type = six.text_type
     _binary_type = str
 else:
     from itertools import zip_longest as izip_longest
@@ -321,7 +327,7 @@ def _align_column(strings, alignment, minwidth=0, has_invisible=True):
     else:
         width_fn = len
 
-    maxwidth = max(max(map(width_fn, strings)), minwidth)
+    maxwidth = max(max(list(map(width_fn, strings))), minwidth)
     padded_strings = [padfn(maxwidth, s, has_invisible) for s in strings]
     return padded_strings
 
@@ -415,13 +421,13 @@ def _normalize_tabular_data(tabular_data, headers, sort=True):
         # dict-like and pandas.DataFrame?
         if hasattr(tabular_data.values, "__call__"):
             # likely a conventional dict
-            keys = tabular_data.keys()
+            keys = list(tabular_data.keys())
             # columns have to be transposed
-            rows = list(izip_longest(*tabular_data.values()))
+            rows = list(izip_longest(*list(tabular_data.values())))
         elif hasattr(tabular_data, "index"):
             # values is a property, has .index then
             # it's likely a pandas.DataFrame (pandas 0.11.0)
-            keys = tabular_data.keys()
+            keys = list(tabular_data.keys())
             # values matrix doesn't need to be transposed
             vals = tabular_data.values
             names = tabular_data.index
@@ -437,7 +443,7 @@ def _normalize_tabular_data(tabular_data, headers, sort=True):
         rows = list(tabular_data)
 
         if headers == "keys" and len(rows) > 0:  # keys are column indices
-            headers = list(map(_text_type, range(len(rows[0]))))
+            headers = list(map(_text_type, list(range(len(rows[0])))))
 
     # take headers from the first row if necessary
     if headers == "firstrow" and len(rows) > 0:

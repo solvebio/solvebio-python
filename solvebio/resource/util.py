@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import re
-import sys
 
 try:
     import json
@@ -25,9 +25,3 @@ def pluralize(name):
 
 def class_to_api_name(name):
     return pluralize(camelcase_to_underscore(name))
-
-
-def utf8(value):
-    if isinstance(value, unicode) and sys.version_info < (3, 0):
-        return value.encode('utf-8')
-    return value

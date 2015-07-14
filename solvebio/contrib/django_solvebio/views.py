@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.http import HttpResponse, HttpResponseNotFound, \
     HttpResponseBadRequest
 from django.views.generic.base import View
@@ -10,7 +11,7 @@ from solvebio.client import client
 
 import json
 
-from app_settings import APP_ID, APP_SECRET, ACCESS_TOKEN
+from .app_settings import APP_ID, APP_SECRET, ACCESS_TOKEN
 
 
 class OAuth2AccessTokenView(View):

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from solvebio.resource import DepositoryVersion
 
 from .helper import SolveBioTestCase

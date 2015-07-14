@@ -1,4 +1,5 @@
 """Solvebio API Resource for Samples"""
+from __future__ import absolute_import
 
 from .annotation import Annotation
 from .apiresource import DeletableAPIResource, DownloadableAPIResource, \

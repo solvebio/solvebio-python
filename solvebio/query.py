@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+import six
+
 from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
@@ -52,7 +55,7 @@ class Filter(object):
         """Creates a Filter"""
         # Set deepcopy to False for faster Filter building
         self.deepcopy = True
-        filters = filters.items()
+        filters = list(filters.items())
 
         if len(filters) > 1:
             self.filters = [{'and': filters}]
@@ -347,7 +350,7 @@ class Query(object):
             raise AttributeError('Faceting requires at least one field')
 
         for f in facets.keys():
-            if not isinstance(f, basestring):
+            if not isinstance(f, six.string_types):
                 raise AttributeError('Facet field arguments must be strings')
 
         q = self._clone()
@@ -395,7 +398,7 @@ class Query(object):
                     continue
 
             elif isinstance(f, dict):
-                key = f.keys()[0]
+                key = list(f.keys())[0]
                 val = f[key]
 
                 if isinstance(val, dict):
@@ -414,7 +417,7 @@ class Query(object):
             return u'Query returned 0 results.'
 
         return u'\n%s\n\n... %s more results.' % (
-            tabulate(self._buffer[0].items(), ['Fields', 'Data'],
+            tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
                      aligns=['right', 'left'], sort=True),
             pretty_int(len(self) - 1))
 
@@ -452,7 +455,7 @@ class Query(object):
         :Parameters:
         - `key`: The requested slice range or index.
         """
-        if not isinstance(key, (slice, int, long)):
+        if not isinstance(key, (slice,) + six.integer_types):
             raise TypeError
 
         if isinstance(key, slice):

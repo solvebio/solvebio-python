@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import print_function
+
+
 def launch_ipython_shell(args):  # pylint: disable=unused-argument
     """Open the SolveBio shell (IPython wrapper)"""
     try:

@@ -58,14 +58,16 @@ Feel free to submit issues to this GitHub repository and/or
 send us an email at contact@solvebio.com.
 
 """
+from __future__ import absolute_import
 import re
 import logging
+import six
 logger = logging.getLogger('django_solvebio')
 
 from solvebio.resource import Dataset
 from solvebio.errors import SolveError
-from models import DatasetAlias
-import app_settings
+from .models import DatasetAlias
+from . import app_settings
 
 
 class SolveBio(object):
@@ -86,7 +88,7 @@ class SolveBio(object):
             pass
 
         # if the alias_or_id matches the Dataset regex, return it
-        if isinstance(alias, (int, long)) or \
+        if isinstance(alias, six.integer_types) or \
                 re.match(Dataset.FULL_NAME_REGEX, alias):
             return Dataset(alias)
 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""
-Abstract classes from which specific API resources (Depository,
-Annotation, ... ) inheret
-"""
+from __future__ import absolute_import
+import six
+from six.moves import zip
+
 import os
 import requests
 import tempfile
@@ -48,7 +48,7 @@ class APIResource(SolveObject):
         base = self.class_url()
 
         if id:
-            return '/'.join([base, unicode(id)])
+            return '/'.join([base, six.text_type(id)])
         else:
             raise Exception(
                 'Could not determine which URL to request: %s instance '
@@ -187,7 +187,7 @@ class ListableAPIResource(APIResource):
         # If the object has LIST_FIELDS, setup tabulate
         list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
         if list_fields:
-            fields, headers = zip(*list_fields)
+            fields, headers = list(zip(*list_fields))
             results.set_tabulate(fields, headers=headers, sort=False)
 
         return results
@@ -197,7 +197,7 @@ class ListableAPIResource(APIResource):
         return pager(cls.all, **params)
 
     def __repr__(self):
-        return tabulate(self.items(), ['Fields', 'Data'],
+        return tabulate(list(self.items()), ['Fields', 'Data'],
                         aligns=['right', 'left'], sort=True)
 
 
@@ -213,7 +213,7 @@ class SearchableAPIResource(APIResource):
         # If the object has LIST_FIELDS, setup tabulate
         list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
         if list_fields:
-            fields, headers = zip(*list_fields)
+            fields, headers = list(zip(*list_fields))
             results.set_tabulate(fields, headers=headers)
 
         return results

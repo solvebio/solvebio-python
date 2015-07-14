@@ -1,5 +1,6 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import unittest
 from solvebio.utils import tabulate as t
 from solvebio.utils import printing as p

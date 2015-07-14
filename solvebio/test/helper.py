@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+import six
+
 import os
 import re
 import sys
@@ -26,11 +29,11 @@ class SolveBioTestCase(unittest.TestCase):
     def assertRaisesRegexp(self, exception, regexp, callable, *args, **kwargs):
         try:
             callable(*args, **kwargs)
-        except exception, err:
+        except exception as err:
             if regexp is None:
                 return True
 
-            if isinstance(regexp, basestring):
+            if isinstance(regexp, six.string_types):
                 regexp = re.compile(regexp)
             if not regexp.search(str(err)):
                 raise self.failureException('\'%s\' does not match \'%s\'' %

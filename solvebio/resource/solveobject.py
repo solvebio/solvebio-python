@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+import six
+
 import sys
 
 from ..client import client
@@ -13,7 +16,7 @@ def convert_to_solve_object(resp):
     elif isinstance(resp, dict) and not isinstance(resp, SolveObject):
         resp = resp.copy()
         klass_name = resp.get('class_name')
-        if isinstance(klass_name, basestring):
+        if isinstance(klass_name, six.string_types):
             klass = types.get(klass_name, SolveObject)
         else:
             klass = SolveObject
@@ -64,7 +67,7 @@ class SolveObject(dict):
         self.clear()
         self._unsaved_values = set()
 
-        for k, v in values.iteritems():
+        for k, v in six.iteritems(values):
             super(SolveObject, self).__setitem__(
                 k, convert_to_solve_object(v))
 
@@ -73,7 +76,7 @@ class SolveObject(dict):
         return convert_to_solve_object(response)
 
     def __repr__(self):
-        if isinstance(self.get('class_name'), basestring):
+        if isinstance(self.get('class_name'), six.string_types):
             ident_parts = [self.get('class_name')]
         else:
             ident_parts = [type(self).__name__]
@@ -81,7 +84,7 @@ class SolveObject(dict):
         if isinstance(self.get('id'), int):
             ident_parts.append('id=%d' % (self.get('id'),))
 
-        if isinstance(self.get('full_name'), unicode):
+        if isinstance(self.get('full_name'), six.text_type):
             ident_parts.append(
                 'full_name=%s' % (self.get('full_name'),))
 

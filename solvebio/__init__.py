@@ -7,6 +7,8 @@ This is the Python client & library for the SolveBio API.
 
 Have questions or comments? email us at: support@solvebio.com
 """
+from __future__ import absolute_import
+from __future__ import print_function
 __docformat__ = 'restructuredtext'
 import os as _os
 import logging as _logging
@@ -110,7 +112,7 @@ def login(**kwargs):
             _, api_key = creds
 
     if not (api_key or access_token):
-        print 'No credentials found. Requests to SolveBio may fail.'
+        print('No credentials found. Requests to SolveBio may fail.')
 
 
 __all__ = [
