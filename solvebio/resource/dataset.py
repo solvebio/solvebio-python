@@ -61,9 +61,9 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
             return self.instance_url() + u'/data'
         return self['data_url']
 
-    def query(self, **params):
+    def query(self, query=None, **params):
         self._data_url()  # raises an exception if there's no ID
-        return Query(self['id'], **params)
+        return Query(self['id'], query=query, **params)
 
     def _beacon_url(self):
         if 'beacon_url' not in self:

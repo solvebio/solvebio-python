@@ -214,6 +214,7 @@ class Query(object):
     def __init__(
             self,
             dataset_id,
+            query=None,
             genome_build=None,
             filters=None,
             fields=None,
@@ -225,6 +226,7 @@ class Query(object):
 
         :Parameters:
           - `dataset_id`: Unique ID of dataset to query.
+          - `query`: An optional query string.
           - `genome_build`: The genome build to use for the query.
           - `result_class` (optional): Class of object returned by query.
           - `fields` (optional): List of specific fields to retrieve.
@@ -234,6 +236,7 @@ class Query(object):
         """
         self._dataset_id = dataset_id
         self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
+        self._query = query
         self._genome_build = genome_build
         self._result_class = result_class
         self._fields = fields
@@ -269,6 +272,7 @@ class Query(object):
 
     def _clone(self, filters=None):
         new = self.__class__(self._dataset_id,
+                             query=self._query,
                              genome_build=self._genome_build,
                              limit=self._limit,
                              fields=self._fields,
@@ -546,6 +550,9 @@ class Query(object):
 
     def _build_query(self, **kwargs):
         q = {}
+
+        if self._query:
+            q['query'] = self._query
 
         if self._filters:
             filters = self._process_filters(self._filters)
