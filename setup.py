@@ -19,7 +19,7 @@ setup(
     package_dir={"solvebio": "solvebio"},
     test_suite='solvebio.test.all',
     include_package_data=True,
-    install_requires=['requests>=2.0.0'],
+    install_requires=['requests>=2.0.0', 'six'],
     platforms='any',
     entry_points={
         'console_scripts': ['solvebio = solvebio.cli.main:main']
