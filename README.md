@@ -6,6 +6,7 @@ SolveBio Python Client
 ======================
 
 This is the SolveBio Python package and command-line interface (CLI).
+This module has been tested on Python 2.6+, Python 3.1+ and PyPy.
 
 For more information about SolveBio visit [solvebio.com](https://www.solvebio.com).
 
