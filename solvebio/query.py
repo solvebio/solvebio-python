@@ -515,6 +515,10 @@ class Query(object):
 
         return self
 
+    def __next__(self):
+        """Python 3"""
+        return self.next()
+
     def next(self):
         """
         Allows the Query object to be an iterable.

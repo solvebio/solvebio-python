@@ -5,8 +5,12 @@ import six
 import solvebio
 
 from netrc import netrc as _netrc, NetrcParseError
-from urlparse import urlparse
 import os
+
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 
 
 class netrc(_netrc):

@@ -9,6 +9,12 @@ import logging
 
 logger = logging.getLogger('solvebio')
 
+try:
+    # reload() for Python3
+    from importlib import reload
+except ImportError:
+    pass
+
 std_handles = [sys.stdin, sys.stdout, sys.stderr]
 try:
     # Switch from the default input ASCII encoding to the default locale.

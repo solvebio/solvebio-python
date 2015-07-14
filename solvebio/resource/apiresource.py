@@ -6,7 +6,11 @@ from six.moves import zip
 import os
 import requests
 import tempfile
-import urllib
+
+try:
+    from urllib import quote_plus
+except ImportError:
+    from urllib.parse import quote_plus
 
 from ..client import client, _handle_api_error, _handle_request_error
 from ..utils.tabulate import tabulate
@@ -35,7 +39,7 @@ class APIResource(SolveObject):
             raise NotImplementedError(
                 'APIResource is an abstract class.  You should perform '
                 'actions on its subclasses (e.g. Depository, Dataset)')
-        return str(urllib.quote_plus(cls.__name__))
+        return str(quote_plus(cls.__name__))
 
     @classmethod
     def class_url(cls):
@@ -89,6 +93,10 @@ class ListObject(SolveObject):
     def __iter__(self):
         self._i = 0
         return self
+
+    def __next__(self):
+        """Python 3"""
+        return self.next()
 
     def next(self):
         if not getattr(self, '_i', None):
