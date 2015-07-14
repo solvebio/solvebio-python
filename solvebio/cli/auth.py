@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import print_function
+from six.moves import input
+
 import getpass
 
 import solvebio
-from solvebio.client import client, SolveError
-from solvebio.cli.credentials import (get_credentials, delete_credentials,
-                                      save_credentials)
-from six.moves import input
+from ..client import client, SolveError
+from .credentials import (
+    get_credentials,
+    delete_credentials,
+    save_credentials
+)
 
 
 def _print_msg(msg):

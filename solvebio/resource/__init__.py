@@ -1,5 +1,4 @@
-"""Glues together all SolveObjects"""
-# __package__ = 'solvebio.resource'
+from __future__ import absolute_import
 
 from .depository import Depository
 from .depositoryversion import DepositoryVersion

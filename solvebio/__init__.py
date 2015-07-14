@@ -10,6 +10,7 @@ Have questions or comments? email us at: support@solvebio.com
 from __future__ import absolute_import
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
+
 import os as _os
 import logging as _logging
 from .help import open_help as _open_help
@@ -81,8 +82,10 @@ _init_logging()
 from .version import VERSION  # noqa
 from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
-from .resource import (Depository, DepositoryVersion, Annotation, Sample,
-                       User, Dataset, DatasetField)
+from .resource import (
+    Depository, DepositoryVersion, Annotation, Sample,
+    User, Dataset, DatasetField
+)
 
 
 def login(**kwargs):
