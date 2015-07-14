@@ -220,19 +220,21 @@ class Query(object):
             fields=None,
             limit=float('inf'),
             page_size=DEFAULT_PAGE_SIZE,
-            result_class=dict):
+            result_class=dict,
+            debug=False):
         """
         Creates a new Query object.
 
         :Parameters:
           - `dataset_id`: Unique ID of dataset to query.
-          - `query`: An optional query string.
+          - `query` (optional): An optional query string.
           - `genome_build`: The genome build to use for the query.
           - `result_class` (optional): Class of object returned by query.
           - `fields` (optional): List of specific fields to retrieve.
           - `filters` (optional): Filter or List of filter objects.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
+          - `debug` (optional): Sends debug information to the API.
         """
         self._dataset_id = dataset_id
         self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
@@ -240,6 +242,7 @@ class Query(object):
         self._genome_build = genome_build
         self._result_class = result_class
         self._fields = fields
+        self._debug = debug
 
         if filters:
             if isinstance(filters, Filter):
@@ -277,7 +280,8 @@ class Query(object):
                              limit=self._limit,
                              fields=self._fields,
                              page_size=self._page_size,
-                             result_class=self._result_class)
+                             result_class=self._result_class,
+                             debug=self._debug)
         new._filters += self._filters
 
         if filters:
@@ -566,6 +570,9 @@ class Query(object):
 
         if self._genome_build is not None:
             q['genome_build'] = self._genome_build
+
+        if self._debug:
+            q['debug'] = 'True'
 
         # Add or modify query parameters
         # (used by BatchQuery and facets)
