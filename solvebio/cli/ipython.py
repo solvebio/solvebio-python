@@ -1,5 +1,13 @@
 from __future__ import absolute_import
-from __future__ import print_function
+import sys
+
+
+def _print(msg):
+    """
+    Handle Python 2 interactive shells without requiring
+    new print() format.
+    """
+    sys.stdout.write(msg + '\n')
 
 
 def launch_ipython_shell(args):  # pylint: disable=unused-argument
@@ -7,8 +15,8 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     try:
         from IPython.config.loader import Config
     except ImportError:
-        print("The SolveBio Python shell requires IPython.\n"
-              "To install, type: 'pip install ipython'")
+        _print("The SolveBio Python shell requires IPython.\n"
+               "To install, type: 'pip install ipython'")
         return False
 
     try:
@@ -24,7 +32,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
 
         exit_msg = 'Quitting SolveBio shell.'
     else:
-        print("Running nested copies of IPython.")
+        _print("Running nested copies of IPython.")
         cfg = Config()
         banner1 = exit_msg = ''
 
@@ -61,8 +69,8 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
         login()
 
     if not solvebio.api_key:
-        print("SolveBio requires a valid account. "
-              "To sign up, visit: https://www.solvebio.com/signup")
+        _print("SolveBio requires a valid account. "
+               "To sign up, visit: https://www.solvebio.com/signup")
         return
 
     InteractiveShellEmbed(config=cfg, banner1=banner1, exit_msg=exit_msg)()
