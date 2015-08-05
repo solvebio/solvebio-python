@@ -93,6 +93,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
 
 def main(argv=sys.argv[1:]):
     """ Main entry point for SolveBio CLI """
+    check_version()
     parser = SolveArgumentParser()
     args = parser.parse_solvebio_args(argv)
 
@@ -102,6 +103,22 @@ def main(argv=sys.argv[1:]):
         solvebio.api_key = args.api_key
 
     args.func(args)
+
+
+def check_version():
+    try:
+        import requests
+        latest_version = requests.get(
+            'https://pypi.python.org/pypi/solvebio/json')\
+            .json()['info']['version']
+        if latest_version != solvebio.version.VERSION:
+            sys.stderr.write(
+                'A new version is available ({}). '
+                'Run `pip install --upgrade solvebio` to upgrade.\n'
+                .format(latest_version))
+            sys.stderr.flush()
+    except:
+        pass
 
 if __name__ == '__main__':
     main()
