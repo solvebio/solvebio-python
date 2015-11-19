@@ -123,8 +123,12 @@ class SingletonAPIResource(APIResource):
 
     @classmethod
     def class_url(cls):
-        """Returns a versioned URI string for this class"""
-        return "/v1/{0}".format(class_to_api_name(cls.class_name()))
+        """
+        Returns a versioned URI string for this class,
+        and don't pluralize the class name.
+        """
+        return "/v1/{0}".format(class_to_api_name(
+            cls.class_name(), pluralize=False))
 
     def instance_url(self):
         return self.class_url()
