@@ -42,4 +42,4 @@ class BeaconTests(SolveBioTestCase):
                         'total': 1,
                         'exist': True}
 
-        self.assertTrue(final_beacon == beacontwo)
+        self.assertEqual(final_beacon, beacontwo)
