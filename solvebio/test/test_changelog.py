@@ -23,7 +23,8 @@ class ChangeLogTests(SolveBioTestCase):
             self.assertTrue(f in clog)
 
         """
-        Check if changelog between 3.7.0-2015-12-06 and 3.6.0-2015-09-04 returns
+        Check if changelog between 3.7.0-2015-12-06 and 3.6.0-2015-09-04
+        returns
         correct dictionary
         """
 
@@ -33,7 +34,7 @@ class ChangeLogTests(SolveBioTestCase):
                            "to_dataset": "ClinVar/3.7.0-2015-12-06/ClinVar",
                            "from_dataset": "ClinVar/3.6.0-2015-09-04/ClinVar",
                            "fields": {"removed": [], "added": ["sbid"],
-                           "changed": {}}}
+                                      "changed": {}}}
 
         self.assertTrue(final_changelog == clogtwo)
 
@@ -61,23 +62,5 @@ class ChangeLogTests(SolveBioTestCase):
 
         final_changelog = {"to_version": "ClinVar/3.7.0-2015-12-06",
                            "from_version": "ClinVar/3.6.0-2015-09-04",
-                           "datasets": {"removed": [], "added": ["combined"],
-                            "changed": {"clinvar": {"attributes":
-                            {"documents_count": [145359, 157003]},
-                            "to_dataset": "ClinVar/3.7.0-2015-12-06/ClinVar",
-                            "from_dataset": "ClinVar/3.6.0-2015-09-04/ClinVar",
-                            "fields": {"removed": [], "added": ["sbid"], "changed":
-                            {}}}, "variants": {"attributes": {"documents_count":
-                            [121752, 131904]}, "to_dataset":
-                            "ClinVar/3.7.0-2015-12-06/Variants",
-                            "from_dataset": "ClinVar/3.6.0-2015-09-04/Variants",
-                            "fields": {"removed": [], "added": ["sbid"], "changed":
-                            {}}}, "submissions": {"attributes": {"documents_count":
-                            [158548, 172006]},
-                            "to_dataset": "ClinVar/3.7.0-2015-12-06/Submissions",
-                            "from_dataset": "ClinVar/3.6.0-2015-09-04/Submissions",
-                            "fields": {"removed": [], "added": ["sbid"],
-                            "changed": {}}}}}}
-
+                           "datasets": {"removed": [], "added": ["combined"], "changed": {"clinvar": {"attributes": {"documents_count": [145359, 157003]}, "to_dataset": "ClinVar/3.7.0-2015-12-06/ClinVar", "from_dataset": "ClinVar/3.6.0-2015-09-04/ClinVar", "fields": {"removed": [], "added": ["sbid"], "changed": {}}}, "variants": {"attributes": {"documents_count": [121752, 131904]}, "to_dataset": "ClinVar/3.7.0-2015-12-06/Variants", "from_dataset": "ClinVar/3.6.0-2015-09-04/Variants", "fields": {"removed": [], "added": ["sbid"], "changed": {}}}, "submissions": {"attributes": {"documents_count": [158548, 172006]}, "to_dataset": "ClinVar/3.7.0-2015-12-06/Submissions", "from_dataset": "ClinVar/3.6.0-2015-09-04/Submissions", "fields": {"removed": [], "added": ["sbid"], "changed": {}}}}}}  # noqa
         self.assertTrue(final_changelog == clogtwo)
-
