@@ -57,8 +57,17 @@ def _init_logging():
 
     if logfile:
         logfile_path = _os.path.expanduser(logfile)
-        if not _os.path.isdir(_os.path.dirname(logfile_path)):
-            _os.makedirs(_os.path.dirname(logfile_path))
+        logdir = _os.path.dirname(logfile_path)
+
+        if not _os.path.isdir(logdir):
+            # Handle a race condition here when running
+            # multiple services that import this package.
+            try:
+                _os.makedirs(logdir)
+            except OSError as err:
+                # Re-raise anything other than 'File exists'.
+                if err[1] != 'File exists':
+                    raise err
 
         file_handler = _logging.FileHandler(logfile_path)
         file_handler.setLevel(loglevel_file)
