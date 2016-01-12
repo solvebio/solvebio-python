@@ -8,6 +8,7 @@ from .utils.tabulate import tabulate
 
 import copy
 import logging
+from .errors import SolveError
 logger = logging.getLogger('solvebio')
 
 
@@ -221,7 +222,8 @@ class Query(object):
             limit=float('inf'),
             page_size=DEFAULT_PAGE_SIZE,
             result_class=dict,
-            debug=False):
+            debug=False,
+            error=None):
         """
         Creates a new Query object.
 
@@ -243,6 +245,7 @@ class Query(object):
         self._result_class = result_class
         self._fields = fields
         self._debug = debug
+        self._error = error
 
         if filters:
             if isinstance(filters, Filter):
@@ -421,6 +424,11 @@ class Query(object):
         return rv
 
     def __repr__(self):
+        # check that Query object does not have any previos errors
+        # otherwise, raise the error
+        if self._error:
+            raise self._error
+
         if len(self) == 0:
             return u'Query returned 0 results.'
 
@@ -433,6 +441,12 @@ class Query(object):
         if self._response is None:
             logger.debug('warmup (__getattr__: %s)' % key)
             self.execute()
+
+        # check that Query object does not have any previos errors
+        # otherwise, raise the error
+        # execute() sets the error, so the check is placed after it
+        if self._error:
+            raise self._error
 
         if key in self._response:
             return self._response[key]
@@ -597,9 +611,15 @@ class Query(object):
 
         logger.debug('executing query. from/limit: %6d/%d' %
                      (_params['offset'], _params['limit']))
-        self._response = client.post(self._data_url, _params)
-        logger.debug('query response took: %(took)d ms, total: %(total)d'
-                     % self._response)
+
+        # if the request results in a SolveError (ie bad filter) set the error
+        try:
+            self._response = client.post(self._data_url, _params)
+        except SolveError as e:
+            self._error = e
+        else:
+            logger.debug('query response took: %(took)d ms, total: %(total)d'
+                         % self._response)
         return _params, self._response
 
 
