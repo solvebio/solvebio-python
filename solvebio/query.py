@@ -424,8 +424,8 @@ class Query(object):
         return rv
 
     def __repr__(self):
-        # check that Query object does not have any previos errors
-        # otherwise, raise the error
+        # Check that Query object does not have any previous errors
+        # otherwise, raise the error.
         if self._error:
             raise self._error
 
@@ -442,9 +442,9 @@ class Query(object):
             logger.debug('warmup (__getattr__: %s)' % key)
             self.execute()
 
-        # check that Query object does not have any previos errors
-        # otherwise, raise the error
-        # execute() sets the error, so the check is placed after it
+        # Check that Query object does not have any previous errors
+        # otherwise, raise the error.
+        # execute() sets the error, so the check is placed after it.
         if self._error:
             raise self._error
 
@@ -612,14 +612,15 @@ class Query(object):
         logger.debug('executing query. from/limit: %6d/%d' %
                      (_params['offset'], _params['limit']))
 
-        # if the request results in a SolveError (ie bad filter) set the error
+        # If the request results in a SolveError (ie bad filter) set the error.
         try:
             self._response = client.post(self._data_url, _params)
         except SolveError as e:
             self._error = e
-        else:
-            logger.debug('query response took: %(took)d ms, total: %(total)d'
-                         % self._response)
+            raise
+
+        logger.debug('query response took: %(took)d ms, total: %(total)d'
+                     % self._response)
         return _params, self._response
 
 
