@@ -67,7 +67,6 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
 
     def lookup(self, *sbids):
         lookup_url = self._data_url() + '/' + ','.join(sbids)
-        # raises an exception if there's no ID
         return client.get(lookup_url, {})['results']
 
     def _beacon_url(self):
