@@ -5,93 +5,108 @@ from .helper import SolveBioTestCase
 
 
 class LookupTests(SolveBioTestCase):
+    # Using new version of HGNC for testing lookup
+    # becuase original test dataset did not contain sbids.
+    TEST_DATASET_NAME = 'HGNC/2.1.2-2016-01-11/HGNC'
 
-    def test_lookup(self):
-        dataset = Dataset.retrieve('ClinVar/3.7.0-2015-12-06/Variants')
+    def setUp(self):
+        super(LookupTests, self).setUp()
+        self.dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
 
-        lookup = dataset.lookup('test')
+    final_lookup_one = [{u'ccds_id': None,
+                           u'cytogenetic_location': u'19q13.43',
+                           u'date_approved': u'2009-07-20',
+                           u'date_modified': u'2013-06-27',
+                           u'date_name_changed': u'2012-08-15',
+                           u'date_symbol_changed': u'2010-11-25',
+                           u'ensembl_id_gene': u'ENSG00000268895',
+                           u'entrez_id_gene': u'503538',
+                           u'genbank_id': [u'BC040926'],
+                           u'gene_family': {u'description':
+                                            u'Long non-coding RNAs',
+                                            u'tag': u'LNCRNA'},
+                           u'gene_name': u'A1BG antisense RNA 1',
+                           u'gene_name_previous':
+                         [u'non-protein coding RNA 181',
+                          u'A1BG antisense RNA (non-protein coding)',
+                          u'A1BG antisense RNA 1 (non-protein coding)'],
+                           u'gene_name_synonym': None,
+                           u'gene_symbol': u'A1BG-AS1',
+                           u'gene_symbol_previous': [u'NCRNA00181',
+                                                     u'A1BGAS',
+                                                     u'A1BG-AS'],
+                           u'gene_symbol_synonym': [u'FLJ23569'],
+                           u'hgnc_id': u'37133',
+                           u'intenz_id_enzyme': None,
+                           u'locus_information': {u'group': u'non-coding RNA',
+                           u'type': u'RNA, long non-coding'},
+                           u'locus_specific_database': None,
+                           u'mgi_id': None,
+                           u'omim_id': None,
+                           u'pubmed_id': None,
+                           u'refseq_id_gene': u'NR_015380',
+                           u'rgd_id': None,
+                           u'sbid': u'37133',
+                           u'specialist_database': None,
+                           u'status': u'Approved',
+                           u'ucsc_id': u'uc002qsg.3',
+                           u'uniprot_id': None,
+                           u'vega_id': u'OTTHUMG00000183508'}]  # noqa
 
+    final_lookup_two = [{u'ccds_id': None,
+                           u'cytogenetic_location': u'12p13.31',
+                           u'date_approved': u'2012-06-23',
+                           u'date_modified': u'2014-08-08',
+                           u'date_name_changed': u'2014-08-08',
+                           u'date_symbol_changed': None,
+                           u'ensembl_id_gene': u'ENSG00000245105',
+                           u'entrez_id_gene': u'144571',
+                           u'genbank_id': None,
+                           u'gene_family': {u'description':
+                           u'Long non-coding RNAs', u'tag': u'LNCRNA'},
+                           u'gene_name': u'A2M antisense RNA 1 (head to head)',
+                           u'gene_name_previous':
+                          [u'A2M antisense RNA 1 (non-protein coding)',
+                                                      u'A2M antisense RNA 1'],
+                           u'gene_name_synonym': None,
+                           u'gene_symbol': u'A2M-AS1',
+                           u'gene_symbol_previous': None,
+                           u'gene_symbol_synonym': None,
+                           u'hgnc_id': u'27057',
+                           u'intenz_id_enzyme': None,
+                           u'locus_information': {u'group': u'non-coding RNA',
+                           u'type': u'RNA, long non-coding'},
+                           u'locus_specific_database': None,
+                           u'mgi_id': None,
+                           u'omim_id': None,
+                           u'pubmed_id': None,
+                           u'refseq_id_gene': u'NR_026971',
+                           u'rgd_id': None,
+                           u'sbid': u'27057',
+                           u'specialist_database': None,
+                           u'status': u'Approved',
+                           u'ucsc_id': u'uc009zgj.1',
+                           u'uniprot_id': None,
+                           u'vega_id': u'OTTHUMG00000168289'}]  # noqa
+
+    def test_lookup_error(self):
+        lookup_one = self.dataset.lookup('test')
+        lookup_two = self.dataset.lookup('test', 'nothing')
         # Check that incorrect lookup results in empty list.
-        self.assertEqual(lookup, [])
+        self.assertEqual(lookup_one, [])
+        self.assertEqual(lookup_two, [])
 
-        lookup = dataset.lookup('test', 'nothing')
-
-        # Check that incorrect lookup results in empty list.
-        self.assertEqual(lookup, [])
-
-        final_lookup_one = [{u'allele': u'T',
-                         u'allele_origin': [u'germline'],
-                         u'alternate_allele': [u'T'],
-                         u'clinical_channel': None,
-                         u'clinical_significance': u'Uncertain significance',
-                         u'database_source':
-                         [{u'database': u'MedGen',
-                            u'database_id': [u'CN221809']}],
-                         u'entrez_id_gene': [u'201163'],
-                         u'gene_symbol': [u'FLCN'],
-                         u'genomic_coordinates': {u'build': u'GRCh37',
-                                                    u'chromosome': u'17',
-                                                    u'start': 17124835,
-                                                    u'stop': 17124835},
-                         u'hgvs': u'NC_000017.10:g.17124835A>T',
-                         u'id': [u'rs116643153'],
-                         u'phenotype': u'not provided',
-                         u'rcv_accession': u'RCV000034794',
-                         u'rcv_accession_full': u'RCV000034794.1',
-                         u'rcv_accession_version': 1,
-                         u'reference_allele': u'A',
-                         u'review_status': u'no assertion criteria provided',
-                         u'review_status_star': 0,
-                         u'rs_id': [u'rs116643153'],
-                         u'sbid': u'173fba888c03c9db1408154a9de8997e',
-                         u'variant_type': u'SNV'}]  # noqa
-
+    def test_lookup_correct(self):
+        sbid_one = '37133'
+        sbid_two = '27057'
+        lookup_one = self.dataset.lookup(sbid_one)
+        lookup_two = self.dataset.lookup(sbid_two)
         # Check that lookup with specific sbid is correct.
-        lookup_one = dataset.lookup('173fba888c03c9db1408154a9de8997e')
+        self.assertEqual(lookup_one, self.final_lookup_one)
+        self.assertEqual(lookup_two, self.final_lookup_two)
 
-        self.assertEqual(lookup_one, final_lookup_one)
-
-        final_lookup_two = [{u'allele': u'T',
-                           u'allele_origin': [u'somatic'],
-                           u'alternate_allele': [u'T'],
-                           u'clinical_channel': None,
-                           u'clinical_significance': u'not provided',
-                           u'database_source': [{u'database': u'GeneReviews',
-                                             u'database_id': [u'NBK1247']},
-                                            {u'database': u'MedGen',
-                                             u'database_id': [u'C0346153']},
-                                               {u'database': u'OMIM',
-                                                u'database_id': [u'114480']},
-                                               {u'database': u'SNOMED_CT',
-                                                u'database_id':
-                                                    [u'254843006']}],
-                           u'entrez_id_gene': [u'100616132', u'2064'],
-                           u'gene_symbol': [u'MIR4728', u'ERBB2'],
-                           u'genomic_coordinates': {u'build': u'GRCh37',
-                                                       u'chromosome': u'17',
-                                                       u'start': 37881299,
-                                                       u'stop': 37881299},
-                           u'hgvs': u'NC_000017.10:g.37881299C>T',
-                           u'id': [u'rs104886007'],
-                           u'phenotype': u'Familial cancer of breast',
-                           u'rcv_accession': u'RCV000119345',
-                           u'rcv_accession_full': u'RCV000119345.1',
-                           u'rcv_accession_version': 1,
-                           u'reference_allele': u'C',
-                           u'review_status': u'no assertion provided',
-                           u'review_status_star': 0,
-                           u'rs_id': [u'rs104886007'],
-                           u'sbid': u'17438989fd5f85709b5c4c7a837bc5e0',
-                           u'variant_type': u'SNV'}]  # noqa
-
-        # Check that lookup with specific sbid is correct.
-        lookup_two = dataset.lookup('17438989fd5f85709b5c4c7a837bc5e0')
-
-        self.assertEqual(lookup_two, final_lookup_two)
-
-        joint_lookup = dataset.lookup('173fba888c03c9db1408154a9de8997e',
-                                      '17438989fd5f85709b5c4c7a837bc5e0')
+        joint_lookup = self.dataset.lookup(sbid_one, sbid_two)
 
         # Check that combining sbids returns list of correct results.
-        self.assertEqual(joint_lookup[0], final_lookup_one[0])
-        self.assertEqual(joint_lookup[1], final_lookup_two[0])
+        self.assertEqual(joint_lookup[0], self.final_lookup_one[0])
+        self.assertEqual(joint_lookup[1], self.final_lookup_two[0])
