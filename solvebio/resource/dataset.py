@@ -65,6 +65,10 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         self._data_url()  # raises an exception if there's no ID
         return Query(self['id'], query=query, **params)
 
+    def lookup(self, *sbids):
+        lookup_url = self._data_url() + '/' + ','.join(sbids)
+        return client.get(lookup_url, {})['results']
+
     def _beacon_url(self):
         if 'beacon_url' not in self:
             if 'id' not in self or not self['id']:
