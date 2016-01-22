@@ -623,6 +623,20 @@ class Query(object):
                      % self._response)
         return _params, self._response
 
+    # Function will convert Query object
+    # into pandas DataFrame.
+    def to_data_frame(self):
+        from .exporters.data_frame import DataFrameExporter
+
+        return DataFrameExporter(self).export()
+
+    # Function will convert Query object
+    # into CSV file.
+    def to_csv(self, filename):
+        from .exporters._csv import CSVExporter
+
+        return CSVExporter(self, filename).export()
+
 
 class BatchQuery(object):
     """
