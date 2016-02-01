@@ -390,7 +390,7 @@ class Query(object):
     def _buffer(self):
         if self._response is None:
             logger.debug('warmup (buffer)')
-            self.execute()
+            self.execute(self._slice.start if self._slice else 0)
         return self._response['results']
 
     def _process_filters(self, filters):
@@ -440,7 +440,7 @@ class Query(object):
     def __getattr__(self, key):
         if self._response is None:
             logger.debug('warmup (__getattr__: %s)' % key)
-            self.execute()
+            self.execute(self._slice.start if self._slice else 0)
 
         # Check that Query object does not have any previous errors
         # otherwise, raise the error.
@@ -526,10 +526,7 @@ class Query(object):
     def __iter__(self):
         # e.g. [r for r in results] will NOT call __getitem__ and
         # requires that we start iteration from the 0th element
-        if self._slice:
-            self.execute(self._slice.start)
-        else:
-            self.execute(0)
+        self.execute(self._slice.start if self._slice else 0)
 
         # Reset the cursor
         self._cursor = 0  # Count the number of results returned
