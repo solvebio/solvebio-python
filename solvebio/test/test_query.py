@@ -212,6 +212,16 @@ class BaseQueryTest(SolveBioTestCase):
         r1 = self.dataset.query(limit=limit)[limit - 1:][0]
         self.assertEqual(r0['hgnc_id'], r1['hgnc_id'])
 
+    def test_slice_offsets(self):
+        zero_two = self.dataset.query()[0:2]
+        one_three = self.dataset.query()[1:3]
+
+        # Ensure that the repr for [0:1] != [1:2]
+        self.assertNotEqual(repr(zero_two), repr(one_three))
+
+        # Ensure that the second repr for [0:2] == [1:3]
+        self.assertEqual(repr(zero_two[1]), repr(one_three[0]))
+
     def test_slice_ranges_with_small_limit(self):
         # Test slices larger than 'limit'
         limit = 1

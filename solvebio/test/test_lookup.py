@@ -92,7 +92,6 @@ class LookupTests(SolveBioTestCase):
     def test_lookup_error(self):
         # Check that incorrect lookup results in empty list.
         lookup_one = self.dataset.lookup('test')
-        print (lookup_one == self.dataset.lookup('test'))
         self.assertEqual(lookup_one, [])
 
         lookup_two = self.dataset.lookup('test', 'nothing')
