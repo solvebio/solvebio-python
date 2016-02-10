@@ -8,6 +8,8 @@ import sys
 import operator
 from collections import OrderedDict
 
+import pyprind
+
 # try:
 #     import pandas
 # except ImportError:
@@ -79,7 +81,8 @@ class CSVExporter(object):
 
         from solvebio import Dataset
 
-        if len(query) <= 0:
+        result_count = len(query)
+        if result_count <= 0:
             raise AttributeError('No results found in query!')
 
         self.rows = []
@@ -91,9 +94,11 @@ class CSVExporter(object):
                       for s in name.split('.')]
             self.key_map[name] = splits
 
-        for record in query:
+        progress_bar = pyprind.ProgPercent(result_count)
+        for ind, record in enumerate(query):
             row = self.process_record(record)
             self.rows.append(row)
+            progress_bar.update()
 
         self.write_csv(filename=filename)
 
