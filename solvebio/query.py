@@ -5,7 +5,7 @@ import six
 from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
-from .export import export
+from .exporters import exporters
 from .errors import SolveError
 
 import copy
@@ -622,7 +622,7 @@ class Query(object):
         return _params, self._response
 
     def export(self, exporter, *args, **kwargs):
-        return export.export(exporter, self, *args, **kwargs)
+        return exporters.export(exporter, self, *args, **kwargs)
 
 
 class BatchQuery(object):
