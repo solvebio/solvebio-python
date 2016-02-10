@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 from six import u
-from six.moves import reduce
 
+import os
 import sys
-import operator
 from collections import OrderedDict
 
 import pyprind
@@ -17,8 +16,8 @@ except ImportError:
 
 class Exporters(object):
     """Maintains a list of available exporters."""
-    EXPORT_WARN = 10000
-    PAGE_SIZE = 1000
+    EXPORT_WARN = 5000
+    PAGE_SIZE = 500
 
     registry = {}
 
@@ -59,7 +58,6 @@ class CSVExporter(object):
 
     collection = None
 
-    # SEP_CHAR also works as a ', '
     SEP_CHAR = '\r'
     KEY_VAL_CHAR = ': '
     DICT_SEP_CHAR = '\r'
@@ -79,6 +77,8 @@ class CSVExporter(object):
             raise Exception(
                 '"filename" is a required parameter '
                 'for the CSV exporter.')
+
+        filename = os.path.expanduser(filename)
 
         from solvebio import Dataset
 
@@ -114,6 +114,23 @@ class CSVExporter(object):
         self.write_csv(filename=filename)
         print('Export complete!')
 
+    def process_cell(self, keys, cell):
+        if not keys:
+            return [cell]
+        elif not cell:
+            return []
+
+        # Retrieve the cell values for a nested dict.
+        for i, k in enumerate(keys):
+            if isinstance(cell, list):
+                return [self.process_cell(keys[i:], c)
+                        for c in cell]
+            elif isinstance(cell, dict):
+                return self.process_cell(keys[i + 1:], cell.get(k))
+            elif i == len(keys) - 1:
+                # Last key, return the cell
+                return []
+
     def process_record(self, record):
         """Process a row of json data against the key map
         """
@@ -121,12 +138,12 @@ class CSVExporter(object):
 
         for header, keys in self.key_map.items():
             try:
-                row[header] = reduce(operator.getitem, keys, record)
+                cells = self.process_cell(keys, record)
             except (KeyError, IndexError, TypeError):
-                row[header] = None
+                cells = []
 
-        row = {k: self.make_string(val)
-               for k, val in row.items()}
+            row[header] = self.SEP_CHAR.join(
+                [self.make_string(cell) for cell in cells])
 
         return row
 
@@ -143,9 +160,9 @@ class CSVExporter(object):
                 ) for k, val in item.items()]
             ) + self.DICT_CLOSE
         elif item:
-            return u(str(item))
+            return u(str(item)).strip()
         else:
-            return u('')
+            return ''
 
     def write_csv(self, filename):
         """Write the processed rows to the given filename
