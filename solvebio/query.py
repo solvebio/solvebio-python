@@ -5,10 +5,11 @@ import six
 from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
+from .export import export
+from .errors import SolveError
 
 import copy
 import logging
-from .errors import SolveError
 logger = logging.getLogger('solvebio')
 
 
@@ -620,19 +621,8 @@ class Query(object):
                      % self._response)
         return _params, self._response
 
-    # Function will convert Query object
-    # into pandas DataFrame.
-    def to_data_frame(self):
-        from .exporters.data_frame import DataFrameExporter
-
-        return DataFrameExporter(self).export()
-
-    # Function will convert Query object
-    # into CSV file.
-    def to_csv(self, filename):
-        from .exporters._csv import CSVExporter
-
-        return CSVExporter(self, filename).export()
+    def export(self, exporter, *args, **kwargs):
+        return export.export(exporter, self, *args, **kwargs)
 
 
 class BatchQuery(object):

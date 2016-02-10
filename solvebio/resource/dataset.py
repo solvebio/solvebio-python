@@ -33,7 +33,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
     def fields(self, name=None, **params):
         if 'fields_url' not in self:
             raise Exception(
-                'Please use Dataset.retrieve({ID}) before doing looking '
+                'Please use Dataset.retrieve({ID}) before looking '
                 'up fields')
 
         if name:
