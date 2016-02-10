@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-from six import u
+from __future__ import unicode_literals
 
 import os
 import sys
@@ -13,6 +13,11 @@ try:
 except ImportError:
     import csv
 
+try:
+    import xlsxwriter
+except ImportError:
+    xlsxwriter = None
+
 
 class Exporters(object):
     """Maintains a list of available exporters."""
@@ -22,31 +27,31 @@ class Exporters(object):
     registry = {}
 
     def register(self, klass):
-        if klass.is_available():
-            self.registry[klass.name] = klass
+        self.registry[klass.name.lower()] = klass
 
     def export(self, exporter, query, *args, **kwargs):
+        exporter = exporter.lower()
         force = kwargs.pop('force', False)
 
-        if exporter in self.registry:
-            nrecords = len(query)
-            if nrecords == 0:
-                raise Exception('There are no results to export.')
-            elif nrecords > self.EXPORT_WARN and not force:
-                print('To export {} records, use `force=True`.'
-                      .format(nrecords))
-                return
-
-            # Increase the efficiency of the export.
-            query._page_size = self.PAGE_SIZE
-            # Enable progress by default on large exports, but allow toggle.
-            show_progress = kwargs.pop('show_progress',
-                                       nrecords > self.EXPORT_WARN)
-            return self.registry[exporter](query, show_progress=show_progress)\
-                .export(*args, **kwargs)
-        else:
+        if exporter not in self.registry:
             raise Exception('Invalid exporter: {}. Available exporters: {}'
                             .format(exporter, ', '.join(self.registry.keys())))
+
+        nrecords = len(query)
+        if nrecords == 0:
+            raise Exception('There are no results to export.')
+        elif nrecords > self.EXPORT_WARN and not force:
+            print('To export {} records, use `force=True`.'
+                  .format(nrecords))
+            return
+
+        # Increase the efficiency of the export.
+        query._page_size = self.PAGE_SIZE
+        # Enable progress by default on large exports, but allow toggle.
+        show_progress = kwargs.pop('show_progress',
+                                   nrecords > self.EXPORT_WARN)
+        return self.registry[exporter](query, show_progress=show_progress)\
+            .export(*args, **kwargs)
 
 
 class CSVExporter(object):
@@ -68,15 +73,10 @@ class CSVExporter(object):
         self.query = query
         self.show_progress = kwargs.get('show_progress', False)
 
-    @classmethod
-    def is_available(cls):
-        return True
-
     def export(self, filename=None, **kwargs):
         if not filename:
             raise Exception(
-                '"filename" is a required parameter '
-                'for the CSV exporter.')
+                'The "filename" parameter is required to export.')
 
         filename = os.path.expanduser(filename)
 
@@ -88,12 +88,14 @@ class CSVExporter(object):
 
         self.rows = []
         self.key_map = OrderedDict()
+        self.key_types = {}
 
         for f in Dataset.retrieve(self.query._dataset_id).fields(limit=1000):
             name = f['name']
             splits = [int(s) if s.isdigit() else s
                       for s in name.split('.')]
             self.key_map[name] = splits
+            self.key_types[name] = f['data_type']
 
         title = 'Exporting query to: {}'.format(filename)
 
@@ -111,7 +113,7 @@ class CSVExporter(object):
             if self.show_progress:
                 progress_bar.update()
 
-        self.write_csv(filename=filename)
+        self.write(filename=filename)
         print('Export complete!')
 
     def process_cell(self, keys, cell):
@@ -160,13 +162,11 @@ class CSVExporter(object):
                 ) for k, val in item.items()]
             ) + self.DICT_CLOSE
         elif item:
-            return u(str(item)).strip()
+            return str(item).strip()
         else:
             return ''
 
-    def write_csv(self, filename):
-        """Write the processed rows to the given filename
-        """
+    def write(self, filename):
         if sys.version_info >= (3, 0, 0):
             f = open(filename, 'w', newline='')
         else:
@@ -181,5 +181,71 @@ class CSVExporter(object):
         finally:
             f.close()
 
+
+class XLSXExporter(CSVExporter):
+    """Uses XlsxWriter to export a valid XLS."""
+
+    name = 'excel'
+
+    SEP_CHAR = '\n'
+    KEY_VAL_CHAR = ': '
+    DICT_SEP_CHAR = '\n'
+    DICT_OPEN = ''
+    DICT_CLOSE = ''
+
+    NUMERIC_TYPES = ('integer', 'double', 'long', 'float')
+
+    def __init__(self, query, *args, **kwargs):
+        if not xlsxwriter:
+            raise Exception(
+                'The XLSX exporter requires the xlsxwriter Python module. '
+                'Run `pip install XlsxWriter` and reload SolveBio.')
+
+        self.query = query
+        self.show_progress = kwargs.get('show_progress', False)
+
+    def write(self, filename):
+        workbook = xlsxwriter.Workbook(filename)
+        worksheet = workbook.add_worksheet()
+        formats = {
+            'text': workbook.add_format({'text_wrap': True}),
+            'string': workbook.add_format(),
+            'header': workbook.add_format({'bold': True}),
+            'integer': workbook.add_format(),
+            'double': workbook.add_format(),
+            'long': workbook.add_format(),
+            'float': workbook.add_format(),
+        }
+        formats['date'] = formats['string']
+        formats['boolean'] = formats['string']
+
+        formats['text'].set_align('top')
+        formats['nested'] = formats['text']
+        formats['object'] = formats['text']
+
+        row = 0
+        # Write the header
+        for col, k in enumerate(self.key_map.keys()):
+            worksheet.write(row, col, k, formats['header'])
+
+        for record in self.rows:
+            row += 1
+            for col, k in enumerate(sorted(record)):
+                fmt = formats.get(self.key_types[k], formats['text'])
+                if self.key_types[k] in self.NUMERIC_TYPES:
+                    from decimal import Decimal
+                    try:
+                        val = Decimal(record[k])
+                        worksheet.write_number(row, col, val, fmt)
+                    except:
+                        # Might be multi-line numeric.
+                        worksheet.write(row, col, record[k], fmt)
+                else:
+                    worksheet.write(row, col, record[k].encode('utf-8'), fmt)
+
+        workbook.close()
+
+
 exporters = Exporters()
 exporters.register(CSVExporter)
+exporters.register(XLSXExporter)
