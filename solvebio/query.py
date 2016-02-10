@@ -5,10 +5,11 @@ import six
 from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
+from .exporters import exporters
+from .errors import SolveError
 
 import copy
 import logging
-from .errors import SolveError
 logger = logging.getLogger('solvebio')
 
 
@@ -619,6 +620,9 @@ class Query(object):
         logger.debug('query response took: %(took)d ms, total: %(total)d'
                      % self._response)
         return _params, self._response
+
+    def export(self, exporter, *args, **kwargs):
+        return exporters.export(exporter, self, *args, **kwargs)
 
 
 class BatchQuery(object):
