@@ -37,7 +37,7 @@ class Exporter(object):
             if nrecords == 0:
                 raise Exception('There are no results to export.')
             elif nrecords > self.EXPORT_WARN:
-                print('You have requested an export of {} records. '
+                print('You have requested an export of more than {} records. '
                       'This may take a while.'.format(nrecords))
                 yes = input('Type "yes" to continue exporting: ')
                 if yes != 'yes':
