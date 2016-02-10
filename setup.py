@@ -52,6 +52,9 @@ setup(
     include_package_data=True,
     install_requires=install_requires,
     platforms='any',
+    extras_require={
+        'exporters': ["XlsxWriter>=0.8.0", "pandas>=0.10.0"],
+    },
     entry_points={
         'console_scripts': ['solvebio = solvebio.cli.main:main']
     },
