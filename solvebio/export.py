@@ -39,7 +39,7 @@ class Exporter(object):
             if nrecords == 0:
                 raise Exception('There are no results to export.')
             elif nrecords > self.EXPORT_WARN:
-                print('You have requested an export of more than {} records. '
+                print('You have requested an export of {} records. '
                       'This may take a while.'.format(nrecords))
                 yes = input('Type "yes" to continue exporting: ')
                 if yes != 'yes':
@@ -47,7 +47,9 @@ class Exporter(object):
                     return
 
             query._page_size = self.PAGE_SIZE
-            return self.registry[exporter]().export(query, *args, **kwargs)
+            show_progress = bool(nrecords > self.EXPORT_WARN)
+            return self.registry[exporter](show_progress=show_progress) \
+                .export(query, *args, **kwargs)
         else:
             raise Exception('Invalid exporter: {}. Available exporters: {}'
                             .format(exporter, ', '.join(self.registry.keys())))
@@ -68,6 +70,9 @@ class CSVExporter(object):
     DICT_SEP_CHAR = '\r'
     DICT_OPEN = ''
     DICT_CLOSE = ''
+
+    def __init__(self, *args, **kwargs):
+        self.show_progress = kwargs.get('show_progress', False)
 
     @classmethod
     def is_available(cls):
@@ -94,13 +99,21 @@ class CSVExporter(object):
                       for s in name.split('.')]
             self.key_map[name] = splits
 
-        progress_bar = pyprind.ProgPercent(result_count)
+        # only show progress bar if lots of records
+        if self.show_progress:
+            progress_bar = pyprind.ProgPercent(
+                result_count,
+                title='Exporting Records',
+                track_time=False)
+
         for ind, record in enumerate(query):
             row = self.process_record(record)
             self.rows.append(row)
-            progress_bar.update()
+            if self.show_progress:
+                progress_bar.update()
 
         self.write_csv(filename=filename)
+        print("Export Complete")
 
     def process_record(self, record):
         """Process a row of json data against the key map
