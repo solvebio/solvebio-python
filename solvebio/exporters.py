@@ -2,11 +2,21 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from six.moves.urllib.parse import urlparse
+from six.moves.urllib.parse import unquote
+
 import os
 import sys
+import binascii
+import hashlib
+import datetime
+import time
 from collections import OrderedDict
 
+import pycurl
 import pyprind
+
+from .utils.humanize import naturalsize
 
 try:
     import unicodecsv as csv
@@ -19,7 +29,7 @@ except ImportError:
     xlsxwriter = None
 
 
-class Exporters(object):
+class QueryExporters(object):
     """Maintains a list of available exporters."""
     EXPORT_WARN = 5000
     PAGE_SIZE = 500
@@ -246,6 +256,163 @@ class XLSXExporter(CSVExporter):
         workbook.close()
 
 
-exporters = Exporters()
+exporters = QueryExporters()
 exporters.register(CSVExporter)
 exporters.register(XLSXExporter)
+
+
+# Bulk Dataset Exports
+
+class DatasetExportFile(object):
+    """PyCurl-wrapper for downloading files from a bulk Dataset export.
+    """
+    progress_template = ('%(percent)6d%% %(downloaded)12s %(speed)15s '
+                         '%(eta)18s ETA' + ' ' * 4)
+    eta_limit = 60 * 60 * 24 * 30
+    max_retries = 5
+    multipart_threshold = 64 * 1024 * 1024
+    multipart_chunksize = 64 * 1024 * 1024
+
+    def __init__(self, url, path=None, show_progress=True):
+        self.url = url
+        self.show_progress = show_progress
+        self.start_time = None
+        self.content_length = 0
+        self.downloaded = 0
+
+        self.path = os.path.abspath(os.path.expanduser(path))
+        self.parsed_url = urlparse(url)
+        self.file_name = unquote(os.path.basename(self.parsed_url.path))
+
+        # Get output path from URL if a dir is provided.
+        if os.path.isdir(self.path):
+            self.path = os.path.join(self.path, self.file_name)
+
+        self._last_time = 0.0
+        self._rst_retries = 0
+
+    @property
+    def is_finished(self):
+        if os.path.exists(self.path):
+            return self.content_length == os.path.getsize(self.path)
+
+    def download(self):
+        curl = pycurl.Curl()
+
+        while not self.is_finished:
+            try:
+                if os.path.exists(self.path):
+                    print("Resuming download for {}".format(self.path))
+                    mode = 'ab'
+                    self.downloaded = os.path.getsize(self.path)
+                    curl.setopt(pycurl.RESUME_FROM, self.downloaded)
+                else:
+                    mode = 'wb'
+
+                with open(self.path, mode) as f:
+                    curl.setopt(curl.URL, self.url)
+                    curl.setopt(curl.WRITEDATA, f)
+                    curl.setopt(curl.NOPROGRESS, 0)
+                    curl.setopt(pycurl.FOLLOWLOCATION, 1)
+                    curl.setopt(curl.PROGRESSFUNCTION, self.progress)
+                    curl.perform()
+            except pycurl.error as e:
+                # transfer closed with n bytes remaining to read
+                if e.args[0] == pycurl.E_PARTIAL_FILE:
+                    pass
+                # HTTP server doesn't seem to support byte ranges.
+                # Cannot resume.
+                elif e.args[0] == pycurl.E_HTTP_RANGE_ERROR:
+                    break
+                # Recv failure: Connection reset by peer
+                elif e.args[0] == pycurl.E_RECV_ERROR:
+                    if self._rst_retries < self.max_retries:
+                        pass
+                else:
+                    raise e
+                self._rst_retries += 1
+
+        sys.stderr.write('\n')
+        sys.stderr.flush()
+
+    def progress(self, download_t, download_d, upload_t, upload_d):
+        self.content_length = self.downloaded + int(download_t)
+
+        if not self.show_progress or int(download_t) == 0:
+            return
+        elif self.start_time is None:
+            self.start_time = time.time()
+
+        duration = time.time() - self.start_time + 1
+        speed = download_d / duration
+        speed_s = naturalsize(speed, binary=True)
+        speed_s += '/s'
+
+        if speed == 0.0:
+            eta = self.eta_limit
+        else:
+            eta = int((download_t - download_d) / speed)
+
+        if eta < self.eta_limit:
+            eta_s = str(datetime.timedelta(seconds=eta))
+        else:
+            eta_s = 'n/a'
+
+        downloaded = self.downloaded + download_d
+        downloaded_s = naturalsize(downloaded, binary=True)
+
+        percent = int(downloaded / self.content_length * 100)
+        params = {
+            'downloaded': downloaded_s,
+            'percent': percent,
+            'speed': speed_s,
+            'eta': eta_s,
+        }
+
+        if sys.stderr.isatty():
+            p = (self.progress_template + '\r') % params
+        else:
+            current_time = time.time()
+            if self._last_time == 0.0:
+                self._last_time = current_time
+            else:
+                interval = current_time - self._last_time
+                if interval < 0.5:
+                    return
+                self._last_time = current_time
+            p = (self.progress_template + '\n') % params
+
+        sys.stderr.write(p)
+        sys.stderr.flush()
+
+    def md5sum(self, multipart_threshold=multipart_threshold,
+               multipart_chunksize=multipart_chunksize):
+
+        def _read_chunks(f, chunk_size):
+            chunk = f.read(chunk_size)
+            while chunk:
+                yield chunk
+                chunk = f.read(chunk_size)
+
+        filesize = os.path.getsize(self.path)
+
+        if filesize > multipart_threshold:
+            block_count = 0
+            md5string = ""
+            with open(self.path, "rb") as f:
+                for block in _read_chunks(f, multipart_chunksize):
+                    md5 = hashlib.md5()
+                    md5.update(block)
+                    md5string += md5.hexdigest()
+                    block_count += 1
+
+            md5 = hashlib.md5()
+            md5.update(binascii.unhexlify(md5string))
+        else:
+            block_count = None
+            md5 = hashlib.md5()
+            with open(self.path, "rb") as f:
+                for block in _read_chunks(f, multipart_chunksize):
+                    md5.update(block)
+
+        return md5.hexdigest(), block_count

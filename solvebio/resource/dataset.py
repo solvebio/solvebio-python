@@ -8,6 +8,8 @@ from .apiresource import CreateableAPIResource, ListableAPIResource, \
     UpdateableAPIResource
 from .datasetfield import DatasetField
 
+from ..exporters import DatasetExportFile
+
 
 class Dataset(CreateableAPIResource, ListableAPIResource,
               UpdateableAPIResource):
@@ -104,3 +106,42 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
 
     def help(self):
         open_help('/library/{0}'.format(self['full_name']))
+
+    def export(self, path, genome_build=None, format='json'):
+        if 'exports_url' not in self:
+            if 'id' not in self or not self['id']:
+                raise Exception(
+                    'No Dataset ID was provided. '
+                    'Please instantiate the Dataset '
+                    'object with an ID or full_name.')
+            self['exports_url'] = self.instance_url() + u'/exports'
+
+        print("Exporting dataset {} to {}"
+              .format(self['full_name'], path))
+
+        res = client.post(self['exports_url'],
+                          {'format': format,
+                           'genome_build': genome_build})
+        manifest = res['manifest']
+
+        for mf in manifest['files']:
+            rf = DatasetExportFile(mf['url'], path)
+            rf.download()
+
+            md5sum, blocks = rf.md5sum(
+                multipart_threshold=manifest['multipart_threshold_bytes'],
+                multipart_chunksize=manifest['multipart_chunksize_bytes']
+            )
+
+            if md5sum != mf['md5']:
+                print("MD5 verification failed for file: {}"
+                      .format(rf.file_name))
+                print("Expected: '{}' Calculated: '{}'"
+                      .format(mf['md5'], md5sum))
+                if blocks:
+                    print("File is multipart with {} blocks expected. "
+                          "Found {} blocks.".format(
+                              mf['multipart_blocks'], blocks))
+            else:
+                print("File {} completed downloading and MD5 verification."
+                      .format(rf.file_name))
