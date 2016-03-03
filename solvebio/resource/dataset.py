@@ -109,7 +109,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         open_help('/library/{0}'.format(self['full_name']))
 
     def export(self, path, genome_build=None, format='json',
-               show_progress=True, download=True, dry_run=False):
+               show_progress=True, download=True):
         if 'exports_url' not in self:
             if 'id' not in self or not self['id']:
                 raise Exception(
@@ -121,9 +121,6 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         export = client.post(self['exports_url'],
                              {'format': format,
                               'genome_build': genome_build})
-
-        if not download:
-            return export
 
         print("Exporting dataset {} to {}"
               .format(self['full_name'], path))
@@ -138,8 +135,8 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                 path=path,
                 show_progress=show_progress)
 
-            if dry_run:
-                print('Dry run: skipping file {} ({})'
+            if not download:
+                print('Downloading is off, skipping file {} ({})'
                       .format(export_file.file_name,
                               naturalsize(manifest_file['size'])))
                 continue
@@ -169,3 +166,5 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         print('Number of files: {}'.format(len(manifest['files'])))
         print('Number of records: {}'.format(export['documents_count']))
         print('Total size: {}'.format(naturalsize(total_size)))
+
+        return export
