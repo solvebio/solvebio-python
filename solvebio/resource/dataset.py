@@ -107,7 +107,8 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
     def help(self):
         open_help('/library/{0}'.format(self['full_name']))
 
-    def export(self, path, genome_build=None, format='json'):
+    def export(self, path, genome_build=None, format='json',
+               show_progress=True):
         if 'exports_url' not in self:
             if 'id' not in self or not self['id']:
                 raise Exception(
@@ -124,24 +125,26 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                            'genome_build': genome_build})
         manifest = res['manifest']
 
-        for mf in manifest['files']:
-            rf = DatasetExportFile(mf['url'], path)
-            rf.download()
+        for manifest_file in manifest['files']:
+            export_file = DatasetExportFile(url=manifest_file['url'],
+                                            path=path,
+                                            show_progress=show_progress)
+            export_file.download()
 
-            md5sum, blocks = rf.md5sum(
+            md5sum, blocks = export_file.md5sum(
                 multipart_threshold=manifest['multipart_threshold_bytes'],
                 multipart_chunksize=manifest['multipart_chunksize_bytes']
             )
 
-            if md5sum != mf['md5']:
+            if md5sum != manifest_file['md5']:
                 print("MD5 verification failed for file: {}"
-                      .format(rf.file_name))
+                      .format(export_file.file_name))
                 print("Expected: '{}' Calculated: '{}'"
-                      .format(mf['md5'], md5sum))
+                      .format(manifest_file['md5'], md5sum))
                 if blocks:
                     print("File is multipart with {} blocks expected. "
                           "Found {} blocks.".format(
-                              mf['multipart_blocks'], blocks))
+                              manifest_file['multipart_blocks'], blocks))
             else:
                 print("File {} completed downloading and MD5 verification."
-                      .format(rf.file_name))
+                      .format(export_file.file_name))
