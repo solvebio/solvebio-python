@@ -108,7 +108,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         open_help('/library/{0}'.format(self['full_name']))
 
     def export(self, path, genome_build=None, format='json',
-               show_progress=True):
+               show_progress=True, download=True):
         if 'exports_url' not in self:
             if 'id' not in self or not self['id']:
                 raise Exception(
@@ -120,31 +120,39 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         print("Exporting dataset {} to {}"
               .format(self['full_name'], path))
 
-        res = client.post(self['exports_url'],
-                          {'format': format,
-                           'genome_build': genome_build})
-        manifest = res['manifest']
+        export = client.post(self['exports_url'],
+                             {'format': format,
+                              'genome_build': genome_build})
 
-        for manifest_file in manifest['files']:
-            export_file = DatasetExportFile(url=manifest_file['url'],
-                                            path=path,
-                                            show_progress=show_progress)
-            export_file.download()
+        if download:
+            manifest = export['manifest']
 
-            md5sum, blocks = export_file.md5sum(
-                multipart_threshold=manifest['multipart_threshold_bytes'],
-                multipart_chunksize=manifest['multipart_chunksize_bytes']
-            )
+            for manifest_file in manifest['files']:
+                export_file = DatasetExportFile(
+                    url=manifest_file['url'],
+                    path=path,
+                    show_progress=show_progress)
 
-            if md5sum != manifest_file['md5']:
-                print("MD5 verification failed for file: {}"
-                      .format(export_file.file_name))
-                print("Expected: '{}' Calculated: '{}'"
-                      .format(manifest_file['md5'], md5sum))
-                if blocks:
-                    print("File is multipart with {} blocks expected. "
-                          "Found {} blocks.".format(
-                              manifest_file['multipart_blocks'], blocks))
-            else:
-                print("File {} completed downloading and MD5 verification."
-                      .format(export_file.file_name))
+                export_file.download()
+
+                # Validate the MD5 of the downloaded file.
+                # Handle's S3's multipart MD5 calculation.
+                md5sum, blocks = export_file.md5sum(
+                    multipart_threshold=manifest['multipart_threshold_bytes'],
+                    multipart_chunksize=manifest['multipart_chunksize_bytes']
+                )
+
+                if md5sum != manifest_file['md5']:
+                    print("MD5 verification failed for file: {}"
+                          .format(export_file.file_name))
+                    print("Expected: '{}' Calculated: '{}'"
+                          .format(manifest_file['md5'], md5sum))
+                    if blocks:
+                        print("File is multipart with {} blocks expected. "
+                              "Found {} blocks.".format(
+                                  manifest_file['multipart_blocks'], blocks))
+                else:
+                    print("File {} completed downloading and MD5 verification."
+                          .format(export_file.file_name))
+
+        return export
