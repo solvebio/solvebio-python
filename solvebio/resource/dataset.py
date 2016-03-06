@@ -128,7 +128,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         total_size = 0
         manifest = export['manifest']
 
-        for manifest_file in manifest['files']:
+        for i, manifest_file in enumerate(manifest['files']):
             total_size += manifest_file['size']
             export_file = DatasetExportFile(
                 url=manifest_file['url'],
@@ -141,6 +141,10 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                               naturalsize(manifest_file['size'])))
                 continue
 
+            print('Downloading file {}/{}: {} ({})'
+                  .format(i + 1, len(manifest['files']),
+                          export_file.file_name,
+                          naturalsize(manifest_file['size'])))
             export_file.download()
 
             # Validate the MD5 of the downloaded file.
@@ -159,9 +163,9 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                     print("File is multipart with {} blocks expected. "
                           "Found {} blocks.".format(
                               manifest_file['multipart_blocks'], blocks))
-                else:
-                    print("File {} completed downloading and MD5 verification."
-                          .format(export_file.file_name))
+            else:
+                print("File {} completed downloading and MD5 verification."
+                      .format(export_file.file_name))
 
         print('Number of files: {}'.format(len(manifest['files'])))
         print('Number of records: {}'.format(export['documents_count']))
