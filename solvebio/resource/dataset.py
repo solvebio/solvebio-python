@@ -2,11 +2,14 @@
 from ..client import client
 from ..help import open_help
 from ..query import Query
+from ..utils.humanize import naturalsize
 
 from .solveobject import convert_to_solve_object
 from .apiresource import CreateableAPIResource, ListableAPIResource, \
     UpdateableAPIResource
 from .datasetfield import DatasetField
+
+from ..exporters import DatasetExportFile
 
 
 class Dataset(CreateableAPIResource, ListableAPIResource,
@@ -104,3 +107,68 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
 
     def help(self):
         open_help('/library/{0}'.format(self['full_name']))
+
+    def export(self, path, genome_build=None, format='json',
+               show_progress=True, download=True):
+        if 'exports_url' not in self:
+            if 'id' not in self or not self['id']:
+                raise Exception(
+                    'No Dataset ID was provided. '
+                    'Please instantiate the Dataset '
+                    'object with an ID or full_name.')
+            self['exports_url'] = self.instance_url() + u'/exports'
+
+        export = client.post(self['exports_url'],
+                             {'format': format,
+                              'genome_build': genome_build})
+
+        print("Exporting dataset {} to {}"
+              .format(self['full_name'], path))
+
+        total_size = 0
+        manifest = export['manifest']
+
+        for i, manifest_file in enumerate(manifest['files']):
+            total_size += manifest_file['size']
+            export_file = DatasetExportFile(
+                url=manifest_file['url'],
+                path=path,
+                show_progress=show_progress)
+
+            if not download:
+                print('Downloading is off, skipping file {} ({})'
+                      .format(export_file.file_name,
+                              naturalsize(manifest_file['size'])))
+                continue
+
+            print('Downloading file {}/{}: {} ({})'
+                  .format(i + 1, len(manifest['files']),
+                          export_file.file_name,
+                          naturalsize(manifest_file['size'])))
+            export_file.download()
+
+            # Validate the MD5 of the downloaded file.
+            # Handle's S3's multipart MD5 calculation.
+            md5sum, blocks = export_file.md5sum(
+                multipart_threshold=manifest['multipart_threshold_bytes'],
+                multipart_chunksize=manifest['multipart_chunksize_bytes']
+            )
+
+            if md5sum != manifest_file['md5']:
+                print("MD5 verification failed for file: {}"
+                      .format(export_file.file_name))
+                print("Expected: '{}' Calculated: '{}'"
+                      .format(manifest_file['md5'], md5sum))
+                if blocks:
+                    print("File is multipart with {} blocks expected. "
+                          "Found {} blocks.".format(
+                              manifest_file['multipart_blocks'], blocks))
+            else:
+                print("File {} completed downloading and MD5 verification."
+                      .format(export_file.file_name))
+
+        print('Number of files: {}'.format(len(manifest['files'])))
+        print('Number of records: {}'.format(export['documents_count']))
+        print('Total size: {}'.format(naturalsize(total_size)))
+
+        return export
