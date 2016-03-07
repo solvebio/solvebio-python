@@ -13,7 +13,6 @@ import datetime
 import time
 from collections import OrderedDict
 
-import pycurl
 import pyprind
 
 from .utils.humanize import naturalsize
@@ -297,6 +296,10 @@ class DatasetExportFile(object):
             return self.content_length == os.path.getsize(self.path)
 
     def download(self):
+        # On some machines, pycurl fails to import. Make sure this error
+        # only gets raised when export is used, rather than on startup.
+        import pycurl
+
         curl = pycurl.Curl()
 
         while not self.is_finished:

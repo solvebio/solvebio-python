@@ -6,7 +6,7 @@ import sys
 import warnings
 
 VERSION = 'undefined'
-install_requires = ['six', 'pyprind', 'pycurl>=7.43.0']
+install_requires = ['six', 'pyprind', 'pycurl>=7.0.0']
 extra = {}
 
 with open('solvebio/version.py') as f:
