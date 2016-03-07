@@ -155,17 +155,24 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
             )
 
             if md5sum != manifest_file['md5']:
-                print("MD5 verification failed for file: {}"
+                print("### Export failed MD5 verification!")
+                print("### -------------------------------")
+                print("### File: {}".format(export_file.file_name))
+                print("### Expected MD5: {}".format(manifest_file['md5']))
+                print("### Calculated MD5: {}".format(md5sum))
+                if blocks and manifest_file['multipart_blocks'] != blocks:
+                    print("### Multipart block size failed verification")
+                    print("### Expected: {} blocks"
+                          .format(manifest_file['multipart_blocks']))
+                    print("### Found: {} blocks".format(blocks))
+                print("\n### Delete the following file and try again: {}"
                       .format(export_file.file_name))
-                print("Expected: '{}' Calculated: '{}'"
-                      .format(manifest_file['md5'], md5sum))
-                if blocks:
-                    print("File is multipart with {} blocks expected. "
-                          "Found {} blocks.".format(
-                              manifest_file['multipart_blocks'], blocks))
-            else:
-                print("File {} completed downloading and MD5 verification."
-                      .format(export_file.file_name))
+                print("### If the problem persists, please email "
+                      "support@solvebio.com")
+                return None
+
+            print("File {} completed downloading and MD5 verification."
+                  .format(export_file.file_name))
 
         print('Number of files: {}'.format(len(manifest['files'])))
         print('Number of records: {}'.format(export['documents_count']))
