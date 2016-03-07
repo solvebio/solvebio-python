@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.10.0](https://github.com/solvebio/solvebio-python/tree/v1.10.0) (2016-03-07)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.9.1...v1.10.0)
+
+**Merged pull requests:**
+
+- Adds Dataset bulk export helper/verification code [\#92](https://github.com/solvebio/solvebio-python/pull/92) ([davecap](https://github.com/davecap))
+
 ## [v1.9.1](https://github.com/solvebio/solvebio-python/tree/v1.9.1) (2016-02-10)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.9.0...v1.9.1)
 
