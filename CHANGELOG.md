@@ -1,5 +1,16 @@
 # Change Log
 
+## [v1.11.0](https://github.com/solvebio/solvebio-python/tree/v1.11.0) (2016-03-28)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.10.0...v1.11.0)
+
+**Fixed bugs:**
+
+- Add support for login domains [\#93](https://github.com/solvebio/solvebio-python/issues/93)
+
+**Merged pull requests:**
+
+- adds domain support to login cli \(fixes \#93\) [\#94](https://github.com/solvebio/solvebio-python/pull/94) ([davecap](https://github.com/davecap))
+
 ## [v1.10.0](https://github.com/solvebio/solvebio-python/tree/v1.10.0) (2016-03-07)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.9.1...v1.10.0)
 
