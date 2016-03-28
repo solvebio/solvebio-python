@@ -28,7 +28,8 @@ class TestLogin(unittest.TestCase):
         # temporarily replace with dummy methods for testing
         self._ask_for_credentials = auth._ask_for_credentials
         self.delete_credentials = auth.delete_credentials
-        auth._ask_for_credentials = lambda login=None: ('fake@foo.bar',
+        auth._ask_for_credentials = lambda login=None: ('mydomain',
+                                                        'fake@foo.bar',
                                                         'p4ssw0rd')
         auth.delete_credentials = lambda: None
 

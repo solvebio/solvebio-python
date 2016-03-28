@@ -24,10 +24,11 @@ def _ask_for_credentials():
     """
     Asks the user for their email and password.
     """
-    _print_msg('Enter your SolveBio credentials')
+    _print_msg('Please enter your SolveBio credentials')
+    domain = input('Domain (e.g. <domain>.solvebio.com): ')
     email = input('Email: ')
     password = getpass.getpass('Password (typing will be hidden): ')
-    return (email, password)
+    return (domain, email, password)
 
 
 def _send_install_report():
@@ -50,17 +51,18 @@ def _send_install_report():
 
 def login(*args):
     """
-    Prompt user for login information (email/password).
-    Email and password are used to get the user's API key.
+    Prompt user for login information (domain/email/password).
+    Domain, email and password are used to get the user's API key.
     """
-    email, password = _ask_for_credentials()
+    domain, email, password = _ask_for_credentials()
 
-    if not email or not password:
-        print("Email and password are both required.")
+    if not all([domain, email, password]):
+        print("Domain, email, and password are all required.")
         return False
 
     try:
         response = client.post('/v1/auth/token', {
+            'domain': domain.replace('.solvebio.com', ''),
             'email': email,
             'password': password
         })
