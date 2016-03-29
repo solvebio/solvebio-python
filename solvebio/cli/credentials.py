@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from __future__ import absolute_import
 import six
 
@@ -39,7 +40,7 @@ class netrc(_netrc):
 
     def save(self, path):
         """Dump the class data in the format of a .netrc file."""
-        rep = u""
+        rep = ""
         for host in self.hosts.keys():
             attrs = self.hosts[host]
             rep = rep + "machine " + host + "\n\tlogin " \

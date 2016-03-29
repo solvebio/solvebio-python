@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from __future__ import absolute_import
+
 import six
 
 from .client import client
@@ -240,7 +242,7 @@ class Query(object):
           - `debug` (optional): Sends debug information to the API.
         """
         self._dataset_id = dataset_id
-        self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
+        self._data_url = '/v1/datasets/{0}/data'.format(dataset_id)
         self._query = query
         self._genome_build = genome_build
         self._result_class = result_class
@@ -431,9 +433,9 @@ class Query(object):
             raise self._error
 
         if len(self) == 0:
-            return u'Query returned 0 results.'
+            return 'Query returned 0 results.'
 
-        return u'\n%s\n\n... %s more results.' % (
+        return '\n%s\n\n... %s more results.' % (
             tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
                      aligns=['right', 'left'], sort=True),
             pretty_int(len(self) - 1))

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from __future__ import absolute_import
+
 import json
 import time
 import solvebio
@@ -78,7 +80,7 @@ class SolveTokenAuth(AuthBase):
         return r
 
     def __repr__(self):
-        return u'<SolveTokenAuth {0} {1}>'.format(self.token_type, self.token)
+        return '<SolveTokenAuth {0} {1}>'.format(self.token_type, self.token)
 
 
 class SolveClient(object):

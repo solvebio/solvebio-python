@@ -1,4 +1,3 @@
-"""Solvebio DepositoryVersion Resource"""
 from ..client import client
 from ..help import open_help
 
@@ -57,7 +56,7 @@ class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
                     'Please instantiate the Dataset '
                     'object with an ID or full_name.')
             # automatically construct the data_url from the ID
-            self['changelog_url'] = self.instance_url() + u'/changelog'
+            self['changelog_url'] = self.instance_url() + '/changelog'
 
         if version:
             return self['changelog_url'] + '/' + version

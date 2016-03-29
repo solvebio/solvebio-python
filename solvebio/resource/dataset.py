@@ -1,4 +1,3 @@
-"""Solvebio Dataset API Resource"""
 from ..client import client
 from ..help import open_help
 from ..query import Query
@@ -61,7 +60,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                     'Please instantiate the Dataset '
                     'object with an ID or full_name.')
             # automatically construct the data_url from the ID
-            return self.instance_url() + u'/data'
+            return self.instance_url() + '/data'
         return self['data_url']
 
     def query(self, query=None, **params):
@@ -80,7 +79,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                     'Please instantiate the Dataset '
                     'object with an ID or full_name.')
             # automatically construct the data_url from the ID
-            self['beacon_url'] = self.instance_url() + u'/beacon'
+            self['beacon_url'] = self.instance_url() + '/beacon'
         return self['beacon_url']
 
     def beacon(self, **params):
@@ -95,7 +94,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                     'Please instantiate the Dataset '
                     'object with an ID or full_name.')
             # automatically construct the data_url from the ID
-            self['changelog_url'] = self.instance_url() + u'/changelog'
+            self['changelog_url'] = self.instance_url() + '/changelog'
         if version:
             return self['changelog_url'] + '/' + version
         else:
@@ -116,7 +115,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                     'No Dataset ID was provided. '
                     'Please instantiate the Dataset '
                     'object with an ID or full_name.')
-            self['exports_url'] = self.instance_url() + u'/exports'
+            self['exports_url'] = self.instance_url() + '/exports'
 
         export = client.post(self['exports_url'],
                              {'format': format,
