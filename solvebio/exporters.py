@@ -186,9 +186,13 @@ class CSVExporter(object):
         else:
             f = open(filename, 'wb')
 
+        fieldnames = self.key_map.keys()
         try:
-            writer = csv.DictWriter(f, self.key_map.keys())
-            writer.writeheader()
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            # writer.writeheader() is new in 2.7
+            # The following is used for 2.6 compat:
+            # writer.writeheader()
+            writer.writerow(dict(zip(fieldnames, fieldnames)))
             writer.writerows(self.rows)
         except:
             raise
