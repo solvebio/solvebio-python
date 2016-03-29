@@ -11,7 +11,12 @@ import binascii
 import hashlib
 import datetime
 import time
-from collections import OrderedDict
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    # Python 2.6 compatibility
+    from ordereddict import OrderedDict
 
 import pyprind
 

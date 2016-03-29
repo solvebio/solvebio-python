@@ -79,8 +79,10 @@ class DatasetQueryView(View):
         return super(DatasetQueryView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        params = {p: request.GET.get(p) for p in self.valid_params
-                  if p in request.GET}
+        params = {}
+        for p in self.valid_params:
+            if p in request.GET:
+                params[p] = request.GET(p)
 
         if 'filters' in params:
             params['filters'] = json.loads(params['filters'])
