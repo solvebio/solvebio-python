@@ -1,0 +1,20 @@
+sudo: false
+language: python
+python:
+  - '2.6'
+  - '2.7'
+  - '3.4'
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "pypy"
+install:
+  - pip install requests>=2.0.0 flake8 nose mock tox
+  # We use @skipIf so unittest2 is needed on Pyton 2.6
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
+script:
+  - python -W always setup.py test 
+  - flake8 solvebio
+notifications:
+  slack:
+    secure: WvTImIlFKtCSTrcpk11RB467ybQBmZatk1k9CEEb5qkRRX0IUhmmNzV4xKIJR40Hf1u84uW6j5AeD/OChHycU+1C/OmMgyFAIYMAkE8db+dGtpdlQO5a5Jj9xzK8nfUKrw6Y3JzDTn+mQkeFyRP6D8fj3WPWOV5G9EOTY62sLiQ=

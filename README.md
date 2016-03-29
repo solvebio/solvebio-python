@@ -1,5 +1,4 @@
-[ ![Codeship Status for
-solvebio/solvebio-python](https://codeship.com/projects/dbb781b0-c424-0132-0b9d-0e5e844ed5eb/status?branch=master)](https://codeship.com/projects/74046)
+[![Build Status](https://travis-ci.org/solvebio/solvebio-python.svg?branch=master)](http://travis-ci.org/solvebio/solvebio-python)
 
 
 SolveBio Python Client
