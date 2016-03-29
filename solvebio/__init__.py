@@ -92,7 +92,7 @@ from .version import VERSION  # noqa
 from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
 from .resource import (
-    Depository, DepositoryVersion, Annotation, Sample,
+    Depository, DepositoryVersion,
     User, Dataset, DatasetField
 )
 
@@ -128,7 +128,6 @@ def login(**kwargs):
 
 
 __all__ = [
-    'Annotation',
     'BatchQuery',
     'Dataset',
     'DatasetField',
@@ -138,6 +137,5 @@ __all__ = [
     'Query',
     'GenomicFilter',
     'SolveError',
-    'Sample',
     'User'
 ]

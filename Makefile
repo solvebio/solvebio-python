@@ -1,5 +1,3 @@
-# Compatibility for us old-timers.
-
 # Note: This makefile include remake-style target comments.
 # These comments before the targets start with #:
 # remake --tasks to shows the targets and the comments
@@ -62,11 +60,7 @@ test: check
 test-%:
 	python -m unittest solvebio.test.$(subst test-,test_,$@)
 
-rmChangeLog:
-	rm ChangeLog || true
-
-#: Create a ChangeLog from git via git log and git2cl
-ChangeLog: rmChangeLog
-	git log --pretty --numstat --summary | $(GIT2CL) >$@
+changelog:
+	github_changelog_generator
 
 .PHONY: $(PHONY)
