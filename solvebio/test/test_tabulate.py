@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import unittest
@@ -105,7 +104,7 @@ spam\t23
 
         # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(got, expected[1:-1],
-                         'mixed data with arrays; close to actual' +
+                         'mixed data with arrays; close to actual ' +
                          'query output')
 
         expected = """

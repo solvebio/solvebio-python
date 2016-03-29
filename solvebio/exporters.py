@@ -48,14 +48,14 @@ class QueryExporters(object):
         force = kwargs.pop('force', False)
 
         if exporter not in self.registry:
-            raise Exception('Invalid exporter: {}. Available exporters: {}'
+            raise Exception('Invalid exporter: {0}. Available exporters: {1}'
                             .format(exporter, ', '.join(self.registry.keys())))
 
         nrecords = len(query)
         if nrecords == 0:
             raise Exception('There are no results to export.')
         elif nrecords > self.EXPORT_WARN and not force:
-            print('To export {} records, use `force=True`.'
+            print('To export {0} records, use `force=True`.'
                   .format(nrecords))
             return
 
@@ -111,7 +111,7 @@ class CSVExporter(object):
             self.key_map[name] = splits
             self.key_types[name] = f['data_type']
 
-        title = 'Exporting query to: {}'.format(filename)
+        title = 'Exporting query to: {0}'.format(filename)
 
         if self.show_progress:
             progress_bar = pyprind.ProgPercent(
@@ -310,7 +310,7 @@ class DatasetExportFile(object):
         while not self.is_finished:
             try:
                 if os.path.exists(self.path):
-                    print("Resuming download for {}".format(self.path))
+                    print("Resuming download for {0}".format(self.path))
                     mode = 'ab'
                     self.downloaded = os.path.getsize(self.path)
                     curl.setopt(pycurl.RESUME_FROM, self.downloaded)

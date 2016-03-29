@@ -98,7 +98,10 @@ class DatasetQueryView(View):
                 json.dumps({'detail': 'Error parsing JSON request body.'},
                            content_type='application/json'))
 
-        params = {p: data.get(p) for p in self.valid_params if p in data}
+        params = {}
+        for p in self.valid_params:
+            if p in data:
+                params[p] = data.get(p)
         return self._handle_query(params, **kwargs)
 
     def _handle_query(self, params, **kwargs):

@@ -121,7 +121,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                              {'format': format,
                               'genome_build': genome_build})
 
-        print("Exporting dataset {} to {}"
+        print("Exporting dataset {0} to {1}"
               .format(self['full_name'], path))
 
         total_size = 0
@@ -135,12 +135,12 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                 show_progress=show_progress)
 
             if not download:
-                print('Downloading is off, skipping file {} ({})'
+                print('Downloading is off, skipping file {0} ({1})'
                       .format(export_file.file_name,
                               naturalsize(manifest_file['size'])))
                 continue
 
-            print('Downloading file {}/{}: {} ({})'
+            print('Downloading file {0}/{1}: {2} ({3})'
                   .format(i + 1, len(manifest['files']),
                           export_file.file_name,
                           naturalsize(manifest_file['size'])))
@@ -156,25 +156,25 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
             if md5sum != manifest_file['md5']:
                 print("### Export failed MD5 verification!")
                 print("### -------------------------------")
-                print("### File: {}".format(export_file.file_name))
-                print("### Expected MD5: {}".format(manifest_file['md5']))
-                print("### Calculated MD5: {}".format(md5sum))
+                print("### File: {0}".format(export_file.file_name))
+                print("### Expected MD5: {0}".format(manifest_file['md5']))
+                print("### Calculated MD5: {0}".format(md5sum))
                 if blocks and manifest_file['multipart_blocks'] != blocks:
                     print("### Multipart block size failed verification")
-                    print("### Expected: {} blocks"
+                    print("### Expected: {0} blocks"
                           .format(manifest_file['multipart_blocks']))
-                    print("### Found: {} blocks".format(blocks))
-                print("\n### Delete the following file and try again: {}"
+                    print("### Found: {0} blocks".format(blocks))
+                print("\n### Delete the following file and try again: {0}"
                       .format(export_file.file_name))
                 print("### If the problem persists, please email "
                       "support@solvebio.com")
                 return None
 
-            print("File {} completed downloading and MD5 verification."
+            print("File {0} completed downloading and MD5 verification."
                   .format(export_file.file_name))
 
-        print('Number of files: {}'.format(len(manifest['files'])))
-        print('Number of records: {}'.format(export['documents_count']))
-        print('Total size: {}'.format(naturalsize(total_size)))
+        print('Number of files: {0}'.format(len(manifest['files'])))
+        print('Number of records: {0}'.format(export['documents_count']))
+        print('Total size: {0}'.format(naturalsize(total_size)))
 
         return export

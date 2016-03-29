@@ -23,9 +23,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from __future__ import print_function
-from __future__ import unicode_literals
 from __future__ import absolute_import
-import six
+
 from six.moves import map
 from six.moves import range
 from six.moves import zip
@@ -40,7 +39,7 @@ if python_version_tuple()[0] < "3":
     _none_type = type(None)
     _int_type = int
     _float_type = float
-    _text_type = six.text_type
+    _text_type = str
     _binary_type = str
 else:
     from itertools import zip_longest as izip_longest
