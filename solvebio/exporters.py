@@ -213,12 +213,12 @@ class CSVExporter(object):
             f.close()
 
 
-class RawCSVExporter(object):
+class FlatCSVExporter(object):
     """
     This class includes helper functions to export
     a SolveBio Query object to a CSV file without altering the data structure.
     """
-    name = 'raw-csv'
+    name = 'flat-csv'
 
     def __init__(self, query, *args, **kwargs):
         self.query = query
