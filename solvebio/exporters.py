@@ -257,9 +257,14 @@ class FlatCSVExporter(object):
         print('Export complete!')
 
     def load_fields(self):
-        # TODO: support fields option
         from solvebio import Dataset
-        self.fields = Dataset.retrieve(self.query._dataset_id).fields(limit=1000)
+        if self.query._fields:
+            self.fields = [
+                Dataset.retrieve(self.query._dataset_id).fields(name=self.query._fields)
+                for field in self.query._fields
+            ]
+        else:
+            self.fields = Dataset.retrieve(self.query._dataset_id).fields(limit=1000)
 
     def process_record(self, record):
         """Process a row of json data against the key map
