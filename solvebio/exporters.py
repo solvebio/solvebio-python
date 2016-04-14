@@ -108,11 +108,13 @@ class CSVExporter(object):
         self.key_map = OrderedDict()
         self.key_types = {}
 
+        # Get specified fields
         if self.query._fields:
             fields = [
                 Dataset.retrieve(self.query._dataset_id).fields(name=field)
                 for field in self.query._fields
             ]
+        # Get all fields
         else:
             fields = Dataset.retrieve(self.query._dataset_id)\
                 .fields(limit=1000)
@@ -258,38 +260,40 @@ class FlatCSVExporter(object):
 
     def load_fields(self):
         from solvebio import Dataset
+
+        # Get specified fields
         if self.query._fields:
             self.fields = [
                 Dataset.retrieve(self.query._dataset_id).fields(name=field)
                 for field in self.query._fields
             ]
+        # Get all fields
         else:
             self.fields = Dataset.retrieve(self.query._dataset_id)\
                 .fields(limit=1000)
 
     def process_record(self, record):
-        """Process a row of json data against the key map
+        """Process a row of json data
         """
         row = {}
 
         for field in self.fields:
             split_fields = field.name.split('.')
-
             # Nested Field
             if len(split_fields) > 1:
                 parent_field = split_fields[0]
-                # If the parent field is a list of objects
-                # just stringify the list
+                # The parent field is a list of objects.
                 if isinstance(record.get(parent_field), list):
-                    if not row.get(parent_field):
-                        row[parent_field] = record.get(parent_field)
+                    # Return a list of values mapping field.name
                     row[field.name] = [
                         self.get_in(obj, split_fields[1:])
                         for obj in record.get(parent_field)
                     ]
-                # Get the subfield value
+                # The parent field is an object.
                 elif isinstance(record.get(parent_field), dict):
+                    # Set the subfield value
                     row[field.name] = self.get_in(record, split_fields)
+            # Root Field
             else:
                 row[field.name] = record.get(field.name)
 
