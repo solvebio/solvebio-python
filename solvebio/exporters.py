@@ -11,6 +11,7 @@ import binascii
 import hashlib
 import datetime
 import time
+import operator
 
 try:
     from collections import OrderedDict
@@ -258,10 +259,7 @@ class FlatCSVExporter(object):
     def load_fields(self):
         # TODO: support fields option
         from solvebio import Dataset
-
-        fields = Dataset.retrieve(self.query._dataset_id).fields(limit=1000)
-        # self.fields = filter(lambda field: field.data_type != 'object', fields)
-        self.fields = fields
+        self.fields = Dataset.retrieve(self.query._dataset_id).fields(limit=1000)
 
     def process_record(self, record):
         """Process a row of json data against the key map
@@ -278,11 +276,10 @@ class FlatCSVExporter(object):
                 if isinstance(record.get(parent_field), list):
                     if not row.get(parent_field):
                         row[parent_field] = record.get(parent_field)
-                    # TODO: support multi-nested fields
-                    row[field.name] = [obj[split_fields[1]] for obj in record.get(parent_field)]
+                    row[field.name] = [self.get_in(obj, split_fields[1:]) for obj in record.get(parent_field)]
                 # Get the subfield value
                 elif isinstance(record.get(parent_field), dict):
-                    row[field.name] = reduce(dict.get, split_fields, record)
+                    row[field.name] = self.get_in(record, split_fields)
             else:
                 row[field.name] = record.get(field.name)
 
@@ -306,6 +303,15 @@ class FlatCSVExporter(object):
             raise
         finally:
             f.close()
+
+    @staticmethod
+    def get_in(coll, keys, default=None, no_default=False):
+        try:
+            return reduce(operator.getitem, keys, coll)
+        except (KeyError, IndexError, TypeError):
+            if no_default:
+                raise
+            return default
 
 
 class XLSXExporter(CSVExporter):
