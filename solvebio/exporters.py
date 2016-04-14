@@ -260,7 +260,7 @@ class FlatCSVExporter(object):
         from solvebio import Dataset
         if self.query._fields:
             self.fields = [
-                Dataset.retrieve(self.query._dataset_id).fields(name=self.query._fields)
+                Dataset.retrieve(self.query._dataset_id).fields(name=field)
                 for field in self.query._fields
             ]
         else:
