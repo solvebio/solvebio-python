@@ -5,13 +5,13 @@ from __future__ import unicode_literals
 from six.moves.urllib.parse import urlparse
 from six.moves.urllib.parse import unquote
 
+import binascii
+import datetime
+import hashlib
+import operator
 import os
 import sys
-import binascii
-import hashlib
-import datetime
 import time
-import operator
 
 try:
     from collections import OrderedDict
@@ -105,7 +105,16 @@ class CSVExporter(object):
         self.key_map = OrderedDict()
         self.key_types = {}
 
-        for f in Dataset.retrieve(self.query._dataset_id).fields(limit=1000):
+        if self.query._fields:
+            fields = [
+                Dataset.retrieve(self.query._dataset_id).fields(name=field)
+                for field in self.query._fields
+            ]
+        else:
+            fields = Dataset.retrieve(self.query._dataset_id)\
+                .fields(limit=1000)
+
+        for f in fields:
             name = f['name']
             splits = [int(s) if s.isdigit() else s
                       for s in name.split('.')]
@@ -201,20 +210,12 @@ class CSVExporter(object):
             f.close()
 
 
-class FlatCSVExporter(object):
+class RawCSVExporter(object):
     """
     This class includes helper functions to export
-    a SolveBio Query object to a CSV file.
+    a SolveBio Query object to a CSV file without altering the data structure.
     """
-    name = 'flat-csv'
-
-    collection = None
-
-    SEP_CHAR = '\r'
-    KEY_VAL_CHAR = ': '
-    DICT_SEP_CHAR = '\r'
-    DICT_OPEN = ''
-    DICT_CLOSE = ''
+    name = 'raw-csv'
 
     def __init__(self, query, *args, **kwargs):
         self.query = query
@@ -226,18 +227,14 @@ class FlatCSVExporter(object):
                 'The "filename" parameter is required to export.')
 
         filename = os.path.expanduser(filename)
+        title = 'Exporting query to: {0}'.format(filename)
 
         result_count = len(self.query)
         if result_count <= 0:
             raise AttributeError('No results found in query!')
 
         self.rows = []
-        self.key_map = OrderedDict()
-        self.key_types = {}
-
         self.load_fields()
-
-        title = 'Exporting query to: {0}'.format(filename)
 
         if self.show_progress:
             progress_bar = pyprind.ProgPercent(
@@ -264,7 +261,8 @@ class FlatCSVExporter(object):
                 for field in self.query._fields
             ]
         else:
-            self.fields = Dataset.retrieve(self.query._dataset_id).fields(limit=1000)
+            self.fields = Dataset.retrieve(self.query._dataset_id)\
+                .fields(limit=1000)
 
     def process_record(self, record):
         """Process a row of json data against the key map
@@ -277,11 +275,15 @@ class FlatCSVExporter(object):
             # Nested Field
             if len(split_fields) > 1:
                 parent_field = split_fields[0]
-                # If the parent field is a list of objects just stringify the list
+                # If the parent field is a list of objects
+                # just stringify the list
                 if isinstance(record.get(parent_field), list):
                     if not row.get(parent_field):
                         row[parent_field] = record.get(parent_field)
-                    row[field.name] = [self.get_in(obj, split_fields[1:]) for obj in record.get(parent_field)]
+                    row[field.name] = [
+                        self.get_in(obj, split_fields[1:])
+                        for obj in record.get(parent_field)
+                    ]
                 # Get the subfield value
                 elif isinstance(record.get(parent_field), dict):
                     row[field.name] = self.get_in(record, split_fields)
