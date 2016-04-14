@@ -13,6 +13,9 @@ import os
 import sys
 import time
 
+# Python 3.x compatibility
+from functools import reduce
+
 try:
     from collections import OrderedDict
 except ImportError:
