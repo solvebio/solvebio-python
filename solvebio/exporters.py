@@ -98,8 +98,6 @@ class CSVExporter(object):
 
         filename = os.path.expanduser(filename)
 
-        from solvebio import Dataset
-
         result_count = len(self.query)
         if result_count <= 0:
             raise AttributeError('No results found in query!')
@@ -107,19 +105,9 @@ class CSVExporter(object):
         self.rows = []
         self.key_map = OrderedDict()
         self.key_types = {}
+        self.load_fields()
 
-        # Get specified fields
-        if self.query._fields:
-            fields = [
-                Dataset.retrieve(self.query._dataset_id).fields(name=field)
-                for field in self.query._fields
-            ]
-        # Get all fields
-        else:
-            fields = Dataset.retrieve(self.query._dataset_id)\
-                .fields(limit=1000)
-
-        for f in fields:
+        for f in self.fields:
             name = f['name']
             splits = [int(s) if s.isdigit() else s
                       for s in name.split('.')]
@@ -144,6 +132,20 @@ class CSVExporter(object):
 
         self.write(filename=filename)
         print('Export complete!')
+
+    def load_fields(self):
+        from solvebio import Dataset
+
+        # Get specified fields
+        if self.query._fields:
+            self.fields = [
+                Dataset.retrieve(self.query._dataset_id).fields(name=field)
+                for field in self.query._fields
+            ]
+        # Get all fields
+        else:
+            self.fields = Dataset.retrieve(self.query._dataset_id) \
+                .fields(limit=1000)
 
     def process_cell(self, keys, cell):
         if not keys:
@@ -201,7 +203,7 @@ class CSVExporter(object):
         else:
             f = open(filename, 'wb')
 
-        fieldnames = self.key_map.keys()
+        fieldnames = [field.name for field in self.fields]
         try:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             # writer.writeheader() is new in 2.7
@@ -215,16 +217,12 @@ class CSVExporter(object):
             f.close()
 
 
-class FlatCSVExporter(object):
+class FlatCSVExporter(CSVExporter):
     """
     This class includes helper functions to export
     a SolveBio Query object to a CSV file without altering the data structure.
     """
     name = 'flat-csv'
-
-    def __init__(self, query, *args, **kwargs):
-        self.query = query
-        self.show_progress = kwargs.get('show_progress', False)
 
     def export(self, filename=None, **kwargs):
         if not filename:
@@ -258,20 +256,6 @@ class FlatCSVExporter(object):
         self.write(filename=filename)
         print('Export complete!')
 
-    def load_fields(self):
-        from solvebio import Dataset
-
-        # Get specified fields
-        if self.query._fields:
-            self.fields = [
-                Dataset.retrieve(self.query._dataset_id).fields(name=field)
-                for field in self.query._fields
-            ]
-        # Get all fields
-        else:
-            self.fields = Dataset.retrieve(self.query._dataset_id)\
-                .fields(limit=1000)
-
     def process_record(self, record):
         """Process a row of json data
         """
@@ -298,25 +282,6 @@ class FlatCSVExporter(object):
                 row[field.name] = record.get(field.name)
 
         return row
-
-    def write(self, filename):
-        if sys.version_info >= (3, 0, 0):
-            f = open(filename, 'w', newline='')
-        else:
-            f = open(filename, 'wb')
-
-        fieldnames = [field.name for field in self.fields]
-        try:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            # writer.writeheader() is new in 2.7
-            # The following is used for 2.6 compat:
-            # writer.writeheader()
-            writer.writerow(dict(zip(fieldnames, fieldnames)))
-            writer.writerows(self.rows)
-        except:
-            raise
-        finally:
-            f.close()
 
     @staticmethod
     def get_in(coll, keys, default=None, no_default=False):
