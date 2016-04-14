@@ -200,6 +200,114 @@ class CSVExporter(object):
             f.close()
 
 
+class FlatCSVExporter(object):
+    """
+    This class includes helper functions to export
+    a SolveBio Query object to a CSV file.
+    """
+    name = 'flat-csv'
+
+    collection = None
+
+    SEP_CHAR = '\r'
+    KEY_VAL_CHAR = ': '
+    DICT_SEP_CHAR = '\r'
+    DICT_OPEN = ''
+    DICT_CLOSE = ''
+
+    def __init__(self, query, *args, **kwargs):
+        self.query = query
+        self.show_progress = kwargs.get('show_progress', False)
+
+    def export(self, filename=None, **kwargs):
+        if not filename:
+            raise Exception(
+                'The "filename" parameter is required to export.')
+
+        filename = os.path.expanduser(filename)
+
+        result_count = len(self.query)
+        if result_count <= 0:
+            raise AttributeError('No results found in query!')
+
+        self.rows = []
+        self.key_map = OrderedDict()
+        self.key_types = {}
+
+        self.load_fields()
+
+        title = 'Exporting query to: {0}'.format(filename)
+
+        if self.show_progress:
+            progress_bar = pyprind.ProgPercent(
+                result_count,
+                title=title,
+                track_time=False)
+        else:
+            print(title)
+
+        for ind, record in enumerate(self.query):
+            row = self.process_record(record)
+            self.rows.append(row)
+            if self.show_progress:
+                progress_bar.update()
+
+        self.write(filename=filename)
+        print('Export complete!')
+
+    def load_fields(self):
+        # TODO: support fields option
+        from solvebio import Dataset
+
+        fields = Dataset.retrieve(self.query._dataset_id).fields(limit=1000)
+        # self.fields = filter(lambda field: field.data_type != 'object', fields)
+        self.fields = fields
+
+    def process_record(self, record):
+        """Process a row of json data against the key map
+        """
+        row = {}
+
+        for field in self.fields:
+            split_fields = field.name.split('.')
+
+            # Nested Field
+            if len(split_fields) > 1:
+                parent_field = split_fields[0]
+                # If the parent field is a list of objects just stringify the list
+                if isinstance(record.get(parent_field), list):
+                    if not row.get(parent_field):
+                        row[parent_field] = record.get(parent_field)
+                    # TODO: support multi-nested fields
+                    row[field.name] = [obj[split_fields[1]] for obj in record.get(parent_field)]
+                # Get the subfield value
+                elif isinstance(record.get(parent_field), dict):
+                    row[field.name] = reduce(dict.get, split_fields, record)
+            else:
+                row[field.name] = record.get(field.name)
+
+        return row
+
+    def write(self, filename):
+        if sys.version_info >= (3, 0, 0):
+            f = open(filename, 'w', newline='')
+        else:
+            f = open(filename, 'wb')
+
+        fieldnames = [field.name for field in self.fields]
+        try:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            # writer.writeheader() is new in 2.7
+            # The following is used for 2.6 compat:
+            # writer.writeheader()
+            writer.writerow(dict(zip(fieldnames, fieldnames)))
+            writer.writerows(self.rows)
+        except:
+            raise
+        finally:
+            f.close()
+
+
 class XLSXExporter(CSVExporter):
     """Uses XlsxWriter to export a valid XLS."""
 
