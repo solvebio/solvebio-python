@@ -38,6 +38,8 @@ class DatasetTests(SolveBioTestCase):
         check_fields = set(['class_name', 'created_at',
                             'data_type', 'dataset', 'dataset_id',
                             'description', 'facets_url',
+                            'ordering', 'is_hidden', 'is_valid',
+                            'is_list', 'entity_type',
                             'name', 'updated_at',
                             'id', 'url'])
         self.assertSetEqual(set(dataset_field.keys()), check_fields)
