@@ -21,6 +21,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
         'whoami': 'Show your SolveBio email address',
         'shell': 'Open the SolveBio Python shell',
         'tutorial': 'Show the SolveBio Python Tutorial',
+        'import': 'Import a local file into a dataset',
         'version': solvebio.version.VERSION,
         'api_host': 'Override the default SolveBio API host',
         'api_key': 'Manually provide a SolveBio API key'

@@ -93,7 +93,9 @@ from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
 from .resource import (
     Depository, DepositoryVersion,
-    User, Dataset, DatasetField
+    Upload, User,
+    Dataset, DatasetField,
+    DatasetImport, DatasetCommit, DatasetTemplate
 )
 
 
@@ -131,11 +133,16 @@ __all__ = [
     'BatchQuery',
     'Dataset',
     'DatasetField',
+    'DatasetImport',
+    'DatasetCommit',
+    'DatasetTemplate',
     'Depository',
     'DepositoryVersion',
     'Filter',
     'Query',
     'GenomicFilter',
     'SolveError',
-    'User'
+    'Upload',
+    'User',
+    'VERSION'
 ]

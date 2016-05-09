@@ -52,6 +52,45 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
 
         return results
 
+    def template(self, **params):
+        if 'template_url' not in self:
+            raise Exception(
+                'Please use Dataset.retrieve({ID}) before retrieving '
+                'a template')
+
+        response = client.get(self.commits_url, params)
+        return convert_to_solve_object(response)
+
+    def commits(self, **params):
+        if 'commits_url' not in self:
+            raise Exception(
+                'Please use Dataset.retrieve({ID}) before looking '
+                'up commits')
+
+        response = client.get(self.commits_url, params)
+        results = convert_to_solve_object(response)
+        results.set_tabulate(
+            ['id', 'title', 'description', 'status', 'created_at'],
+            headers=['ID', 'Title', 'Description', 'Status', 'Created'],
+            aligns=['left', 'left', 'left', 'left', 'left'], sort=False)
+
+        return results
+
+    def imports(self, **params):
+        if 'imports_url' not in self:
+            raise Exception(
+                'Please use Dataset.retrieve({ID}) before looking '
+                'up imports')
+
+        response = client.get(self.commits_url, params)
+        results = convert_to_solve_object(response)
+        results.set_tabulate(
+            ['id', 'title', 'description', 'status', 'created_at'],
+            headers=['ID', 'Title', 'Description', 'Status', 'Created'],
+            aligns=['left', 'left', 'left', 'left', 'left'], sort=False)
+
+        return results
+
     def _data_url(self):
         if 'data_url' not in self:
             if 'id' not in self or not self['id']:

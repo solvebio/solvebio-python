@@ -8,7 +8,7 @@ class SolveError(Exception):
     request"""
     default_message = ('Unexpected error communicating with SolveBio. '
                        'If this problem persists, let us know at '
-                       'contact@solvebio.com.')
+                       'support@solvebio.com.')
 
     def __init__(self, message=None, response=None):
         self.json_body = None
