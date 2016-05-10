@@ -58,7 +58,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                 'Please use Dataset.retrieve({ID}) before retrieving '
                 'a template')
 
-        response = client.get(self.commits_url, params)
+        response = client.get(self.template_url, params)
         return convert_to_solve_object(response)
 
     def commits(self, **params):
@@ -82,7 +82,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
                 'Please use Dataset.retrieve({ID}) before looking '
                 'up imports')
 
-        response = client.get(self.commits_url, params)
+        response = client.get(self.imports_url, params)
         results = convert_to_solve_object(response)
         results.set_tabulate(
             ['id', 'title', 'description', 'status', 'created_at'],
