@@ -7,8 +7,6 @@ from six.moves.urllib.parse import unquote
 
 import os
 import sys
-import binascii
-import hashlib
 import datetime
 import time
 
@@ -278,8 +276,6 @@ class DatasetExportFile(object):
                          '%(eta)18s ETA' + ' ' * 4)
     eta_limit = 60 * 60 * 24 * 30
     max_retries = 5
-    multipart_threshold = 64 * 1024 * 1024
-    multipart_chunksize = 64 * 1024 * 1024
 
     def __init__(self, url, path=None, show_progress=True):
         self.url = url
@@ -396,35 +392,3 @@ class DatasetExportFile(object):
 
         sys.stderr.write(p)
         sys.stderr.flush()
-
-    def md5sum(self, multipart_threshold=multipart_threshold,
-               multipart_chunksize=multipart_chunksize):
-
-        def _read_chunks(f, chunk_size):
-            chunk = f.read(chunk_size)
-            while chunk:
-                yield chunk
-                chunk = f.read(chunk_size)
-
-        filesize = os.path.getsize(self.path)
-
-        if filesize > multipart_threshold:
-            block_count = 0
-            md5string = ""
-            with open(self.path, "rb") as f:
-                for block in _read_chunks(f, multipart_chunksize):
-                    md5 = hashlib.md5()
-                    md5.update(block)
-                    md5string += md5.hexdigest()
-                    block_count += 1
-
-            md5 = hashlib.md5()
-            md5.update(binascii.unhexlify(md5string))
-        else:
-            block_count = None
-            md5 = hashlib.md5()
-            with open(self.path, "rb") as f:
-                for block in _read_chunks(f, multipart_chunksize):
-                    md5.update(block)
-
-        return md5.hexdigest(), block_count
