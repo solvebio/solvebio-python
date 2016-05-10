@@ -2,6 +2,7 @@ from ..client import client
 from ..help import open_help
 from ..query import Query
 from ..utils.humanize import naturalsize
+from ..utils.md5sum import md5sum
 
 from .solveobject import convert_to_solve_object
 from .apiresource import CreateableAPIResource, ListableAPIResource, \
@@ -187,17 +188,17 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
 
             # Validate the MD5 of the downloaded file.
             # Handle's S3's multipart MD5 calculation.
-            md5sum, blocks = export_file.md5sum(
+            md5, blocks = md5sum(
                 multipart_threshold=manifest['multipart_threshold_bytes'],
                 multipart_chunksize=manifest['multipart_chunksize_bytes']
             )
 
-            if md5sum != manifest_file['md5']:
+            if md5 != manifest_file['md5']:
                 print("### Export failed MD5 verification!")
                 print("### -------------------------------")
                 print("### File: {0}".format(export_file.file_name))
                 print("### Expected MD5: {0}".format(manifest_file['md5']))
-                print("### Calculated MD5: {0}".format(md5sum))
+                print("### Calculated MD5: {0}".format(md5))
                 if blocks and manifest_file['multipart_blocks'] != blocks:
                     print("### Multipart block size failed verification")
                     print("### Expected: {0} blocks"
