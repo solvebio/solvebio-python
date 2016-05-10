@@ -1,10 +1,11 @@
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import UpdateableAPIResource
+from .apiresource import DeletableAPIResource
 
 
 class DatasetImport(CreateableAPIResource, ListableAPIResource,
-                    UpdateableAPIResource):
+                    UpdateableAPIResource, DeletableAPIResource):
     """
     DatasetImports represent an import task that takes
     either an uploaded file or file manifest (list of file URLs)
