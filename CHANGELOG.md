@@ -1,5 +1,16 @@
 # Change Log
 
+## [v1.12.1](https://github.com/solvebio/solvebio-python/tree/v1.12.1) (2016-05-12)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.12.0...v1.12.1)
+
+**Fixed bugs:**
+
+- \[Windows\] Fix login mechanism on Windows \($HOME not set\) [\#97](https://github.com/solvebio/solvebio-python/issues/97)
+
+**Merged pull requests:**
+
+- use expanduser instead of looking for $HOME manually \(fixes \#97\) [\#98](https://github.com/solvebio/solvebio-python/pull/98) ([davecap](https://github.com/davecap))
+
 ## [v1.12.0](https://github.com/solvebio/solvebio-python/tree/v1.12.0) (2016-05-10)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.11.0...v1.12.0)
 
