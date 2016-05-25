@@ -67,9 +67,6 @@ def import_file(args):
                 is_genomic=tpl.is_genomic,
                 entity_type=tpl.entity_type,
                 fields=tpl.fields)
-
-            if not dataset:
-                sys.exit(1)
         else:
             print("Tip: use the --create-dataset flag "
                   "to create one automatically")

@@ -41,9 +41,10 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         try:
             depo, version, dataset = full_name.split('/')
         except ValueError:
-            print("Make sure the dataset name is in the following format: "
-                  "<depository>/<version>/<dataset>")
-            return None
+            raise ValueError(
+                "Invalid dataset name '{0}'. Please ensure that it is "
+                "in the following format: '<depository>/<version>/<dataset>'"
+                .format(full_name))
 
         try:
             depo = Depository.retrieve(depo)
