@@ -25,6 +25,54 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         ('description', 'Description'),
     )
 
+    @classmethod
+    def get_or_create_from_full_name(cls, full_name, **kwargs):
+        from solvebio import Depository
+        from solvebio import DepositoryVersion
+        from solvebio import SolveError
+
+        try:
+            return Dataset.retrieve(full_name)
+        except SolveError as e:
+            if e.status_code != 404:
+                raise e
+
+        # Split the name into parts
+        try:
+            depo, version, dataset = full_name.split('/')
+        except ValueError:
+            print("Make sure the dataset name is in the following format: "
+                  "<depository>/<version>/<dataset>")
+            return None
+
+        try:
+            depo = Depository.retrieve(depo)
+        except SolveError as e:
+            if e.status_code != 404:
+                raise e
+            depo = Depository.create(name=depo, title=depo)
+
+        try:
+            version = DepositoryVersion.retrieve(
+                '{0}/{1}'.format(depo.name, version))
+        except SolveError as e:
+            if e.status_code != 404:
+                raise e
+            version = DepositoryVersion.create(
+                depository_id=depo.id, name=version, title=version)
+
+        try:
+            return Dataset.retrieve(
+                '{0}/{1}/{2}'.format(depo.name, version.name, dataset))
+        except SolveError as e:
+            if e.status_code != 404:
+                raise e
+            # Use a default title if none provided
+            title = kwargs.pop('title', dataset)
+            return Dataset.create(
+                depository_version_id=version.id,
+                name=dataset, title=title, **kwargs)
+
     def depository_version(self):
         from .depositoryversion import DepositoryVersion
         return DepositoryVersion.retrieve(self['depository_version'])

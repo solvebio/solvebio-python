@@ -40,6 +40,7 @@ if python_version_tuple()[0] < "3":
     _int_type = int
     _float_type = float
     _text_type = str
+    _unicode_type = unicode
     _binary_type = str
 else:
     from itertools import zip_longest as izip_longest
@@ -48,6 +49,7 @@ else:
     _int_type = int
     _float_type = float
     _text_type = str
+    _unicode_type = _text_type
     _binary_type = bytes
 
 
@@ -165,7 +167,8 @@ def _isint(string):
     """
     return type(string) is int or \
         (isinstance(string, _binary_type) or
-         isinstance(string, _text_type)) and \
+         isinstance(string, _text_type) or
+         isinstance(string, _unicode_type)) and \
         _isconvertible(int, string)
 
 
@@ -193,7 +196,7 @@ def _type(string, has_invisible=True):
     if string is None:
         return _none_type
     elif _isint(string):
-        return int
+        return _int_type
     elif _isnumber(string):
         return float
     elif isinstance(string, _binary_type):
