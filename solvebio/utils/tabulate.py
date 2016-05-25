@@ -28,6 +28,7 @@ from __future__ import absolute_import
 from six.moves import map
 from six.moves import range
 from six.moves import zip
+from six import string_types
 
 from collections import namedtuple
 from platform import python_version_tuple
@@ -40,7 +41,6 @@ if python_version_tuple()[0] < "3":
     _int_type = int
     _float_type = float
     _text_type = str
-    _unicode_type = unicode
     _binary_type = str
 else:
     from itertools import zip_longest as izip_longest
@@ -49,7 +49,6 @@ else:
     _int_type = int
     _float_type = float
     _text_type = str
-    _unicode_type = _text_type
     _binary_type = bytes
 
 
@@ -167,8 +166,7 @@ def _isint(string):
     """
     return type(string) is int or \
         (isinstance(string, _binary_type) or
-         isinstance(string, _text_type) or
-         isinstance(string, _unicode_type)) and \
+         isinstance(string, string_types)) and \
         _isconvertible(int, string)
 
 
