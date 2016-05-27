@@ -8,7 +8,7 @@ import argparse
 import solvebio
 
 from . import auth
-from . import importers
+from . import data
 from .tutorial import print_tutorial
 from .ipython import launch_ipython_shell
 from ..utils.validators import validate_api_host_url
@@ -40,7 +40,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'help': 'Open the SolveBio Python shell'
         },
         'import': {
-            'func': importers.import_file,
+            'func': data.import_file,
             'help': 'Import a local file into a SolveBio dataset',
             'arguments': [
                 {
