@@ -46,7 +46,7 @@ def _handle_request_error(e):
         msg = ("Unexpected error communicating with SolveBio.\n"
                "It looks like there's probably a configuration "
                "issue locally.\nIf this problem persists, let us "
-               "know at contact@solvebio.com.")
+               "know at support@solvebio.com.")
         err = "A %s was raised" % (type(e).__name__,)
         if str(e):
             err += " with error message %s" % (str(e),)

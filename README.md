@@ -10,6 +10,20 @@ This module has been tested on Python 2.6+, Python 3.1+ and PyPy.
 For more information about SolveBio visit [solvebio.com](https://www.solvebio.com).
 
 
+Dependencies (Ubuntu)
+--------------------
+
+When installing SolveBio on Ubuntu (version 14 and up), you may need the
+following dependencies:
+
+* libgnutls-dev
+* libcurl4-gnutls-dev
+
+To install them, run:
+
+    sudo apt-get install libcurl4-gnutls-dev libgnutls-dev
+
+
 Guided Installation
 -------------------
 

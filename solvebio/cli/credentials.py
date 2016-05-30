@@ -20,11 +20,21 @@ class netrc(_netrc):
     """
     @staticmethod
     def path():
+        if os.name == 'nt':
+            # Windows
+            path = '~\\_solvebio\\credentials'
+        else:
+            # *nix
+            path = '~/.solvebio/credentials'
 
         try:
-            path = os.path.join(os.environ['HOME'], '.solvebio', 'credentials')
+            path = os.path.expanduser(path)
         except KeyError:
-            raise IOError("Could not find credentials file: $HOME is not set")
+            # os.path.expanduser can fail when $HOME is undefined and
+            # getpwuid fails. See http://bugs.python.org/issue20164
+            raise IOError(
+                "Could not find any home directory for '{0}'"
+                .format(path))
 
         if not os.path.isdir(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
