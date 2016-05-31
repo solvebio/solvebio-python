@@ -26,7 +26,7 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
     )
 
     @classmethod
-    def get_or_create_from_full_name(cls, full_name, **kwargs):
+    def get_or_create_by_full_name(cls, full_name, **kwargs):
         from solvebio import Depository
         from solvebio import DepositoryVersion
         from solvebio import SolveError
