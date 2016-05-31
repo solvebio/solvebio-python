@@ -5,6 +5,11 @@ from __future__ import print_function
 import os
 import glob
 
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
+
 import solvebio
 
 
@@ -34,20 +39,42 @@ class Manifest(object):
             'url': upload.download_url()
         })
 
-    def add_files(self, files):
+    def add_url(self, url, **kwargs):
+        self.manifest['files'].append({
+            'url': url,
+            'name': kwargs.get('name'),
+            'format': kwargs.get('format'),
+            'size': kwargs.get('size'),
+            'md5': kwargs.get('md5'),
+            'base64_md5': kwargs.get('base64_md5')
+        })
+
+    def add(self, *args):
         """
-        Add one or more local files to the manifest.
+        Add one or more files or URLs to the manifest.
         If files contains a glob, it is expanded.
 
         All files are uploaded to SolveBio. The Upload
         object is used to fill the manifest.
         """
-        for path in files:
-            if os.path.isfile(path):
+        def _is_url(path):
+            p = urlparse(path)
+            return bool(p.scheme)
+
+        for path in args:
+            if _is_url(path):
+                self.add_url(path)
+            elif os.path.isfile(path):
                 self.add_file(path)
             elif os.path.isdir(path):
                 for f in os.listdir(path):
                     self.add_file(f)
-            else:
+            elif glob.glob(path):
                 for f in glob.glob(path):
                     self.add_file(f)
+            else:
+                raise ValueError(
+                    'Paths in manifest must be valid URL '
+                    '(starting with http:// or https://) or '
+                    'a valid local filename, directory, '
+                    'or glob (such as: *.vcf)')

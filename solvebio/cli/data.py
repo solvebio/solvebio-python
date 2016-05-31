@@ -83,7 +83,7 @@ def import_file(args):
 
     # Generate a manifest from the local files
     manifest = solvebio.Manifest()
-    manifest.add_files(args.file)
+    manifest.add(*args.file)
 
     # Create the manifest-based import
     imp = solvebio.DatasetImport.create(
