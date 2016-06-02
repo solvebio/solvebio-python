@@ -196,6 +196,27 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
     def help(self):
         open_help('/library/{0}'.format(self['full_name']))
 
+    def import_file(self, path, **kwargs):
+        """
+        This is a shortcut to creating a DatasetImport. Can't use "import()"
+        because of Python.
+        """
+        from . import Manifest
+        from . import DatasetImport
+
+        if 'id' not in self or not self['id']:
+            raise Exception(
+                'No Dataset ID found. '
+                'Please instantiate or retrieve a dataset '
+                'with an ID or full_name.')
+
+        manifest = Manifest()
+        manifest.add(path)
+        return DatasetImport.create(
+            dataset_id=self['id'],
+            manifest=manifest.manifest,
+            **kwargs)
+
     def export(self, path, genome_build=None, format='json',
                show_progress=True, download=True):
         if 'exports_url' not in self:
