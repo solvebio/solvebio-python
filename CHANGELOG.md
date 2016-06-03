@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.13.0](https://github.com/solvebio/solvebio-python/tree/v1.13.0) (2016-06-03)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.12.1...v1.13.0)
+
+**Merged pull requests:**
+
+- Refactor subcommand arguments; add simple dataset import subcommand [\#99](https://github.com/solvebio/solvebio-python/pull/99) ([davecap](https://github.com/davecap))
+
 ## [v1.12.1](https://github.com/solvebio/solvebio-python/tree/v1.12.1) (2016-05-12)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.12.0...v1.12.1)
 
