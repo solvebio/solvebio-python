@@ -157,13 +157,7 @@ class DownloadableAPIResource(APIResource):
         Download the file to the specified directory
         (or a temp. dir if nothing is specified).
         """
-        download_url = self.instance_url() + '/download'
-        # Don't redirect, just return the signed S3 URL
-        kwargs.update({'redirect': ''})
-        response = self.request(
-            'get', download_url, params=kwargs, allow_redirects=False)
-
-        download_url = response['url']
+        download_url = self.download_url(**kwargs)
         filename = download_url.split('%3B%20filename%3D')[1]
 
         if path:
@@ -185,6 +179,15 @@ class DownloadableAPIResource(APIResource):
             fileobj.write(response._content)
 
         return filename
+
+    def download_url(self, **kwargs):
+        download_url = self.instance_url() + '/download'
+        # Don't redirect, just return the signed S3 URL
+        kwargs.update({'redirect': ''})
+        response = self.request(
+            'get', download_url, params=kwargs, allow_redirects=False)
+
+        return response['url']
 
 
 class ListableAPIResource(APIResource):

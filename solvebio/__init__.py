@@ -93,7 +93,7 @@ from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
 from .resource import (
     Depository, DepositoryVersion,
-    Upload, User,
+    Upload, Manifest, User,
     Dataset, DatasetField,
     DatasetImport, DatasetCommit, DatasetTemplate
 )
@@ -143,6 +143,7 @@ __all__ = [
     'GenomicFilter',
     'SolveError',
     'Upload',
+    'Manifest',
     'User',
     'VERSION'
 ]

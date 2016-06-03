@@ -28,6 +28,7 @@ from __future__ import absolute_import
 from six.moves import map
 from six.moves import range
 from six.moves import zip
+from six import string_types
 
 from collections import namedtuple
 from platform import python_version_tuple
@@ -165,7 +166,7 @@ def _isint(string):
     """
     return type(string) is int or \
         (isinstance(string, _binary_type) or
-         isinstance(string, _text_type)) and \
+         isinstance(string, string_types)) and \
         _isconvertible(int, string)
 
 
@@ -193,7 +194,7 @@ def _type(string, has_invisible=True):
     if string is None:
         return _none_type
     elif _isint(string):
-        return int
+        return _int_type
     elif _isnumber(string):
         return float
     elif isinstance(string, _binary_type):

@@ -10,6 +10,7 @@ from .datasetimport import DatasetImport
 from .datasetcommit import DatasetCommit
 from .datasettemplate import DatasetTemplate
 from .upload import Upload
+from .manifest import Manifest
 
 
 types = {
@@ -21,6 +22,7 @@ types = {
     'Depository': Depository,
     'DepositoryVersion': DepositoryVersion,
     'Upload': Upload,
+    'Manifest': Manifest,
     'User': User,
     'list': ListObject
 }

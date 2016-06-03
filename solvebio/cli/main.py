@@ -8,32 +8,100 @@ import argparse
 import solvebio
 
 from . import auth
+from . import data
 from .tutorial import print_tutorial
 from .ipython import launch_ipython_shell
 from ..utils.validators import validate_api_host_url
 
 
 class SolveArgumentParser(argparse.ArgumentParser):
-    """Main parser for the SolveBio command line client"""
-    HELP = {
-        'login': 'Login and save credentials',
-        'logout': 'Logout and delete saved credentials',
-        'whoami': 'Show your SolveBio email address',
-        'shell': 'Open the SolveBio Python shell',
-        'tutorial': 'Show the SolveBio Python Tutorial',
-        'version': solvebio.version.VERSION,
-        'api_host': 'Override the default SolveBio API host',
-        'api_key': 'Manually provide a SolveBio API key'
+    """
+    Main parser for the SolveBio command line client.
+    """
+    subcommands = {
+        'login': {
+            'func': auth.login,
+            'help': 'Login and save credentials'
+        },
+        'logout': {
+            'func': auth.logout,
+            'help': 'Logout and delete saved credentials'
+        },
+        'whoami': {
+            'func': auth.whoami,
+            'help': 'Show your SolveBio email address'
+        },
+        'tutorial': {
+            'func': print_tutorial,
+            'help': 'Show the SolveBio Python Tutorial',
+        },
+        'shell': {
+            'func': launch_ipython_shell,
+            'help': 'Open the SolveBio Python shell'
+        },
+        'import': {
+            'func': data.import_file,
+            'help': 'Import a local file into a SolveBio dataset',
+            'arguments': [
+                {
+                    'flags': '--create-dataset',
+                    'action': 'store_true',
+                    'help': 'Create the dataset if it doesn\'t exist',
+                },
+                {
+                    'flags': '--template-id',
+                    'help': 'The template ID used when '
+                            'creating a new dataset (via --create-dataset)',
+                },
+                {
+                    'flags': '--genome-build',
+                    'help': 'If the dataset template is genomic, provide a '
+                            'genome build for your data (i.e. GRCh37)'
+                },
+                {
+                    'flags': '--follow',
+                    'action': 'store_true',
+                    'default': False,
+                    'help': 'Follow the import\'s progress until it completes'
+                },
+                {
+                    'flags': '--auto-approve',
+                    'action': 'store_true',
+                    'default': False,
+                    'help': 'Automatically approve all dataset commits for '
+                            'the import (may require admin role)'
+                },
+                {
+                    'name': 'dataset',
+                    'help': 'The full name of the dataset '
+                            '(<depository>/<version>/<dataset>)'
+                },
+                {
+                    'name': 'file',
+                    'help': 'One or more local files to import',
+                    'nargs': '+'
+                }
+            ]
+        }
     }
 
     def __init__(self, *args, **kwargs):
         super(SolveArgumentParser, self).__init__(*args, **kwargs)
         self._optionals.title = 'SolveBio Options'
-        self.add_argument('--version', action='version',
-                          version=self.HELP['version'])
-        self.add_argument('--api-host', help=self.HELP['api_host'],
-                            type=self.api_host_url)
-        self.add_argument('--api-key', help=self.HELP['api_key'])
+        self.add_argument(
+            '--version',
+            action='version',
+            version=solvebio.version.VERSION)
+        self.add_argument(
+            '--api-host',
+            help='Override the default SolveBio API host',
+            type=self.api_host_url)
+        self.add_argument(
+            '--api-key',
+            help='Manually provide a SolveBio API key')
+        self.add_argument(
+            '--api-token',
+            help='Manually provide a SolveBio OAuth API token')
 
     def _add_subcommands(self):
         """
@@ -48,17 +116,13 @@ class SolveArgumentParser(argparse.ArgumentParser):
         }
         subcmd = self.add_subparsers(
             **subcmd_params)  # pylint: disable=star-args
-        login_parser = subcmd.add_parser('login', help=self.HELP['login'])
-        login_parser.set_defaults(func=auth.login)
-        logout_parser = subcmd.add_parser('logout', help=self.HELP['logout'])
-        logout_parser.set_defaults(func=auth.logout)
-        whoami_parser = subcmd.add_parser('whoami', help=self.HELP['whoami'])
-        whoami_parser.set_defaults(func=auth.whoami)
-        tutorial_parser = subcmd.add_parser(
-            'tutorial', help=self.HELP['tutorial'])
-        tutorial_parser.set_defaults(func=print_tutorial)
-        shell_parser = subcmd.add_parser('shell', help=self.HELP['shell'])
-        shell_parser.set_defaults(func=launch_ipython_shell)
+
+        for name, params in self.subcommands.items():
+            p = subcmd.add_parser(name, help=params['help'])
+            p.set_defaults(func=params['func'])
+            for arg in params.get('arguments', []):
+                name_or_flags = arg.pop('name', None) or arg.pop('flags', None)
+                p.add_argument(name_or_flags, **arg)
 
     def parse_solvebio_args(self, args=None, namespace=None):
         """
