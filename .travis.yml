@@ -17,4 +17,5 @@ script:
   - flake8 solvebio
 notifications:
   slack:
-    secure: WvTImIlFKtCSTrcpk11RB467ybQBmZatk1k9CEEb5qkRRX0IUhmmNzV4xKIJR40Hf1u84uW6j5AeD/OChHycU+1C/OmMgyFAIYMAkE8db+dGtpdlQO5a5Jj9xzK8nfUKrw6Y3JzDTn+mQkeFyRP6D8fj3WPWOV5G9EOTY62sLiQ=
+    secure: "FVkm4CggaOT0R4eKd8o9iD2CT3rKLatu+G/7c3VwC4GaMfBoOuELnAFWcgIn85oHHod+2ZV/JjRwBC+vLv/T3akkKLD/F5ty8IngAMdrLJ/k4PPvCgzVE7qMu3fz2vXG6LCartg02+WBnDL7GQsRY5oTnYketYbPCWpDFPVlV70="
+    email: false
