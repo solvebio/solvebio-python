@@ -5,14 +5,18 @@ from ..utils.humanize import naturalsize
 from ..utils.md5sum import md5sum
 
 from .solveobject import convert_to_solve_object
-from .apiresource import CreateableAPIResource, ListableAPIResource, \
-    UpdateableAPIResource
+from .apiresource import CreateableAPIResource
+from .apiresource import ListableAPIResource
+from .apiresource import UpdateableAPIResource
+from .apiresource import DeletableAPIResource
 from .datasetfield import DatasetField
 
 from ..exporters import DatasetExportFile
 
 
-class Dataset(CreateableAPIResource, ListableAPIResource,
+class Dataset(CreateableAPIResource,
+              ListableAPIResource,
+              DeletableAPIResource,
               UpdateableAPIResource):
     """
     Datasets are access points to data. Dataset names are unique

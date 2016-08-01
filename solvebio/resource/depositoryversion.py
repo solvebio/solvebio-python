@@ -2,12 +2,16 @@ from ..client import client
 from ..help import open_help
 
 from .solveobject import convert_to_solve_object
-from .apiresource import CreateableAPIResource, ListableAPIResource, \
-    UpdateableAPIResource
+from .apiresource import CreateableAPIResource
+from .apiresource import ListableAPIResource
+from .apiresource import UpdateableAPIResource
+from .apiresource import DeletableAPIResource
 from .dataset import Dataset
 
 
-class DepositoryVersion(CreateableAPIResource, ListableAPIResource,
+class DepositoryVersion(CreateableAPIResource,
+                        ListableAPIResource,
+                        DeletableAPIResource,
                         UpdateableAPIResource):
 
     """
