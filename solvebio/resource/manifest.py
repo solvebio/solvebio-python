@@ -62,6 +62,8 @@ class Manifest(object):
             return bool(p.scheme)
 
         for path in args:
+            path = os.path.expandpath(path)
+
             if _is_url(path):
                 self.add_url(path)
             elif os.path.isfile(path):
@@ -74,7 +76,6 @@ class Manifest(object):
                     self.add_file(f)
             else:
                 raise ValueError(
-                    'Paths in manifest must be valid URL '
-                    '(starting with http:// or https://) or '
-                    'a valid local filename, directory, '
-                    'or glob (such as: *.vcf)')
+                    'Manifest paths must be files, directories, or URLs. '
+                    'The following extensions are supported: '
+                    '.vcf .vcf.gz .json .json.gz')
