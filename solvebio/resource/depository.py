@@ -3,13 +3,19 @@ from ..client import client
 from ..help import open_help
 
 from .solveobject import convert_to_solve_object
-from .apiresource import CreateableAPIResource, ListableAPIResource, \
-    SearchableAPIResource, UpdateableAPIResource
+from .apiresource import CreateableAPIResource
+from .apiresource import ListableAPIResource
+from .apiresource import SearchableAPIResource
+from .apiresource import UpdateableAPIResource
+from .apiresource import DeletableAPIResource
 from .depositoryversion import DepositoryVersion
 
 
-class Depository(CreateableAPIResource, ListableAPIResource,
-                 SearchableAPIResource, UpdateableAPIResource):
+class Depository(CreateableAPIResource,
+                 ListableAPIResource,
+                 DeletableAPIResource,
+                 SearchableAPIResource,
+                 UpdateableAPIResource):
     """
     A depository (or data repository) is like a source code
     repository, but for datasets. Depositories have one or more

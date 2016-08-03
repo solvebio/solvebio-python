@@ -2,11 +2,15 @@
 from ..client import client
 
 from .solveobject import convert_to_solve_object
-from .apiresource import CreateableAPIResource, ListableAPIResource, \
-    UpdateableAPIResource
+from .apiresource import CreateableAPIResource
+from .apiresource import ListableAPIResource
+from .apiresource import UpdateableAPIResource
+from .apiresource import DeletableAPIResource
 
 
-class DatasetField(CreateableAPIResource, ListableAPIResource,
+class DatasetField(CreateableAPIResource,
+                   ListableAPIResource,
+                   DeletableAPIResource,
                    UpdateableAPIResource):
     """
     Each SolveBio dataset has a different set of fields, some of
