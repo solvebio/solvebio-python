@@ -1,5 +1,29 @@
 # Change Log
 
+## [v1.13.2](https://github.com/solvebio/solvebio-python/tree/v1.13.2) (2016-08-03)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.1...v1.13.2)
+
+**Implemented enhancements:**
+
+- Filter by number of items in a field [\#54](https://github.com/solvebio/solvebio-python/issues/54)
+
+**Fixed bugs:**
+
+- Depositories, depository versions, and datasets are not deletable [\#102](https://github.com/solvebio/solvebio-python/issues/102)
+
+**Closed issues:**
+
+- \[Manifest\] Add\(\) not allowing my local filepath [\#101](https://github.com/solvebio/solvebio-python/issues/101)
+
+**Merged pull requests:**
+
+- expanduser prior to checking ispath or isdir in manifest \(fixes \#101\) [\#104](https://github.com/solvebio/solvebio-python/pull/104) ([davecap](https://github.com/davecap))
+- makes datasets, depository versions, and depositories deletable [\#103](https://github.com/solvebio/solvebio-python/pull/103) ([davecap](https://github.com/davecap))
+- Add expanding vcf parser as a contrib module [\#100](https://github.com/solvebio/solvebio-python/pull/100) ([davecap](https://github.com/davecap))
+
+## [v1.13.1](https://github.com/solvebio/solvebio-python/tree/v1.13.1) (2016-06-03)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.0...v1.13.1)
+
 ## [v1.13.0](https://github.com/solvebio/solvebio-python/tree/v1.13.0) (2016-06-03)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.12.1...v1.13.0)
 
