@@ -1,9 +1,9 @@
 sudo: false
 language: python
 python:
-  - '2.6'
-  - '2.7'
-  - '3.4'
+  - "2.6"
+  - "2.7"
+  - "3.4"
   - "3.2"
   - "3.3"
   - "3.4"
@@ -13,9 +13,9 @@ install:
   # We use @skipIf so unittest2 is needed on Pyton 2.6
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install ordereddict unittest2; fi
 script:
-  - python -W always setup.py test 
+  - python -W always setup.py test
   - flake8 solvebio
 notifications:
   slack:
-    secure: "FVkm4CggaOT0R4eKd8o9iD2CT3rKLatu+G/7c3VwC4GaMfBoOuELnAFWcgIn85oHHod+2ZV/JjRwBC+vLv/T3akkKLD/F5ty8IngAMdrLJ/k4PPvCgzVE7qMu3fz2vXG6LCartg02+WBnDL7GQsRY5oTnYketYbPCWpDFPVlV70="
+    secure: "NSSHaWCgYD1tDPo52Z9G4eNbEJfDUeQO4kSZOM4bYJr8VN7AP+UBXs+A4ad+z2xMJIo1EaEIxiK0RY7FrQC8GBZgs92j9l8KoJ8T7nNZnboDipziXTTTdWP2wzJTgIiAKI55sEbuFhxmo19/zTRZ63ZycByvMnC67yBos+z0ksI="
     email: false
