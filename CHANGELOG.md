@@ -1,5 +1,16 @@
 # Change Log
 
+## [v1.13.3](https://github.com/solvebio/solvebio-python/tree/v1.13.3) (2016-08-11)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.2...v1.13.3)
+
+**Closed issues:**
+
+- \[Manifest\] Add\(\) not allowing URLs [\#105](https://github.com/solvebio/solvebio-python/issues/105)
+
+**Merged pull requests:**
+
+- expanduser not expandpath \(fixes \#105\) [\#106](https://github.com/solvebio/solvebio-python/pull/106) ([davecap](https://github.com/davecap))
+
 ## [v1.13.2](https://github.com/solvebio/solvebio-python/tree/v1.13.2) (2016-08-03)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.1...v1.13.2)
 
