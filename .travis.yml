@@ -9,7 +9,7 @@ python:
   - "3.4"
   - "pypy"
 install:
-  - pip install requests>=2.0.0 flake8 nose mock tox
+  - pip install requests==2.10.0 flake8==2.6.2 nose mock tox
   # We use @skipIf so unittest2 is needed on Pyton 2.6
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install ordereddict unittest2; fi
 script:

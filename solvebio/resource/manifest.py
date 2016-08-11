@@ -62,8 +62,7 @@ class Manifest(object):
             return bool(p.scheme)
 
         for path in args:
-            path = os.path.expandpath(path)
-
+            path = os.path.expanduser(path)
             if _is_url(path):
                 self.add_url(path)
             elif os.path.isfile(path):
