@@ -9,7 +9,7 @@ class UploadTest(SolveBioTestCase):
     upload_attrs = [
         ('class_name', 'Upload'),
         ('description', None),
-        ('md5', u'587941d21d196eef3c17e7e12d3cc687'),
+        ('md5', '587941d21d196eef3c17e7e12d3cc687'),
         ('size', 590),
     ]
 
