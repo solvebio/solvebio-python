@@ -7,7 +7,7 @@ from .helper import SolveBioTestCase
 
 class VCFParserTest(SolveBioTestCase):
 
-    def test_expanding_vcf_parsere(self):
+    def test_vcfparser(self):
         expected_fields = (
             'genomic_coordinates',
             'variant',
