@@ -1,13 +1,14 @@
 from __future__ import absolute_import
 import os
 
-from solvebio.contrib.vcf_parser.vcf_parser import ExpandingVCFParser
 from .helper import SolveBioTestCase
 
 
 class VCFParserTest(SolveBioTestCase):
 
     def test_vcfparser(self):
+        from solvebio.contrib.vcf_parser.vcf_parser import ExpandingVCFParser
+
         expected_fields = (
             'genomic_coordinates',
             'variant',
