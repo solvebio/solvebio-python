@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.13.4](https://github.com/solvebio/solvebio-python/tree/v1.13.4) (2016-08-25)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.3...v1.13.4)
+
+**Merged pull requests:**
+
+- add SolveBio variant ID to VCF to JSON parser output [\#107](https://github.com/solvebio/solvebio-python/pull/107) ([davecap](https://github.com/davecap))
+
 ## [v1.13.3](https://github.com/solvebio/solvebio-python/tree/v1.13.3) (2016-08-11)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.2...v1.13.3)
 
