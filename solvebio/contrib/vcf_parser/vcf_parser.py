@@ -100,13 +100,20 @@ class ExpandingVCFParser(object):
             # Try to use the ref, if '.' is supplied for alt.
             allele = row.REF or allele
 
+        genomic_coordinates = {
+            'build': self.genome_build,
+            'chromosome': row.CHROM,
+            'start': row.POS,
+            'stop': row.POS + len(row.REF) - 1
+        }
+
+        # SolveBio standard variant format
+        variant_sbid = _variant_sbid(allele=allele,
+                                     **genomic_coordinates)
+
         return {
-            'genomic_coordinates': {
-                'build': self.genome_build,
-                'chromosome': row.CHROM,
-                'start': row.POS,
-                'stop': row.POS + len(row.REF) - 1
-            },
+            'genomic_coordinates': genomic_coordinates,
+            'variant': variant_sbid,
             'allele': allele,
             'row_id': row.ID,
             'reference_allele': row.REF,
