@@ -45,6 +45,9 @@ class ExpandingVCFParser(object):
             if self.reader.metadata.get('SnpEffCmd') \
                     and self.reader.metadata.get('SnpSiftCmd'):
                 # Only proceed if ANN description exists (ANN fields)
+                # The field keys may vary between SnpEff versions:
+                # http://snpeff.sourceforge.net/VCFannotationformat_v1.0.pdf
+                # Here we find them dynamically in the VCF header:
                 ann_info = self._reader.infos.get('ANN')
                 if ann_info:
                     self.parse_info = self._parse_info_snpeff
@@ -71,13 +74,18 @@ class ExpandingVCFParser(object):
             # Overwrite the existing ANN with something parsed
             # Split on '|', merge with the ANN keys parsed above.
             # Ensure empty values are None rather than empty string.
-            anns = info.get('ANN') or []
-            info['ANN'] = [
-                dict(zip(
-                    self._snpeff_ann_fields,
-                    [i or None for i in x.split('|')]
-                )) for x in anns
-            ]
+            items = []
+            for a in (info.get('ANN') or []):
+                values = [i or None for i in a.split('|')]
+                item = dict(zip(self._snpeff_ann_fields, values))
+
+                # Further split the Annotation field by '&'
+                if item.get('Annotation'):
+                    item['Annotation'] = item['Annotation'].split('&')
+
+                items.append(item)
+
+            info['ANN'] = items
 
         return info
 
