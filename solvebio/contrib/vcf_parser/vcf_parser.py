@@ -42,8 +42,7 @@ class ExpandingVCFParser(object):
             )
 
             # Setup extra INFO field parsing
-            if self.reader.metadata.get('SnpEffCmd') \
-                    and self.reader.metadata.get('SnpSiftCmd'):
+            if self.reader.metadata.get('SnpEffCmd'):
                 # Only proceed if ANN description exists (ANN fields)
                 # The field keys may vary between SnpEff versions:
                 # http://snpeff.sourceforge.net/VCFannotationformat_v1.0.pdf
@@ -61,7 +60,7 @@ class ExpandingVCFParser(object):
                             field.strip()
                             .replace('.', '_')
                             .replace(' ', '_')
-                            .replace('/', '_'))
+                            .replace('/', ''))
 
         return self._reader
 
