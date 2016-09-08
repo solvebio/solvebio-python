@@ -59,8 +59,8 @@ class ExpandingVCFParser(object):
                         self._snpeff_ann_fields.append(
                             field.strip()
                             .replace('.', '_')
-                            .replace(' ', '_')
-                            .replace('/', ''))
+                            .replace('/', '_')
+                            .replace(' ', ''))
 
         return self._reader
 
