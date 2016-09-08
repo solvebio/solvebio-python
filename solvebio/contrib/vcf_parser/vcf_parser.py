@@ -22,6 +22,8 @@ class ExpandingVCFParser(object):
         self._line_number = -1
         self._reader = None
         self._next = []
+        # Default INFO field parser is pass-through
+        self._parse_info = lambda x: x
         self.genome_build = kwargs.get('genome_build', 'GRCh37')
         self.reader_class = kwargs.get('reader_class', VCFReader)
         self.reader_kwargs = kwargs.get(
@@ -38,7 +40,41 @@ class ExpandingVCFParser(object):
                 self._file,
                 **self.reader_kwargs
             )
+
+            # Setup extra INFO field parsing
+            if self.reader.metadata.get('SnpEffCmd') \
+                    and self.reader.metadata.get('SnpSiftCmd'):
+                # Only proceed if ANN description exists (ANN fields)
+                ann_info = self._reader.infos.get('ANN')
+                if ann_info:
+                    self.parse_info = self._parse_info_snpeff
+                    self._snpeff_ann_fields = []
+                    for field in ann_info.desc.split('\'')[1].split('|'):
+                        # Field names should not contain [. /]
+                        self._snpeff_ann_fields.append(
+                            field.strip()
+                            .replace('.', '_')
+                            .replace(' ', '_')
+                            .replace('/', '_'))
+
         return self._reader
+
+    def _parse_info_snpeff(self, info):
+        """
+        Specialized INFO field parser for SnpEff ANN fields.
+        Requires self._snpeff_ann_fields to be set.
+        """
+        if info.get('ANN'):
+            # Overwrite the existing ANN with something parsed
+            anns = info.get('ANN') or []
+            info['ANN'] = [
+                dict(zip(
+                    self._snpeff_ann_fields,
+                    [i or None for i in x.split('|')]
+                )) for x in anns
+            ]
+
+        return info
 
     @property
     def file(self):
@@ -118,7 +154,7 @@ class ExpandingVCFParser(object):
             'row_id': row.ID,
             'reference_allele': row.REF,
             'alternate_alleles': alternate_alleles,
-            'info': row.INFO,
+            'info': self.parse_info(row.INFO),
             'qual': row.QUAL,
             'filter': row.FILTER
         }
