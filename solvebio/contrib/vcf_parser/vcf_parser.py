@@ -48,6 +48,9 @@ class ExpandingVCFParser(object):
                 ann_info = self._reader.infos.get('ANN')
                 if ann_info:
                     self.parse_info = self._parse_info_snpeff
+                    # The infos['ANN'] description looks like:
+                    #    Functional annotations: 'A | B | C'
+                    # where A, B, and C are ANN keys.
                     self._snpeff_ann_fields = []
                     for field in ann_info.desc.split('\'')[1].split('|'):
                         # Field names should not contain [. /]
@@ -66,6 +69,8 @@ class ExpandingVCFParser(object):
         """
         if info.get('ANN'):
             # Overwrite the existing ANN with something parsed
+            # Split on '|', merge with the ANN keys parsed above.
+            # Ensure empty values are None rather than empty string.
             anns = info.get('ANN') or []
             info['ANN'] = [
                 dict(zip(
