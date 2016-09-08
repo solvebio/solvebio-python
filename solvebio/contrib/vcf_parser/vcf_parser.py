@@ -49,7 +49,7 @@ class ExpandingVCFParser(object):
                 # Here we find them dynamically in the VCF header:
                 ann_info = self._reader.infos.get('ANN')
                 if ann_info:
-                    self.parse_info = self._parse_info_snpeff
+                    self._parse_info = self._parse_info_snpeff
                     # The infos['ANN'] description looks like:
                     #    Functional annotations: 'A | B | C'
                     # where A, B, and C are ANN keys.
@@ -166,7 +166,7 @@ class ExpandingVCFParser(object):
             'row_id': row.ID,
             'reference_allele': row.REF,
             'alternate_alleles': alternate_alleles,
-            'info': self.parse_info(row.INFO),
+            'info': self._parse_info(row.INFO),
             'qual': row.QUAL,
             'filter': row.FILTER
         }
