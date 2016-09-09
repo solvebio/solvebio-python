@@ -69,7 +69,7 @@ class ExpandingVCFParser(object):
         Specialized INFO field parser for SnpEff ANN fields.
         Requires self._snpeff_ann_fields to be set.
         """
-        ann = info.pop('ANN') or []
+        ann = info.pop('ANN', []) or []
         # Overwrite the existing ANN with something parsed
         # Split on '|', merge with the ANN keys parsed above.
         # Ensure empty values are None rather than empty string.
