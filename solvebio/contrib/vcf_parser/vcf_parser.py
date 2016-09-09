@@ -69,23 +69,28 @@ class ExpandingVCFParser(object):
         Specialized INFO field parser for SnpEff ANN fields.
         Requires self._snpeff_ann_fields to be set.
         """
-        if info.get('ANN'):
-            # Overwrite the existing ANN with something parsed
-            # Split on '|', merge with the ANN keys parsed above.
-            # Ensure empty values are None rather than empty string.
-            items = []
-            for a in (info.get('ANN') or []):
-                values = [i or None for i in a.split('|')]
-                item = dict(zip(self._snpeff_ann_fields, values))
+        ann = info.pop('ANN') or []
+        # Overwrite the existing ANN with something parsed
+        # Split on '|', merge with the ANN keys parsed above.
+        # Ensure empty values are None rather than empty string.
+        items = []
+        for a in ann:
+            # For multi-allelic records, we may have already
+            # processed ANN. If so, quit now.
+            if isinstance(a, dict):
+                info['ANN'] = ann
+                return info
 
-                # Further split the Annotation field by '&'
-                if item.get('Annotation'):
-                    item['Annotation'] = item['Annotation'].split('&')
+            values = [i or None for i in a.split('|')]
+            item = dict(zip(self._snpeff_ann_fields, values))
 
-                items.append(item)
+            # Further split the Annotation field by '&'
+            if item.get('Annotation'):
+                item['Annotation'] = item['Annotation'].split('&')
 
-            info['ANN'] = items
+            items.append(item)
 
+        info['ANN'] = items
         return info
 
     @property
