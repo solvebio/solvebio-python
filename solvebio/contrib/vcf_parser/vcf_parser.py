@@ -22,6 +22,8 @@ class ExpandingVCFParser(object):
         self._line_number = -1
         self._reader = None
         self._next = []
+        # Default INFO field parser is pass-through
+        self._parse_info = lambda x: x
         self.genome_build = kwargs.get('genome_build', 'GRCh37')
         self.reader_class = kwargs.get('reader_class', VCFReader)
         self.reader_kwargs = kwargs.get(
@@ -38,7 +40,58 @@ class ExpandingVCFParser(object):
                 self._file,
                 **self.reader_kwargs
             )
+
+            # Setup extra INFO field parsing
+            if self.reader.metadata.get('SnpEffCmd'):
+                # Only proceed if ANN description exists (ANN fields)
+                # The field keys may vary between SnpEff versions:
+                # http://snpeff.sourceforge.net/VCFannotationformat_v1.0.pdf
+                # Here we find them dynamically in the VCF header:
+                ann_info = self._reader.infos.get('ANN')
+                if ann_info:
+                    self._parse_info = self._parse_info_snpeff
+                    # The infos['ANN'] description looks like:
+                    #    Functional annotations: 'A | B | C'
+                    # where A, B, and C are ANN keys.
+                    self._snpeff_ann_fields = []
+                    for field in ann_info.desc.split('\'')[1].split('|'):
+                        # Field names should not contain [. /]
+                        self._snpeff_ann_fields.append(
+                            field.strip()
+                            .replace('.', '_')
+                            .replace('/', '_')
+                            .replace(' ', ''))
+
         return self._reader
+
+    def _parse_info_snpeff(self, info):
+        """
+        Specialized INFO field parser for SnpEff ANN fields.
+        Requires self._snpeff_ann_fields to be set.
+        """
+        ann = info.pop('ANN', []) or []
+        # Overwrite the existing ANN with something parsed
+        # Split on '|', merge with the ANN keys parsed above.
+        # Ensure empty values are None rather than empty string.
+        items = []
+        for a in ann:
+            # For multi-allelic records, we may have already
+            # processed ANN. If so, quit now.
+            if isinstance(a, dict):
+                info['ANN'] = ann
+                return info
+
+            values = [i or None for i in a.split('|')]
+            item = dict(zip(self._snpeff_ann_fields, values))
+
+            # Further split the Annotation field by '&'
+            if item.get('Annotation'):
+                item['Annotation'] = item['Annotation'].split('&')
+
+            items.append(item)
+
+        info['ANN'] = items
+        return info
 
     @property
     def file(self):
@@ -121,7 +174,7 @@ class ExpandingVCFParser(object):
             'row_id': row.ID,
             'reference_allele': row.REF,
             'alternate_alleles': alternate_alleles,
-            'info': row.INFO,
+            'info': self._parse_info(row.INFO),
             'qual': row.QUAL,
             'filter': row.FILTER
         }
