@@ -47,9 +47,6 @@ class ExpandingVCFParser(object):
     def close(self):
         self._file.close()
 
-    def __iter__(self):
-        return self
-
     def __enter__(self):
         """For use as a context manager"""
         return self
@@ -57,6 +54,12 @@ class ExpandingVCFParser(object):
     def __exit__(self, *args):
         self.close()
         return False
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.next()
 
     def next(self):
         """
@@ -73,8 +76,8 @@ class ExpandingVCFParser(object):
                 return str(alt)
 
         if not self._next:
-            row = self.reader.next()
-            alternate_alleles = map(_alt, row.ALT)
+            row = next(self.reader)
+            alternate_alleles = list(map(_alt, row.ALT))
 
             for allele in alternate_alleles:
                 self._next.append(
@@ -126,12 +129,13 @@ class ExpandingVCFParser(object):
 if __name__ == '__main__':
     import sys
     import json
+    import io
 
     if len(sys.argv) < 2:
         print("Usage: python {0} sample.vcf".format(sys.argv[0]))
         sys.exit(1)
 
-    infile = open(sys.argv[1], 'rb')
+    infile = io.open(sys.argv[1], 'r')
     for row in ExpandingVCFParser(infile, genome_build='GRCh37'):
         print(json.dumps(row))
 
