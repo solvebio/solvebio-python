@@ -1,5 +1,13 @@
 # Change Log
 
+## [v1.13.5](https://github.com/solvebio/solvebio-python/tree/v1.13.5) (2016-09-15)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.4...v1.13.5)
+
+**Merged pull requests:**
+
+- fix the vcf parser for python3 [\#109](https://github.com/solvebio/solvebio-python/pull/109) ([davecap](https://github.com/davecap))
+- add support for specialized SnpEff ANN field parsing [\#108](https://github.com/solvebio/solvebio-python/pull/108) ([davecap](https://github.com/davecap))
+
 ## [v1.13.4](https://github.com/solvebio/solvebio-python/tree/v1.13.4) (2016-08-25)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.3...v1.13.4)
 
@@ -147,13 +155,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
-
-## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
 
 ## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+
+## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
