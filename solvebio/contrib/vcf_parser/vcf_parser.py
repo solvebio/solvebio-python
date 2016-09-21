@@ -17,10 +17,10 @@ class ExpandingVCFParser(object):
     """
     DEFAULT_BUILD = 'GRCh37'
 
-    def __init__(self, infile, **kwargs):
-        self._file = infile
-        self._line_number = -1
+    def __init__(self, filename, **kwargs):
+        self._filename = filename
         self._reader = None
+        self._line_number = -1
         self._next = []
         # Default INFO field parser is pass-through
         self._parse_info = lambda x: x
@@ -32,12 +32,11 @@ class ExpandingVCFParser(object):
     @property
     def reader(self):
         if not self._reader:
-            self._file.seek(0)
             # Add 'strict_whitespace' kwarg to force PyVCF to split
             # on '\t' only. This enables proper handling
             # of INFO fields with spaces.
             self._reader = self.reader_class(
-                self._file,
+                filename=self._filename,
                 **self.reader_kwargs
             )
 
@@ -95,10 +94,10 @@ class ExpandingVCFParser(object):
 
     @property
     def file(self):
-        return self._file
+        return self.reader._reader
 
     def close(self):
-        self._file.close()
+        self.file.close()
 
     def __enter__(self):
         """For use as a context manager"""
@@ -182,14 +181,14 @@ class ExpandingVCFParser(object):
 if __name__ == '__main__':
     import sys
     import json
-    import io
 
     if len(sys.argv) < 2:
         print("Usage: python {0} sample.vcf".format(sys.argv[0]))
         sys.exit(1)
 
-    infile = io.open(sys.argv[1], 'r')
-    for row in ExpandingVCFParser(infile, genome_build='GRCh37'):
+    parser = ExpandingVCFParser(sys.argv[1], genome_build='GRCh37')
+    for row in parser:
         print(json.dumps(row))
 
+    parser.close()
     sys.exit(0)
