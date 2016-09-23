@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 import os
-import io
 
 from .helper import SolveBioTestCase
 
@@ -23,7 +22,7 @@ class VCFParserTest(SolveBioTestCase):
 
         path = os.path.join(os.path.dirname(__file__),
                             "data/sample.vcf.gz")
-        parser = ExpandingVCFParser(path, genome_build='GRCh37')
+        parser = ExpandingVCFParser(filename=path, genome_build='GRCh37')
         # Test that the keys exist and that certain fields are always set
         # Also test that allele expansion is working
         for row in parser:
@@ -40,8 +39,8 @@ class VCFParserTest(SolveBioTestCase):
 
         path = os.path.join(os.path.dirname(__file__),
                             "data/sample.vcf.gz")
-        infile = io.open(path, 'r')
-        parser = ExpandingVCFParser(infile, genome_build='GRCh37')
+        infile = open(path, 'r')
+        parser = ExpandingVCFParser(fsock=infile, genome_build='GRCh37')
         # Test that the keys exist and that certain fields are always set
         # Also test that allele expansion is working
         for row in parser:

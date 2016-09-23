@@ -100,22 +100,21 @@ class ExpandingVCFParser(object):
     """
     DEFAULT_BUILD = 'GRCh37'
 
-    def __init__(self, filename_or_file, **kwargs):
+    def __init__(self, fsock=None, **kwargs):
         self._reader = None
         self._line_number = -1
         self._next = []
         # Default INFO field parser is pass-through
         self._parse_info = lambda x: x
-        self.genome_build = kwargs.get('genome_build', 'GRCh37')
-        self.reader_class = kwargs.get('reader_class', VCFReader)
-        self.reader_kwargs = kwargs.get(
-            'reader_kwargs', {'strict_whitespace': True})
+        self.genome_build = kwargs.pop('genome_build', 'GRCh37')
+        self.reader_class = kwargs.pop('reader_class', VCFReader)
 
-        if isinstance(filename_or_file, six.string_types):
-            self.reader_kwargs['filename'] = filename_or_file
-        else:
-            filename_or_file.seek(0)
-            self.reader_kwargs['fsock'] = filename_or_file
+        self.reader_kwargs = kwargs
+        # Set default reader kwargs
+        if fsock:
+            self.reader_kwargs['fsock'] = fsock
+        if 'strict_whitespace' not in self.reader_kwargs:
+            self.reader_kwargs['strict_whitespace'] = True
 
     @property
     def reader(self):
@@ -128,7 +127,7 @@ class ExpandingVCFParser(object):
             )
 
             # Setup extra INFO field parsing
-            if self.reader.metadata.get('SnpEffCmd'):
+            if self._reader.metadata.get('SnpEffCmd'):
                 # Only proceed if ANN description exists (ANN fields)
                 # The field keys may vary between SnpEff versions:
                 # http://snpeff.sourceforge.net/VCFannotationformat_v1.0.pdf
@@ -273,7 +272,7 @@ if __name__ == '__main__':
         print("Usage: python {0} sample.vcf".format(sys.argv[0]))
         sys.exit(1)
 
-    parser = ExpandingVCFParser(sys.argv[1], genome_build='GRCh37')
+    parser = ExpandingVCFParser(filename=sys.argv[1], genome_build='GRCh37')
     for row in parser:
         print(json.dumps(row))
 
