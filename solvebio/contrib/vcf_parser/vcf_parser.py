@@ -5,6 +5,8 @@ from __future__ import print_function
 from vcf.parser import Reader
 from vcf.parser import RESERVED_INFO
 
+import six
+
 
 class VCFReader(Reader):
     """
@@ -98,8 +100,7 @@ class ExpandingVCFParser(object):
     """
     DEFAULT_BUILD = 'GRCh37'
 
-    def __init__(self, filename, **kwargs):
-        self._filename = filename
+    def __init__(self, filename_or_file, **kwargs):
         self._reader = None
         self._line_number = -1
         self._next = []
@@ -110,6 +111,12 @@ class ExpandingVCFParser(object):
         self.reader_kwargs = kwargs.get(
             'reader_kwargs', {'strict_whitespace': True})
 
+        if isinstance(filename_or_file, six.string_types):
+            self.reader_kwargs['filename'] = filename_or_file
+        else:
+            filename_or_file.seek(0)
+            self.reader_kwargs['fsock'] = filename_or_file
+
     @property
     def reader(self):
         if not self._reader:
@@ -117,7 +124,6 @@ class ExpandingVCFParser(object):
             # on '\t' only. This enables proper handling
             # of INFO fields with spaces.
             self._reader = self.reader_class(
-                filename=self._filename,
                 **self.reader_kwargs
             )
 
