@@ -5,8 +5,6 @@ from __future__ import print_function
 from vcf.parser import Reader
 from vcf.parser import RESERVED_INFO
 
-import six
-
 
 class VCFReader(Reader):
     """
