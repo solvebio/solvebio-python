@@ -10,10 +10,7 @@ class VCFReader(Reader):
     """
     Subclasses the standard PyVCF VCFReader to fix issues with
     parsing quoted INFO fields, as well as issues with NaN fields in VCFs.
-    In addition, we support unicode coersion. In some cases, non-unicode
-    characters may be stripped out leading to incorrectly-processed data.
     """
-    coerce_unicode = True
 
     def _parse_info(self, info_str):
         if info_str == '.':
@@ -59,19 +56,12 @@ class VCFReader(Reader):
                 try:
                     # Support quoted strings (test if string is quoted).
                     if entry[1][0] + entry[1][-1] in ['""', "''"]:
-                        if self.coerce_unicode:
-                            val = [unicode(entry[1], 'ISO-8859-1')]
-                        else:
-                            val = [entry[1]]
+                        val = [entry[1]]
                     else:
                         # Commas are reserved characters indicating
                         # multiple values.
                         vals = entry[1].split(',')
-                        if self.coerce_unicode:
-                            val = self._map(
-                                lambda x: unicode(x, 'ISO-8859-1'), vals)
-                        else:
-                            val = self._map(str, vals)
+                        val = self._map(str, vals)
                 except IndexError:
                     entry_type = 'Flag'
                     val = True
