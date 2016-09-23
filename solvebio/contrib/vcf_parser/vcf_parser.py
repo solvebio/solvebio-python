@@ -2,7 +2,88 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from vcf.parser import VCFReader
+from vcf.parser import Reader
+from vcf.parser import RESERVED_INFO
+
+
+class VCFReader(Reader):
+    """
+    Subclasses the standard PyVCF VCFReader to fix issues with
+    parsing quoted INFO fields, as well as issues with NaN fields in VCFs.
+    In addition, we support unicode coersion. In some cases, non-unicode
+    characters may be stripped out leading to incorrectly-processed data.
+    """
+    coerce_unicode = True
+
+    def _parse_info(self, info_str):
+        if info_str == '.':
+            return {}
+
+        entries = info_str.split(';')
+        retdict = {}
+
+        for entry in entries:
+            entry = entry.split('=', 1)
+            _id = entry[0]
+            try:
+                entry_type = self.infos[_id].type
+            except KeyError:
+                try:
+                    entry_type = RESERVED_INFO[_id]
+                except KeyError:
+                    if entry[1:]:
+                        entry_type = 'String'
+                    else:
+                        entry_type = 'Flag'
+
+            if entry_type == 'Integer':
+                vals = entry[1].split(',')
+                try:
+                    val = self._map(int, vals)
+                # Allow specified integers to be flexibly parsed as floats.
+                # Handles cases with incorrectly specified header types.
+                except ValueError:
+                    val = self._map(float, vals)
+                    # Convert NaN to None. NaN breaks JSON
+                    # convertion code downstream.
+                    val = map(lambda x: x if x == x else None, val)
+            elif entry_type == 'Float':
+                vals = entry[1].split(',')
+                val = self._map(float, vals)
+                # Convert NaN to None. NaN breaks JSON
+                # convertion code downstream.
+                val = map(lambda x: x if x == x else None, val)
+            elif entry_type == 'Flag':
+                val = True
+            elif entry_type in ('String', 'Character'):
+                try:
+                    # Support quoted strings (test if string is quoted).
+                    if entry[1][0] + entry[1][-1] in ['""', "''"]:
+                        if self.coerce_unicode:
+                            val = [unicode(entry[1], 'ISO-8859-1')]
+                        else:
+                            val = [entry[1]]
+                    else:
+                        # Commas are reserved characters indicating
+                        # multiple values.
+                        vals = entry[1].split(',')
+                        if self.coerce_unicode:
+                            val = self._map(
+                                lambda x: unicode(x, 'ISO-8859-1'), vals)
+                        else:
+                            val = self._map(str, vals)
+                except IndexError:
+                    entry_type = 'Flag'
+                    val = True
+            try:
+                if self.infos[_id].num == 1 and entry_type not in ('Flag',):
+                    val = val[0]
+            except KeyError:
+                pass
+
+            retdict[_id] = val
+
+        return retdict
 
 
 class ExpandingVCFParser(object):
