@@ -23,9 +23,7 @@ class VCFParserTest(SolveBioTestCase):
 
         path = os.path.join(os.path.dirname(__file__),
                             "data/sample.vcf.gz")
-
-        infile = open(path, 'rb')
-        parser = ExpandingVCFParser(infile, genome_build='GRCh37')
+        parser = ExpandingVCFParser(path, genome_build='GRCh37')
         # Test that the keys exist and that certain fields are always set
         # Also test that allele expansion is working
         for row in parser:
