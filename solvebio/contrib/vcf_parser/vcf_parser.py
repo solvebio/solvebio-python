@@ -2,7 +2,78 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from vcf.parser import VCFReader
+from vcf.parser import Reader
+from vcf.parser import RESERVED_INFO
+
+
+class VCFReader(Reader):
+    """
+    Subclasses the standard PyVCF VCFReader to fix issues with
+    parsing quoted INFO fields, as well as issues with NaN fields in VCFs.
+    """
+
+    def _parse_info(self, info_str):
+        if info_str == '.':
+            return {}
+
+        entries = info_str.split(';')
+        retdict = {}
+
+        for entry in entries:
+            entry = entry.split('=', 1)
+            _id = entry[0]
+            try:
+                entry_type = self.infos[_id].type
+            except KeyError:
+                try:
+                    entry_type = RESERVED_INFO[_id]
+                except KeyError:
+                    if entry[1:]:
+                        entry_type = 'String'
+                    else:
+                        entry_type = 'Flag'
+
+            if entry_type == 'Integer':
+                vals = entry[1].split(',')
+                try:
+                    val = self._map(int, vals)
+                # Allow specified integers to be flexibly parsed as floats.
+                # Handles cases with incorrectly specified header types.
+                except ValueError:
+                    val = self._map(float, vals)
+                    # Convert NaN to None. NaN breaks JSON
+                    # convertion code downstream.
+                    val = map(lambda x: x if x == x else None, val)
+            elif entry_type == 'Float':
+                vals = entry[1].split(',')
+                val = self._map(float, vals)
+                # Convert NaN to None. NaN breaks JSON
+                # convertion code downstream.
+                val = map(lambda x: x if x == x else None, val)
+            elif entry_type == 'Flag':
+                val = True
+            elif entry_type in ('String', 'Character'):
+                try:
+                    # Support quoted strings (test if string is quoted).
+                    if entry[1][0] + entry[1][-1] in ['""', "''"]:
+                        val = [entry[1]]
+                    else:
+                        # Commas are reserved characters indicating
+                        # multiple values.
+                        vals = entry[1].split(',')
+                        val = self._map(str, vals)
+                except IndexError:
+                    entry_type = 'Flag'
+                    val = True
+            try:
+                if self.infos[_id].num == 1 and entry_type not in ('Flag',):
+                    val = val[0]
+            except KeyError:
+                pass
+
+            retdict[_id] = val
+
+        return retdict
 
 
 class ExpandingVCFParser(object):
@@ -17,32 +88,34 @@ class ExpandingVCFParser(object):
     """
     DEFAULT_BUILD = 'GRCh37'
 
-    def __init__(self, infile, **kwargs):
-        self._file = infile
-        self._line_number = -1
+    def __init__(self, fsock=None, **kwargs):
         self._reader = None
+        self._line_number = -1
         self._next = []
         # Default INFO field parser is pass-through
         self._parse_info = lambda x: x
-        self.genome_build = kwargs.get('genome_build', 'GRCh37')
-        self.reader_class = kwargs.get('reader_class', VCFReader)
-        self.reader_kwargs = kwargs.get(
-            'reader_kwargs', {'strict_whitespace': True})
+        self.genome_build = kwargs.pop('genome_build', 'GRCh37')
+        self.reader_class = kwargs.pop('reader_class', VCFReader)
+
+        self.reader_kwargs = kwargs
+        # Set default reader kwargs
+        if fsock:
+            self.reader_kwargs['fsock'] = fsock
+        if 'strict_whitespace' not in self.reader_kwargs:
+            self.reader_kwargs['strict_whitespace'] = True
 
     @property
     def reader(self):
         if not self._reader:
-            self._file.seek(0)
             # Add 'strict_whitespace' kwarg to force PyVCF to split
             # on '\t' only. This enables proper handling
             # of INFO fields with spaces.
             self._reader = self.reader_class(
-                self._file,
                 **self.reader_kwargs
             )
 
             # Setup extra INFO field parsing
-            if self.reader.metadata.get('SnpEffCmd'):
+            if self._reader.metadata.get('SnpEffCmd'):
                 # Only proceed if ANN description exists (ANN fields)
                 # The field keys may vary between SnpEff versions:
                 # http://snpeff.sourceforge.net/VCFannotationformat_v1.0.pdf
@@ -95,10 +168,10 @@ class ExpandingVCFParser(object):
 
     @property
     def file(self):
-        return self._file
+        return self.reader._reader
 
     def close(self):
-        self._file.close()
+        self.file.close()
 
     def __enter__(self):
         """For use as a context manager"""
@@ -182,14 +255,14 @@ class ExpandingVCFParser(object):
 if __name__ == '__main__':
     import sys
     import json
-    import io
 
     if len(sys.argv) < 2:
         print("Usage: python {0} sample.vcf".format(sys.argv[0]))
         sys.exit(1)
 
-    infile = io.open(sys.argv[1], 'r')
-    for row in ExpandingVCFParser(infile, genome_build='GRCh37'):
+    parser = ExpandingVCFParser(filename=sys.argv[1], genome_build='GRCh37')
+    for row in parser:
         print(json.dumps(row))
 
+    parser.close()
     sys.exit(0)
