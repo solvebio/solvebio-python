@@ -200,10 +200,11 @@ class ListableAPIResource(APIResource):
         results = convert_to_solve_object(response)
 
         # If the object has LIST_FIELDS, setup tabulate
-        list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
-        if list_fields:
-            fields, headers = list(zip(*list_fields))
-            results.set_tabulate(fields, headers=headers, sort=False)
+        if len(results.data) > 0:
+            list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
+            if list_fields:
+                fields, headers = list(zip(*list_fields))
+                results.set_tabulate(fields, headers=headers, sort=False)
 
         return results
 
@@ -226,10 +227,11 @@ class SearchableAPIResource(APIResource):
         results = convert_to_solve_object(response)
 
         # If the object has LIST_FIELDS, setup tabulate
-        list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
-        if list_fields:
-            fields, headers = list(zip(*list_fields))
-            results.set_tabulate(fields, headers=headers)
+        if len(results.data) > 0:
+            list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
+            if list_fields:
+                fields, headers = list(zip(*list_fields))
+                results.set_tabulate(fields, headers=headers)
 
         return results
 
