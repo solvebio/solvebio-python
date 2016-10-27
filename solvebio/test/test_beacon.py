@@ -35,5 +35,5 @@ class BeaconTests(SolveBioTestCase):
                                    coordinate=113803460,
                                    allele='T')
 
-        self.assertTrue(beacontwo['exists'])
-        self.assertEqual(beacontwo['totla'], 1)
+        self.assertTrue(beacontwo['exist'])
+        self.assertEqual(beacontwo['total'], 1)
