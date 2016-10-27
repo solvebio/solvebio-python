@@ -35,11 +35,5 @@ class BeaconTests(SolveBioTestCase):
                                    coordinate=113803460,
                                    allele='T')
 
-        final_beacon = {'query': {'coordinate': '113803460',
-                                  'allele': 'T',
-                                  'genome_build': 'GRCh37',
-                                  'chromosome': '13'},
-                        'total': 1,
-                        'exist': True}
-
-        self.assertEqual(final_beacon, beacontwo)
+        self.assertTrue(beacontwo['exists'])
+        self.assertEqual(beacontwo['totla'], 1)

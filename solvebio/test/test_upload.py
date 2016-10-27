@@ -10,7 +10,7 @@ class UploadTest(SolveBioTestCase):
         ('class_name', 'Upload'),
         ('description', None),
         ('md5', '587941d21d196eef3c17e7e12d3cc687'),
-        ('size', 590),
+        ('size', "590"),
     ]
 
     def test_upload_url(self):
