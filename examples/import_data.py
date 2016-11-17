@@ -1,25 +1,12 @@
 import solvebio
 
-# First create a new dataset with one field defined
-# this field contains an entity_type gene which will allow
-# for advanced gene querying
-fields = [{
-    'name': 'gene_symbol',
-    'data_type': 'string',
-    'entity_type': 'gene',
-    'ordering': 0,
-    'is_list': None,
-    'is_hidden': False,
-    'description': 'The HGNC Gene Symbol'
-}]
-
-domain = solvebio.User.retrieve()['account']['domain']
-dataset_name = '{}:MyFirstDepository/1.1.0/MyFirstDataset'.format(domain)
-dataset = solvebio.Dataset.get_or_create_by_full_name(
-    full_name=dataset_name,
-    is_private=True,
-    fields=fields
+# create a depository, version and dataset
+depository = solvebio.Depository.create(
+    title="SampleDataImport",
+    create_dataset=True
 )
+# get newly created dataset
+dataset = depository.latest_version().datasets().objects()[0]
 
 # create a manifest object and a file to it
 manifest = solvebio.Manifest()
