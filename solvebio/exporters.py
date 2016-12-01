@@ -321,11 +321,20 @@ class FlatCSVExporter(CSVExporter):
                         self.process_record(item, field_name)
                     else:
                         self.fields.add(field_name)
-                        self.current_row[field_name] = six.u(str(item))
+                        self.current_row[field_name] = self.make_string(item)
             # If we reached a leaf, add field and value
             else:
                 self.fields.add(field)
-                self.current_row[field] = six.u(str(value))
+                self.current_row[field] = self.make_string(value)
+
+    @staticmethod
+    def make_string(value):
+        try:
+            return str(value)
+        except UnicodeEncodeError:
+            return ''.join(
+                [s.encode('ascii', 'backslashreplace') for s in value]
+            )
 
     def write(self, filename):
         if sys.version_info >= (3, 0, 0):
@@ -339,7 +348,7 @@ class FlatCSVExporter(CSVExporter):
             writer.writerow(dict(zip(fieldnames, fieldnames)))
             for row in self.rows:
                 writer.writerow(
-                    dict((k, v.encode('utf-8')) for k, v in six.iteritems(row))
+                    dict((k, v) for k, v in six.iteritems(row))
                 )
         except:
             raise
