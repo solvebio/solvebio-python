@@ -36,11 +36,11 @@ class DatasetTests(SolveBioTestCase):
                         'Should be able to get id in list of dataset fields')
 
         check_fields = set(['class_name', 'created_at',
-                            'data_type', 'dataset', 'dataset_id',
+                            'data_type', 'dataset_id',
                             'description', 'facets_url',
                             'ordering', 'is_hidden', 'is_valid',
                             'is_list', 'entity_type',
-                            'name', 'updated_at',
+                            'name', 'updated_at', 'is_read_only',
                             'id', 'url'])
         self.assertSetEqual(set(dataset_field.keys()), check_fields)
         expected = """

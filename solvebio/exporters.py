@@ -7,6 +7,7 @@ from six.moves.urllib.parse import unquote
 
 import datetime
 import operator
+import json
 import os
 import sys
 import time
@@ -68,6 +69,54 @@ class QueryExporters(object):
                                    nrecords > self.EXPORT_WARN)
         return self.registry[exporter](query, show_progress=show_progress)\
             .export(*args, **kwargs)
+
+
+class JSONExporter(object):
+    """
+    Exports dataset query to JSON (specifically JSONL),
+    one JSON record per line.
+    """
+    name = 'json'
+
+    def __init__(self, query, *args, **kwargs):
+        self.query = query
+        self.show_progress = kwargs.get('show_progress', False)
+        self.exclude_fields = kwargs.get('exclude_fields', ['_id', '_commit'])
+
+    def export(self, filename=None, **kwargs):
+        if not filename:
+            raise Exception(
+                'The "filename" parameter is required to export.')
+
+        result_count = len(self.query)
+        if result_count <= 0:
+            raise AttributeError('No results found in query!')
+
+        filename = os.path.expanduser(filename)
+        if sys.version_info >= (3, 0, 0):
+            f = open(filename, 'w', newline='')
+        else:
+            f = open(filename, 'wb')
+
+        if self.show_progress:
+            progress_bar = pyprind.ProgPercent(
+                result_count,
+                title='JSON Export',
+                track_time=False)
+
+        try:
+            for ind, record in enumerate(self.query):
+                for field in self.exclude_fields:
+                    record.pop(field, None)
+                f.write(json.dumps(record) + '\n')
+                if self.show_progress:
+                    progress_bar.update()
+        except:
+            raise
+        finally:
+            f.close()
+
+        print('Export complete!')
 
 
 class CSVExporter(object):
@@ -356,6 +405,7 @@ class XLSXExporter(CSVExporter):
 
 
 exporters = QueryExporters()
+exporters.register(JSONExporter)
 exporters.register(CSVExporter)
 exporters.register(XLSXExporter)
 

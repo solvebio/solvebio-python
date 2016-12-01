@@ -1,20 +1,22 @@
-sudo: false
 language: python
 python:
-  - '2.6'
-  - '2.7'
-  - '3.4'
+  - "2.6"
+  - "2.7"
+  - "3.4"
   - "3.2"
   - "3.3"
   - "3.4"
   - "pypy"
 install:
-  - pip install requests>=2.0.0 flake8 nose mock tox
+  - pip install requests==2.10.0 flake8==2.6.2 nose mock tox
   # We use @skipIf so unittest2 is needed on Pyton 2.6
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install ordereddict unittest2; fi
+  - pip install PyVCF==0.6.8
 script:
-  - python -W always setup.py test 
+  - stty cols 80
+  - python -W always setup.py test
   - flake8 solvebio
 notifications:
   slack:
-    secure: WvTImIlFKtCSTrcpk11RB467ybQBmZatk1k9CEEb5qkRRX0IUhmmNzV4xKIJR40Hf1u84uW6j5AeD/OChHycU+1C/OmMgyFAIYMAkE8db+dGtpdlQO5a5Jj9xzK8nfUKrw6Y3JzDTn+mQkeFyRP6D8fj3WPWOV5G9EOTY62sLiQ=
+    secure: "NSSHaWCgYD1tDPo52Z9G4eNbEJfDUeQO4kSZOM4bYJr8VN7AP+UBXs+A4ad+z2xMJIo1EaEIxiK0RY7FrQC8GBZgs92j9l8KoJ8T7nNZnboDipziXTTTdWP2wzJTgIiAKI55sEbuFhxmo19/zTRZ63ZycByvMnC67yBos+z0ksI="
+    email: false

@@ -5,14 +5,18 @@ from ..utils.humanize import naturalsize
 from ..utils.md5sum import md5sum
 
 from .solveobject import convert_to_solve_object
-from .apiresource import CreateableAPIResource, ListableAPIResource, \
-    UpdateableAPIResource
+from .apiresource import CreateableAPIResource
+from .apiresource import ListableAPIResource
+from .apiresource import UpdateableAPIResource
+from .apiresource import DeletableAPIResource
 from .datasetfield import DatasetField
 
 from ..exporters import DatasetExportFile
 
 
-class Dataset(CreateableAPIResource, ListableAPIResource,
+class Dataset(CreateableAPIResource,
+              ListableAPIResource,
+              DeletableAPIResource,
               UpdateableAPIResource):
     """
     Datasets are access points to data. Dataset names are unique
@@ -24,6 +28,55 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
         ('title', 'Title'),
         ('description', 'Description'),
     )
+
+    @classmethod
+    def get_or_create_by_full_name(cls, full_name, **kwargs):
+        from solvebio import Depository
+        from solvebio import DepositoryVersion
+        from solvebio import SolveError
+
+        try:
+            return Dataset.retrieve(full_name)
+        except SolveError as e:
+            if e.status_code != 404:
+                raise e
+
+        # Split the name into parts
+        try:
+            depo, version, dataset = full_name.split('/')
+        except ValueError:
+            raise ValueError(
+                "Invalid dataset name '{0}'. Please ensure that it is "
+                "in the following format: '<depository>/<version>/<dataset>'"
+                .format(full_name))
+
+        try:
+            depo = Depository.retrieve(depo)
+        except SolveError as e:
+            if e.status_code != 404:
+                raise e
+            depo = Depository.create(name=depo, title=depo)
+
+        try:
+            version = DepositoryVersion.retrieve(
+                '{0}/{1}'.format(depo.name, version))
+        except SolveError as e:
+            if e.status_code != 404:
+                raise e
+            version = DepositoryVersion.create(
+                depository_id=depo.id, name=version, title=version)
+
+        try:
+            return Dataset.retrieve(
+                '{0}/{1}/{2}'.format(depo.name, version.name, dataset))
+        except SolveError as e:
+            if e.status_code != 404:
+                raise e
+            # Use a default title if none provided
+            title = kwargs.pop('title', dataset)
+            return Dataset.create(
+                depository_version_id=version.id,
+                name=dataset, title=title, **kwargs)
 
     def depository_version(self):
         from .depositoryversion import DepositoryVersion
@@ -146,6 +199,27 @@ class Dataset(CreateableAPIResource, ListableAPIResource,
 
     def help(self):
         open_help('/library/{0}'.format(self['full_name']))
+
+    def import_file(self, path, **kwargs):
+        """
+        This is a shortcut to creating a DatasetImport. Can't use "import()"
+        because of Python.
+        """
+        from . import Manifest
+        from . import DatasetImport
+
+        if 'id' not in self or not self['id']:
+            raise Exception(
+                'No Dataset ID found. '
+                'Please instantiate or retrieve a dataset '
+                'with an ID or full_name.')
+
+        manifest = Manifest()
+        manifest.add(path)
+        return DatasetImport.create(
+            dataset_id=self['id'],
+            manifest=manifest.manifest,
+            **kwargs)
 
     def export(self, path, genome_build=None, format='json',
                show_progress=True, download=True):

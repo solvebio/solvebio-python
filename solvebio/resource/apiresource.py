@@ -157,13 +157,7 @@ class DownloadableAPIResource(APIResource):
         Download the file to the specified directory
         (or a temp. dir if nothing is specified).
         """
-        download_url = self.instance_url() + '/download'
-        # Don't redirect, just return the signed S3 URL
-        kwargs.update({'redirect': ''})
-        response = self.request(
-            'get', download_url, params=kwargs, allow_redirects=False)
-
-        download_url = response['url']
+        download_url = self.download_url(**kwargs)
         filename = download_url.split('%3B%20filename%3D')[1]
 
         if path:
@@ -186,6 +180,15 @@ class DownloadableAPIResource(APIResource):
 
         return filename
 
+    def download_url(self, **kwargs):
+        download_url = self.instance_url() + '/download'
+        # Don't redirect, just return the signed S3 URL
+        kwargs.update({'redirect': ''})
+        response = self.request(
+            'get', download_url, params=kwargs, allow_redirects=False)
+
+        return response['url']
+
 
 class ListableAPIResource(APIResource):
     """Has one method: *all()* which lists everything in the resource."""
@@ -197,10 +200,11 @@ class ListableAPIResource(APIResource):
         results = convert_to_solve_object(response)
 
         # If the object has LIST_FIELDS, setup tabulate
-        list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
-        if list_fields:
-            fields, headers = list(zip(*list_fields))
-            results.set_tabulate(fields, headers=headers, sort=False)
+        if len(results.data) > 0:
+            list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
+            if list_fields:
+                fields, headers = list(zip(*list_fields))
+                results.set_tabulate(fields, headers=headers, sort=False)
 
         return results
 
@@ -223,10 +227,11 @@ class SearchableAPIResource(APIResource):
         results = convert_to_solve_object(response)
 
         # If the object has LIST_FIELDS, setup tabulate
-        list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
-        if list_fields:
-            fields, headers = list(zip(*list_fields))
-            results.set_tabulate(fields, headers=headers)
+        if len(results.data) > 0:
+            list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
+            if list_fields:
+                fields, headers = list(zip(*list_fields))
+                results.set_tabulate(fields, headers=headers)
 
         return results
 

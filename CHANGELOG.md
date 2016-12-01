@@ -1,5 +1,70 @@
 # Change Log
 
+## [v1.13.6](https://github.com/solvebio/solvebio-python/tree/v1.13.6) (2016-10-27)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.5...v1.13.6)
+
+**Merged pull requests:**
+
+- handle case where no results are returned in the list object [\#111](https://github.com/solvebio/solvebio-python/pull/111) ([davecap](https://github.com/davecap))
+- use pyvcf built-in file extension detection and gzip support [\#110](https://github.com/solvebio/solvebio-python/pull/110) ([davecap](https://github.com/davecap))
+
+## [v1.13.5](https://github.com/solvebio/solvebio-python/tree/v1.13.5) (2016-09-15)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.4...v1.13.5)
+
+**Merged pull requests:**
+
+- fix the vcf parser for python3 [\#109](https://github.com/solvebio/solvebio-python/pull/109) ([davecap](https://github.com/davecap))
+- add support for specialized SnpEff ANN field parsing [\#108](https://github.com/solvebio/solvebio-python/pull/108) ([davecap](https://github.com/davecap))
+
+## [v1.13.4](https://github.com/solvebio/solvebio-python/tree/v1.13.4) (2016-08-25)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.3...v1.13.4)
+
+**Merged pull requests:**
+
+- add SolveBio variant ID to VCF to JSON parser output [\#107](https://github.com/solvebio/solvebio-python/pull/107) ([davecap](https://github.com/davecap))
+
+## [v1.13.3](https://github.com/solvebio/solvebio-python/tree/v1.13.3) (2016-08-11)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.2...v1.13.3)
+
+**Closed issues:**
+
+- \[Manifest\] Add\(\) not allowing URLs [\#105](https://github.com/solvebio/solvebio-python/issues/105)
+
+**Merged pull requests:**
+
+- expanduser not expandpath \(fixes \#105\) [\#106](https://github.com/solvebio/solvebio-python/pull/106) ([davecap](https://github.com/davecap))
+
+## [v1.13.2](https://github.com/solvebio/solvebio-python/tree/v1.13.2) (2016-08-03)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.1...v1.13.2)
+
+**Implemented enhancements:**
+
+- Filter by number of items in a field [\#54](https://github.com/solvebio/solvebio-python/issues/54)
+
+**Fixed bugs:**
+
+- Depositories, depository versions, and datasets are not deletable [\#102](https://github.com/solvebio/solvebio-python/issues/102)
+
+**Closed issues:**
+
+- \[Manifest\] Add\(\) not allowing my local filepath [\#101](https://github.com/solvebio/solvebio-python/issues/101)
+
+**Merged pull requests:**
+
+- expanduser prior to checking ispath or isdir in manifest \(fixes \#101\) [\#104](https://github.com/solvebio/solvebio-python/pull/104) ([davecap](https://github.com/davecap))
+- makes datasets, depository versions, and depositories deletable [\#103](https://github.com/solvebio/solvebio-python/pull/103) ([davecap](https://github.com/davecap))
+- Add expanding vcf parser as a contrib module [\#100](https://github.com/solvebio/solvebio-python/pull/100) ([davecap](https://github.com/davecap))
+
+## [v1.13.1](https://github.com/solvebio/solvebio-python/tree/v1.13.1) (2016-06-03)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.0...v1.13.1)
+
+## [v1.13.0](https://github.com/solvebio/solvebio-python/tree/v1.13.0) (2016-06-03)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.12.1...v1.13.0)
+
+**Merged pull requests:**
+
+- Refactor subcommand arguments; add simple dataset import subcommand [\#99](https://github.com/solvebio/solvebio-python/pull/99) ([davecap](https://github.com/davecap))
+
 ## [v1.12.1](https://github.com/solvebio/solvebio-python/tree/v1.12.1) (2016-05-12)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.12.0...v1.12.1)
 

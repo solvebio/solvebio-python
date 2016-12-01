@@ -96,24 +96,31 @@ def whoami(*args):
     Retrieves the email for the logged-in user.
     Uses local credentials or api_key if found.
     """
-    email, api_key = None, solvebio.api_key
+    api_key = solvebio.api_key
+    domain, email, role = None, None, None
 
     # Existing api_key overrides local credentials file
-    if solvebio.api_key:
-        try:
-            user = client.get('/v1/user', {})
-            email = user['email']
-        except SolveError as e:
-            solvebio.api_key = api_key = None
-            _print_msg("Error: {0}".format(e))
-    else:
+    if not solvebio.api_key:
         try:
             email, api_key = get_credentials()
+            solvebio.api_key = api_key
         except:
             pass
 
+    try:
+        user = client.get('/v1/user', {})
+        email = user['email']
+        domain = user['account']['domain']
+        role = user['role']
+    except SolveError as e:
+        solvebio.api_key = None
+        api_key = None
+        _print_msg("Error: {0}".format(e))
+
     if email:
-        _print_msg('You are logged in as {0}'.format(email))
+        _print_msg('You are logged-in to the "{0}" domain '
+                   'as {1} with role {2}'
+                   .format(domain, email, role))
     else:
         _print_msg('You are not logged-in')
 

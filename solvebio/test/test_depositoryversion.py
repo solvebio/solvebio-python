@@ -17,19 +17,23 @@ class DepositoryVersionTests(SolveBioTestCase):
                          "Retrieving depository id {0} found by all()"
                          .format(dv.id))
 
-        check_fields = set(['class_name', 'created_at',
-                            'datasets_url', 'depository',
-                            'depository_id', 'description',
-                            'full_name', 'id', 'latest',
-                            'name', 'is_released', 'released_at',
-                            'title', 'updated_at', 'url',
-                            'changelog_url'])
+        check_fields = set([
+            'changelog_url',
+            'class_name',
+            'created_at',
+            'datasets_url',
+            'depository',
+            'depository_id',
+            'description',
+            'full_name',
+            'id',
+            'is_default',
+            'is_released',
+            'latest',
+            'name',
+            'released_at',
+            'title',
+            'updated_at',
+            'url',
+        ])
         self.assertSetEqual(set(dv), check_fields)
-
-    """
-    #TODO add another version of TEST_DATASET so we can test changelog
-    def test_depositoryversion_changelog(self):
-        dv = DepositoryVersion.all().data[0]
-        resp = dv.changelog()
-        self.assertTrue(resp, resp)
-    """
