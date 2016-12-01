@@ -6,14 +6,10 @@ from six.moves.urllib.parse import urlparse
 from six.moves.urllib.parse import unquote
 
 import datetime
-import operator
 import json
 import os
 import sys
 import time
-
-# Python 3.x compatibility
-from functools import reduce
 
 try:
     from collections import OrderedDict
@@ -284,7 +280,7 @@ class FlatCSVExporter(CSVExporter):
             raise AttributeError('No results found in query!')
 
         self.rows = []
-        self.load_fields()
+        self.fields = set([])
 
         if self.show_progress:
             progress_bar = pyprind.ProgPercent(
@@ -294,50 +290,60 @@ class FlatCSVExporter(CSVExporter):
         else:
             print(title)
 
-        for ind, record in enumerate(self.query):
-            row = self.process_record(record)
-            self.rows.append(row)
+        for record in self.query:
+            self.current_row = {}
+            self.process_record(record)
+            self.rows.append(self.current_row)
             if self.show_progress:
                 progress_bar.update()
 
         self.write(filename=filename)
         print('Export complete!')
 
-    def process_record(self, record):
+    def process_record(self, record, root_key=''):
         """Process a row of json data
         """
-        row = {}
+        if root_key != '':
+            root_key += '.'
 
-        for field in self.fields:
-            split_fields = field.name.split('.')
-            # Nested Field
-            if len(split_fields) > 1:
-                parent_field = split_fields[0]
-                # The parent field is a list of objects.
-                if isinstance(record.get(parent_field), list):
-                    # Return a list of values mapping field.name
-                    row[field.name] = [
-                        self.get_in(obj, split_fields[1:])
-                        for obj in record.get(parent_field)
-                    ]
-                # The parent field is an object.
-                elif isinstance(record.get(parent_field), dict):
-                    # Set the subfield value
-                    row[field.name] = self.get_in(record, split_fields)
-            # Root Field
+        # Tree traversal
+        for key, value in record.iteritems():
+            field = root_key + key
+            # If the value is an object, process it recursively
+            if isinstance(value, dict):
+                self.process_record(value, field)
+            # If the value is a list, parse each item
+            elif isinstance(value, list):
+                for index, item in enumerate(value):
+                    field_name = field + '.' + str(index)
+                    if isinstance(item, dict):
+                        self.process_record(item, field_name)
+                    else:
+                        self.fields.add(field_name)
+                        self.current_row[field_name] = unicode(item)
+            # If we reached a leaf, add field and value
             else:
-                row[field.name] = record.get(field.name)
+                self.fields.add(field)
+                self.current_row[field] = unicode(value)
 
-        return row
+    def write(self, filename):
+        if sys.version_info >= (3, 0, 0):
+            f = open(filename, 'w', newline='')
+        else:
+            f = open(filename, 'wb')
 
-    @staticmethod
-    def get_in(coll, keys, default=None, no_default=False):
+        fieldnames = sorted(list(self.fields))
         try:
-            return reduce(operator.getitem, keys, coll)
-        except (KeyError, IndexError, TypeError):
-            if no_default:
-                raise
-            return default
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writerow(dict(zip(fieldnames, fieldnames)))
+            for row in self.rows:
+                writer.writerow(
+                    dict((k, v.encode('utf-8')) for k, v in row.iteritems())
+                )
+        except:
+            raise
+        finally:
+            f.close()
 
 
 class XLSXExporter(CSVExporter):
