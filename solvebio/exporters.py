@@ -10,12 +10,19 @@ import json
 import os
 import sys
 import time
+import six
 
 try:
     from collections import OrderedDict
 except ImportError:
     # Python 2.6 compatibility
     from ordereddict import OrderedDict
+
+# Fix Python 2.x.
+try:
+    UNICODE_EXISTS = bool(type(unicode))
+except NameError:
+    unicode = lambda s: str(s)
 
 import pyprind
 
@@ -307,7 +314,7 @@ class FlatCSVExporter(CSVExporter):
             root_key += '.'
 
         # Tree traversal
-        for key, value in record.iteritems():
+        for key, value in six.iteritems(record):
             field = root_key + key
             # If the value is an object, process it recursively
             if isinstance(value, dict):
@@ -338,7 +345,7 @@ class FlatCSVExporter(CSVExporter):
             writer.writerow(dict(zip(fieldnames, fieldnames)))
             for row in self.rows:
                 writer.writerow(
-                    dict((k, v.encode('utf-8')) for k, v in row.iteritems())
+                    dict((k, v.encode('utf-8')) for k, v in six.iteritems(row))
                 )
         except:
             raise
