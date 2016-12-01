@@ -18,12 +18,6 @@ except ImportError:
     # Python 2.6 compatibility
     from ordereddict import OrderedDict
 
-# Fix Python 2.x.
-try:
-    UNICODE_EXISTS = bool(type(unicode))
-except NameError:
-    unicode = lambda s: str(s)
-
 import pyprind
 
 from .utils.humanize import naturalsize
@@ -327,11 +321,11 @@ class FlatCSVExporter(CSVExporter):
                         self.process_record(item, field_name)
                     else:
                         self.fields.add(field_name)
-                        self.current_row[field_name] = unicode(item)
+                        self.current_row[field_name] = six.u(item)
             # If we reached a leaf, add field and value
             else:
                 self.fields.add(field)
-                self.current_row[field] = unicode(value)
+                self.current_row[field] = six.u(value)
 
     def write(self, filename):
         if sys.version_info >= (3, 0, 0):
