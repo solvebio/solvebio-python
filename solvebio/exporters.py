@@ -11,13 +11,6 @@ import os
 import sys
 import time
 import six
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    # Python 2.6 compatibility
-    from ordereddict import OrderedDict
-
 import pyprind
 
 from .utils.humanize import naturalsize
@@ -108,8 +101,6 @@ class JSONExporter(object):
                 f.write(json.dumps(record) + '\n')
                 if self.show_progress:
                     progress_bar.update()
-        except:
-            raise
         finally:
             f.close()
 
@@ -125,163 +116,27 @@ class CSVExporter(object):
 
     collection = None
 
-    SEP_CHAR = '\r'
-    KEY_VAL_CHAR = ': '
-    DICT_SEP_CHAR = '\r'
-    DICT_OPEN = ''
-    DICT_CLOSE = ''
+    SEP_CHAR = str(',')
+    KEY_SEP = str('.')
 
     def __init__(self, query, *args, **kwargs):
         self.query = query
         self.show_progress = kwargs.get('show_progress', False)
-
-    def export(self, filename=None, **kwargs):
-        if not filename:
-            raise Exception(
-                'The "filename" parameter is required to export.')
-
-        filename = os.path.expanduser(filename)
-
-        result_count = len(self.query)
-        if result_count <= 0:
-            raise AttributeError('No results found in query!')
-
-        self.rows = []
-        self.key_map = OrderedDict()
-        self.key_types = {}
-        self.load_fields()
-
-        for f in self.fields:
-            name = f['name']
-            splits = [int(s) if s.isdigit() else s
-                      for s in name.split('.')]
-            self.key_map[name] = splits
-            self.key_types[name] = f['data_type']
-
-        title = 'Exporting query to: {0}'.format(filename)
-
-        if self.show_progress:
-            progress_bar = pyprind.ProgPercent(
-                result_count,
-                title=title,
-                track_time=False)
-        else:
-            print(title)
-
-        for ind, record in enumerate(self.query):
-            row = self.process_record(record)
-            self.rows.append(row)
-            if self.show_progress:
-                progress_bar.update()
-
-        self.write(filename=filename)
-        print('Export complete!')
-
-    def load_fields(self):
-        from solvebio import Dataset
-
-        # Get specified fields
-        if self.query._fields:
-            self.fields = [
-                Dataset.retrieve(self.query._dataset_id).fields(name=field)
-                for field in self.query._fields
-            ]
-        # Get all fields
-        else:
-            self.fields = Dataset.retrieve(self.query._dataset_id) \
-                .fields(limit=1000)
-
-    def process_cell(self, keys, cell):
-        if not keys:
-            return [cell]
-        elif not cell:
-            return []
-
-        # Retrieve the cell values for a nested dict.
-        for i, k in enumerate(keys):
-            if isinstance(cell, list):
-                return [self.process_cell(keys[i:], c)
-                        for c in cell]
-            elif isinstance(cell, dict):
-                return self.process_cell(keys[i + 1:], cell.get(k))
-            elif i == len(keys) - 1:
-                # Last key, return the cell
-                return []
-
-    def process_record(self, record):
-        """Process a row of json data against the key map
-        """
-        row = {}
-
-        for header, keys in self.key_map.items():
-            try:
-                cells = self.process_cell(keys, record)
-            except (KeyError, IndexError, TypeError):
-                cells = []
-
-            row[header] = self.SEP_CHAR.join(
-                [self.make_string(cell) for cell in cells])
-
-        return row
-
-    def make_string(self, item):
-        if isinstance(item, list) or \
-                isinstance(item, set) or \
-                isinstance(item, tuple):
-            return self.SEP_CHAR.join(
-                [self.make_string(subitem) for subitem in item])
-        elif isinstance(item, dict):
-            return self.DICT_OPEN + self.DICT_SEP_CHAR.join(
-                [self.KEY_VAL_CHAR.join(
-                    [k, self.make_string(val)]
-                ) for k, val in item.items()]
-            ) + self.DICT_CLOSE
-        elif item:
-            return str(item).strip()
-        else:
-            return ''
-
-    def write(self, filename):
-        if sys.version_info >= (3, 0, 0):
-            f = open(filename, 'w', newline='')
-        else:
-            f = open(filename, 'wb')
-
-        fieldnames = [field.name for field in self.fields]
-        try:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            # writer.writeheader() is new in 2.7
-            # The following is used for 2.6 compat:
-            # writer.writeheader()
-            writer.writerow(dict(zip(fieldnames, fieldnames)))
-            writer.writerows(self.rows)
-        except:
-            raise
-        finally:
-            f.close()
-
-
-class FlatCSVExporter(CSVExporter):
-    """
-    This class includes helper functions to export
-    a SolveBio Query object to a CSV file without altering the data structure.
-    """
-    name = 'flat-csv'
-
-    def export(self, filename=None, **kwargs):
-        if not filename:
-            raise Exception(
-                'The "filename" parameter is required to export.')
-
-        filename = os.path.expanduser(filename)
-        title = 'Exporting query to: {0}'.format(filename)
-
-        result_count = len(self.query)
-        if result_count <= 0:
-            raise AttributeError('No results found in query!')
-
         self.rows = []
         self.fields = set([])
+        self.current_row = {}
+
+    def export(self, filename=None, **kwargs):
+        if not filename:
+            raise Exception(
+                'The "filename" parameter is required to export.')
+
+        filename = os.path.expanduser(filename)
+        title = 'Exporting query to: {0}'.format(filename)
+
+        result_count = len(self.query)
+        if result_count <= 0:
+            raise AttributeError('No results found in query!')
 
         if self.show_progress:
             progress_bar = pyprind.ProgPercent(
@@ -316,7 +171,7 @@ class FlatCSVExporter(CSVExporter):
             # If the value is a list, parse each item
             elif isinstance(value, list):
                 for index, item in enumerate(value):
-                    field_name = field + '.' + str(index)
+                    field_name = field + self.KEY_SEP + str(index)
                     if isinstance(item, dict):
                         self.process_record(item, field_name)
                     else:
@@ -344,11 +199,12 @@ class FlatCSVExporter(CSVExporter):
 
         fieldnames = sorted(list(self.fields))
         try:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer = csv.DictWriter(f, fieldnames=fieldnames,
+                                    delimiter=self.SEP_CHAR)
+            # writer.writeheader() is new in 2.7
+            # The following is used for 2.6 compat:
             writer.writerow(dict(zip(fieldnames, fieldnames)))
             writer.writerows(self.rows)
-        except:
-            raise
         finally:
             f.close()
 
@@ -358,22 +214,13 @@ class XLSXExporter(CSVExporter):
 
     name = 'excel'
 
-    SEP_CHAR = '\n'
-    KEY_VAL_CHAR = ': '
-    DICT_SEP_CHAR = '\n'
-    DICT_OPEN = ''
-    DICT_CLOSE = ''
-
-    NUMERIC_TYPES = ('integer', 'double', 'long', 'float')
-
     def __init__(self, query, *args, **kwargs):
         if not xlsxwriter:
             raise Exception(
                 'The XLSX exporter requires the xlsxwriter Python module. '
                 'Run `pip install XlsxWriter` and reload SolveBio.')
 
-        self.query = query
-        self.show_progress = kwargs.get('show_progress', False)
+        super(XLSXExporter, self).__init__(query, *args, **kwargs)
 
     def write(self, filename):
         workbook = xlsxwriter.Workbook(filename)
@@ -389,30 +236,21 @@ class XLSXExporter(CSVExporter):
         }
         formats['date'] = formats['string']
         formats['boolean'] = formats['string']
-
         formats['text'].set_align('top')
         formats['nested'] = formats['text']
         formats['object'] = formats['text']
 
-        row = 0
         # Write the header
-        for col, k in enumerate(self.key_map.keys()):
-            worksheet.write(row, col, k, formats['header'])
-
-        for record in self.rows:
-            row += 1
-            for col, k in enumerate(sorted(record)):
-                fmt = formats.get(self.key_types[k], formats['text'])
-                if self.key_types[k] in self.NUMERIC_TYPES:
-                    from decimal import Decimal
-                    try:
-                        val = Decimal(record[k])
-                        worksheet.write_number(row, col, val, fmt)
-                    except:
-                        # Might be multi-line numeric.
-                        worksheet.write(row, col, record[k], fmt)
-                else:
-                    worksheet.write(row, col, record[k].encode('utf-8'), fmt)
+        fieldnames = sorted(list(self.fields))
+        for col, key in enumerate(fieldnames):
+            row = 0
+            worksheet.write(row, col, key, formats['header'])
+            for record in self.rows:
+                row += 1
+                value = ''
+                if key in record:
+                    value = record[key]
+                worksheet.write(row, col, value, formats['string'])
 
         workbook.close()
 
@@ -420,7 +258,6 @@ class XLSXExporter(CSVExporter):
 exporters = QueryExporters()
 exporters.register(JSONExporter)
 exporters.register(CSVExporter)
-exporters.register(FlatCSVExporter)
 exporters.register(XLSXExporter)
 
 
