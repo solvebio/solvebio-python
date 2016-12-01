@@ -321,11 +321,11 @@ class FlatCSVExporter(CSVExporter):
                         self.process_record(item, field_name)
                     else:
                         self.fields.add(field_name)
-                        self.current_row[field_name] = six.u(item)
+                        self.current_row[field_name] = six.u(str(item))
             # If we reached a leaf, add field and value
             else:
                 self.fields.add(field)
-                self.current_row[field] = six.u(value)
+                self.current_row[field] = six.u(str(value))
 
     def write(self, filename):
         if sys.version_info >= (3, 0, 0):
@@ -414,6 +414,7 @@ class XLSXExporter(CSVExporter):
 exporters = QueryExporters()
 exporters.register(JSONExporter)
 exporters.register(CSVExporter)
+exporters.register(FlatCSVExporter)
 exporters.register(XLSXExporter)
 
 

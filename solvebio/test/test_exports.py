@@ -11,7 +11,7 @@ class ExportsTests(SolveBioTestCase):
     """
     Test exporting SolveBio Query object.
     """
-
+    # CSVExporter
     def test_csv_exporter(self):
         dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
         query = dataset.query()[:10]
@@ -20,6 +20,16 @@ class ExportsTests(SolveBioTestCase):
         self.assertTrue(path.isfile('/tmp/test.csv'))
         remove('/tmp/test.csv')
 
+    # FlatCSVExporter
+    def test_flat_csv_exporter(self):
+        dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
+        query = dataset.query()[:10]
+
+        query.export('flat-csv', filename='/tmp/test_flat.csv')
+        self.assertTrue(path.isfile('/tmp/test_flat.csv'))
+        remove('/tmp/test_flat.csv')
+
+    # JSONExporter
     def test_json_exporter(self):
         dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
         query = dataset.query()[:10]
