@@ -346,10 +346,7 @@ class FlatCSVExporter(CSVExporter):
         try:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writerow(dict(zip(fieldnames, fieldnames)))
-            for row in self.rows:
-                writer.writerow(
-                    dict((k, v) for k, v in six.iteritems(row))
-                )
+            writer.writerows(self.rows)
         except:
             raise
         finally:
