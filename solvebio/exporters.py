@@ -40,6 +40,9 @@ class QueryExporters(object):
         exporter = exporter.lower()
         force = kwargs.pop('force', False)
 
+        # Set the page size
+        page_size = kwargs.get('page_size', self.PAGE_SIZE)
+
         if exporter not in self.registry:
             raise Exception('Invalid exporter: {0}. Available exporters: {1}'
                             .format(exporter, ', '.join(self.registry.keys())))
@@ -53,7 +56,7 @@ class QueryExporters(object):
             return
 
         # Increase the efficiency of the export.
-        query._page_size = self.PAGE_SIZE
+        query._page_size = page_size
         # Enable progress by default on large exports, but allow toggle.
         show_progress = kwargs.pop('show_progress',
                                    nrecords > self.EXPORT_WARN)
