@@ -240,17 +240,21 @@ class XLSXExporter(CSVExporter):
         formats['nested'] = formats['text']
         formats['object'] = formats['text']
 
-        # Write the header
         fieldnames = sorted(list(self.fields))
-        for col, key in enumerate(fieldnames):
-            row = 0
-            worksheet.write(row, col, key, formats['header'])
-            for record in self.rows:
-                row += 1
-                value = ''
-                if key in record:
-                    value = record[key]
-                worksheet.write(row, col, value, formats['string'])
+        index_field_map = dict((field, index)
+                               for index, field in enumerate(fieldnames))
+
+        row = 0
+        # Write the header
+        for index, field in enumerate(fieldnames):
+            worksheet.write(row, index, field, formats['header'])
+
+        # Write the rows
+        for record in self.rows:
+            row += 1
+            for key, value in six.iteritems(record):
+                worksheet.write(row, index_field_map[key],
+                                value, formats['string'])
 
         workbook.close()
 
