@@ -22,8 +22,8 @@ class ExportsTests(SolveBioTestCase):
 
     # CSVExporter
     def test_csv_exporter(self):
-        test_file = '/tmp/test.csv'
-        reference_file = 'solvebio/test/data/reference_export.csv'
+        test_file = '/tmp/test_export.csv'
+        reference_file = 'solvebio/test/data/test_export.csv'
         self.query.export('csv', filename=test_file)
         self.assertTrue(path.isfile(test_file))
         self.assertEqual(hashlib.md5(open(test_file, 'rb').read()).hexdigest(),
@@ -34,16 +34,16 @@ class ExportsTests(SolveBioTestCase):
 
     # XLSXExporter
     def test_excel_exporter(self):
-        test_file = '/tmp/test.xlsx'
-        # reference_file = 'solvebio/test/data/reference_export.xlsx'
+        test_file = '/tmp/test_export.xlsx'
+        # reference_file = 'solvebio/test/data/test_export.xlsx'
         self.query.export('excel', filename=test_file)
         self.assertTrue(path.isfile(test_file))
         remove(test_file)
 
     # JSONExporter
     def test_json_exporter(self):
-        test_file = '/tmp/test.json'
-        reference_file = 'solvebio/test/data/reference_export.json'
+        test_file = '/tmp/test_export.json'
+        reference_file = 'solvebio/test/data/test_export.json'
         self.query.export('json', filename=test_file)
         self.assertTrue(path.isfile(test_file))
         self.assertEqual(hashlib.md5(open(test_file, 'rb').read()).hexdigest(),
