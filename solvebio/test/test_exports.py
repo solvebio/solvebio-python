@@ -17,7 +17,7 @@ class ExportsTests(SolveBioTestCase):
         super(ExportsTests, self).setUp()
         filters = Filter(rgd_id='RGD:2645')
         self.dataset = Dataset.retrieve('HGNC/3.0.0-2016-11-10/HGNC')
-        self.query = self.dataset.query(filters=filters,
+        self.query = self.dataset.query(filters=filters, fields=['rgd_id'],
                                         genome_build='GRCh37', limit=10)
 
     # CSVExporter

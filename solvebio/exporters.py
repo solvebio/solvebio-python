@@ -125,6 +125,7 @@ class CSVExporter(object):
     def __init__(self, query, *args, **kwargs):
         self.query = query
         self.show_progress = kwargs.get('show_progress', False)
+        self.exclude_fields = kwargs.get('exclude_fields', ['_id'])
         self.rows = []
         self.fields = set([])
         self.current_row = {}
@@ -167,23 +168,26 @@ class CSVExporter(object):
 
         # Tree traversal
         for key, value in six.iteritems(record):
-            field = root_key + key
-            # If the value is an object, process it recursively
-            if isinstance(value, dict):
-                self.process_record(value, field)
-            # If the value is a list, parse each item
-            elif isinstance(value, list):
-                for index, item in enumerate(value):
-                    field_name = field + self.KEY_SEP + str(index)
-                    if isinstance(item, dict):
-                        self.process_record(item, field_name)
-                    else:
-                        self.fields.add(field_name)
-                        self.current_row[field_name] = self.make_string(item)
-            # If we reached a leaf, add field and value
-            else:
-                self.fields.add(field)
-                self.current_row[field] = self.make_string(value)
+            # Do not process excluded fields
+            if key not in self.exclude_fields:
+                field = root_key + key
+                # If the value is an object, process it recursively
+                if isinstance(value, dict):
+                    self.process_record(value, field)
+                # If the value is a list, parse each item
+                elif isinstance(value, list):
+                    for index, item in enumerate(value):
+                        field_name = field + self.KEY_SEP + str(index)
+                        if isinstance(item, dict):
+                            self.process_record(item, field_name)
+                        else:
+                            self.fields.add(field_name)
+                            self.current_row[field_name] = \
+                                self.make_string(item)
+                # If we reached a leaf, add field and value
+                else:
+                    self.fields.add(field)
+                    self.current_row[field] = self.make_string(value)
 
     @staticmethod
     def make_string(value):
