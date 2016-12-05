@@ -1,5 +1,23 @@
 # Change Log
 
+## [v1.14.0](https://github.com/solvebio/solvebio-python/tree/v1.14.0) (2016-12-05)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.6...v1.14.0)
+
+**Implemented enhancements:**
+
+- Add ordering param for dataset queries [\#114](https://github.com/solvebio/solvebio-python/issues/114)
+
+**Fixed bugs:**
+
+- \[Export\] Export should support the query fields parameter instead of always exporting all fields [\#91](https://github.com/solvebio/solvebio-python/issues/91)
+
+**Merged pull requests:**
+
+- add support for query ordering param \(closes \#114\) [\#116](https://github.com/solvebio/solvebio-python/pull/116) ([davecap](https://github.com/davecap))
+- add JSON exporter for queries [\#115](https://github.com/solvebio/solvebio-python/pull/115) ([davecap](https://github.com/davecap))
+- First example Python script [\#112](https://github.com/solvebio/solvebio-python/pull/112) ([dandanxu](https://github.com/dandanxu))
+- Flat CSV Exporter [\#95](https://github.com/solvebio/solvebio-python/pull/95) ([jercoh](https://github.com/jercoh))
+
 ## [v1.13.6](https://github.com/solvebio/solvebio-python/tree/v1.13.6) (2016-10-27)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.5...v1.13.6)
 
