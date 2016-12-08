@@ -54,6 +54,18 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'creating a new dataset (via --create-dataset)',
                 },
                 {
+                    'flags': '--template-file',
+                    'help': 'A local template file to be used when '
+                            'creating a new dataset (via --create-dataset)',
+                },
+                {
+                    'flags': '--no-template',
+                    'action': 'store_true',
+                    'default': False,
+                    'help': 'Create a dataset with no fields '
+                    '(via --create-dataset)',
+                },
+                {
                     'flags': '--genome-build',
                     'help': 'If the dataset template is genomic, provide a '
                             'genome build for your data (i.e. GRCh37)'
@@ -166,6 +178,7 @@ def main(argv=sys.argv[1:]):
         solvebio.api_key = args.api_key
 
     args.func(args)
+
 
 if __name__ == '__main__':
     main()

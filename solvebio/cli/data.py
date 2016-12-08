@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import sys
+import json
 
 import solvebio
 
@@ -13,38 +14,79 @@ def create_dataset(args):
 
         * dataset (full name)
         * template_id
+        * template_file
+        * no_template
         * genome_build
 
     """
-    tpl = None
-    if args.template_id:
-        # Validate the template ID
-        try:
-            tpl = solvebio.DatasetTemplate.retrieve(args.template_id)
-        except solvebio.SolveError as e:
-            if e.status_code != 404:
-                raise e
-            print("No template with ID {0} found!".format(args.template_id))
+
+    # allow a dataset to be created without a template
+    if args.no_template:
+        tpl_fields = []
+        is_genomic = args.genome_build is not None
+        entity_type = None
     else:
-        print("Cannot create a new dataset: "
-              "must specify a template ID with the --template-id flag.")
+        # otherwise accept a template_id or a template_file
+        tpl = None
+        if args.template_id:
+            # Validate the template ID
+            try:
+                tpl = solvebio.DatasetTemplate.retrieve(args.template_id)
+            except solvebio.SolveError as e:
+                if e.status_code != 404:
+                    raise e
+                print("No template with ID {0} found!"
+                      .format(args.template_id))
+        elif args.template_file:
+            if args.template_file.rsplit('.', 1)[1] != 'json':
+                print("Template filetype unsupported. Please pass a json file")
+                sys.exit(1)
 
-    if not tpl:
-        print("Choose an ID from one of the following templates: ")
-        print(solvebio.DatasetTemplate.all())
-        sys.exit(1)
+            # Validate the template file
+            with open(args.template_file, 'rb') as fp:
+                try:
+                    template_contents = json.load(fp)
+                    print(template_contents)
+                except:
+                    print('Template file {0} could not be loaded. Please '
+                          'pass valid JSON'.format(args.template_file))
+                    sys.exit(1)
 
-    # Template is valid.
-    print("Creating new dataset {0} using the template '{1}'."
-          .format(args.dataset, tpl.name))
+            # assign ownership to the template
+            user = solvebio.User.retrieve()
+            template_contents['user'] = user.id
+
+            try:
+                tpl = solvebio.DatasetTemplate.create(**template_contents)
+            except solvebio.SolveError as e:
+                if e.status_code != 404:
+                    raise e
+                print("Template could not be created!")
+        else:
+            print("Cannot create a new dataset: "
+                  "must specify a template ID with the --template-id flag.")
+
+        if not tpl:
+            print("Choose an ID from one of the following templates: ")
+            print(solvebio.DatasetTemplate.all())
+            sys.exit(1)
+
+        # Template is valid.
+        print("Creating new dataset {0} using the template '{1}'."
+              .format(args.dataset, tpl.name))
+
+        # get fields from template
+        tpl_fields = tpl.fields
+        is_genomic = tpl.is_genomic,
+        entity_type = tpl.entity_type,
 
     genome_builds = [args.genome_build] if args.genome_build else None
     return solvebio.Dataset.get_or_create_by_full_name(
         full_name=args.dataset,
         genome_builds=genome_builds,
-        is_genomic=tpl.is_genomic,
-        entity_type=tpl.entity_type,
-        fields=tpl.fields)
+        is_genomic=is_genomic,
+        entity_type=entity_type,
+        fields=tpl_fields)
 
 
 def import_file(args):
