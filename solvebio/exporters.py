@@ -5,18 +5,12 @@ from __future__ import unicode_literals
 from six.moves.urllib.parse import urlparse
 from six.moves.urllib.parse import unquote
 
+import datetime
 import json
 import os
 import sys
-import datetime
 import time
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    # Python 2.6 compatibility
-    from ordereddict import OrderedDict
-
+import six
 import pyprind
 
 from .utils.humanize import naturalsize
@@ -46,6 +40,9 @@ class QueryExporters(object):
         exporter = exporter.lower()
         force = kwargs.pop('force', False)
 
+        # Set the page size
+        page_size = kwargs.get('page_size', self.PAGE_SIZE)
+
         if exporter not in self.registry:
             raise Exception('Invalid exporter: {0}. Available exporters: {1}'
                             .format(exporter, ', '.join(self.registry.keys())))
@@ -59,7 +56,7 @@ class QueryExporters(object):
             return
 
         # Increase the efficiency of the export.
-        query._page_size = self.PAGE_SIZE
+        query._page_size = page_size
         # Enable progress by default on large exports, but allow toggle.
         show_progress = kwargs.pop('show_progress',
                                    nrecords > self.EXPORT_WARN)
@@ -107,8 +104,6 @@ class JSONExporter(object):
                 f.write(json.dumps(record) + '\n')
                 if self.show_progress:
                     progress_bar.update()
-        except:
-            raise
         finally:
             f.close()
 
@@ -124,15 +119,16 @@ class CSVExporter(object):
 
     collection = None
 
-    SEP_CHAR = '\r'
-    KEY_VAL_CHAR = ': '
-    DICT_SEP_CHAR = '\r'
-    DICT_OPEN = ''
-    DICT_CLOSE = ''
+    SEP_CHAR = str(',')
+    KEY_SEP = str('.')
 
     def __init__(self, query, *args, **kwargs):
         self.query = query
         self.show_progress = kwargs.get('show_progress', False)
+        self.exclude_fields = kwargs.get('exclude_fields', ['_id'])
+        self.rows = []
+        self.fields = set([])
+        self.current_row = {}
 
     def export(self, filename=None, **kwargs):
         if not filename:
@@ -140,25 +136,11 @@ class CSVExporter(object):
                 'The "filename" parameter is required to export.')
 
         filename = os.path.expanduser(filename)
-
-        from solvebio import Dataset
+        title = 'Exporting query to: {0}'.format(filename)
 
         result_count = len(self.query)
         if result_count <= 0:
             raise AttributeError('No results found in query!')
-
-        self.rows = []
-        self.key_map = OrderedDict()
-        self.key_types = {}
-
-        for f in Dataset.retrieve(self.query._dataset_id).fields(limit=1000):
-            name = f['name']
-            splits = [int(s) if s.isdigit() else s
-                      for s in name.split('.')]
-            self.key_map[name] = splits
-            self.key_types[name] = f['data_type']
-
-        title = 'Exporting query to: {0}'.format(filename)
 
         if self.show_progress:
             progress_bar = pyprind.ProgPercent(
@@ -168,64 +150,53 @@ class CSVExporter(object):
         else:
             print(title)
 
-        for ind, record in enumerate(self.query):
-            row = self.process_record(record)
-            self.rows.append(row)
+        for record in self.query:
+            self.current_row = {}
+            self.process_record(record)
+            self.rows.append(self.current_row)
             if self.show_progress:
                 progress_bar.update()
 
         self.write(filename=filename)
         print('Export complete!')
 
-    def process_cell(self, keys, cell):
-        if not keys:
-            return [cell]
-        elif not cell:
-            return []
-
-        # Retrieve the cell values for a nested dict.
-        for i, k in enumerate(keys):
-            if isinstance(cell, list):
-                return [self.process_cell(keys[i:], c)
-                        for c in cell]
-            elif isinstance(cell, dict):
-                return self.process_cell(keys[i + 1:], cell.get(k))
-            elif i == len(keys) - 1:
-                # Last key, return the cell
-                return []
-
-    def process_record(self, record):
-        """Process a row of json data against the key map
+    def process_record(self, record, root_key=''):
+        """Process a row of json data
         """
-        row = {}
+        if root_key != '':
+            root_key += '.'
 
-        for header, keys in self.key_map.items():
-            try:
-                cells = self.process_cell(keys, record)
-            except (KeyError, IndexError, TypeError):
-                cells = []
+        # Tree traversal
+        for key, value in six.iteritems(record):
+            # Do not process excluded fields
+            if key not in self.exclude_fields:
+                field = root_key + key
+                # If the value is an object, process it recursively
+                if isinstance(value, dict):
+                    self.process_record(value, field)
+                # If the value is a list, parse each item
+                elif isinstance(value, list):
+                    for index, item in enumerate(value):
+                        field_name = field + self.KEY_SEP + str(index)
+                        if isinstance(item, dict):
+                            self.process_record(item, field_name)
+                        else:
+                            self.fields.add(field_name)
+                            self.current_row[field_name] = \
+                                self.make_string(item)
+                # If we reached a leaf, add field and value
+                else:
+                    self.fields.add(field)
+                    self.current_row[field] = self.make_string(value)
 
-            row[header] = self.SEP_CHAR.join(
-                [self.make_string(cell) for cell in cells])
-
-        return row
-
-    def make_string(self, item):
-        if isinstance(item, list) or \
-                isinstance(item, set) or \
-                isinstance(item, tuple):
-            return self.SEP_CHAR.join(
-                [self.make_string(subitem) for subitem in item])
-        elif isinstance(item, dict):
-            return self.DICT_OPEN + self.DICT_SEP_CHAR.join(
-                [self.KEY_VAL_CHAR.join(
-                    [k, self.make_string(val)]
-                ) for k, val in item.items()]
-            ) + self.DICT_CLOSE
-        elif item:
-            return str(item).strip()
-        else:
-            return ''
+    @staticmethod
+    def make_string(value):
+        try:
+            return str(value)
+        except UnicodeEncodeError:
+            return ''.join(
+                [s.encode('ascii', 'backslashreplace') for s in value]
+            )
 
     def write(self, filename):
         if sys.version_info >= (3, 0, 0):
@@ -233,16 +204,14 @@ class CSVExporter(object):
         else:
             f = open(filename, 'wb')
 
-        fieldnames = self.key_map.keys()
+        fieldnames = sorted(list(self.fields))
         try:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer = csv.DictWriter(f, fieldnames=fieldnames,
+                                    delimiter=self.SEP_CHAR)
             # writer.writeheader() is new in 2.7
             # The following is used for 2.6 compat:
-            # writer.writeheader()
             writer.writerow(dict(zip(fieldnames, fieldnames)))
             writer.writerows(self.rows)
-        except:
-            raise
         finally:
             f.close()
 
@@ -252,22 +221,13 @@ class XLSXExporter(CSVExporter):
 
     name = 'excel'
 
-    SEP_CHAR = '\n'
-    KEY_VAL_CHAR = ': '
-    DICT_SEP_CHAR = '\n'
-    DICT_OPEN = ''
-    DICT_CLOSE = ''
-
-    NUMERIC_TYPES = ('integer', 'double', 'long', 'float')
-
     def __init__(self, query, *args, **kwargs):
         if not xlsxwriter:
             raise Exception(
                 'The XLSX exporter requires the xlsxwriter Python module. '
                 'Run `pip install XlsxWriter` and reload SolveBio.')
 
-        self.query = query
-        self.show_progress = kwargs.get('show_progress', False)
+        super(XLSXExporter, self).__init__(query, *args, **kwargs)
 
     def write(self, filename):
         workbook = xlsxwriter.Workbook(filename)
@@ -283,30 +243,25 @@ class XLSXExporter(CSVExporter):
         }
         formats['date'] = formats['string']
         formats['boolean'] = formats['string']
-
         formats['text'].set_align('top')
         formats['nested'] = formats['text']
         formats['object'] = formats['text']
 
+        fieldnames = sorted(list(self.fields))
+        index_field_map = dict((field, index)
+                               for index, field in enumerate(fieldnames))
+
         row = 0
         # Write the header
-        for col, k in enumerate(self.key_map.keys()):
-            worksheet.write(row, col, k, formats['header'])
+        for index, field in enumerate(fieldnames):
+            worksheet.write(row, index, field, formats['header'])
 
+        # Write the rows
         for record in self.rows:
             row += 1
-            for col, k in enumerate(sorted(record)):
-                fmt = formats.get(self.key_types[k], formats['text'])
-                if self.key_types[k] in self.NUMERIC_TYPES:
-                    from decimal import Decimal
-                    try:
-                        val = Decimal(record[k])
-                        worksheet.write_number(row, col, val, fmt)
-                    except:
-                        # Might be multi-line numeric.
-                        worksheet.write(row, col, record[k], fmt)
-                else:
-                    worksheet.write(row, col, record[k].encode('utf-8'), fmt)
+            for key, value in six.iteritems(record):
+                worksheet.write(row, index_field_map[key],
+                                value, formats['string'])
 
         workbook.close()
 

@@ -11,7 +11,7 @@ install:
   - pip install requests==2.10.0 flake8==2.6.2 nose mock tox
   # We use @skipIf so unittest2 is needed on Pyton 2.6
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install ordereddict unittest2; fi
-  - pip install PyVCF==0.6.8
+  - pip install PyVCF==0.6.8 XlsxWriter===0.9.3
 script:
   - stty cols 80
   - python -W always setup.py test
