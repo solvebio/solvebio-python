@@ -1,12 +1,8 @@
 import solvebio
 
-# create a depository, version and dataset
-depository = solvebio.Depository.create(
-    title="SampleDataImport",
-    create_dataset=True
-)
-# get newly created dataset
-dataset = depository.latest_version().datasets().objects()[0]
+# create a dataset
+dataset_name = '{0}:SampleImport/1.0.0/SampleImport'.format('your-domain')
+dataset = solvebio.Dataset.get_or_create_by_full_name(dataset_name)
 
 # create a manifest object and a file to it
 manifest = solvebio.Manifest()
@@ -18,7 +14,7 @@ imp = solvebio.DatasetImport.create(
     manifest=manifest.manifest,
     auto_approve=True)
 
-# prints updates as the data is processed
+# Prints updates as the data is processed
 # and indexed into SolveBio
 imp.follow()
 
@@ -26,16 +22,21 @@ imp.follow()
 # you now have data!
 #
 
-
-# lets add another record to it just for fun
-# that includes a brand new field
-new_record = dict(
-    gene_symbol="BRCA2",
-    some_new_field="this is a new string field")
+# lets add some more records that include a new field
+new_records = [
+    {
+        'gene_symbol': 'BRCA2',
+        'some_new_field': 'a new string field'
+    },
+    {
+        'gene_symbol': 'CFTR',
+        'some_new_field': 'that new field'
+    }
+]
 
 imp = solvebio.DatasetImport.create(
     dataset_id=dataset.id,
-    data_record=new_record,
+    data_records=new_records,
     auto_approve=True)
 
 imp.follow()
