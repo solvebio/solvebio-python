@@ -15,18 +15,15 @@ def create_dataset(args):
         * dataset (full name)
         * template_id
         * template_file
-        * no_template
         * genome_build
 
     """
+    tpl_fields = []
+    is_genomic = args.genome_build is not None
+    entity_type = None
 
-    # allow a dataset to be created without a template
-    if args.no_template:
-        tpl_fields = []
-        is_genomic = args.genome_build is not None
-        entity_type = None
-    else:
-        # otherwise accept a template_id or a template_file
+    # Accept a template_id or a template_file
+    if args.template_id or args.template_file:
         tpl = None
         if args.template_id:
             # Validate the template ID
@@ -38,8 +35,9 @@ def create_dataset(args):
                 print("No template with ID {0} found!"
                       .format(args.template_id))
         elif args.template_file:
-            if args.template_file.rsplit('.', 1)[1] != 'json':
-                print("Template filetype unsupported. Please pass a json file")
+            if args.template_file.rsplit('.', 1)[-1] != 'json':
+                print('Template filetype unsupported. Please pass a '
+                      'valid JSON file with a .json extension.')
                 sys.exit(1)
 
             # Validate the template file

@@ -59,13 +59,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'creating a new dataset (via --create-dataset)',
                 },
                 {
-                    'flags': '--no-template',
-                    'action': 'store_true',
-                    'default': False,
-                    'help': 'Create a dataset with no fields '
-                    '(via --create-dataset)',
-                },
-                {
                     'flags': '--genome-build',
                     'help': 'If the dataset template is genomic, provide a '
                             'genome build for your data (i.e. GRCh37)'
