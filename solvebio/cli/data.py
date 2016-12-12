@@ -35,13 +35,20 @@ def create_dataset(args):
                 print("No template with ID {0} found!"
                       .format(args.template_id))
         elif args.template_file:
-            if args.template_file.rsplit('.', 1)[-1] != 'json':
-                print('Template filetype unsupported. Please pass a '
-                      'valid JSON file with a .json extension.')
-                sys.exit(1)
+            ext = args.template_file.rsplit('.', 1)[-1]
+
+            fopen = open
+            if ext != 'json':
+                if ext == 'gz':
+                    import gzip
+                    fopen = gzip.open
+                else:
+                    print('Template filetype unsupported. Please pass a '
+                          'valid JSON file with a .json extension.')
+                    sys.exit(1)
 
             # Validate the template file
-            with open(args.template_file, 'rb') as fp:
+            with fopen(args.template_file, 'rb') as fp:
                 try:
                     template_contents = json.load(fp)
                 except:
