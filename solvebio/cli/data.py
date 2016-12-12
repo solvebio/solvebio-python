@@ -74,8 +74,8 @@ def create_dataset(args):
 
         # get fields from template
         tpl_fields = tpl.fields
-        is_genomic = tpl.is_genomic,
-        entity_type = tpl.entity_type,
+        is_genomic = tpl.is_genomic
+        entity_type = tpl.entity_type
 
     genome_builds = [args.genome_build] if args.genome_build else None
     return solvebio.Dataset.get_or_create_by_full_name(
