@@ -1,5 +1,13 @@
 # Change Log
 
+## [v1.14.1](https://github.com/solvebio/solvebio-python/tree/v1.14.1) (2016-12-12)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.14.0...v1.14.1)
+
+**Merged pull requests:**
+
+- create datasets with a template file or without a template at all [\#117](https://github.com/solvebio/solvebio-python/pull/117) ([jsh2134](https://github.com/jsh2134))
+- add simple manifest upload example [\#113](https://github.com/solvebio/solvebio-python/pull/113) ([jsh2134](https://github.com/jsh2134))
+
 ## [v1.14.0](https://github.com/solvebio/solvebio-python/tree/v1.14.0) (2016-12-05)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.6...v1.14.0)
 
