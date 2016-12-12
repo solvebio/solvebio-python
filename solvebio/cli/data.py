@@ -3,9 +3,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import sys
+import gzip
 import json
 
 import solvebio
+
+from solvebio.utils.files import check_gzip
 
 
 def create_dataset(args):
@@ -35,23 +38,12 @@ def create_dataset(args):
                 print("No template with ID {0} found!"
                       .format(args.template_id))
         elif args.template_file:
-            ext = args.template_file.rsplit('.', 1)[-1]
-
-            fopen = open
-            if ext != 'json':
-                if ext == 'gz':
-                    import gzip
-                    fopen = gzip.open
-                else:
-                    print('Template filetype unsupported. Please pass a '
-                          'valid JSON file with a .json extension.')
-                    sys.exit(1)
-
+            fopen = gzip.open if check_gzip(args.template_file) else open
             # Validate the template file
             with fopen(args.template_file, 'rb') as fp:
                 try:
                     template_contents = json.load(fp)
-                except:
+                except Exception as e:
                     print('Template file {0} could not be loaded. Please '
                           'pass valid JSON'.format(args.template_file))
                     sys.exit(1)
