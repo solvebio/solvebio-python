@@ -8,7 +8,7 @@ import json
 
 import solvebio
 
-from solvebio.utils.files import check_gzip
+from solvebio.utils.files import check_gzip_path
 
 
 def create_dataset(args):
@@ -38,7 +38,7 @@ def create_dataset(args):
                 print("No template with ID {0} found!"
                       .format(args.template_id))
         elif args.template_file:
-            fopen = gzip.open if check_gzip(args.template_file) else open
+            fopen = gzip.open if check_gzip_path(args.template_file) else open
             # Validate the template file
             with fopen(args.template_file, 'rb') as fp:
                 try:

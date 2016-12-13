@@ -1,13 +1,18 @@
-def check_gzip(file_path):
-    """Check if we have a gzipped file"""
+import mimetypes
+
+
+def check_gzip_contents(file_path):
+    """Check if we have a gzipped file path"""
     try:
         with open(file_path, 'rb') as temp:
-            magic_check = temp.read(2)
-            if magic_check != '\037\213':
-                return False
-            else:
-                return True
+            return temp.read(2) == '\037\213'
     except:
-        return False
+        pass
 
     return False
+
+
+def check_gzip_path(file_path):
+    """Check if we have a gzipped file path"""
+    _, ftype = mimetypes.guess_type(file_path)
+    return ftype == 'gzip'
