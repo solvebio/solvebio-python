@@ -5,7 +5,9 @@ def check_gzip(file_path):
             magic_check = temp.read(2)
             if magic_check != '\037\213':
                 return False
+            else:
+                return True
     except:
         return False
 
-    return True
+    return False
