@@ -67,7 +67,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     from solvebio import SolveError  # noqa
     from solvebio import Upload  # noqa
     from solvebio import User  # noqa
-    from solvebio.utils.printing import pager
+    from solvebio.utils.printing import pager  # noqa
 
     # Add some convenience functions to the interactive shell
     from solvebio.cli.auth import login, logout, whoami, get_credentials  # noqa
