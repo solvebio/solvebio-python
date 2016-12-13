@@ -3,9 +3,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import sys
+import gzip
 import json
 
 import solvebio
+
+from solvebio.utils.files import check_gzip_path
 
 
 def create_dataset(args):
@@ -35,13 +38,9 @@ def create_dataset(args):
                 print("No template with ID {0} found!"
                       .format(args.template_id))
         elif args.template_file:
-            if args.template_file.rsplit('.', 1)[-1] != 'json':
-                print('Template filetype unsupported. Please pass a '
-                      'valid JSON file with a .json extension.')
-                sys.exit(1)
-
+            fopen = gzip.open if check_gzip_path(args.template_file) else open
             # Validate the template file
-            with open(args.template_file, 'rb') as fp:
+            with fopen(args.template_file, 'rb') as fp:
                 try:
                     template_contents = json.load(fp)
                 except:
@@ -74,8 +73,8 @@ def create_dataset(args):
 
         # get fields from template
         tpl_fields = tpl.fields
-        is_genomic = tpl.is_genomic,
-        entity_type = tpl.entity_type,
+        is_genomic = tpl.is_genomic
+        entity_type = tpl.entity_type
 
     genome_builds = [args.genome_build] if args.genome_build else None
     return solvebio.Dataset.get_or_create_by_full_name(
