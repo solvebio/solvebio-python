@@ -43,7 +43,7 @@ def create_dataset(args):
             with fopen(args.template_file, 'rb') as fp:
                 try:
                     template_contents = json.load(fp)
-                except Exception as e:
+                except:
                     print('Template file {0} could not be loaded. Please '
                           'pass valid JSON'.format(args.template_file))
                     sys.exit(1)
