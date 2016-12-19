@@ -34,10 +34,10 @@ class UploadFileWrapper(object):
     def __enter__(self):
         self._file = open(self.filename, self.mode)
 
-        # Special case for Python 3.2.3 which has a bug
+        # Special case for Python 3.2 which has a bug
         # in the standard library. Progress bar is not
         # supported in this Python version.
-        if sys.version_info[:3] == (3, 2, 3):
+        if sys.version_info[:2] == (3, 2):
             return self._file
 
         size = os.path.getsize(self.filename)
