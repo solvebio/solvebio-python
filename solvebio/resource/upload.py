@@ -34,7 +34,7 @@ class UploadFileWrapper(object):
         size = os.path.getsize(self.filename)
         if self.progress:
             self.progress = pyprind.ProgPercent(
-                int(size / self.chunks),
+                int(size / self.chunks) or 1,
                 track_time=True)
 
         return self
