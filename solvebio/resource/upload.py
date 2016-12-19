@@ -18,11 +18,17 @@ class UploadFileWrapper(object):
     Wraps an upload file to monitor read progress.
     """
     def __init__(self, filename, mode='rb', progress=True):
+        self._file = None
         self.filename = filename
         self.mode = mode
-        self.progress = progress
-        self.chunks = 8192
-        self._file = None
+
+        # Special case for Python 3.2 which has a bug
+        # in the standard library. Progress bar is not
+        # supported in this Python version.
+        if sys.version_info[:2] == (3, 2):
+            self.progress = False
+        else:
+            self.progress = progress
 
     def read(self, size):
         self.progress.update()
@@ -34,19 +40,14 @@ class UploadFileWrapper(object):
     def __enter__(self):
         self._file = open(self.filename, self.mode)
 
-        # Special case for Python 3.2 which has a bug
-        # in the standard library. Progress bar is not
-        # supported in this Python version.
-        if sys.version_info[:2] == (3, 2):
-            return self._file
-
-        size = os.path.getsize(self.filename)
         if self.progress:
+            size = os.path.getsize(self.filename)
             self.progress = pyprind.ProgPercent(
-                int(size / self.chunks) or 1,
+                int(size / 8192) or 1,
                 track_time=True)
-
-        return self
+            return self
+        else:
+            return self._file
 
     def __exit__(self, *args):
         self._file.close()
