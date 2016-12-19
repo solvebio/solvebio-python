@@ -21,16 +21,17 @@ class UploadFileWrapper(object):
         self.mode = mode
         self.progress = progress
         self.chunks = 8192
+        self._file = None
 
     def read(self, size):
         self.progress.update()
-        return self.file.read(size)
+        return self._file.read(size)
 
     def __getattr__(self, attr):
-        return getattr(self.f, attr)
+        return getattr(self._file, attr)
 
     def __enter__(self):
-        self.file = open(self.filename, self.mode)
+        self._file = open(self.filename, self.mode)
         size = os.path.getsize(self.filename)
         if self.progress:
             self.progress = pyprind.ProgPercent(
@@ -40,7 +41,7 @@ class UploadFileWrapper(object):
         return self
 
     def __exit__(self, *args):
-        self.file.close()
+        self._file.close()
         if self.progress:
             self.progress.stop()
 
