@@ -10,6 +10,7 @@ from ..utils.md5sum import md5sum
 
 import pyprind
 import os
+import sys
 
 
 class UploadFileWrapper(object):
@@ -30,11 +31,15 @@ class UploadFileWrapper(object):
     def __getattr__(self, attr):
         return getattr(self._file, attr)
 
-    def __len__(self):
-        return len(self._file)
-
     def __enter__(self):
         self._file = open(self.filename, self.mode)
+
+        # Special case for Python 3.2.3 which has a bug
+        # in the standard library. Progress bar is not
+        # supported in this Python version.
+        if sys.version_info[:3] == (3, 2, 3):
+            return self._file
+
         size = os.path.getsize(self.filename)
         if self.progress:
             self.progress = pyprind.ProgPercent(
