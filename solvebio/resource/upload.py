@@ -30,6 +30,9 @@ class UploadFileWrapper(object):
     def __getattr__(self, attr):
         return getattr(self._file, attr)
 
+    def __len__(self):
+        return len(self._file)
+
     def __enter__(self):
         self._file = open(self.filename, self.mode)
         size = os.path.getsize(self.filename)
