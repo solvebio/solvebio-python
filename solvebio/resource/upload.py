@@ -8,7 +8,51 @@ from ..client import client
 from ..client import requests
 from ..utils.md5sum import md5sum
 
+import pyprind
 import os
+import sys
+
+
+class UploadFileWrapper(object):
+    """
+    Wraps an upload file to monitor read progress.
+    """
+    def __init__(self, filename, mode='rb', progress=True):
+        self._file = None
+        self.filename = filename
+        self.mode = mode
+
+        # Special case for Python 3.2 which has a bug
+        # in the standard library. Progress bar is not
+        # supported in this Python version.
+        if sys.version_info[:2] == (3, 2):
+            self.progress = False
+        else:
+            self.progress = progress
+
+    def read(self, size):
+        self.progress.update()
+        return self._file.read(size)
+
+    def __getattr__(self, attr):
+        return getattr(self._file, attr)
+
+    def __enter__(self):
+        self._file = open(self.filename, self.mode)
+
+        if self.progress:
+            size = os.path.getsize(self.filename)
+            self.progress = pyprind.ProgPercent(
+                int(size / 8192) or 1,
+                track_time=True)
+            return self
+        else:
+            return self._file
+
+    def __exit__(self, *args):
+        self._file.close()
+        if self.progress:
+            self.progress.stop()
 
 
 class Upload(DeletableAPIResource, DownloadableAPIResource,
@@ -54,8 +98,9 @@ class Upload(DeletableAPIResource, DownloadableAPIResource,
         response = client.post(cls.class_url(), params)
         upload = convert_to_solve_object(response)
 
-        # Upload to S3
-        with open(path, 'rb') as data:
+        # Upload to S3 with optional progress bar
+        progress = params.get('progress', True)
+        with UploadFileWrapper(path, progress=progress) as data:
             headers = {
                 'Content-MD5': upload.base64_md5,
                 'Content-Type': upload.mimetype,
