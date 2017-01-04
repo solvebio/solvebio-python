@@ -87,6 +87,32 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'nargs': '+'
                 }
             ]
+        },
+        'create-dataset': {
+            'func': data.create_dataset,
+            'help': 'Create a SolveBio dataset',
+            'arguments': [
+                {
+                    'flags': '--template-id',
+                    'help': 'The template ID used when '
+                            'creating a new dataset (via --create-dataset)',
+                },
+                {
+                    'flags': '--template-file',
+                    'help': 'A local template file to be used when '
+                            'creating a new dataset (via --create-dataset)',
+                },
+                {
+                    'flags': '--genome-build',
+                    'help': 'If the dataset template is genomic, provide a '
+                            'genome build for your data (i.e. GRCh37)'
+                },
+                {
+                    'name': 'dataset',
+                    'help': 'The full name of the dataset '
+                            '(<depository>/<version>/<dataset>)'
+                }
+            ]
         }
     }
 
