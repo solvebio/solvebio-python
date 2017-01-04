@@ -18,11 +18,11 @@ def create_dataset(args):
         * dataset (full name)
         * template_id
         * template_file
-        * genome_build
+        * genome_builds
 
     """
     tpl_fields = []
-    is_genomic = args.genome_build is not None
+    is_genomic = bool(args.genome_builds)
     entity_type = None
 
     # Accept a template_id or a template_file
@@ -76,7 +76,15 @@ def create_dataset(args):
         is_genomic = tpl.is_genomic
         entity_type = tpl.entity_type
 
-    genome_builds = [args.genome_build] if args.genome_build else None
+    if is_genomic and args.genome_builds:
+        try:
+            genome_builds = [g.strip() for g in args.genome_builds.split(',')]
+        except:
+            print("The genome-builds flag accepts one or more "
+                  "comma-separated genome builds")
+    else:
+        genome_builds = None
+
     return solvebio.Dataset.get_or_create_by_full_name(
         full_name=args.dataset,
         genome_builds=genome_builds,

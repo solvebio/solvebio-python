@@ -59,9 +59,10 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'creating a new dataset (via --create-dataset)',
                 },
                 {
-                    'flags': '--genome-build',
-                    'help': 'If the dataset template is genomic, provide a '
-                            'genome build for your data (i.e. GRCh37)'
+                    'flags': '--genome-builds',
+                    'help': 'If the dataset template is genomic, provide '
+                            'one or more comma-separated genome builds '
+                            'for your data (i.e. GRCh37,GRCh38)'
                 },
                 {
                     'flags': '--follow',
