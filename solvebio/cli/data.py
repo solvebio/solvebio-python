@@ -44,7 +44,7 @@ def create_dataset(args):
                 sys.exit(1)
 
         tpl = solvebio.DatasetTemplate.create(**tpl_json)
-        print("A new dataset template was created: {0}".format(tpl.id))
+        print("A new dataset template was created with id: {0}".format(tpl.id))
     else:
         print("Cannot create a new dataset: "
               "must specify a template ID with the --template-id flag, "
