@@ -22,7 +22,7 @@ def create_dataset(args):
 
     """
     tpl_fields = []
-    is_genomic = args.genome_build is not None
+    is_genomic = bool(args.genome_build)
     entity_type = None
 
     # Accept a template_id or a template_file

@@ -67,7 +67,7 @@ class Dataset(CreateableAPIResource,
                 depository_id=depo.id, name=version, title=version)
 
         try:
-            return Dataset.retrieve(
+            dataset = Dataset.retrieve(
                 '{0}/{1}/{2}'.format(depo.name, version.name, dataset))
         except SolveError as e:
             if e.status_code != 404:
@@ -77,6 +77,15 @@ class Dataset(CreateableAPIResource,
             return Dataset.create(
                 depository_version_id=version.id,
                 name=dataset, title=title, **kwargs)
+
+        # If the dataset exists but the supplied genome_builds don't match,
+        # update it with the new builds.
+        if dataset.is_genomic and \
+                dataset.genome_builds != kwargs.get('genome_builds'):
+            dataset.genome_builds = kwargs.get('genome_builds')
+            dataset.save()
+
+        return dataset
 
     def depository_version(self):
         from .depositoryversion import DepositoryVersion
