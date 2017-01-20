@@ -77,6 +77,12 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'the import (may require admin role)'
                 },
                 {
+                    'flags': '--commit-mode',
+                    'default': 'append',
+                    'help': 'Commit mode to use when importing data. '
+                            'Default is append'
+                },
+                {
                     'name': 'dataset',
                     'help': 'The full name of the dataset '
                             '(<depository>/<version>/<dataset>)'
