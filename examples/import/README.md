@@ -3,13 +3,13 @@ SolveBio Import Shortcut Example
 
 Make sure you're using the newest version of SolveBio with `pip install solvebio --upgrade`
 
-The SolveBio Python client provides a simple shortcut to import data.
+The SolveBio Python client provides a simple command line shortcut to import data.
 
 Your DOMAIN is the subdomain of your SolveBio account. You can find your domain by going to [SolveBio](https://my.solvebio.com/organization/people) - your organization name is your domain.
 
 To run the example commands, download the [example_input.json](https://github.com/solvebio/solvebio-python/blob/master/examples/import/example_input.json) and [example_template.json](https://github.com/solvebio/solvebio-python/blob/master/examples/import/example_template.json) files.
 
-In bash:
+In your command line:
 ```bash
 solvebio import DOMAIN:ExampleDepo/1.0.0/ExampleDataset example_input.json --create-dataset --auto-approve
 ```

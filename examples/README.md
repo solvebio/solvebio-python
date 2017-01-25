@@ -12,7 +12,7 @@ You can import VCF & JSON files directly via the [SolveBio web interface](https:
 )).
 
 **SolveBio Python client shortcut**:
-[Handy dandy shortcut](https://github.com/solvebio/solvebio-python/blob/master/examples/import/README.md) built into the SolveBio Python client.
+[Handy dandy command line shortcut](https://github.com/solvebio/solvebio-python/blob/master/examples/import/README.md) built into the SolveBio Python client.
 
 **Python script**:
 Or use an
