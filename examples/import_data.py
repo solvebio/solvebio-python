@@ -1,7 +1,12 @@
 import solvebio
 
+# find your solvebio domain
+solvebio.login()
+user = solvebio.User.retrieve()
+my_domain = user['account']['domain']
+
 # create a dataset
-dataset_name = '{0}:SampleImport/1.0.0/SampleImport'.format('your-domain')
+dataset_name = '{0}:SampleImport/1.0.0/SampleImport'.format(my_domain)
 dataset = solvebio.Dataset.get_or_create_by_full_name(dataset_name)
 
 # create a manifest object and a file to it
