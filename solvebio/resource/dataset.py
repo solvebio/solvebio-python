@@ -36,18 +36,29 @@ class Dataset(CreateableAPIResource,
         from solvebio import SolveError
 
         try:
-            return Dataset.retrieve(full_name)
+            dataset = Dataset.retrieve(full_name)
+
+            # If the dataset exists but the genome_builds don't match,
+            # update it with the new builds.
+            if dataset.is_genomic and \
+                    dataset.genome_builds != kwargs.get('genome_builds'):
+                dataset.genome_builds = kwargs.get('genome_builds')
+                dataset.save()
+
+            return dataset
         except SolveError as e:
             if e.status_code != 404:
                 raise e
 
-        # Split the name into parts
+        # Dataset not found, create it step-by-step
         try:
-            depo, version, dataset = full_name.split('/')
+            # Split the name into parts
+            depo, version, dataset_name = full_name.split('/')
         except ValueError:
             raise ValueError(
                 "Invalid dataset name '{0}'. Please ensure that it is "
-                "in the following format: '<depository>/<version>/<dataset>'"
+                "in the following format: "
+                "'<depository>/<version>/<dataset>'"
                 .format(full_name))
 
         try:
@@ -66,17 +77,11 @@ class Dataset(CreateableAPIResource,
             version = DepositoryVersion.create(
                 depository_id=depo.id, name=version, title=version)
 
-        try:
-            return Dataset.retrieve(
-                '{0}/{1}/{2}'.format(depo.name, version.name, dataset))
-        except SolveError as e:
-            if e.status_code != 404:
-                raise e
-            # Use a default title if none provided
-            title = kwargs.pop('title', dataset)
-            return Dataset.create(
-                depository_version_id=version.id,
-                name=dataset, title=title, **kwargs)
+        # Use a default title (dataset name) if none is provided
+        title = kwargs.pop('title', dataset_name)
+        return Dataset.create(
+            depository_version_id=version.id,
+            name=dataset_name, title=title, **kwargs)
 
     def depository_version(self):
         from .depositoryversion import DepositoryVersion
