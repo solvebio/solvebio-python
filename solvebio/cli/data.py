@@ -128,6 +128,7 @@ def import_file(args):
         dataset_id=dataset.id,
         manifest=manifest.manifest,
         genome_build=args.genome_build,
+        commit_mode=args.commit_mode,
         auto_approve=args.auto_approve)
 
     if args.follow:
