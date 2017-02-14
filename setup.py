@@ -71,16 +71,7 @@ try:
         **extra
     )
 except Exception as e:
-    if ((hasattr(e, 'args') and
-         isinstance(e.args, tuple) and
-         len(e.args) > 0 and
-         isinstance(e.args[0], str) and
-         'Could not run curl-config' in e.args[0]) or
-        (hasattr(e, 'message') and
-         isinstance(e.message, str) and
-         'Could not run curl-config' in e.message)):
-
-        # Problem with system library - tell the user
+    if 'Could not run curl-config' in str(e):
         print('\nProblem installing pycurl dependency'
               '\nYou probably need to install libcurl-devel '
               '(CentOS) or libcurl4-openssl-dev (Ubuntu)')
