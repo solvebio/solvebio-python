@@ -80,7 +80,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--commit-mode',
                     'default': 'append',
                     'help': 'Commit mode to use when importing data. '
-                            'Default is append'
+                            'Options are "append" (default) or "overwrite".'
                 },
                 {
                     'name': 'dataset',
@@ -112,6 +112,13 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--genome-build',
                     'help': 'If the dataset template is genomic, provide a '
                             'genome build for your data (i.e. GRCh37)'
+                },
+                {
+                    'flags': '--capacity',
+                    'default': 'small',
+                    'help': 'Specifies the capacity of the dataset: '
+                            'small (default, <100M records), '
+                            'medium (<500M), large (>=500M)'
                 },
                 {
                     'name': 'dataset',
@@ -199,8 +206,15 @@ def main(argv=sys.argv[1:]):
 
     if args.api_host:
         solvebio.api_host = args.api_host
+
     if args.api_key:
         solvebio.api_key = args.api_key
+    else:
+        try:
+            from .credentials import get_credentials
+            _, solvebio.api_key = get_credentials()
+        except:
+            pass
 
     args.func(args)
 

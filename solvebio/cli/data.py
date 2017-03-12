@@ -19,6 +19,7 @@ def create_dataset(args):
         * template_id
         * template_file
         * genome_build
+        * capacity
 
     """
     # Accept a template_id or a template_file
@@ -63,6 +64,7 @@ def create_dataset(args):
         full_name=args.dataset,
         is_genomic=is_genomic,
         genome_builds=genome_builds,
+        capacity=args.capacity,
         entity_type=tpl.entity_type,
         fields=fields)
 
