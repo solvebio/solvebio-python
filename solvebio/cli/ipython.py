@@ -81,8 +81,6 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
         login()
 
     if not solvebio.api_key:
-        _print("SolveBio requires a valid account. "
-               "To sign up, visit: https://www.solvebio.com/signup")
-        return
+        _print("No authentication credentials found.")
 
     InteractiveShellEmbed(config=cfg, banner1=banner1, exit_msg=exit_msg)()
