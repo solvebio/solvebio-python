@@ -1,5 +1,27 @@
 # Change Log
 
+## [v1.15.1](https://github.com/solvebio/solvebio-python/tree/v1.15.1) (2017-03-12)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.0...v1.15.1)
+
+**Implemented enhancements:**
+
+- Add commit\_mode details to -h help [\#136](https://github.com/solvebio/solvebio-python/issues/136)
+- Allow `solvebio import` to take a dataset capacity argument [\#135](https://github.com/solvebio/solvebio-python/issues/135)
+
+**Closed issues:**
+
+- Problem installing solvebio client - curl-config not found [\#131](https://github.com/solvebio/solvebio-python/issues/131)
+- Can not import without a template in \(update-genome branch\) [\#127](https://github.com/solvebio/solvebio-python/issues/127)
+
+**Merged pull requests:**
+
+- add capacity argument to create-dataset command \(closes \#135\) [\#137](https://github.com/solvebio/solvebio-python/pull/137) ([davecap](https://github.com/davecap))
+- Provide help message on curl-config error \(\#131\) [\#132](https://github.com/solvebio/solvebio-python/pull/132) ([jhuttner](https://github.com/jhuttner))
+- some error responses were not being parsed correctly; this simplifies [\#130](https://github.com/solvebio/solvebio-python/pull/130) ([davecap](https://github.com/davecap))
+- import shortcut examples [\#129](https://github.com/solvebio/solvebio-python/pull/129) ([dandanxu](https://github.com/dandanxu))
+- add commit mode as an import option [\#128](https://github.com/solvebio/solvebio-python/pull/128) ([jsh2134](https://github.com/jsh2134))
+- update genome builds upon get\_or\_create, add new create-dataset command [\#126](https://github.com/solvebio/solvebio-python/pull/126) ([davecap](https://github.com/davecap))
+
 ## [v1.15.0](https://github.com/solvebio/solvebio-python/tree/v1.15.0) (2016-12-19)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.14.2...v1.15.0)
 
@@ -209,13 +231,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
-
-## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
 
 ## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+
+## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
