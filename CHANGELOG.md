@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.15.2](https://github.com/solvebio/solvebio-python/tree/v1.15.2) (2017-03-14)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.1...v1.15.2)
+
+**Merged pull requests:**
+
+- fix an issue where the CLI was ignoring env var or other default api\_key [\#138](https://github.com/solvebio/solvebio-python/pull/138) ([davecap](https://github.com/davecap))
+
 ## [v1.15.1](https://github.com/solvebio/solvebio-python/tree/v1.15.1) (2017-03-12)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.0...v1.15.1)
 
@@ -231,13 +238,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
-
-## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
 
 ## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+
+## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
