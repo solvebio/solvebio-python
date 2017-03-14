@@ -64,6 +64,13 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'genome build for your data (i.e. GRCh37)'
                 },
                 {
+                    'flags': '--capacity',
+                    'default': 'small',
+                    'help': 'Specifies the capacity of the created dataset: '
+                            'small (default, <100M records), '
+                            'medium (<500M), large (>=500M)'
+                },
+                {
                     'flags': '--follow',
                     'action': 'store_true',
                     'default': False,
