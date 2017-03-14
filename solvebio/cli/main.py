@@ -209,7 +209,10 @@ def main(argv=sys.argv[1:]):
 
     if args.api_key:
         solvebio.api_key = args.api_key
-    else:
+
+    if not solvebio.api_key:
+        # If nothing is set (via command line or environment)
+        # look in local credentials
         try:
             from .credentials import get_credentials
             _, solvebio.api_key = get_credentials()
