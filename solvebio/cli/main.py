@@ -226,7 +226,7 @@ def main(argv=sys.argv[1:]):
         except:
             pass
 
-    args.func(args)
+    return args.func(args)
 
 
 if __name__ == '__main__':
