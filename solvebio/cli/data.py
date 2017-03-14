@@ -81,6 +81,7 @@ def import_file(args):
         * follow (default: False)
         * auto_approve (default: False)
         * dataset
+        * capacity
         * file (list)
 
     """
