@@ -66,7 +66,10 @@ def create_dataset(args):
         genome_builds=genome_builds,
         capacity=args.capacity,
         entity_type=tpl.entity_type,
-        fields=fields)
+        fields=fields,
+        # tag with template used to create
+        tags=['template-{0}'.format(str(tpl.id))]
+    )
 
 
 def import_file(args):

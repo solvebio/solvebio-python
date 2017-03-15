@@ -5,6 +5,8 @@ import time
 
 from .helper import SolveBioTestCase
 from solvebio.cli.main import main
+from solvebio import Depository
+from solvebio import DatasetTemplate
 
 
 class WhoAmITests(SolveBioTestCase):
@@ -19,14 +21,22 @@ class CLITests(SolveBioTestCase):
     def test_create_dataset(self):
         # TODO mock client responses or allow
         # for hard cleanup of template and dataset/depo
-        return
+        # return
         template_path = os.path.join(os.path.dirname(__file__),
                                      "data/template.json")
         dataset_full_name = \
-            'test-client/1.0.0/test-{}'.format(int(time.time()))
+            'test-client-{0}/1.0.0/test-{0}'.format(int(time.time()))
         args = ['create-dataset', dataset_full_name,
                    '--template-file', template_path,
                    '--capacity', 'medium']  # noqa
         ds = main(args)
         self.assertEqual(ds.full_name, dataset_full_name)
-        ds.delete(soft=False)
+
+        # does hard delete of template
+        tpl = DatasetTemplate.retrieve(
+            ds.tags[0].replace('template-', ''))
+        tpl.delete()
+
+        # does soft delete of depo
+        depo = Depository.retrieve(ds.depository_id)
+        depo.delete(soft=False)
