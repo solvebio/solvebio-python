@@ -1,5 +1,25 @@
 # Change Log
 
+## [v1.15.4](https://github.com/solvebio/solvebio-python/tree/v1.15.4) (2017-03-15)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.3...v1.15.4)
+
+**Merged pull requests:**
+
+- include randint in deponame also [\#144](https://github.com/solvebio/solvebio-python/pull/144) ([jsh2134](https://github.com/jsh2134))
+
+## [v1.15.3](https://github.com/solvebio/solvebio-python/tree/v1.15.3) (2017-03-15)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.2...v1.15.3)
+
+**Closed issues:**
+
+- Import shortcut isn't playing well with the new capacity argument [\#139](https://github.com/solvebio/solvebio-python/issues/139)
+
+**Merged pull requests:**
+
+- add more python 3 versions [\#143](https://github.com/solvebio/solvebio-python/pull/143) ([jsh2134](https://github.com/jsh2134))
+- fix issue where template fields were not used in dataset creation [\#141](https://github.com/solvebio/solvebio-python/pull/141) ([davecap](https://github.com/davecap))
+- Fix capacity argument in import dataset command [\#140](https://github.com/solvebio/solvebio-python/pull/140) ([davecap](https://github.com/davecap))
+
 ## [v1.15.2](https://github.com/solvebio/solvebio-python/tree/v1.15.2) (2017-03-14)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.1...v1.15.2)
 
@@ -238,13 +258,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
-
-## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
 
 ## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+
+## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
