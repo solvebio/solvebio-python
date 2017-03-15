@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 import os
 import sys
+import copy
 import argparse
 
 import solvebio
@@ -168,7 +169,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
         subcmd = self.add_subparsers(
             **subcmd_params)  # pylint: disable=star-args
 
-        for name, params in self.subcommands.items():
+        subcommands = copy.deepcopy(self.subcommands)
+        for name, params in subcommands.items():
             p = subcmd.add_parser(name, help=params['help'])
             p.set_defaults(func=params['func'])
             for arg in params.get('arguments', []):

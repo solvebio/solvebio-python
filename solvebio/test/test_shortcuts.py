@@ -11,14 +11,11 @@ from solvebio import Depository
 from solvebio import DatasetTemplate
 
 
-class WhoAmITests(SolveBioTestCase):
+class CLITests(SolveBioTestCase):
 
     def test_whoami(self):
         email, token = main.main(['whoami'])
         self.assertEqual(token, os.environ.get('SOLVEBIO_API_KEY'))
-
-
-class CLITests(SolveBioTestCase):
 
     def test_create_dataset_upload_template(self):
         # TODO mock client responses or allow for hard
