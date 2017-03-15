@@ -34,9 +34,14 @@ def create_dataset(args):
                   .format(args.template_id))
             sys.exit(1)
     elif args.template_file:
-        fopen = gzip.open if check_gzip_path(args.template_file) else open
+        mode = 'r'
+        fopen = open
+        if check_gzip_path(args.template_file):
+            mode = 'rb'
+            fopen = gzip.open
+
         # Validate the template file
-        with fopen(args.template_file, 'rb') as fp:
+        with fopen(args.template_file, mode) as fp:
             try:
                 tpl_json = json.load(fp)
             except:
@@ -53,6 +58,7 @@ def create_dataset(args):
         fields = []
         entity_type = None
         is_genomic = bool(args.genome_build)
+        description = None
 
     if tpl:
         print("Creating new dataset {0} using the template '{1}'."
@@ -60,6 +66,8 @@ def create_dataset(args):
         fields = tpl.fields
         entity_type = tpl.entity_type
         is_genomic = bool(args.genome_build) or tpl.is_genomic
+        # include template used to create
+        description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
     genome_builds = [args.genome_build] if is_genomic else None
     return solvebio.Dataset.get_or_create_by_full_name(
@@ -68,7 +76,9 @@ def create_dataset(args):
         genome_builds=genome_builds,
         capacity=args.capacity,
         entity_type=entity_type,
-        fields=fields)
+        fields=fields,
+        description=description
+    )
 
 
 def import_file(args):
@@ -83,6 +93,7 @@ def import_file(args):
         * follow (default: False)
         * auto_approve (default: False)
         * dataset
+        * capacity
         * file (list)
 
     """
