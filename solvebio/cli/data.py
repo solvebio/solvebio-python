@@ -34,11 +34,16 @@ def create_dataset(args):
                   .format(args.template_id))
             sys.exit(1)
     elif args.template_file:
-        fopen = gzip.open if check_gzip_path(args.template_file) else open
+        mode = 'r'
+        fopen = open
+        if check_gzip_path(args.template_file):
+            mode = 'rb'
+            fopen = gzip.open
+
         # Validate the template file
-        with fopen(args.template_file, 'rb') as fp:
+        with fopen(args.template_file, mode) as fp:
             try:
-                tpl_json = json.loads(fp)
+                tpl_json = json.load(fp)
             except:
                 print('Template file {0} could not be loaded. Please '
                       'pass valid JSON'.format(args.template_file))
