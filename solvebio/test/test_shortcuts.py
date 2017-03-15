@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import os
 import time
 import json
+import random
 
 from solvebio.cli import main
 from .helper import SolveBioTestCase
@@ -17,15 +18,18 @@ class CLITests(SolveBioTestCase):
         email, token = main.main(['whoami'])
         self.assertEqual(token, os.environ.get('SOLVEBIO_API_KEY'))
 
+    def unique_dataset_name(self):
+        user = User.retrieve()
+        domain = user['account']['domain']
+        return  \
+            '{0}:test-client-{1}/1.0.0/test-{1}-{2}'.format(
+                domain, int(time.time()), random.randint(0, 10000))
+
     def test_create_dataset(self):
         # TODO mock client responses or allow for hard
         # cleanup of dataset/depo
+        dataset_full_name = self.unique_dataset_name()
 
-        user = User.retrieve()
-        domain = user['account']['domain']
-        dataset_full_name = \
-            '{0}:test-client-{1}/1.0.0/test-{1}'.format(
-                domain, int(time.time()))
         args = ['create-dataset', dataset_full_name,
                    '--capacity', 'small']  # noqa
         ds = main.main(args)
@@ -49,14 +53,9 @@ class CLITests(SolveBioTestCase):
     def test_create_dataset_upload_template(self):
         # TODO mock client responses or allow for hard
         # cleanup of template and dataset/depo
-
+        dataset_full_name = self.unique_dataset_name()
         template_path = os.path.join(os.path.dirname(__file__),
                                      "data/template.json")
-        user = User.retrieve()
-        domain = user['account']['domain']
-        dataset_full_name = \
-            '{0}:test-client-{1}/1.0.0/test-{1}'.format(
-                domain, int(time.time()))
         args = ['create-dataset', dataset_full_name,
                    '--template-file', template_path,
                    '--capacity', 'medium']  # noqa
@@ -82,6 +81,7 @@ class CLITests(SolveBioTestCase):
     def test_create_dataset_template_id(self):
         # TODO mock client responses or allow for hard
         # cleanup of template and dataset/depo
+        dataset_full_name = self.unique_dataset_name()
 
         # create template
         template_path = os.path.join(os.path.dirname(__file__),
@@ -90,12 +90,6 @@ class CLITests(SolveBioTestCase):
             tpl_json = json.load(fp)
 
         tpl = DatasetTemplate.create(**tpl_json)
-
-        user = User.retrieve()
-        domain = user['account']['domain']
-        dataset_full_name = \
-            '{0}:test-client-{1}/1.0.0/test-{1}'.format(
-                domain, int(time.time()))
         args = ['create-dataset', dataset_full_name,
                    '--template-id', str(tpl.id),
                    '--capacity', 'large']  # noqa
