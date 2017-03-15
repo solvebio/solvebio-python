@@ -67,8 +67,8 @@ def create_dataset(args):
         capacity=args.capacity,
         entity_type=tpl.entity_type,
         fields=fields,
-        # tag with template used to create
-        tags=['template-{0}'.format(str(tpl.id))]
+        # include template used to create
+        description='Created with dataset template: {0}'.format(str(tpl.id))
     )
 
 
