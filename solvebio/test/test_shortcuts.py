@@ -33,8 +33,16 @@ class CLITests(SolveBioTestCase):
         self.assertEqual(ds.full_name, dataset_full_name)
 
         # does hard delete of template
-        tpl = DatasetTemplate.retrieve(
-            ds.tags[0].replace('template-', ''))
+        tag = None
+        for t in ds.tags:
+            if t.startswith('template-'):
+                tag = t.replace('template-', '')
+                break
+
+        if not tag:
+            raise Exception("Dataset tag with template ID not found")
+
+        tpl = DatasetTemplate.retrieve(tag)
         tpl.delete()
 
         # does soft delete of depo
