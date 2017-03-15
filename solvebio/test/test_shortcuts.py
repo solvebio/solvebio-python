@@ -22,8 +22,8 @@ class CLITests(SolveBioTestCase):
         user = User.retrieve()
         domain = user['account']['domain']
         return  \
-            '{0}:test-client-{1}/1.0.0/test-{1}-{2}'.format(
-                domain, int(time.time()), random.randint(0, 10000))
+            '{0}:test-client-{1}-{2}/1.0.0/test-{1}-{2}'.format(
+                domain, int(time.time()), random.randint(0, 100000))
 
     def test_create_dataset(self):
         # TODO mock client responses or allow for hard

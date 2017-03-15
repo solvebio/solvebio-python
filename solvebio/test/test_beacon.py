@@ -15,7 +15,8 @@ class BeaconTests(SolveBioTestCase):
 
         beacon = dataset.beacon(genome_build='GRCh37',
                                 chromosome='6',
-                                coordinate=50432798,
+                                # coordinate=50432798,  # prod
+                                coordinate=51612854,  # staging
                                 allele='G')
 
         check_fields = ['query', 'exist', 'total']
