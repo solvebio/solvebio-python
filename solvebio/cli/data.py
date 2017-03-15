@@ -38,7 +38,7 @@ def create_dataset(args):
         # Validate the template file
         with fopen(args.template_file, 'rb') as fp:
             try:
-                tpl_json = json.load(fp)
+                tpl_json = json.loads(fp)
             except:
                 print('Template file {0} could not be loaded. Please '
                       'pass valid JSON'.format(args.template_file))

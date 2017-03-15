@@ -55,7 +55,7 @@ class CLITests(SolveBioTestCase):
         template_path = os.path.join(os.path.dirname(__file__),
                                      "data/template.json")
         with open(template_path, 'rb') as fp:
-            tpl_json = json.load(fp)
+            tpl_json = json.loads(fp)
 
         tpl = DatasetTemplate.create(**tpl_json)
 
