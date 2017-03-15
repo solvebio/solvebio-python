@@ -34,9 +34,14 @@ def create_dataset(args):
                   .format(args.template_id))
             sys.exit(1)
     elif args.template_file:
-        fopen = gzip.open if check_gzip_path(args.template_file) else open
+        mode = 'r'
+        fopen = open
+        if check_gzip_path(args.template_file):
+            mode = 'rb'
+            fopen = gzip.open
+
         # Validate the template file
-        with fopen(args.template_file, 'rb') as fp:
+        with fopen(args.template_file, mode) as fp:
             try:
                 tpl_json = json.load(fp)
             except:
@@ -66,7 +71,10 @@ def create_dataset(args):
         genome_builds=genome_builds,
         capacity=args.capacity,
         entity_type=tpl.entity_type,
-        fields=fields)
+        fields=fields,
+        # include template used to create
+        description='Created with dataset template: {0}'.format(str(tpl.id))
+    )
 
 
 def import_file(args):
@@ -81,6 +89,7 @@ def import_file(args):
         * follow (default: False)
         * auto_approve (default: False)
         * dataset
+        * capacity
         * file (list)
 
     """
