@@ -52,28 +52,32 @@ def create_dataset(args):
         tpl = solvebio.DatasetTemplate.create(**tpl_json)
         print("A new dataset template was created with id: {0}".format(tpl.id))
     else:
-        print("Cannot create a new dataset: "
-              "must specify a template ID with the --template-id flag, "
-              "or provide a template file with --template-file")
-        print("The following templates are available:")
-        print(solvebio.DatasetTemplate.all())
-        sys.exit(1)
+        print("Creating a new dataset {0} without a template."
+              .format(args.dataset))
+        tpl = None
+        fields = []
+        entity_type = None
+        is_genomic = bool(args.genome_build)
+        description = None
 
-    print("Creating new dataset {0} using the template '{1}'."
-          .format(args.dataset, tpl.name))
+    if tpl:
+        print("Creating new dataset {0} using the template '{1}'."
+              .format(args.dataset, tpl.name))
+        fields = tpl.fields
+        entity_type = tpl.entity_type
+        is_genomic = bool(args.genome_build) or tpl.is_genomic
+        # include template used to create
+        description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
-    fields = []
-    is_genomic = bool(args.genome_build) or tpl.is_genomic
     genome_builds = [args.genome_build] if is_genomic else None
     return solvebio.Dataset.get_or_create_by_full_name(
         full_name=args.dataset,
         is_genomic=is_genomic,
         genome_builds=genome_builds,
         capacity=args.capacity,
-        entity_type=tpl.entity_type,
+        entity_type=entity_type,
         fields=fields,
-        # include template used to create
-        description='Created with dataset template: {0}'.format(str(tpl.id))
+        description=description
     )
 
 
