@@ -1,9 +1,11 @@
-from .apiresource import CreateableAPIResource, ListableAPIResource, \
-    UpdateableAPIResource
+from .apiresource import CreateableAPIResource
+from .apiresource import ListableAPIResource
+from .apiresource import UpdateableAPIResource
+from .apiresource import DeletableAPIResource
 
 
 class DatasetTemplate(CreateableAPIResource, ListableAPIResource,
-                      UpdateableAPIResource):
+                      UpdateableAPIResource, DeletableAPIResource):
     """
     DatasetTemplates contain the schema of a Dataset, including some
     properties and all the fields.

@@ -1,24 +1,24 @@
 language: python
 python:
-  - "2.6"
-  - "2.7"
-  - "3.4"
-  - "3.2"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.6"
-  - "pypy"
+- '2.6'
+- '2.7'
+- '3.4'
+- '3.2'
+- '3.3'
+- '3.4'
+- '3.5'
+- '3.6'
+- pypy
 install:
-  - pip install requests==2.10.0 flake8==2.6.2 nose mock tox
-  # We use @skipIf so unittest2 is needed on Pyton 2.6
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install ordereddict unittest2; fi
-  - pip install PyVCF==0.6.8 XlsxWriter===0.9.3
+- pip install requests==2.10.0 flake8==2.6.2 nose mock tox
+- if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install ordereddict unittest2;
+  fi
+- pip install PyVCF==0.6.8 XlsxWriter===0.9.3
 script:
-  - stty cols 80
-  - python -W always setup.py test
-  - flake8 solvebio
+- stty cols 80
+- python -W always setup.py test
+- flake8 solvebio
 notifications:
+  email: false
   slack:
-    secure: "NSSHaWCgYD1tDPo52Z9G4eNbEJfDUeQO4kSZOM4bYJr8VN7AP+UBXs+A4ad+z2xMJIo1EaEIxiK0RY7FrQC8GBZgs92j9l8KoJ8T7nNZnboDipziXTTTdWP2wzJTgIiAKI55sEbuFhxmo19/zTRZ63ZycByvMnC67yBos+z0ksI="
-    email: false
+    secure: fWjOk/qAmx3mSkks6FZ5CwY7JpnYAD18te2N681z/t1Ji3IEEIFawd7sm3pLijbOXZTBVyhopa4HfvyUOQ/ftzTEutTl8Ow9Cc5cJG3cTXNrqv8/GVEVInR2T0NJRZ8TOc93BAPp7HQ5Qfgk/4x05TBglhOdOYgrRRyWGpdeOB0=
