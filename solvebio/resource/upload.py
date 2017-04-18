@@ -46,7 +46,7 @@ class UploadFileWrapper(object):
             self.progress = pyprind.ProgPercent(
                 # Add 10 iterations to avoid printing "Total time elapsed"
                 (int(size / 8192) or 1) + 10,
-                title="Uploading {}".format(self.filename),
+                title="Uploading {0}".format(self.filename),
                 track_time=True)
             return self
         else:
