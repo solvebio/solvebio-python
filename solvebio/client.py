@@ -13,7 +13,12 @@ import platform
 import requests
 import textwrap
 import logging
+
+from requests import Session
+from requests import codes
 from requests.auth import AuthBase
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 try:
     from urlparse import urljoin
@@ -99,6 +104,20 @@ class SolveClient(object):
                 platform.python_version()
             )
         }
+
+        # Use a session with a retry policy to handle
+        # intermittent connection errors.
+        retries = Retry(
+            total=5,
+            backoff_factor=0.1,
+            status_forcelist=[
+                codes.bad_gateway,
+                codes.service_unavailable,
+                codes.gateway_timeout
+            ])
+        adapter = HTTPAdapter(max_retries=retries)
+        self._session = Session()
+        self._session.mount(self._api_host, adapter)
 
     def get(self, url, params, **kwargs):
         """Issues an HTTP GET across the wire via the Python requests
