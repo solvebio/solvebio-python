@@ -11,6 +11,7 @@ from ..utils.md5sum import md5sum
 import pyprind
 import os
 import sys
+from requests.exceptions import ConnectionError
 
 
 class UploadFileWrapper(object):
@@ -43,7 +44,9 @@ class UploadFileWrapper(object):
         if self.progress:
             size = os.path.getsize(self.filename)
             self.progress = pyprind.ProgPercent(
-                int(size / 8192) or 1,
+                # Add 10 iterations to avoid printing "Total time elapsed"
+                (int(size / 8192) or 1) + 10,
+                title="Uploading {}".format(self.filename),
                 track_time=True)
             return self
         else:
@@ -52,6 +55,8 @@ class UploadFileWrapper(object):
     def __exit__(self, *args):
         self._file.close()
         if self.progress:
+            # Don't print "Total time elapsed"
+            self.progress.track = False
             self.progress.stop()
 
 
@@ -71,6 +76,7 @@ class Upload(DeletableAPIResource, DownloadableAPIResource,
     SolveBio supports VCF version 4.0 to 4.2. JSON files should
     contain individual JSON records, one per line.
     """
+    RETRIES = 3
 
     @classmethod
     def create(cls, path, **params):
@@ -98,17 +104,24 @@ class Upload(DeletableAPIResource, DownloadableAPIResource,
         response = client.post(cls.class_url(), params)
         upload = convert_to_solve_object(response)
 
-        # Upload to S3 with optional progress bar
-        progress = params.get('progress', True)
-        with UploadFileWrapper(path, progress=progress) as data:
-            headers = {
-                'Content-MD5': upload.base64_md5,
-                'Content-Type': upload.mimetype,
-                'Content-Length': str(upload.size)
-            }
-            requests.put(
-                upload.s3_upload_url,
-                data=data,
-                headers=headers)
-
-        return upload
+        retries = 0
+        while True:
+            # Upload to S3 with optional progress bar
+            progress = params.get('progress', True)
+            with UploadFileWrapper(path, progress=progress) as data:
+                headers = {
+                    'Content-MD5': upload.base64_md5,
+                    'Content-Type': upload.mimetype,
+                    'Content-Length': str(upload.size)
+                }
+                try:
+                    requests.put(
+                        upload.s3_upload_url,
+                        data=data,
+                        headers=headers)
+                except ConnectionError as err:
+                    if retries == Upload.RETRIES:
+                        raise err
+                    retries += 1
+                else:
+                    return upload
