@@ -24,9 +24,9 @@ class UploadFileWrapper(object):
         self.mode = mode
 
         # Special case for Python 3.2 which has a bug
-        # in the standard library. Progress bar is not
-        # supported in this Python version.
-        if sys.version_info[:2] == (3, 2):
+        # in the standard library, and 2.6 which is not supported by PyPrind.
+        # Progress bar is not supported in these Python versions.
+        if sys.version_info[:2] in [(2, 6), (3, 2)]:
             self.progress = False
         else:
             self.progress = progress
