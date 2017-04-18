@@ -6,7 +6,6 @@ from solvebio import Filter
 from .helper import SolveBioTestCase
 
 from os import path, remove
-import json
 
 
 class ExportsTests(SolveBioTestCase):

@@ -1,8 +1,6 @@
 from ..client import client
 from ..help import open_help
 from ..query import Query
-from ..utils.humanize import naturalsize
-from ..utils.md5sum import md5sum
 
 from .solveobject import convert_to_solve_object
 from .apiresource import CreateableAPIResource

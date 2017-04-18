@@ -631,6 +631,8 @@ class Query(object):
     def export(self, format='json', follow=True, limit=None):
         from solvebio import DatasetExport
 
+        if not limit and self._limit < float('inf'):
+            limit = self._limit
         params = self._build_query(limit=limit)
         params.pop('offset', None)
         params.pop('ordering', None)
