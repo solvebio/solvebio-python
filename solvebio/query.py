@@ -639,6 +639,7 @@ class Query(object):
 
         export = DatasetExport.create(
             dataset_id=self._dataset_id,
+            format=format,
             params=params)
 
         if follow:
