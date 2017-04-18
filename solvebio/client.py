@@ -91,7 +91,8 @@ class SolveClient(object):
     """A requests-based HTTP client for SolveBio API resources"""
 
     def __init__(self, api_host=None, token=None, token_type='Token'):
-        self._api_host = api_host
+        self._api_host = api_host or solvebio.api_host
+        validate_api_host_url(self._api_host)
         self._token = token
         self._token_type = token_type
         self._headers = {
@@ -209,14 +210,8 @@ class SolveClient(object):
         else:
             opts['data'] = json.dumps(opts['data'])
 
-        # Expand URL with API host if none was given
-        api_host = self._api_host or solvebio.api_host
-
-        # validate API host
-        validate_api_host_url(api_host)
-
-        if not url.startswith(api_host):
-            url = urljoin(api_host, url)
+        if not url.startswith(self._api_host):
+            url = urljoin(self._api_host, url)
 
         logger.debug('API %s Request: %s' % (method, url))
 
