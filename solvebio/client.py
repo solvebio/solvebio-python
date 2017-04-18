@@ -224,7 +224,7 @@ class SolveClient(object):
             self._log_raw_request(method, url, **opts)
 
         try:
-            response = requests.request(method, url, **opts)
+            response = self._session.request(method, url, **opts)
         except Exception as e:
             _handle_request_error(e)
 
