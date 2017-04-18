@@ -8,6 +8,7 @@ from .dataset import Dataset
 from .datasetfield import DatasetField
 from .datasetimport import DatasetImport
 from .datasetcommit import DatasetCommit
+from .datasetmigration import DatasetMigration
 from .datasettemplate import DatasetTemplate
 from .upload import Upload
 from .manifest import Manifest
@@ -17,6 +18,7 @@ types = {
     'Dataset': Dataset,
     'DatasetImport': DatasetImport,
     'DatasetCommit': DatasetCommit,
+    'DatasetMigration': DatasetMigration,
     'DatasetTemplate': DatasetTemplate,
     'DatasetField': DatasetField,
     'Depository': Depository,

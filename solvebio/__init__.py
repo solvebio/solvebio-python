@@ -95,6 +95,7 @@ from .resource import (
     Depository, DepositoryVersion,
     Upload, Manifest, User,
     Dataset, DatasetField,
+    DatasetMigration,
     DatasetImport, DatasetCommit, DatasetTemplate
 )
 
@@ -135,6 +136,7 @@ __all__ = [
     'DatasetField',
     'DatasetImport',
     'DatasetCommit',
+    'DatasetMigration',
     'DatasetTemplate',
     'Depository',
     'DepositoryVersion',
