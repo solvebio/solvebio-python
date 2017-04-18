@@ -305,6 +305,7 @@ class Dataset(CreateableAPIResource,
 
         Valid optional kwargs include:
 
+        * source_params
         * target_fields
         * include_errors
         * auto_approve
