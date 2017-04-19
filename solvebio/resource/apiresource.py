@@ -154,18 +154,23 @@ class DownloadableAPIResource(APIResource):
 
     def download(self, path=None, **kwargs):
         """
-        Download the file to the specified directory
-        (or a temp. dir if nothing is specified).
+        Download the file to the specified directory or file path.
+        Downloads to a temporary directory if no path is specified.
+
+        Returns the absolute path to the file.
         """
         download_url = self.download_url(**kwargs)
+        # Set default filename to the extracted name
         filename = download_url.split('%3B%20filename%3D')[1]
 
         if path:
-            path = os.path.dirname(os.path.expanduser(path))
+            path = os.path.expanduser(path)
+            # If the path is a dir, use the extracted filename
+            if os.path.isdir(path):
+                path = os.path.join(path, filename)
         else:
-            path = tempfile.gettempdir()
-
-        filename = os.path.join(path, filename)
+            # Create a temporary directory for the file
+            path = os.path.join(tempfile.gettempdir(), filename)
 
         try:
             response = requests.request(method='get', url=download_url)
@@ -175,10 +180,10 @@ class DownloadableAPIResource(APIResource):
         if not (200 <= response.status_code < 400):
             _handle_api_error(response)
 
-        with open(filename, 'wb') as fileobj:
+        with open(path, 'wb') as fileobj:
             fileobj.write(response._content)
 
-        return filename
+        return path
 
     def download_url(self, **kwargs):
         download_url = self.instance_url() + '/download'

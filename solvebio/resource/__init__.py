@@ -7,6 +7,7 @@ from .user import User
 from .dataset import Dataset
 from .datasetfield import DatasetField
 from .datasetimport import DatasetImport
+from .datasetexport import DatasetExport
 from .datasetcommit import DatasetCommit
 from .datasetmigration import DatasetMigration
 from .datasettemplate import DatasetTemplate
@@ -17,6 +18,7 @@ from .manifest import Manifest
 types = {
     'Dataset': Dataset,
     'DatasetImport': DatasetImport,
+    'DatasetExport': DatasetExport,
     'DatasetCommit': DatasetCommit,
     'DatasetMigration': DatasetMigration,
     'DatasetTemplate': DatasetTemplate,

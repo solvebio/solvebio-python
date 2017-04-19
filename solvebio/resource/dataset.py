@@ -1,8 +1,6 @@
 from ..client import client
 from ..help import open_help
 from ..query import Query
-from ..utils.humanize import naturalsize
-from ..utils.md5sum import md5sum
 
 from .solveobject import convert_to_solve_object
 from .apiresource import CreateableAPIResource
@@ -11,8 +9,7 @@ from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
 from .datasetfield import DatasetField
 from .datasetmigration import DatasetMigration
-
-from ..exporters import DatasetExportFile
+from .datasetexport import DatasetExport
 
 
 class Dataset(CreateableAPIResource,
@@ -227,75 +224,20 @@ class Dataset(CreateableAPIResource,
             manifest=manifest.manifest,
             **kwargs)
 
-    def export(self, path, genome_build=None, format='json',
-               show_progress=True, download=True):
-        if 'exports_url' not in self:
-            if 'id' not in self or not self['id']:
-                raise Exception(
-                    'No Dataset ID was provided. '
-                    'Please instantiate the Dataset '
-                    'object with an ID or full_name.')
-            self['exports_url'] = self.instance_url() + '/exports'
+    def export(self, format='json', follow=True, **kwargs):
+        if 'id' not in self or not self['id']:
+            raise Exception(
+                'No Dataset ID was provided. '
+                'Please instantiate the Dataset '
+                'object with an ID or full_name.')
 
-        export = client.post(self['exports_url'],
-                             {'format': format,
-                              'genome_build': genome_build})
+        export = DatasetExport.create(
+            dataset_id=self['id'],
+            format=format,
+            **kwargs)
 
-        print("Exporting dataset {0} to {1}"
-              .format(self['full_name'], path))
-
-        total_size = 0
-        manifest = export['manifest']
-
-        for i, manifest_file in enumerate(manifest['files']):
-            total_size += manifest_file['size']
-            export_file = DatasetExportFile(
-                url=manifest_file['url'],
-                path=path,
-                show_progress=show_progress)
-
-            if not download:
-                print('Downloading is off, skipping file {0} ({1})'
-                      .format(export_file.file_name,
-                              naturalsize(manifest_file['size'])))
-                continue
-
-            print('Downloading file {0}/{1}: {2} ({3})'
-                  .format(i + 1, len(manifest['files']),
-                          export_file.file_name,
-                          naturalsize(manifest_file['size'])))
-            export_file.download()
-
-            # Validate the MD5 of the downloaded file.
-            # Handle's S3's multipart MD5 calculation.
-            md5, blocks = md5sum(
-                multipart_threshold=manifest['multipart_threshold_bytes'],
-                multipart_chunksize=manifest['multipart_chunksize_bytes']
-            )
-
-            if md5 != manifest_file['md5']:
-                print("### Export failed MD5 verification!")
-                print("### -------------------------------")
-                print("### File: {0}".format(export_file.file_name))
-                print("### Expected MD5: {0}".format(manifest_file['md5']))
-                print("### Calculated MD5: {0}".format(md5))
-                if blocks and manifest_file['multipart_blocks'] != blocks:
-                    print("### Multipart block size failed verification")
-                    print("### Expected: {0} blocks"
-                          .format(manifest_file['multipart_blocks']))
-                    print("### Found: {0} blocks".format(blocks))
-                print("\n### Delete the following file and try again: {0}"
-                      .format(export_file.file_name))
-                print("### If the problem persists, please email "
-                      "support@solvebio.com")
-                return None
-
-            print("File {0} completed downloading and MD5 verification."
-                  .format(export_file.file_name))
-
-        print('Number of files: {0}'.format(len(manifest['files'])))
-        print('Number of records: {0}'.format(export['documents_count']))
-        print('Total size: {0}'.format(naturalsize(total_size)))
+        if follow:
+            export.follow()
 
         return export
 

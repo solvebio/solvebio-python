@@ -86,17 +86,25 @@ def _init_logging():
 
         base_logger.addHandler(NullHandler())
 
+
 _init_logging()
 
 from .version import VERSION  # noqa
 from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
 from .resource import (
-    Depository, DepositoryVersion,
-    Upload, Manifest, User,
-    Dataset, DatasetField,
+    Dataset,
+    DatasetCommit,
+    DatasetExport,
+    DatasetField,
+    DatasetImport,
     DatasetMigration,
-    DatasetImport, DatasetCommit, DatasetTemplate
+    DatasetTemplate,
+    Depository,
+    DepositoryVersion,
+    Manifest,
+    Upload,
+    User,
 )
 
 
@@ -135,6 +143,7 @@ __all__ = [
     'Dataset',
     'DatasetField',
     'DatasetImport',
+    'DatasetExport',
     'DatasetCommit',
     'DatasetMigration',
     'DatasetTemplate',
