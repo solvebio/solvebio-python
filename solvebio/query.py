@@ -220,6 +220,7 @@ class Query(object):
             genome_build=None,
             filters=None,
             fields=None,
+            exclude_fields=None,
             ordering=None,
             limit=float('inf'),
             page_size=DEFAULT_PAGE_SIZE,
@@ -235,6 +236,7 @@ class Query(object):
           - `genome_build`: The genome build to use for the query.
           - `result_class` (optional): Class of object returned by query.
           - `fields` (optional): List of specific fields to retrieve.
+          - `exclude_fields` (optional): List of specific fields to exclude.
           - `ordering` (optional): List of fields to order the results by.
           - `filters` (optional): Filter or List of filter objects.
           - `limit` (optional): Maximum number of query results to return.
@@ -247,6 +249,7 @@ class Query(object):
         self._genome_build = genome_build
         self._result_class = result_class
         self._fields = fields
+        self._exclude_fields = exclude_fields
         self._ordering = ordering
         self._debug = debug
         self._error = error
@@ -286,6 +289,7 @@ class Query(object):
                              genome_build=self._genome_build,
                              limit=self._limit,
                              fields=self._fields,
+                             exclude_fields=self._exclude_fields,
                              ordering=self._ordering,
                              page_size=self._page_size,
                              result_class=self._result_class,
@@ -583,6 +587,9 @@ class Query(object):
 
         if self._fields is not None:
             q['fields'] = self._fields
+
+        if self._exclude_fields is not None:
+            q['exclude_fields'] = self._exclude_fields
 
         if self._ordering is not None:
             q['ordering'] = self._ordering
