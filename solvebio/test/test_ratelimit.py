@@ -30,7 +30,7 @@ class ClientRateLimit(unittest.TestCase):
             return FakeResponse({}, 200)
 
     def test_rate_limit(self):
-        with patch('solvebio.client.requests.request') as mock_request:
+        with patch('solvebio.client.Session.request') as mock_request:
             mock_request.side_effect = lambda *args, **kw: self.fake_response()
             start_time = time.time()
             depo = solvebio.Depository.retrieve('HGNC')
