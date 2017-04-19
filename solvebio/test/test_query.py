@@ -283,3 +283,16 @@ class BaseQueryTest(SolveBioTestCase):
         # backwards
         for (i, idx) in reversed(list(enumerate(idxs))):
             self.assertEqual(cached[i], q[idx])
+
+    def test_field_filters(self):
+        limit = 1
+        results = self.dataset.query(limit=limit)
+        self.assertEqual(len(results[0].keys()), 41)
+
+        results = self.dataset.query(limit=limit, fields=['hgnc_id'])
+        self.assertEqual(len(results[0].keys()), 1)
+
+        results = self.dataset.query(
+            limit=limit, exclude_fields=['hgnc_id'])
+        self.assertEqual(len(results[0].keys()), 40)
+        self.assertTrue('hgnc_id' not in results[0].keys())
