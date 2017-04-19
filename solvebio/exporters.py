@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+#
+# **DEPRECATED**
+#
+# These exporters have been deprecated in favor
+# of the DatasetExport resource.
+#
 from __future__ import print_function
 from __future__ import unicode_literals
 

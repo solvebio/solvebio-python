@@ -6,7 +6,6 @@ import six
 from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
-from .exporters import exporters
 from .errors import SolveError
 
 import copy
@@ -629,8 +628,24 @@ class Query(object):
                      % self._response)
         return _params, self._response
 
-    def export(self, exporter, *args, **kwargs):
-        return exporters.export(exporter, self, *args, **kwargs)
+    def export(self, format='json', follow=True, limit=None):
+        from solvebio import DatasetExport
+
+        if not limit and self._limit < float('inf'):
+            limit = self._limit
+        params = self._build_query(limit=limit)
+        params.pop('offset', None)
+        params.pop('ordering', None)
+
+        export = DatasetExport.create(
+            dataset_id=self._dataset_id,
+            format=format,
+            params=params)
+
+        if follow:
+            export.follow()
+
+        return export
 
 
 class BatchQuery(object):
