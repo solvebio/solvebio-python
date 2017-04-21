@@ -20,6 +20,11 @@ class Fake201Response():
     def create(self, *args, **kwargs):
         return convert_to_solve_object(self.object)
 
+    def retrieve(self, r_id, *args, **kwargs):
+        obj = self.create()
+        obj.id = r_id
+        return obj
+
 
 class FakeMigrationResponse(Fake201Response):
 
@@ -113,32 +118,38 @@ class FakeDatasetTemplateResponse(Fake201Response):
     def __init__(self, data):
         self.object = {
             'class_name': self.class_name,
-            'full_name': None,
+            'name': None,
             'id': 100,
             'account': {
                 'name': None,
                 'domain': None,
             },
+            'fields': None,
+            'entity_type': None,
             'is_genomic': False,
         }
         self.object.update(data)
 
 
-def fake_depo_request(*args, **kwargs):
+def fake_depo_create(*args, **kwargs):
     return FakeDepositoryResponse(kwargs).create()
 
 
-def fake_depo_version_request(*args, **kwargs):
+def fake_depo_version_create(*args, **kwargs):
     return FakeDepositoryVersionResponse(kwargs).create()
 
 
-def fake_dataset_request(*args, **kwargs):
+def fake_dataset_create(*args, **kwargs):
     return FakeDatasetResponse(kwargs).create()
 
 
-def fake_data_tpl_request(*args, **kwargs):
+def fake_data_tpl_create(*args, **kwargs):
     return FakeDatasetTemplateResponse(kwargs).create()
 
 
-def fake_migration_request(*args, **kwargs):
+def fake_data_tpl_retrieve(rid, *args, **kwargs):
+    return FakeDatasetTemplateResponse(kwargs).retrieve(rid)
+
+
+def fake_migration_create(*args, **kwargs):
     return FakeMigrationResponse(kwargs).create()
