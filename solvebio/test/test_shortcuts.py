@@ -37,7 +37,7 @@ class CLITests(SolveBioTestCase):
 
         # does soft delete of depo
         depo = Depository.retrieve(ds.depository_id)
-        depo.delete(soft=False)
+        depo.delete()
 
     def _validate_tmpl_fields(self, fields):
         for f in fields:
@@ -76,7 +76,7 @@ class CLITests(SolveBioTestCase):
 
         # does soft delete of depo
         depo = Depository.retrieve(ds.depository_id)
-        depo.delete(soft=False)
+        depo.delete()
 
     def test_create_dataset_template_id(self):
         # TODO mock client responses or allow for hard
@@ -104,4 +104,4 @@ class CLITests(SolveBioTestCase):
 
         # does soft delete of depo
         depo = Depository.retrieve(ds.depository_id)
-        depo.delete(soft=False)
+        depo.delete()

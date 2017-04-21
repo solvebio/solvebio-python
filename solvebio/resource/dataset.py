@@ -256,7 +256,7 @@ class Dataset(CreateableAPIResource,
         """
         if 'id' not in self or not self['id']:
             raise Exception(
-                'No Dataset ID was provided. '
+                'No source dataset ID found. '
                 'Please instantiate the Dataset '
                 'object with an ID or full_name.')
 
