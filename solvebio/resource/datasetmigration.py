@@ -53,6 +53,6 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
         if self.status == 'completed':
             print("Migration is complete, view the result: "
                   "https://my.solvebio.com/data/{0}"
-                  .format(self['target']['full_name']))
+                  .format(self['target']))
 
         # TODO: Follow commits
