@@ -36,24 +36,7 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
               .format(self.id))
 
         import_status = self.status
-
         while self.status in ['queued', 'running']:
-            if self.status == 'running':
-                for commit in self.dataset_commits:
-                    if not commit.is_approved:
-                        print("One or more commits need admin approval.")
-                        print("Visit the following page to approve them: "
-                              "https://my.solvebio.com/jobs/imports/{0}"
-                              .format(self.id))
-                        # Nothing we can do here!
-                        return
-
-                    print("Commit '{0}' is {1}: {2}/{3} records indexed"
-                          .format(commit.title,
-                                  commit.status,
-                                  commit.records_modified,
-                                  commit.records_total))
-
             time.sleep(3)
             self.refresh()
             if self.status != import_status:
@@ -66,7 +49,65 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
                     print("Processing and validating file(s), "
                           "this may take a few minutes...")
 
-        if self.status == 'completed':
-            print("View your imported data: "
-                  "https://my.solvebio.com/data/{0}"
-                  .format(self['dataset']['full_name']))
+        if self.status == 'failed':
+            print("Import processing and validation failed.")
+            print("Reason: {}".format(self.error_message))
+            return
+
+        if self.status == 'canceled':
+            print("Import processing and validation was canceled")
+            print("Reason: {}".format(self.error_message))
+            return
+
+        print("Validation completed. Beginning indexing of commits.")
+        unapproved_commits = [c for c in self.dataset_commits
+                              if not c.is_approved]
+        if unapproved_commits:
+            # Nothing we can do here!
+            print("One or more commits need admin approval.")
+            print("Visit the following page to approve them: "
+                  "https://my.solvebio.com/jobs/imports/{0}"
+                  .format(self.id))
+
+        # follow approved, unfinished commits
+        while True:
+            time.sleep(10)
+
+            approved_commits = [
+                c for c in self.dataset_commits if c.is_approved
+            ]
+
+            unfinished_commits = [
+                c for c in approved_commits
+                if c.status in ['queued', 'running']
+            ]
+
+            if not unfinished_commits:
+                print("All commits have finished processing")
+                break
+
+            if len(approved_commits) > 1:
+                print("{0}/{1} approved commits have finished processing"
+                      .format(len(approved_commits) - len(unfinished_commits),
+                              len(approved_commits)))
+
+            for commit in unfinished_commits:
+                if commit.status == 'running':
+                    print("Commit '{0}' ({4}) is {1}: {2}/{3} records indexed"
+                          .format(commit.title,
+                                  commit.status,
+                                  commit.records_modified,
+                                  commit.records_total,
+                                  commit.id))
+                else:
+                    print("Commit '{0}' ({1}) is {2}"
+                          .format(commit.title,
+                                  commit.id,
+                                  commit.status))
+
+                # refresh status
+                commit.refresh()
+
+        print("View your imported data: "
+              "https://my.solvebio.com/data/{0}"
+              .format(self['dataset']['full_name']))
