@@ -71,8 +71,6 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
 
         # follow approved, unfinished commits
         while True:
-            time.sleep(10)
-
             approved_commits = [
                 c for c in self.dataset_commits if c.is_approved
             ]
@@ -105,7 +103,11 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
                                   commit.id,
                                   commit.status))
 
-                # refresh status
+            # sleep
+            time.sleep(10)
+
+            # refresh status
+            for commit in unfinished_commits:
                 commit.refresh()
 
         print("View your imported data: "
