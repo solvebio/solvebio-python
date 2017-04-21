@@ -654,6 +654,48 @@ class Query(object):
 
         return export
 
+    def migrate(self, target, follow=True, **kwargs):
+        """
+        Migrate the data from the Query to a target dataset.
+
+        Valid optional kwargs include:
+
+        * target_fields
+        * include_errors
+        * auto_approve
+        * commit_mode
+
+        """
+        from solvebio import Dataset
+        from solvebio import DatasetMigration
+
+        # Target can be provided as a Dataset, or as an ID.
+        if isinstance(target, Dataset):
+            target_id = target.id
+        else:
+            target_id = target
+
+        # If a limit is set in the Query and not overridden here, use it.
+        limit = kwargs.pop('limit', None)
+        if not limit and self._limit < float('inf'):
+            limit = self._limit
+
+        # Build the source_params
+        params = self._build_query(limit=limit)
+        params.pop('offset', None)
+        params.pop('ordering', None)
+
+        migration = DatasetMigration.create(
+            source_id=self._dataset_id,
+            target_id=target_id,
+            source_params=params,
+            **kwargs)
+
+        if follow:
+            migration.follow()
+
+        return migration
+
 
 class BatchQuery(object):
     """

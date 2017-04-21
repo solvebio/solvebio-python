@@ -8,6 +8,7 @@ from .apiresource import ListableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
 from .datasetfield import DatasetField
+from .datasetmigration import DatasetMigration
 from .datasetexport import DatasetExport
 
 
@@ -239,3 +240,38 @@ class Dataset(CreateableAPIResource,
             export.follow()
 
         return export
+
+    def migrate(self, target, follow=True, **kwargs):
+        """
+        Migrate the data from this dataset to a target dataset.
+
+        Valid optional kwargs include:
+
+        * source_params
+        * target_fields
+        * include_errors
+        * auto_approve
+        * commit_mode
+
+        """
+        if 'id' not in self or not self['id']:
+            raise Exception(
+                'No source dataset ID found. '
+                'Please instantiate the Dataset '
+                'object with an ID or full_name.')
+
+        # Target can be provided as a Dataset, or as an ID.
+        if isinstance(target, Dataset):
+            target_id = target.id
+        else:
+            target_id = target
+
+        migration = DatasetMigration.create(
+            source_id=self['id'],
+            target_id=target_id,
+            **kwargs)
+
+        if follow:
+            migration.follow()
+
+        return migration
