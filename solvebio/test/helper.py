@@ -23,7 +23,7 @@ class SolveBioTestCase(unittest.TestCase):
     def check_response(self, response, expect, msg):
         subset = [(key, response[key]) for
                   key in [x[0] for x in expect]]
-        self.assertEqual(subset, expect, msg)
+        self.assertEqual(subset, expect)
 
     # Python < 2.7 compatibility
     def assertRaisesRegexp(self, exception, regexp, callable, *args, **kwargs):
