@@ -5,11 +5,16 @@ import time
 import json
 import random
 
+import mock
+
 from solvebio.cli import main
 from .helper import SolveBioTestCase
 from solvebio import User
 from solvebio import Depository
 from solvebio import DatasetTemplate
+from solvebio.test.client_mocks import fake_depo_request
+from solvebio.test.client_mocks import fake_depo_version_request
+from solvebio.test.client_mocks import fake_dataset_request
 
 
 class CLITests(SolveBioTestCase):
@@ -25,19 +30,22 @@ class CLITests(SolveBioTestCase):
             '{0}:test-client-{1}-{2}/1.0.0/test-{1}-{2}'.format(
                 domain, int(time.time()), random.randint(0, 100000))
 
-    def test_create_dataset(self):
-        # TODO mock client responses or allow for hard
-        # cleanup of dataset/depo
+    @mock.patch('solvebio.resource.Depository.create',
+                side_effect=fake_depo_request)
+    @mock.patch('solvebio.resource.DepositoryVersion.create',
+                side_effect=fake_depo_version_request)
+    @mock.patch('solvebio.resource.Dataset.create',
+                side_effect=fake_dataset_request)
+    def test_create_dataset(self,
+                            fake_depo_request,
+                            fake_depo_version_request,
+                            fake_dataset_request):
         dataset_full_name = self.unique_dataset_name()
 
         args = ['create-dataset', dataset_full_name,
                    '--capacity', 'small']  # noqa
         ds = main.main(args)
-        self.assertEqual(ds.full_name, dataset_full_name)
-
-        # does soft delete of depo
-        depo = Depository.retrieve(ds.depository_id)
-        depo.delete()
+        self.assertEqual(ds.name, dataset_full_name.split('/')[-1])
 
     def _validate_tmpl_fields(self, fields):
         for f in fields:
