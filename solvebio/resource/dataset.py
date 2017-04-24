@@ -35,7 +35,6 @@ class Dataset(CreateableAPIResource,
 
         try:
             dataset = Dataset.retrieve(full_name)
-
             # If the dataset exists but the genome_builds don't match,
             # update it with the new builds.
             if dataset.is_genomic and \
