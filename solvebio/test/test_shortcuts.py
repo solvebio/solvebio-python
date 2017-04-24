@@ -111,4 +111,4 @@ class CLITests(SolveBioTestCase):
                    '--capacity', 'large']  # noqa
         ds = main.main(args)
         self.assertEqual(ds.description,
-                         'Created with dataset template: {}'.format(tpl.id))
+                         'Created with dataset template: {0}'.format(tpl.id))
