@@ -13,6 +13,7 @@ from . import data
 from .tutorial import print_tutorial
 from .ipython import launch_ipython_shell
 from ..utils.validators import validate_api_host_url
+from ..client import client
 
 
 class SolveArgumentParser(argparse.ArgumentParser):
@@ -227,6 +228,10 @@ def main(argv=sys.argv[1:]):
             _, solvebio.api_key = get_credentials()
         except:
             pass
+
+    # Update the client host and token
+    client.set_host()
+    client.set_token()
 
     return args.func(args)
 
