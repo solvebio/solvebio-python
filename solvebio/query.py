@@ -696,6 +696,9 @@ class Query(object):
 
         return migration
 
+    def annotate(self, fields, **kwargs):
+        return Annotator(fields, **kwargs).annotate(self)
+
 
 class BatchQuery(object):
     """
@@ -732,3 +735,52 @@ class BatchQuery(object):
         _params.update(**params)
         response = client.post('/v1/batch_query', _params)
         return response
+
+
+class Annotator(object):
+    """
+    Runs the synchronous annotate endpoint against
+    batches of results from a query.
+    """
+    CHUNK_SIZE = 100
+
+    def __init__(self, fields, include_errors=False):
+        self.buffer = []
+        self.fields = fields
+        self.include_errors = include_errors
+
+    def annotate(self, records):
+        """Annotate a set of records with stored fields.
+
+        Args:
+            records: A list or iterator (can be a Query object)
+
+        Returns:
+            A generator that yields one annotated record at a time.
+        """
+        # `records` can be a Query object.
+        self.buffer = []
+        for record in records:
+            self.buffer.append(record)
+            if len(self.buffer) == self.CHUNK_SIZE:
+                for record in self._execute():
+                    yield record
+
+        for record in self._execute():
+            yield record
+
+    def _execute(self):
+        if not self.buffer:
+            return []
+        elif not self.fields:
+            return self.buffer
+
+        data = {
+            'records': self.buffer,
+            'fields': self.fields,
+            'include_errors': self.include_errors
+        }
+
+        res = client.post('/v1/annotate', data)
+        self.buffer = []
+        return res['results']
