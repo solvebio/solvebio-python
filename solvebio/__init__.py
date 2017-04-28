@@ -92,6 +92,7 @@ _init_logging()
 from .version import VERSION  # noqa
 from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
+from .annotate import Annotator, Expression
 from .resource import (
     Dataset,
     DatasetCommit,
@@ -139,6 +140,8 @@ def login(**kwargs):
 
 
 __all__ = [
+    'Annotator',
+    'Expression',
     'BatchQuery',
     'Dataset',
     'DatasetField',
