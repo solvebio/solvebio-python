@@ -91,10 +91,8 @@ class SolveClient(object):
     """A requests-based HTTP client for SolveBio API resources"""
 
     def __init__(self, api_host=None, token=None, token_type='Token'):
-        self._api_host = api_host or solvebio.api_host
-        validate_api_host_url(self._api_host)
-        self._token = token
-        self._token_type = token_type
+        self.set_host(api_host)
+        self.set_token(token, token_type)
         self._headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -118,7 +116,14 @@ class SolveClient(object):
             ])
         adapter = HTTPAdapter(max_retries=retries)
         self._session = Session()
-        self._session.mount(self._api_host, adapter)
+        self._session.mount(self._host, adapter)
+
+    def set_host(self, api_host=None):
+        self._host = api_host or solvebio.api_host
+        validate_api_host_url(self._host)
+
+    def set_token(self, token=None, token_type='Token'):
+        self._auth = SolveTokenAuth(token, token_type)
 
     def get(self, url, params, **kwargs):
         """Issues an HTTP GET across the wire via the Python requests
@@ -157,10 +162,6 @@ class SolveClient(object):
         allow_redirects: bool, optional
            set *False* we won't follow any redirects
 
-        auth: function, optional
-           Function to call to get an Authorization key.
-           If not given we'll use self._token.
-
         headers: dict, optional
 
           Custom headers can be provided here; generally though this
@@ -190,7 +191,7 @@ class SolveClient(object):
 
         opts = {
             'allow_redirects': True,
-            'auth': SolveTokenAuth(self._token, self._token_type),
+            'auth': self._auth,
             'data': {},
             'files': None,
             'headers': dict(self._headers),
@@ -210,8 +211,8 @@ class SolveClient(object):
         else:
             opts['data'] = json.dumps(opts['data'])
 
-        if not url.startswith(self._api_host):
-            url = urljoin(self._api_host, url)
+        if not url.startswith(self._host):
+            url = urljoin(self._host, url)
 
         logger.debug('API %s Request: %s' % (method, url))
 
