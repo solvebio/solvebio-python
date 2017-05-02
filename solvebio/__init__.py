@@ -137,6 +137,11 @@ def login(**kwargs):
 
     if not (api_key or access_token):
         print('No credentials found. Requests to SolveBio may fail.')
+    else:
+        from solvebio.client import client
+        # Update the client host and token
+        client.set_host()
+        client.set_token()
 
 
 __all__ = [
