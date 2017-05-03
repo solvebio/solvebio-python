@@ -46,3 +46,15 @@ class TestLogin(unittest.TestCase):
             solvebio.api_host = 'https://some.fake.domain.foobar'
             self.assertEqual(auth.login('foo'), False,
                              "Invalid login")
+
+    def test_init_login(self):
+        from solvebio import login
+        from solvebio.client import client
+        _auth = client._auth
+
+        client._auth = None
+        login(api_key="TEST_KEY")
+        self.assertEqual(client._auth.token, "TEST_KEY")
+
+        # Reset the key
+        client._auth = _auth
