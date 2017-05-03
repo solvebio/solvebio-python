@@ -15,10 +15,11 @@ class Annotator(object):
     """
     CHUNK_SIZE = 100
 
-    def __init__(self, fields, include_errors=False):
+    def __init__(self, fields, include_errors=False, **kwargs):
         self.buffer = []
         self.fields = fields
         self.include_errors = include_errors
+        self.limit = kwargs.get('limit')
 
     def annotate(self, records, chunk_size=CHUNK_SIZE):
         """Annotate a set of records with stored fields.
@@ -30,6 +31,7 @@ class Annotator(object):
         Returns:
             A generator that yields one annotated record at a time.
         """
+        count = 0
         it = iter(records)
         while True:
             chunk = tuple(itertools.islice(it, chunk_size))
@@ -44,6 +46,9 @@ class Annotator(object):
 
             for r in client.post('/v1/annotate', data)['results']:
                 yield r
+                count += 1
+                if self.limit and count == self.limit:
+                    return
 
 
 class Expression(object):
