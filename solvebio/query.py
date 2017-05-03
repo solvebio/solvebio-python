@@ -283,7 +283,7 @@ class Query(object):
         if self._page_size <= 0:
             raise Exception('\'page_size\' parameter must be > 0')
 
-    def _clone(self, filters=None):
+    def _clone(self, filters=None, limit=None):
         new = self.__class__(self._dataset_id,
                              query=self._query,
                              genome_build=self._genome_build,
@@ -299,7 +299,17 @@ class Query(object):
         if filters:
             new._filters += filters
 
+        if limit:
+            new._limit = limit
+
         return new
+
+    def limit(self, limit):
+        """
+        Returns a new Query instance with the new
+        limit values.
+        """
+        return self._clone(limit=limit)
 
     def filter(self, *filters, **kwargs):
         """

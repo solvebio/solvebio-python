@@ -3,7 +3,6 @@ from __future__ import absolute_import
 
 from .client import client
 
-import itertools
 import logging
 logger = logging.getLogger('solvebio')
 
@@ -19,7 +18,6 @@ class Annotator(object):
         self.buffer = []
         self.fields = fields
         self.include_errors = include_errors
-        self.limit = kwargs.get('limit')
 
     def annotate(self, records, chunk_size=CHUNK_SIZE):
         """Annotate a set of records with stored fields.
@@ -31,24 +29,28 @@ class Annotator(object):
         Returns:
             A generator that yields one annotated record at a time.
         """
-        count = 0
-        it = iter(records)
-        while True:
-            chunk = tuple(itertools.islice(it, chunk_size))
-            if not chunk:
-                return
+        chunk = []
+        for i, record in enumerate(records):
+            chunk.append(record)
+            if (i + 1) % chunk_size == 0:
+                for r in self._execute(chunk):
+                    yield r
+                chunk = []
 
-            data = {
-                'records': chunk,
-                'fields': self.fields,
-                'include_errors': self.include_errors
-            }
-
-            for r in client.post('/v1/annotate', data)['results']:
+        if chunk:
+            for r in self._execute(chunk):
                 yield r
-                count += 1
-                if self.limit and count == self.limit:
-                    return
+            chunk = []
+
+    def _execute(self, chunk):
+        data = {
+            'records': chunk,
+            'fields': self.fields,
+            'include_errors': self.include_errors
+        }
+
+        for r in client.post('/v1/annotate', data)['results']:
+            yield r
 
 
 class Expression(object):
