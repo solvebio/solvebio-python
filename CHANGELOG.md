@@ -1,5 +1,47 @@
 # Change Log
 
+## [v1.17.0](https://github.com/solvebio/solvebio-python/tree/v1.17.0) (2017-05-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.16.0...v1.17.0)
+
+**Closed issues:**
+
+- Add support for Expressions and Annotations [\#146](https://github.com/solvebio/solvebio-python/issues/146)
+
+**Merged pull requests:**
+
+- Add Annotator and Expression support [\#163](https://github.com/solvebio/solvebio-python/pull/163) ([davecap](https://github.com/davecap))
+- fix an issue where a manually set api\_host was not used by client [\#162](https://github.com/solvebio/solvebio-python/pull/162) ([davecap](https://github.com/davecap))
+- mock create dataset test [\#160](https://github.com/solvebio/solvebio-python/pull/160) ([jsh2134](https://github.com/jsh2134))
+- fix the last message on DatasetMigration.follow\(\) [\#159](https://github.com/solvebio/solvebio-python/pull/159) ([davecap](https://github.com/davecap))
+
+## [v1.16.0](https://github.com/solvebio/solvebio-python/tree/v1.16.0) (2017-04-21)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.4...v1.16.0)
+
+**Implemented enhancements:**
+
+- Clone/copy shortcut based on a query [\#145](https://github.com/solvebio/solvebio-python/issues/145)
+- Add `exclude\_fields` support to Query [\#148](https://github.com/solvebio/solvebio-python/issues/148)
+- Add retries to the Upload resource [\#147](https://github.com/solvebio/solvebio-python/issues/147)
+- More robust follow\(\) function [\#134](https://github.com/solvebio/solvebio-python/issues/134)
+
+**Fixed bugs:**
+
+- Update DatasetImport follow\(\) function to follow DatasetCommits as well [\#133](https://github.com/solvebio/solvebio-python/issues/133)
+
+**Closed issues:**
+
+- Add support for Dataset Migrations [\#151](https://github.com/solvebio/solvebio-python/issues/151)
+- Add support for dataset exports [\#150](https://github.com/solvebio/solvebio-python/issues/150)
+
+**Merged pull requests:**
+
+- update follow logic of imports now the commits are decoupled [\#157](https://github.com/solvebio/solvebio-python/pull/157) ([jsh2134](https://github.com/jsh2134))
+- Add built-in connection retries using a request session [\#156](https://github.com/solvebio/solvebio-python/pull/156) ([davecap](https://github.com/davecap))
+- add DatasetMigration resource and migrate functions for Query and Dataset [\#155](https://github.com/solvebio/solvebio-python/pull/155) ([davecap](https://github.com/davecap))
+- Add support for DatasetExports [\#154](https://github.com/solvebio/solvebio-python/pull/154) ([davecap](https://github.com/davecap))
+- add exclude\_fields param to Query \(closes \#148\) [\#153](https://github.com/solvebio/solvebio-python/pull/153) ([davecap](https://github.com/davecap))
+- Add retries to Upload creation \(fixes \#147\) [\#152](https://github.com/solvebio/solvebio-python/pull/152) ([davecap](https://github.com/davecap))
+
 ## [v1.15.4](https://github.com/solvebio/solvebio-python/tree/v1.15.4) (2017-03-15)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.3...v1.15.4)
 
@@ -258,13 +300,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
-
-## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
 
 ## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+
+## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
