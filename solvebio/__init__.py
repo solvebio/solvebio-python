@@ -92,6 +92,7 @@ _init_logging()
 from .version import VERSION  # noqa
 from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
+from .annotate import Annotator, Expression
 from .resource import (
     Dataset,
     DatasetCommit,
@@ -136,9 +137,16 @@ def login(**kwargs):
 
     if not (api_key or access_token):
         print('No credentials found. Requests to SolveBio may fail.')
+    else:
+        from solvebio.client import client
+        # Update the client host and token
+        client.set_host()
+        client.set_token()
 
 
 __all__ = [
+    'Annotator',
+    'Expression',
     'BatchQuery',
     'Dataset',
     'DatasetField',
