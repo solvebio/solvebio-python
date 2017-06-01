@@ -298,3 +298,5 @@ class Dataset(CreateableAPIResource,
             active_tasks = self.tasks()
             if not active_tasks:
                 break
+
+        return active_tasks
