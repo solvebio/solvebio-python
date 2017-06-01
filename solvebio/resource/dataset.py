@@ -1,3 +1,5 @@
+import time
+
 from ..client import client
 from ..help import open_help
 from ..query import Query
@@ -8,8 +10,10 @@ from .apiresource import ListableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
 from .datasetfield import DatasetField
-from .datasetmigration import DatasetMigration
+from .datasetimport import DatasetImport
+from .datasetcommit import DatasetCommit
 from .datasetexport import DatasetExport
+from .datasetmigration import DatasetMigration
 
 
 class Dataset(CreateableAPIResource,
@@ -274,3 +278,23 @@ class Dataset(CreateableAPIResource,
             migration.follow()
 
         return migration
+
+    def tasks(self, follow=False):
+        statuses = ['running', 'queued', 'pending']
+        active_tasks = \
+            list(DatasetImport.all(dataset=self.id, status=statuses)) + \
+            list(DatasetCommit.all(dataset=self.id, status=statuses)) + \
+            list(DatasetExport.all(dataset=self.id, status=statuses)) + \
+            list(DatasetMigration.all(target=self.id, status=statuses))
+
+        if not follow:
+            return active_tasks
+
+        while True:
+            for task in active_tasks:
+                task.follow()
+
+            time.sleep(5.0)
+            active_tasks = self.tasks()
+            if not active_tasks:
+                break
