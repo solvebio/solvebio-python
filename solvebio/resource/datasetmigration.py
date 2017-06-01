@@ -25,12 +25,15 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
     )
 
     def follow(self):
-        print("Waiting for migration (id = {0}) to start...".format(self.id))
         print("View your migration status on MESH: "
               "https://my.solvebio.com/jobs/migrations/{0}"
               .format(self.id))
 
         _status = self.status
+        if self.status == 'queued':
+            print("Waiting for migration (id = {0}) to start..."
+                  .format(self.id))
+
         while self.status in ['queued', 'running']:
             if self.status != _status:
                 print("Migration is now {0} (was {1})"

@@ -30,10 +30,13 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
         return Dataset.retrieve(self['dataset'])
 
     def follow(self):
-        print("Waiting for import (id = {0}) to start...".format(self.id))
         print("View your import status on MESH: "
               "https://my.solvebio.com/jobs/imports/{0}"
               .format(self.id))
+
+        if self.status == 'queued':
+            print("Waiting for import (id = {0}) to start..."
+                  .format(self.id))
 
         import_status = self.status
         while self.status in ['queued', 'running']:
@@ -89,19 +92,9 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
                       .format(len(approved_commits) - len(unfinished_commits),
                               len(approved_commits)))
 
+            # prints a status for each one
             for commit in unfinished_commits:
-                if commit.status == 'running':
-                    print("Commit '{0}' ({4}) is {1}: {2}/{3} records indexed"
-                          .format(commit.title,
-                                  commit.status,
-                                  commit.records_modified,
-                                  commit.records_total,
-                                  commit.id))
-                else:
-                    print("Commit '{0}' ({1}) is {2}"
-                          .format(commit.title,
-                                  commit.id,
-                                  commit.status))
+                commit.follow(loop=False)
 
             # sleep
             time.sleep(10)
