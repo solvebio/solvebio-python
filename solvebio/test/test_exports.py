@@ -5,7 +5,6 @@ from solvebio import Filter
 
 from .helper import SolveBioTestCase
 
-import gzip
 from os import path, remove
 
 
@@ -22,13 +21,13 @@ class ExportsTests(SolveBioTestCase):
 
     def test_csv_exporter(self):
         # CSV exports are are compressed
-        test_file = '/tmp/test_export.csv.gz'
+        test_file = '/tmp/test_export.csv'
         reference_file = 'solvebio/test/data/test_export.csv'
         export = self.query.export(follow=True, format='csv')
         export.download(test_file)
         self.assertTrue(path.isfile(test_file))
         self.assertEqual(
-            hashlib.sha1(gzip.open(test_file, 'rb').read()).hexdigest(),
+            hashlib.sha1(open(test_file, 'rb').read()).hexdigest(),
             hashlib.sha1(open(reference_file, 'rb').read()).hexdigest()
         )
         remove(test_file)
