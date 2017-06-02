@@ -29,13 +29,15 @@ class DatasetExport(CreateableAPIResource, ListableAPIResource,
         return Dataset.retrieve(self['dataset'])
 
     def follow(self):
-        print("Waiting for export (id = {0}) to start...".format(self.id))
         print("View your export status on MESH: "
               "https://my.solvebio.com/jobs/export/{0}"
               .format(self.id))
 
-        export_status = self.status
+        if self.status == 'queued':
+            print("Waiting for export (id = {0}) to start..."
+                  .format(self.id))
 
+        export_status = self.status
         while self.status in ['queued', 'running']:
             if self.status != export_status:
                 print("Export is now {0} (was {1})"
