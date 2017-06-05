@@ -1,5 +1,28 @@
 # Change Log
 
+## [v1.17.1](https://github.com/solvebio/solvebio-python/tree/v1.17.1) (2017-06-05)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.17.0...v1.17.1)
+
+**Implemented enhancements:**
+
+- Add Unit Tests for client shortcuts [\#142](https://github.com/solvebio/solvebio-python/issues/142)
+
+**Fixed bugs:**
+
+- Dataset export of a query requires a limit [\#167](https://github.com/solvebio/solvebio-python/issues/167)
+
+**Closed issues:**
+
+- Add a "data migration preview" mode to test migrations \("dry-run"\) [\#161](https://github.com/solvebio/solvebio-python/issues/161)
+- Check compatibility with Travis Build environment updates [\#158](https://github.com/solvebio/solvebio-python/issues/158)
+
+**Merged pull requests:**
+
+- use new travis distribution: Ubuntu 14 [\#171](https://github.com/solvebio/solvebio-python/pull/171) ([jsh2134](https://github.com/jsh2134))
+- Test case updates [\#170](https://github.com/solvebio/solvebio-python/pull/170) ([jsh2134](https://github.com/jsh2134))
+- handle max export limit case [\#169](https://github.com/solvebio/solvebio-python/pull/169) ([jsh2134](https://github.com/jsh2134))
+- move commit follow\(\) into commit resource [\#168](https://github.com/solvebio/solvebio-python/pull/168) ([jsh2134](https://github.com/jsh2134))
+
 ## [v1.17.0](https://github.com/solvebio/solvebio-python/tree/v1.17.0) (2017-05-04)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.16.0...v1.17.0)
 
@@ -300,13 +323,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
-
-## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
 
 ## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+
+## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
