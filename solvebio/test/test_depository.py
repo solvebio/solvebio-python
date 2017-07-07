@@ -15,7 +15,7 @@ class DepositoryTests(SolveBioTestCase):
 
         depo2 = Depository.retrieve(depo.id)
         self.assertEqual(depo, depo2,
-                         "Retrieving dataset id {0} found by all()"
+                         "Retrieving depository id {0} found by all()"
                          .format(depo.id))
 
         check_fields = ['class_name', 'created_at',

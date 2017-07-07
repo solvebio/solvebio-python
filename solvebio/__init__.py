@@ -104,8 +104,10 @@ from .resource import (
     Depository,
     DepositoryVersion,
     Manifest,
+    Object,
     Upload,
     User,
+    Vault,
 )
 
 

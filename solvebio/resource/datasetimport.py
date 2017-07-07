@@ -17,6 +17,8 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
     For interactive use, DatasetImport can be "followed" to watch
     the progression of an import job.
     """
+    USES_V2_ENDPOINT = True
+
     LIST_FIELDS = (
         ('id', 'ID'),
         ('title', 'Title'),
