@@ -20,17 +20,25 @@ from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object
 
 
+
+
+
+
+
+
+
 class APIResource(SolveObject):
     """Abstract Class for an API Resource"""
 
     @classmethod
     def retrieve(cls, id, **params):
         instance = cls(id, **params)
-        instance.refresh()
+        instance.refresh(**params)
         return instance
 
-    def refresh(self):
-        self.refresh_from(self.request('get', self.instance_url()))
+    def refresh(self, **params):
+        print 'Instance URL is', self.instance_url(**params)
+        self.refresh_from(self.request('get', self.instance_url(**params)))
         return self
 
     @classmethod
@@ -42,18 +50,22 @@ class APIResource(SolveObject):
         return str(quote_plus(cls.__name__))
 
     @classmethod
-    def class_url(cls):
+    def class_url(cls, **params):
         """Returns a versioned URI string for this class"""
-        if getattr(cls, 'USES_V2_ENDPOINT', False):
+        if params.get('force_use_v1'):
+            base = 'v1'
+        elif getattr(cls, 'USES_V2_ENDPOINT', False):
             base = 'v2'
         else:
             base = 'v1'
         return "/{}/{}".format(base, class_to_api_name(cls.class_name()))
 
-    def instance_url(self):
+    def instance_url(self, **args):
         'Get instance URL by ID or full name (if available)'
         id = self.get('id')
-        base = self.class_url()
+        base = self.class_url(**args)
+        print 'base is', base
+        print 'ID is', id
 
         if id:
             return '/'.join([base, six.text_type(id)])

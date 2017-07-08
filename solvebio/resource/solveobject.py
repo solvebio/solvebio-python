@@ -72,6 +72,7 @@ class SolveObject(dict):
                 k, convert_to_solve_object(v))
 
     def request(self, method, url, **kwargs):
+        print "URL IS", url
         response = client.request(method, url, **kwargs)
         return convert_to_solve_object(response)
 

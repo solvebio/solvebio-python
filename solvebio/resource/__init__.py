@@ -19,6 +19,7 @@ from .vault import Vault
 
 types = {
     'Dataset': Dataset,
+    # 'DatasetV2': DatasetV2,
     'DatasetImport': DatasetImport,
     'DatasetExport': DatasetExport,
     'DatasetCommit': DatasetCommit,

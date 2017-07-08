@@ -24,6 +24,8 @@ class Dataset(CreateableAPIResource,
     Datasets are access points to data. Dataset names are unique
     within versions of a depository.
     """
+    USES_V2_ENDPOINT = True
+
     LIST_FIELDS = (
         ('full_name', 'Name'),
         ('depository', 'Depository'),
@@ -99,17 +101,30 @@ class Dataset(CreateableAPIResource,
                 'up fields')
 
         if name:
+            print 'name is', name
+            print 'ID is', self['id']
             # construct the field's full_name if a field name is provided
-            return DatasetField.retrieve(
-                '/'.join([self['full_name'], name]))
+            print 'retrieving',  '/'.join([self['id'], name])
+            # return DatasetField.retrieve(
+            #     '/'.join([self['id'], name]), **params)
+            fields = client.get(self.fields_url, params)
+            for i in fields['data']:
+                if i['name'] == name:
+                    result = DatasetField.retrieve(i['id'], **params)
+                    return result
 
+
+        # print 'params are', params
+        # print 'url is', self.fields_url
         response = client.get(self.fields_url, params)
+        # print 'response is', response
         results = convert_to_solve_object(response)
         results.set_tabulate(
             ['name', 'data_type', 'description'],
             headers=['Field', 'Data Type', 'Description'],
             aligns=['left', 'left', 'left'], sort=True)
 
+        # print 'RESULTS ARE', results
         return results
 
     def template(self, **params):

@@ -1,6 +1,8 @@
 """Solvebio Depository API resource"""
 from ..help import open_help
+from ..client import client
 
+from .solveobject import convert_to_solve_object
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import SearchableAPIResource
@@ -22,6 +24,33 @@ class Object(CreateableAPIResource,
         ('description', 'Description')
     )
     USES_V2_ENDPOINT = True
+
+    # @classmethod
+    # def retrieve_by_full_path(cls, path):
+    #     return cls.request('get', self['url'], params=params)
+
+    @classmethod
+    def retrieve_by_full_path(cls, full_path, **params):
+        # TODO - arg needs quoting?
+        params.update({'full_path': full_path})
+        url = cls.class_url()
+        print 'URL is', url
+        response = client.get(url, params)
+        results = convert_to_solve_object(response)
+        objects = results.data
+
+        if len(objects) > 1:
+            if params.get('allow_multiple'):
+                return objects
+            else:
+                pass
+                # TODO - raise exception
+        elif len(objects) == 1:
+            return objects[0]
+        else:
+            pass
+            # TODO - raise exception - no results
+
 
 
     def help(self):
