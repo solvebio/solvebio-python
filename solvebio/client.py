@@ -215,7 +215,6 @@ class SolveClient(object):
             url = urljoin(self._host, url)
 
         logger.debug('API %s Request: %s' % (method, url))
-        print 'url is', url
 
         if debug:
             self._log_raw_request(method, url, **opts)

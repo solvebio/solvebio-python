@@ -14,8 +14,6 @@ from solvebio import DatasetTemplate
 from solvebio.test.client_mocks import fake_vault_create
 from solvebio.test.client_mocks import fake_vault_all
 from solvebio.test.client_mocks import fake_object_all
-from solvebio.test.client_mocks import fake_depo_create
-from solvebio.test.client_mocks import fake_depo_version_create
 from solvebio.test.client_mocks import fake_dataset_create
 from solvebio.test.client_mocks import fake_data_tpl_create
 from solvebio.test.client_mocks import fake_data_tpl_retrieve
