@@ -19,6 +19,8 @@ class Object(CreateableAPIResource,
     An object is a resource in a Vault.  It has three possible types,
     though more may be added later: folder, file, and SolveBio Dataset.
     """
+    USES_V2_ENDPOINT = True
+
     LIST_FIELDS = (
         ('id', 'ID'),
         ('description', 'Description'),
@@ -27,7 +29,6 @@ class Object(CreateableAPIResource,
         ('filename', 'Filename'),
 
     )
-    USES_V2_ENDPOINT = True
 
     @classmethod
     def retrieve_by_full_path(cls, full_path, **params):
