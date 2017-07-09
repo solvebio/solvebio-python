@@ -22,14 +22,13 @@ class Dataset(CreateableAPIResource,
               UpdateableAPIResource):
     """
     Datasets are access points to data. Dataset names are unique
-    within versions of a depository.
+    within a vault folder.
     """
     USES_V2_ENDPOINT = True
 
     LIST_FIELDS = (
-        ('full_name', 'Name'),
-        ('depository', 'Depository'),
-        ('title', 'Title'),
+        ('id', 'ID'),
+        ('vault_object_name', 'Name'),
         ('description', 'Description'),
     )
 
@@ -39,7 +38,6 @@ class Dataset(CreateableAPIResource,
         from solvebio import SolveError
 
         try:
-            # dataset = Dataset.retrieve(full_name)
             obj = Object.retrieve_by_full_path(full_path)
             dataset = Dataset.retrieve(obj['dataset_id'], **kwargs)
             return dataset
@@ -48,65 +46,37 @@ class Dataset(CreateableAPIResource,
                 raise e
 
     @classmethod
-    def get_or_create_by_full_name(cls, full_name, **kwargs):
-        from solvebio import Depository
-        from solvebio import DepositoryVersion
+    def create_by_name(cls, name, vault_name, path, **kwargs):
+        from solvebio import Vault
+        from solvebio import Object
         from solvebio import SolveError
 
-        try:
-            dataset = Dataset.retrieve(full_name)
-            # If the dataset exists but the genome_builds don't match,
-            # update it with the new builds.
-            if dataset.is_genomic and \
-                    dataset.genome_builds != kwargs.get('genome_builds'):
-                dataset.genome_builds = kwargs.get('genome_builds')
-                dataset.save()
+        vaults = Vault.all(name=vault_name)
+        if len(vaults) == 0:
+            # @davecap - should I auto-create the vault here instead?
+            raise Exception('Vault not found with name {}'.format(
+                vault_name))
+        else:
+            vault_id = vaults[0]['id']
 
-            return dataset
-        except SolveError as e:
-            if e.status_code != 404:
-                raise e
+        if not path or path == '/':
+            vault_parent_object_id = None
+        else:
+            objects = Object.all(vault_id=vault_id, path=path,
+                                 object_type='folder')
+            # TODO - remove object_type folder and raise exception if object
+            #  exists but is not object_type = folder
+            if len(objects) == 0:
+                # @davecap - should I auto-create the folder here instead?
+                raise Exception('Path {} not found in vault {}'.format(
+                    path, vault_name))
+            else:
+                vault_parent_object_id = objects[0]['id']
 
-        # Dataset not found, create it step-by-step
-        try:
-            # Split the name into parts
-            depo, version, dataset_name = full_name.split('/')
-        except ValueError:
-            raise ValueError(
-                "Invalid dataset name '{0}'. Please ensure that it is "
-                "in the following format: "
-                "'<depository>/<version>/<dataset>'"
-                .format(full_name))
-
-        try:
-            depo = Depository.retrieve(depo)
-        except SolveError as e:
-            if e.status_code != 404:
-                raise e
-            depo = Depository.create(name=depo, title=depo)
-
-        try:
-            version = DepositoryVersion.retrieve(
-                '{0}/{1}'.format(depo.name, version))
-        except SolveError as e:
-            if e.status_code != 404:
-                raise e
-            version = DepositoryVersion.create(
-                depository_id=depo.id, name=version, title=version)
-
-        # Use a default title (dataset name) if none is provided
-        title = kwargs.pop('title', dataset_name)
-        return Dataset.create(
-            depository_version_id=version.id,
-            name=dataset_name, title=title, **kwargs)
-
-    def depository_version(self):
-        from .depositoryversion import DepositoryVersion
-        return DepositoryVersion.retrieve(self['depository_version'])
-
-    def depository(self):
-        from .depository import Depository
-        return Depository.retrieve(self['depository'])
+        return Dataset.create(name=name,
+                              vault_id=vault_id,
+                              vault_parent_object_id=vault_parent_object_id,
+                              **kwargs)
 
     def fields(self, name=None, **params):
         if 'fields_url' not in self:
@@ -115,30 +85,19 @@ class Dataset(CreateableAPIResource,
                 'up fields')
 
         if name:
-            print 'name is', name
-            print 'ID is', self['id']
-            # construct the field's full_name if a field name is provided
-            print 'retrieving',  '/'.join([self['id'], name])
-            # return DatasetField.retrieve(
-            #     '/'.join([self['id'], name]), **params)
             fields = client.get(self.fields_url, params)
             for i in fields['data']:
                 if i['name'] == name:
                     result = DatasetField.retrieve(i['id'], **params)
                     return result
 
-
-        # print 'params are', params
-        # print 'url is', self.fields_url
         response = client.get(self.fields_url, params)
-        # print 'response is', response
         results = convert_to_solve_object(response)
         results.set_tabulate(
             ['name', 'data_type', 'description'],
             headers=['Field', 'Data Type', 'Description'],
             aligns=['left', 'left', 'left'], sort=True)
 
-        # print 'RESULTS ARE', results
         return results
 
     def template(self, **params):
@@ -215,24 +174,6 @@ class Dataset(CreateableAPIResource,
         # raises an exception if there's no ID
         print 'and params are', params
         return client.get(self._beacon_url(), params)
-
-    def _changelog_url(self, version=None):
-        if 'changelog_url' not in self:
-            if 'id' not in self or not self['id']:
-                raise Exception(
-                    'No Dataset ID was provided. '
-                    'Please instantiate the Dataset '
-                    'object with an ID or full_name.')
-            # automatically construct the data_url from the ID
-            self['changelog_url'] = self.instance_url() + '/changelog'
-        if version:
-            return self['changelog_url'] + '/' + version
-        else:
-            return self['changelog_url']
-
-    def changelog(self, version=None, **params):
-        # raises an exception if there's no ID
-        return client.get(self._changelog_url(version), params)
 
     def help(self):
         open_help('/library/{0}'.format(self['full_name']))

@@ -1,4 +1,4 @@
-"""Solvebio Depository API resource"""
+"""Solvebio Object API resource"""
 from ..help import open_help
 from ..client import client
 
@@ -21,20 +21,19 @@ class Object(CreateableAPIResource,
     """
     LIST_FIELDS = (
         ('id', 'ID'),
-        ('description', 'Description')
+        ('description', 'Description'),
+        ('path', 'Path'),
+        ('filename', 'Filename'),
+        ('filename', 'Filename'),
+
     )
     USES_V2_ENDPOINT = True
-
-    # @classmethod
-    # def retrieve_by_full_path(cls, path):
-    #     return cls.request('get', self['url'], params=params)
 
     @classmethod
     def retrieve_by_full_path(cls, full_path, **params):
         # TODO - arg needs quoting?
         params.update({'full_path': full_path})
         url = cls.class_url()
-        print 'URL is', url
         response = client.get(url, params)
         results = convert_to_solve_object(response)
         objects = results.data
@@ -50,8 +49,6 @@ class Object(CreateableAPIResource,
         else:
             pass
             # TODO - raise exception - no results
-
-
 
     def help(self):
         # TODO: add a help file?

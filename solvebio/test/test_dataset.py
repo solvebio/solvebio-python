@@ -11,6 +11,8 @@ class DatasetTests(SolveBioTestCase):
     """
 
     def test_dataset_retrieval(self):
+        # TODO - switch off of v1 and remove depository and
+        # depository_version from below, and add vault stuff.
         dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH,
                                            force_use_v1=True)
         self.assertTrue('id' in dataset,

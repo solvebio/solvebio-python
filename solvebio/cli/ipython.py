@@ -61,8 +61,6 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     from solvebio import DatasetImport  # noqa
     from solvebio import DatasetMigration  # noqa
     from solvebio import DatasetTemplate  # noqa
-    from solvebio import Depository  # noqa
-    from solvebio import DepositoryVersion  # noqa
     from solvebio import Expression  # noqa
     from solvebio import Filter  # noqa
     from solvebio import GenomicFilter  # noqa

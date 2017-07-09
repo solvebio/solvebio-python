@@ -354,7 +354,7 @@ class Query(object):
         Returns the total number of results returned by a query.
         The count is dependent on the filters, but independent of any limit.
         It is like SQL:
-           SELECT COUNT(*) FROM <depository> [WHERE condition].
+           SELECT COUNT(*) FROM <table> [WHERE condition].
         See also __len__ for a function that is dependent on limit.
         """
         # self.total will warm up the response if it needs to

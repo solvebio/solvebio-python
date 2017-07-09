@@ -51,6 +51,17 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Create the dataset if it doesn\'t exist',
                 },
                 {
+                    'flags': '--vault',
+                    'help': 'The name of the vault to use when '
+                            'creating a new dataset (via --create-dataset)',
+                },
+                {
+                    'flags': '--path',
+                    'help': 'The path in the vault where the dataset should '
+                            'be created when creating a new dataset'
+                            '(via --create-dataset)',
+                },
+                {
                     'flags': '--template-id',
                     'help': 'The template ID used when '
                             'creating a new dataset (via --create-dataset)',
@@ -93,8 +104,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'name': 'dataset',
-                    'help': 'The full name of the dataset '
-                            '(<depository>/<version>/<dataset>)'
+                    'help': 'The name of the dataset'
                 },
                 {
                     'name': 'file',
@@ -107,6 +117,17 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'func': data.create_dataset,
             'help': 'Create a SolveBio dataset',
             'arguments': [
+                {
+                    'flags': '--vault',
+                    'help': 'The name of the vault to use when '
+                           'creating a new dataset (via --create-dataset)',
+                },
+                {
+                    'flags': '--path',
+                    'help': 'The path in the vault where the dataset should '
+                           'be created when creating a new dataset'
+                           '(via --create-dataset)',
+                },
                 {
                     'flags': '--template-id',
                     'help': 'The template ID used when '
@@ -131,8 +152,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'name': 'dataset',
-                    'help': 'The full name of the dataset '
-                            '(<depository>/<version>/<dataset>)'
+                    'help': 'The full name of the dataset'
                 }
             ]
         }

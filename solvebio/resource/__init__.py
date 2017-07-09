@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 
-from .depository import Depository
-from .depositoryversion import DepositoryVersion
 from .apiresource import ListObject
 from .user import User
 from .dataset import Dataset
@@ -19,15 +17,12 @@ from .vault import Vault
 
 types = {
     'Dataset': Dataset,
-    # 'DatasetV2': DatasetV2,
     'DatasetImport': DatasetImport,
     'DatasetExport': DatasetExport,
     'DatasetCommit': DatasetCommit,
     'DatasetMigration': DatasetMigration,
     'DatasetTemplate': DatasetTemplate,
     'DatasetField': DatasetField,
-    'Depository': Depository,
-    'DepositoryVersion': DepositoryVersion,
     'Manifest': Manifest,
     'Object': Object,
     'Upload': Upload,

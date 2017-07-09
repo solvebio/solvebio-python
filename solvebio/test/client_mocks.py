@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import os
 
 from solvebio.resource.solveobject import convert_to_solve_object
 
@@ -24,6 +25,9 @@ class Fake201Response():
         obj = self.create()
         obj.id = r_id
         return obj
+
+    def all(self, *args, **kwargs):
+        return [self.create()]
 
 
 class FakeMigrationResponse(Fake201Response):
@@ -53,41 +57,32 @@ class FakeMigrationResponse(Fake201Response):
         self.object.update(data)
 
 
-class FakeDepositoryResponse(Fake201Response):
+class FakeVaultResponse(Fake201Response):
 
-    class_name = 'Depository'
-
-    def __init__(self, data):
-        self.object = {
-            'class_name': self.class_name,
-            'full_name': None,
-            'name': None,
-            'id': 100,
-            'account': {
-                'name': None,
-                'domain': None,
-            },
-        }
-        self.object.update(data)
-
-
-class FakeDepositoryVersionResponse(Fake201Response):
-
-    class_name = 'DepositoryVersion'
+    class_name = 'Vault'
 
     def __init__(self, data):
         self.object = {
             'class_name': self.class_name,
-            'depository_id': None,
-            'full_name': None,
-            'name': None,
+            'name': 'test_vault',
+            'require_unique_paths': True,
+            'vault_type': 'general',
+            'provider': 'SolveBio',
             'id': 100,
-            'account': {
-                'name': None,
-                'domain': None,
-            },
         }
         self.object.update(data)
+
+
+class FakeObjectResponse(Fake201Response):
+
+    class_name = 'Object'
+
+    def __init__(self, data):
+        self.object = {
+            'class_name': self.class_name,
+            'id': 100,
+            'parent_object_id': 99,
+        }
 
 
 class FakeDatasetResponse(Fake201Response):
@@ -97,16 +92,16 @@ class FakeDatasetResponse(Fake201Response):
     def __init__(self, data):
         self.object = {
             'class_name': self.class_name,
-            'full_name': None,
-            'name': None,
-            'depository_id': None,
-            'depository_version_id': None,
+            # 'full_name': 100,
+            # 'name': 100,
+            'vault_id': None,
             'id': 100,
             'account': {
                 'name': None,
                 'domain': None,
             },
             'is_genomic': False,
+            'path': '/{}'.format(data['name']),
         }
         self.object.update(data)
 
@@ -131,12 +126,16 @@ class FakeDatasetTemplateResponse(Fake201Response):
         self.object.update(data)
 
 
-def fake_depo_create(*args, **kwargs):
-    return FakeDepositoryResponse(kwargs).create()
+def fake_vault_create(*args, **kwargs):
+    return FakeVaultResponse(kwargs).create()
 
 
-def fake_depo_version_create(*args, **kwargs):
-    return FakeDepositoryVersionResponse(kwargs).create()
+def fake_vault_all(*args, **kwargs):
+    return FakeVaultResponse(kwargs).all()
+
+
+def fake_object_all(*args, **kwargs):
+    return FakeObjectResponse(kwargs).all()
 
 
 def fake_dataset_create(*args, **kwargs):

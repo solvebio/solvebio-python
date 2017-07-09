@@ -19,6 +19,8 @@ View this tutorial online: https://www.solvebio.com/docs/python-tutorial
 
 ## Navigate the Library
 
+# TODO - Edit this to reflect vaults/objects instead of depositories and 
+# depository versions
 List all available depositories:
 
     Depository.all()

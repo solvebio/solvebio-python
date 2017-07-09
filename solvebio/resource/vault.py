@@ -1,4 +1,4 @@
-"""Solvebio Depository API resource"""
+"""Solvebio Vault API resource"""
 # from ..client import client
 from ..help import open_help
 
@@ -26,11 +26,13 @@ class Vault(CreateableAPIResource,
 
     LIST_FIELDS = (
         ('id', 'ID'),
-        ('description', 'Description')
+        ('description', 'Description'),
+        ('name', 'Name'),
     )
 
     def datasets(self, name=None, **params):
         pass
+        # TODO - add this
         # if name:
         #     # construct the dataset full name
         #     return Dataset.retrieve(
@@ -48,6 +50,7 @@ class Vault(CreateableAPIResource,
 
     def objects(self, name=None, **params):
         pass
+        # TODO - add this
         # if name:
         #     # construct the dataset full name
         #     return Dataset.retrieve(
@@ -63,23 +66,6 @@ class Vault(CreateableAPIResource,
         # return results
 
 
-    # def versions(self, name=None, **params):
-    #     if name:
-    #         # construct the depo version full name
-    #         return DepositoryVersion.retrieve(
-    #             '/'.join([self['full_name'], name]))
-    #
-    #     response = client.get(self.versions_url, params)
-    #     results = convert_to_solve_object(response)
-    #     results.set_tabulate(
-    #         ['full_name', 'title', 'description'],
-    #         headers=['Depository Version', 'Title', 'Description'],
-    #         aligns=['left', 'left', 'left'], sort=True)
-    #
-    #     return results
-    #
-    # def latest_version(self):
-    #     return self.versions(self['latest_version'].split('/')[-1])
 
     def help(self):
         # TODO: add a help file?
