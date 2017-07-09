@@ -138,12 +138,14 @@ class SingletonAPIResource(APIResource):
         return super(SingletonAPIResource, cls).retrieve(None)
 
     @classmethod
-    def class_url(cls):
+    def class_url(cls, **params):
         """
         Returns a versioned URI string for this class,
         and don't pluralize the class name.
         """
-        if getattr(cls, 'USES_V2_ENDPOINT', False):
+        if params.get('force_use_v1'):
+            base = 'v1'
+        elif getattr(cls, 'USES_V2_ENDPOINT', False):
             base = 'v2'
         else:
             base = 'v1'
@@ -158,7 +160,10 @@ class CreateableAPIResource(APIResource):
 
     @classmethod
     def create(cls, **params):
-        url = cls.class_url()
+        print 'params are', params
+        params
+        url = cls.class_url(**params)
+        params.pop('force_use_v1', None)
         response = client.post(url, data=params)
         return convert_to_solve_object(response)
 

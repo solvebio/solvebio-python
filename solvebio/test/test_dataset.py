@@ -11,8 +11,8 @@ class DatasetTests(SolveBioTestCase):
     """
 
     def test_dataset_retrieval(self):
-        print self.TEST_DATASET_NAME
-        dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
+        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH,
+                                           force_use_v1=True)
         self.assertTrue('id' in dataset,
                         'Should be able to get id in dataset')
 
@@ -32,8 +32,9 @@ class DatasetTests(SolveBioTestCase):
             self.assertTrue(f in dataset)
 
     def test_dataset_fields(self):
-        fields = Dataset.retrieve(self.TEST_DATASET_NAME).fields()
-        # print 'DS IS', Dataset.retrieve(self.TEST_DATASET_NAME)
+        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH,
+                                           force_use_v1=True)
+        fields = dataset.fields(force_use_v1=True)
         dataset_field = fields.data[0]
         self.assertTrue('id' in dataset_field,
                         'Should be able to get id in list of dataset fields')
@@ -95,17 +96,15 @@ class DatasetTests(SolveBioTestCase):
                          'tabulated dataset fields')
 
     def test_dataset_facets(self):
-        obj = Object.retrieve_by_full_path(self.TEST_DATASET_FULL_PATH)
-        dataset = Dataset.retrieve(obj['dataset_id'], force_use_v1=True)
+        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH,
+                                           force_use_v1=True)
         field = dataset.fields('status', force_use_v1=True)
         facets = field.facets(force_use_v1=True)
         self.assertTrue(len(facets['facets']) >= 0)
-    #
-    # """
+
+    """
     # TODO support a Genomic test dataset (grab clinvar one from API build)
     def test_dataset_beacon(self):
-        # resp = Dataset.retrieve(self.TEST_DATASET_NAME).beacon(
-        #                         chromosome="6", coordinate=123, allele='G')
         obj = Object.retrieve_by_full_path(self.TEST_DATASET_FULL_PATH)
         resp = Dataset.retrieve(obj['dataset_id'],
                                 force_use_v1=True).beacon(chromosome="6",
@@ -117,10 +116,4 @@ class DatasetTests(SolveBioTestCase):
         self.assertTrue('query' in resp and resp['query']['chromosome'] == '6')
         self.assertTrue('query' in resp and resp['query']['allele'] == 'G')
         self.assertTrue('query' in resp and resp['query']['coordinate'] == 123)
-    #
-    # # TODO add another version of TEST_DATASET so we can test changelog
-    # def test_dataset_changelog(self):
-    #     resp = Dataset.retrieve(self.TEST_DATASET_NAME).changelog()
-    #     self.assertTrue('changed' in resp)
-    #     self.assertTrue(False, resp)
-    # """
+    """

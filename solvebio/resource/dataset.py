@@ -34,6 +34,20 @@ class Dataset(CreateableAPIResource,
     )
 
     @classmethod
+    def get_by_full_path(cls, full_path, **kwargs):
+        from solvebio import Object
+        from solvebio import SolveError
+
+        try:
+            # dataset = Dataset.retrieve(full_name)
+            obj = Object.retrieve_by_full_path(full_path)
+            dataset = Dataset.retrieve(obj['dataset_id'], **kwargs)
+            return dataset
+        except SolveError as e:
+            if e.status_code != 404:
+                raise e
+
+    @classmethod
     def get_or_create_by_full_name(cls, full_name, **kwargs):
         from solvebio import Depository
         from solvebio import DepositoryVersion

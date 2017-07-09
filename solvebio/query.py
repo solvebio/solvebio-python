@@ -645,7 +645,8 @@ class Query(object):
                      % self._response)
         return _params, self._response
 
-    def export(self, format='json', follow=True, limit=None):
+    def export(self, format='json', follow=True, limit=None,
+               force_use_v1=False):
         from solvebio import DatasetExport
 
         params = self._build_query()
@@ -662,7 +663,9 @@ class Query(object):
         export = DatasetExport.create(
             dataset_id=self._dataset_id,
             format=format,
-            params=params)
+            params=params,
+            force_use_v1=force_use_v1,
+        )
 
         if follow:
             export.follow()
