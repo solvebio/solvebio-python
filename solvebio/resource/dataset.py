@@ -194,10 +194,12 @@ class Dataset(CreateableAPIResource,
                     'object with an ID or full_name.')
             # automatically construct the data_url from the ID
             self['beacon_url'] = self.instance_url() + '/beacon'
+        print 'burl', self['beacon_url']
         return self['beacon_url']
 
     def beacon(self, **params):
         # raises an exception if there's no ID
+        print 'and params are', params
         return client.get(self._beacon_url(), params)
 
     def _changelog_url(self, version=None):
