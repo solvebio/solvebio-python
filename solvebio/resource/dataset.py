@@ -145,7 +145,7 @@ class Dataset(CreateableAPIResource,
                 raise Exception(
                     'No Dataset ID was provided. '
                     'Please instantiate the Dataset '
-                    'object with an ID or full_name.')
+                    'object with an ID.')
             # automatically construct the data_url from the ID
             return self.instance_url() + '/data'
         return self['data_url']
@@ -164,7 +164,7 @@ class Dataset(CreateableAPIResource,
                 raise Exception(
                     'No Dataset ID was provided. '
                     'Please instantiate the Dataset '
-                    'object with an ID or full_name.')
+                    'object with an ID.')
             # automatically construct the data_url from the ID
             self['beacon_url'] = self.instance_url() + '/beacon'
         print 'burl', self['beacon_url']
@@ -176,7 +176,7 @@ class Dataset(CreateableAPIResource,
         return client.get(self._beacon_url(), params)
 
     def help(self):
-        open_help('/library/{0}'.format(self['full_name']))
+        open_help('/library/{0}'.format(self['id']))
 
     def import_file(self, path, **kwargs):
         """
@@ -190,7 +190,7 @@ class Dataset(CreateableAPIResource,
             raise Exception(
                 'No Dataset ID found. '
                 'Please instantiate or retrieve a dataset '
-                'with an ID or full_name.')
+                'with an ID.')
 
         manifest = Manifest()
         manifest.add(path)
@@ -204,7 +204,7 @@ class Dataset(CreateableAPIResource,
             raise Exception(
                 'No Dataset ID was provided. '
                 'Please instantiate the Dataset '
-                'object with an ID or full_name.')
+                'object with an ID.')
 
         export = DatasetExport.create(
             dataset_id=self['id'],
@@ -233,7 +233,7 @@ class Dataset(CreateableAPIResource,
             raise Exception(
                 'No source dataset ID found. '
                 'Please instantiate the Dataset '
-                'object with an ID or full_name.')
+                'object with an ID.')
 
         # Target can be provided as a Dataset, or as an ID.
         if isinstance(target, Dataset):

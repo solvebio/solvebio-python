@@ -92,8 +92,6 @@ class FakeDatasetResponse(Fake201Response):
     def __init__(self, data):
         self.object = {
             'class_name': self.class_name,
-            # 'full_name': 100,
-            # 'name': 100,
             'vault_id': None,
             'id': 100,
             'account': {

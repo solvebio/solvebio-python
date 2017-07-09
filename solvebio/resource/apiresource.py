@@ -20,13 +20,6 @@ from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object
 
 
-
-
-
-
-
-
-
 class APIResource(SolveObject):
     """Abstract Class for an API Resource"""
 

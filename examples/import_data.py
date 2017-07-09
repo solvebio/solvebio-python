@@ -6,6 +6,7 @@ user = solvebio.User.retrieve()
 my_domain = user['account']['domain']
 
 # create a dataset
+# TODO - fix this broken example
 dataset_name = '{0}:SampleImport/1.0.0/SampleImport'.format(my_domain)
 dataset = solvebio.Dataset.get_or_create_by_full_name(dataset_name)
 

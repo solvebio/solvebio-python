@@ -18,6 +18,7 @@ class DatasetTests(SolveBioTestCase):
         self.assertTrue('id' in dataset,
                         'Should be able to get id in dataset')
 
+        # TODO - remove full_name and name from dataset output in the API
         check_fields = ['class_name', 'created_at',
                         'data_url',
                         'depository', 'depository_id',

@@ -2,7 +2,6 @@
 # from ..client import client
 from ..help import open_help
 
-# from .solveobject import convert_to_solve_object
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import SearchableAPIResource
@@ -33,40 +32,11 @@ class Vault(CreateableAPIResource,
     def datasets(self, name=None, **params):
         pass
         # TODO - add this
-        # if name:
-        #     # construct the dataset full name
-        #     return Dataset.retrieve(
-        #         '/'.join([self['full_name'], name]))
-        #
-        # response = client.get(self.datasets_url, params)
-        # results = convert_to_solve_object(response)
-        # results.set_tabulate(
-        #     ['full_name', 'title', 'description'],
-        #     headers=['Dataset', 'Title', 'Description'],
-        #     aligns=['left', 'left', 'left'], sort=True)
-        #
-        # return results
-
 
     def objects(self, name=None, **params):
         pass
         # TODO - add this
-        # if name:
-        #     # construct the dataset full name
-        #     return Dataset.retrieve(
-        #         '/'.join([self['full_name'], name]))
-        #
-        # response = client.get(self.datasets_url, params)
-        # results = convert_to_solve_object(response)
-        # results.set_tabulate(
-        #     ['full_name', 'title', 'description'],
-        #     headers=['Dataset', 'Title', 'Description'],
-        #     aligns=['left', 'left', 'left'], sort=True)
-        #
-        # return results
-
-
 
     def help(self):
         # TODO: add a help file?
-        open_help('/library/{0}'.format(self['full_name']))
+        open_help('/library/{0}'.format(self['id']))

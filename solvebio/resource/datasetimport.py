@@ -107,4 +107,4 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
 
         print("View your imported data: "
               "https://my.solvebio.com/data/{0}"
-              .format(self['dataset']['full_name']))
+              .format(self['dataset']['id']))

@@ -53,4 +53,4 @@ class Object(CreateableAPIResource,
 
     def help(self):
         # TODO: add a help file?
-        open_help('/library/{0}'.format(self['full_name']))
+        open_help('/library/{0}'.format(self['id']))
