@@ -103,7 +103,10 @@ class LookupTests(SolveBioTestCase):
 
     def setUp(self):
         super(LookupTests, self).setUp()
-        self.dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
+        # self.dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
+        self.dataset = Dataset.get_by_full_path(
+            self.TEST_DATASET_FULL_PATH,
+            force_use_v1=True)
 
     def test_lookup_error(self):
         # Check that incorrect lookup results in empty list.
@@ -117,6 +120,7 @@ class LookupTests(SolveBioTestCase):
         # Check that lookup with specific sbid is correct.
         sbid_one = '37133'
         lookup_one = self.dataset.lookup(sbid_one)
+        self.maxDiff = 1e6
         self.assertEqual(lookup_one, self.final_lookup_one)
 
         sbid_two = '27057'

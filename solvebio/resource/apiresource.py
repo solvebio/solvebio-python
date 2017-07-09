@@ -160,8 +160,6 @@ class CreateableAPIResource(APIResource):
 
     @classmethod
     def create(cls, **params):
-        print 'params are', params
-        params
         url = cls.class_url(**params)
         params.pop('force_use_v1', None)
         response = client.post(url, data=params)
