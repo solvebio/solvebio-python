@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from solvebio.resource import Dataset
-from solvebio.resource import Object
 
 from .helper import SolveBioTestCase
 
@@ -11,33 +10,28 @@ class DatasetTests(SolveBioTestCase):
     """
 
     def test_dataset_retrieval(self):
-        # TODO - switch off of v1 and remove depository and
-        # depository_version from below, and add vault stuff.
-        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH,
-                                           force_use_v1=True)
+        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH)
         self.assertTrue('id' in dataset,
                         'Should be able to get id in dataset')
 
-        # TODO - remove full_name and name from dataset output in the API
         check_fields = ['class_name', 'created_at',
                         'data_url',
-                        'depository', 'depository_id',
-                        'depository_version', 'depository_version_id',
+                        'vault_id',
+                        'vault_object_id',
                         'description',
-                        'fields_url', 'full_name',
+                        'fields_url',
                         'genome_builds', 'is_genomic',
                         'id',
-                        'name', 'title', 'updated_at',
+                        'name', 'updated_at',
                         'url',
                         'documents_count']
 
         for f in check_fields:
-            self.assertTrue(f in dataset)
+            self.assertTrue(f in dataset, '{} field is present'.format(f))
 
     def test_dataset_fields(self):
-        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH,
-                                           force_use_v1=True)
-        fields = dataset.fields(force_use_v1=True)
+        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH)
+        fields = dataset.fields()
         dataset_field = fields.data[0]
         self.assertTrue('id' in dataset_field,
                         'Should be able to get id in list of dataset fields')
@@ -87,8 +81,8 @@ class DatasetTests(SolveBioTestCase):
 | record_type                  | string      |               |
 | refseq_id_ncbi               | string      |               |
 | refseq_ids                   | string      |               |
-| specialist_database_id       | string      |               |
-| specialist_database_links    | string      |               |
+| specialist_database_id       | blob        |               |
+| specialist_database_links    | blob        |               |
 | status                       | string      |               |
 | synonyms                     | string      |               |
 | ucsc_id_ucsc                 | string      |               |
@@ -99,21 +93,18 @@ class DatasetTests(SolveBioTestCase):
                          'tabulated dataset fields')
 
     def test_dataset_facets(self):
-        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH,
-                                           force_use_v1=True)
-        field = dataset.fields('status', force_use_v1=True)
-        facets = field.facets(force_use_v1=True)
+        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH)
+        field = dataset.fields('status')
+        facets = field.facets()
         self.assertTrue(len(facets['facets']) >= 0)
 
     """
     # TODO support a Genomic test dataset (grab clinvar one from API build)
     def test_dataset_beacon(self):
         obj = Object.retrieve_by_full_path(self.TEST_DATASET_FULL_PATH)
-        resp = Dataset.retrieve(obj['dataset_id'],
-                                force_use_v1=True).beacon(chromosome="6",
+        resp = Dataset.retrieve(obj['dataset_id']).beacon(chromosome="6",
                                                           coordinate=123,
-                                                          allele='G',
-                                                          force_use_v1=True)
+                                                          allele='G')
         self.assertTrue('total' in resp and resp['total'] == 0)
         self.assertTrue('exist' in resp and resp['exist'] == False)
         self.assertTrue('query' in resp and resp['query']['chromosome'] == '6')

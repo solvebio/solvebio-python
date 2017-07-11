@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 import hashlib
-import unittest
 from solvebio.resource import Dataset
 from solvebio import Filter
 
@@ -16,15 +15,11 @@ class ExportsTests(SolveBioTestCase):
     def setUp(self):
         super(ExportsTests, self).setUp()
         filters = Filter(rgd_id='RGD:2645')
-        # self.dataset = Dataset.retrieve('HGNC/3.0.0-2016-11-10/HGNC')
         self.dataset = Dataset.get_by_full_path(
-            'solvebio:python_client_testing:/HGNC/3.0.0-2016-11-10/HGNC',
-            force_use_v1=True)
+            'solvebio:public:/HGNC/3.0.0-2016-11-10/HGNC')
         self.query = self.dataset.query(filters=filters, fields=['rgd_id'],
                                         genome_build='GRCh37', limit=10)
 
-    @unittest.skip('Test failing because account requires Vault-based '
-                   'datasets')
     def test_csv_exporter(self):
         # CSV exports are compressed
         test_file = '/tmp/test_export.csv'

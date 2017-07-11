@@ -121,5 +121,6 @@ spam\t23
         self.assertEqual(got, expected[1:-1],
                          'mixed data with arrays; unsorted')
 
+
 if __name__ == "__main__":
     unittest.main()

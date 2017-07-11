@@ -2,9 +2,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import sys
 import gzip
 import json
+import sys
 
 import solvebio
 
@@ -53,7 +53,7 @@ def create_dataset(args):
         print("A new dataset template was created with id: {0}".format(tpl.id))
     else:
         print("Creating a new dataset {0} without a template."
-              .format(args.dataset))
+              .format(args.dataset_name))
         tpl = None
         fields = []
         entity_type = None
@@ -62,7 +62,7 @@ def create_dataset(args):
 
     if tpl:
         print("Creating new dataset {0} using the template '{1}'."
-              .format(args.dataset, tpl.name))
+              .format(args.dataset_name, tpl.name))
         fields = tpl.fields
         entity_type = tpl.entity_type
         is_genomic = bool(args.genome_build) or tpl.is_genomic
@@ -70,16 +70,17 @@ def create_dataset(args):
         description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
     genome_builds = [args.genome_build] if is_genomic else None
-    return solvebio.Dataset.create_by_name(
-        name=args.dataset,
+    return solvebio.Dataset.get_or_create_by_name(
         vault_name=args.vault,
         path=args.path,
+        name=args.dataset_name,
         is_genomic=is_genomic,
         genome_builds=genome_builds,
         capacity=args.capacity,
         entity_type=entity_type,
         fields=fields,
-        description=description
+        description=description,
+        create_vault=args.create_vault,
     )
 
 
@@ -91,6 +92,7 @@ def import_file(args):
 
         * create_dataset
         * template_id
+        * vault_name
         * genome_build
         * follow (default: False)
         * auto_approve (default: False)
@@ -107,12 +109,15 @@ def import_file(args):
         dataset = create_dataset(args)
     else:
         try:
-            dataset = solvebio.Dataset.retrieve(args.dataset)
+            full_path = solvebio.Dataset.make_full_path(args.vault,
+                                                        args.path,
+                                                        args.dataset_name)
+            dataset = solvebio.Dataset.get_by_full_path(full_path)
         except solvebio.SolveError as e:
             if e.status_code != 404:
                 raise e
 
-            print("Dataset not found: {0}".format(args.dataset))
+            print("Dataset not found: {0}".format(args.dataset_name))
             print("Tip: use the --create-dataset flag "
                   "to create one from a template")
             sys.exit(1)

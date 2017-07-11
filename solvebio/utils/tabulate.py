@@ -613,6 +613,7 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
             for c in r] for r in rows]
     return _format_table(tablefmt, headers, rows, minwidths, aligns)
 
+
 if __name__ == "__main__":
     data = [
         ("gene_symbols", ["CPB1"]),

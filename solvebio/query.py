@@ -244,7 +244,7 @@ class Query(object):
           - `debug` (optional): Sends debug information to the API.
         """
         self._dataset_id = dataset_id
-        self._data_url = '/v1/datasets/{0}/data'.format(dataset_id)
+        self._data_url = '/v2/datasets/{0}/data'.format(dataset_id)
         self._query = query
         self._genome_build = genome_build
         self._result_class = result_class
@@ -721,7 +721,7 @@ class Query(object):
 class BatchQuery(object):
     """
     BatchQuery accepts a list of Query objects and executes them
-    in a single request to /v1/batch_query.
+    in a single request to /v2/batch_query.
     """
     def __init__(self, queries):
         """
@@ -751,5 +751,5 @@ class BatchQuery(object):
     def execute(self, **params):
         _params = self._build_query()
         _params.update(**params)
-        response = client.post('/v1/batch_query', _params)
+        response = client.post('/v2/batch_query', _params)
         return response

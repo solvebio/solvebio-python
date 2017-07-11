@@ -19,31 +19,40 @@ View this tutorial online: https://www.solvebio.com/docs/python-tutorial
 
 ## Navigate the Library
 
-# TODO - Edit this to reflect vaults/objects instead of depositories and 
-# depository versions
-List all available depositories:
 
-    Depository.all()
+To list all available vaults, run:
+
+    Vault.all()
 
 
-Depositories are versioned containers of datasets. There are many versions of each depository, and each version may have one or more datasets.
+Vaults are like filesystems on a computer.  They can contain files,
+folders, and a special SolveBio-specific object called a Dataset.
 
-To list all datasets from all depositories:
+To list all datasets from all vaults, run:
 
     Dataset.all()
 
+To retrieve a dataset by its full path, send your account name, the vault
+name, and the dataset path, all separated by a colon:
 
-Pass "latest=True" to get all the latest versions of each dataset:
+    Dataset.get_by_full_path('acme:test-vault:/path/to/my/dataset')
 
-    Dataset.all(latest=True)
+Similarly, to retrieve a publicly available dataset, run:
 
+    Dataset.get_by_full_path('solvebio:public:/ICGC/3.0.0-23/Donor')
 
-To retrieve a dataset by its full name ("ClinVar/3.0.0-2014-12-05/Variants"):
+SolveBio maintains a list of publicly available datasets.  To list them,
+run:
 
-    Dataset.retrieve('ClinVar/3.0.0-2014-12-05/Variants')
+    Vault.list('solvebio:public')
 
-By leaving out the version (for example: "ClinVar/Variants"), you get a quick shortcut to the latest version of any dataset.
-**Be careful here: you should always specify an exact version in your production code**.
+You can browse any Vault from the client as well, simply by running:
+
+    Vault.files('acme:test-vault')
+    Vault.folders('acme:test-vault')
+    Vault.datasets('acme:test-vault')
+    Vault.objects('acme:test-vault')  # Includes files, folders, and datatsets
+
 
 
 ## Query a Dataset

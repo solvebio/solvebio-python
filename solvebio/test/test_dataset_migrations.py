@@ -10,9 +10,10 @@ from solvebio.test.client_mocks import fake_migration_create
 
 class TestDatasetMigrations(unittest.TestCase):
 
-    @mock.patch('solvebio.resource.DatasetMigration.create',
-                side_effect=fake_migration_create)
-    def test_migration_from_query(self, fake_migration_create):
+    @mock.patch('solvebio.resource.DatasetMigration.create')
+    def test_migration_from_query(self, Create):
+        Create.side_effect = fake_migration_create
+
         source = Dataset(1)
         target = Dataset(2)
 
@@ -29,9 +30,10 @@ class TestDatasetMigrations(unittest.TestCase):
         self.assertEqual(migration.source_params['filters'],
                          [('my_field', 999)])
 
-    @mock.patch('solvebio.resource.DatasetMigration.create',
-                side_effect=fake_migration_create)
-    def test_migration_from_dataset(self, fake_migration_create):
+    @mock.patch('solvebio.resource.DatasetMigration.create')
+    def test_migration_from_dataset(self, Create):
+        Create.side_effect = fake_migration_create
+
         source = Dataset(1)
         target = Dataset(2)
         migration = source.migrate(target=target, follow=False)

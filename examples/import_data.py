@@ -1,20 +1,20 @@
 import solvebio
 
-# find your solvebio domain
 solvebio.login()
-user = solvebio.User.retrieve()
-my_domain = user['account']['domain']
 
-# create a dataset
-# TODO - fix this broken example
-dataset_name = '{0}:SampleImport/1.0.0/SampleImport'.format(my_domain)
-dataset = solvebio.Dataset.get_or_create_by_full_name(dataset_name)
+# Create a dataset
+dataset = solvebio.Dataset.get_or_create_by_name(
+    'Test Vault',           # The name of the vault to use
+    '/SampleImport/1.0.0',  # The folder that will contain your dataset
+    'SampleDataset',        # The name of your dataset
+    create_vault=True,      # Create the vault if does not already exist
+)
 
-# create a manifest object and a file to it
+# Create a manifest object and a file to it
 manifest = solvebio.Manifest()
 manifest.add_file('path/to/file.vcf.gz')
 
-# create the import and automatically approve it
+# Create the import and automatically approve it
 imp = solvebio.DatasetImport.create(
     dataset_id=dataset.id,
     manifest=manifest.manifest,
@@ -25,10 +25,10 @@ imp = solvebio.DatasetImport.create(
 imp.follow()
 
 #
-# you now have data!
+# You now have data!
 #
 
-# lets add some more records that include a new field
+# Let's add some more records that include a new field
 new_records = [
     {
         'gene_symbol': 'BRCA2',

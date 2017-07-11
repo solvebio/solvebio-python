@@ -26,12 +26,11 @@ class APIResource(SolveObject):
     @classmethod
     def retrieve(cls, id, **params):
         instance = cls(id, **params)
-        instance.refresh(**params)
+        instance.refresh()
         return instance
 
-    def refresh(self, **params):
-        print 'Instance URL is', self.instance_url(**params)
-        self.refresh_from(self.request('get', self.instance_url(**params)))
+    def refresh(self):
+        self.refresh_from(self.request('get', self.instance_url()))
         return self
 
     @classmethod
@@ -43,22 +42,15 @@ class APIResource(SolveObject):
         return str(quote_plus(cls.__name__))
 
     @classmethod
-    def class_url(cls, **params):
+    def class_url(cls):
         """Returns a versioned URI string for this class"""
-        if params.get('force_use_v1'):
-            base = 'v1'
-        elif getattr(cls, 'USES_V2_ENDPOINT', False):
-            base = 'v2'
-        else:
-            base = 'v1'
+        base = 'v{}'.format(getattr(cls, 'RESOURCE_VERSION', '1'))
         return "/{}/{}".format(base, class_to_api_name(cls.class_name()))
 
-    def instance_url(self, **args):
-        'Get instance URL by ID or full name (if available)'
+    def instance_url(self):
+        """Get instance URL by ID"""
         id = self.get('id')
-        base = self.class_url(**args)
-        print 'base is', base
-        print 'ID is', id
+        base = self.class_url()
 
         if id:
             return '/'.join([base, six.text_type(id)])
@@ -131,17 +123,12 @@ class SingletonAPIResource(APIResource):
         return super(SingletonAPIResource, cls).retrieve(None)
 
     @classmethod
-    def class_url(cls, **params):
+    def class_url(cls):
         """
         Returns a versioned URI string for this class,
         and don't pluralize the class name.
         """
-        if params.get('force_use_v1'):
-            base = 'v1'
-        elif getattr(cls, 'USES_V2_ENDPOINT', False):
-            base = 'v2'
-        else:
-            base = 'v1'
+        base = 'v{}'.format(getattr(cls, 'RESOURCE_VERSION', '1'))
         return "/{}/{}".format(base, class_to_api_name(
             cls.class_name(), pluralize=False))
 
@@ -153,8 +140,7 @@ class CreateableAPIResource(APIResource):
 
     @classmethod
     def create(cls, **params):
-        url = cls.class_url(**params)
-        params.pop('force_use_v1', None)
+        url = cls.class_url()
         response = client.post(url, data=params)
         return convert_to_solve_object(response)
 

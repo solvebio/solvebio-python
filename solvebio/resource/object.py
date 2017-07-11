@@ -19,37 +19,50 @@ class Object(CreateableAPIResource,
     An object is a resource in a Vault.  It has three possible types,
     though more may be added later: folder, file, and SolveBio Dataset.
     """
-    USES_V2_ENDPOINT = True
+    RESOURCE_VERSION = 2
 
     LIST_FIELDS = (
         ('id', 'ID'),
-        ('description', 'Description'),
+        ('object_type', 'Object Type'),
         ('path', 'Path'),
         ('filename', 'Filename'),
-        ('filename', 'Filename'),
-
+        ('description', 'Description'),
     )
 
     @classmethod
     def retrieve_by_full_path(cls, full_path, **params):
-        # TODO - arg needs quoting?
-        params.update({'full_path': full_path})
+        _params = {'full_path': full_path}
+        _params.update(params)
+        return cls._retrieve_helper(_params, 'full_path', **params)
+
+    @classmethod
+    def retrieve_by_path(cls, path, **params):
+        _params = {'path': path}
+        _params.update(params)
+        return cls._retrieve_helper(_params, 'path', **params)
+
+    @classmethod
+    def _retrieve_helper(cls, filter_, name, **params):
+        params.update(filter_)
         url = cls.class_url()
         response = client.get(url, params)
         results = convert_to_solve_object(response)
         objects = results.data
+        allow_multiple = params.pop('allow_multiple', None)
 
         if len(objects) > 1:
-            if params.get('allow_multiple'):
+            if allow_multiple:
                 return objects
             else:
-                pass
-                # TODO - raise exception
+                for i in objects:
+                    print i
+                raise Exception('Multiple objects found with {} {}'
+                                .format(name, filter_[name]))
         elif len(objects) == 1:
             return objects[0]
         else:
-            pass
-            # TODO - raise exception - no results
+            raise Exception('Object not found with {} {}'
+                            .format(name, filter_[name]))
 
     def help(self):
         # TODO: add a help file?

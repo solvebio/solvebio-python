@@ -16,7 +16,7 @@ class DatasetExport(CreateableAPIResource, ListableAPIResource,
     For interactive use, DatasetExport can be "followed" to watch
     the progression of the task.
     """
-    USES_V2_ENDPOINT = True
+    RESOURCE_VERSION = 2
 
     LIST_FIELDS = (
         ('id', 'ID'),

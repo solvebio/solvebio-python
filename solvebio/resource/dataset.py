@@ -1,3 +1,5 @@
+import os
+import re
 import time
 
 from ..client import client
@@ -24,58 +26,148 @@ class Dataset(CreateableAPIResource,
     Datasets are access points to data. Dataset names are unique
     within a vault folder.
     """
-    USES_V2_ENDPOINT = True
+    RESOURCE_VERSION = 2
 
     LIST_FIELDS = (
         ('id', 'ID'),
-        ('vault_object_name', 'Name'),
+        ('vault_name', 'Vault Name'),
+        ('vault_object_path', 'Vault Object Path'),
+        ('vault_object_filename', 'Vault Object Filename'),
+        ('created_at', 'Created'),
         ('description', 'Description'),
     )
 
     @classmethod
-    def get_by_full_path(cls, full_path, **kwargs):
-        from solvebio import Object
+    def make_full_path(cls, vault_name, path, name):
         from solvebio import SolveError
 
         try:
-            obj = Object.retrieve_by_full_path(full_path)
-            dataset = Dataset.retrieve(obj['dataset_id'], **kwargs)
-            return dataset
+            user = client.get('/v1/user', {})
+            domain = user['account']['domain']
         except SolveError as e:
-            if e.status_code != 404:
-                raise e
+            print("Error obtaining account domain: {0}".format(e))
+            raise
+
+        result = ':'.join([
+            domain,
+            vault_name,
+            os.path.join('/' + path.lstrip('/'), name),
+        ])
+
+        return result
 
     @classmethod
-    def create_by_name(cls, name, vault_name, path, **kwargs):
+    def get_by_full_path(cls, full_path, **kwargs):
+        from solvebio import Object
+
+        obj = Object.retrieve_by_full_path(full_path)
+        dataset = Dataset.retrieve(obj['dataset_id'], **kwargs)
+        return dataset
+
+    @classmethod
+    def get_or_create_by_name(cls, vault_name, path, name, **kwargs):
         from solvebio import Vault
         from solvebio import Object
         from solvebio import SolveError
 
-        vaults = Vault.all(name=vault_name)
-        if len(vaults) == 0:
-            # @davecap - should I auto-create the vault here instead?
-            raise Exception('Vault not found with name {}'.format(
-                vault_name))
-        else:
-            vault_id = vaults[0]['id']
+        create_vault = kwargs.pop('create_vault')
 
-        if not path or path == '/':
-            vault_parent_object_id = None
-        else:
-            objects = Object.all(vault_id=vault_id, path=path,
-                                 object_type='folder')
-            # TODO - remove object_type folder and raise exception if object
-            #  exists but is not object_type = folder
-            if len(objects) == 0:
-                # @davecap - should I auto-create the folder here instead?
-                raise Exception('Path {} not found in vault {}'.format(
-                    path, vault_name))
+        path = re.sub('//+', '/', path)
+
+        if path != '/':
+            path.rstrip('/')
+
+        try:
+            test_path = Dataset.make_full_path(vault_name, path, name)
+        except SolveError as e:
+            print("Error obtaining account domain: {0}".format(e))
+            raise
+
+        try:
+            dataset = Dataset.get_by_full_path(test_path)
+
+            # If the dataset exists but the genome_builds don't match,
+            # update it with the new builds.
+            if dataset.is_genomic and \
+                    dataset.genome_builds != kwargs.get('genome_builds'):
+                dataset.genome_builds = kwargs.get('genome_builds')
+                dataset.save()
+
+            return dataset
+        except SolveError:
+            raise
+        except:
+            pass
+
+        # Dataset not found, create it step-by-step
+
+        vaults = Vault.all(name=vault_name)
+
+        if len(vaults.data) == 0:
+            if create_vault:
+                vault = Vault.create(name=vault_name,
+                                     require_unique_paths=True,
+                                     is_public=False,
+                                     vault_type='general',
+                                     provider='SolveBio')
             else:
-                vault_parent_object_id = objects[0]['id']
+                raise Exception('Vault does not exist with name {}'.format(
+                    vault_name))
+        else:
+            vault = vaults.data[0]
+            if vault.name.lower() != vault_name.lower():
+                raise Exception('Vault name from API does not match '
+                                'user-provided value')
+
+        # Create the folders to hold the dataset if they do not already exist.
+        curr_path = path
+        folders_to_create = []
+        new_folders = []
+        id_map = {'/': None}
+
+        class InvalidObjectTypeException(Exception):
+            pass
+
+        while curr_path != '/':
+            try:
+                obj = Object.retrieve_by_path(curr_path,
+                                              vault_id=vault.id)
+                if obj.object_type != 'folder':
+                    raise InvalidObjectTypeException(
+                        'Path {} is a {} and not a folder'.format(
+                            obj.path, obj.object_type)
+                    )
+                else:
+                    id_map[curr_path] = obj.id
+                    break
+            except (InvalidObjectTypeException, SolveError) as e:
+                raise
+            except Exception as e:
+                folders_to_create.append(curr_path)
+                curr_path = '/'.join(curr_path.split('/')[:-1])
+                if curr_path == '':
+                    break
+
+        for folder in reversed(folders_to_create):
+            new_folder = Object.create(
+                object_type='folder',
+                vault_id=vault.id,
+                filename=os.path.basename(folder),
+                parent_object_id=id_map[os.path.dirname(folder)],
+            )
+            new_folders.append(new_folder)
+            id_map[folder] = new_folder.id
+
+        if path == '/':
+            parent_folder_id = None
+        elif new_folders:
+            parent_folder_id = new_folders[-1].id
+        else:
+            parent_folder_id = id_map[path]
 
         return Dataset.create(name=name,
-                              vault_id=vault_id,
-                              vault_parent_object_id=vault_parent_object_id,
+                              vault_id=vault.id,
+                              vault_parent_object_id=parent_folder_id,
                               **kwargs)
 
     def fields(self, name=None, **params):
@@ -88,7 +180,7 @@ class Dataset(CreateableAPIResource,
             fields = client.get(self.fields_url, params)
             for i in fields['data']:
                 if i['name'] == name:
-                    result = DatasetField.retrieve(i['id'], **params)
+                    result = DatasetField.retrieve(i['id'])
                     return result
 
         response = client.get(self.fields_url, params)
@@ -167,12 +259,10 @@ class Dataset(CreateableAPIResource,
                     'object with an ID.')
             # automatically construct the data_url from the ID
             self['beacon_url'] = self.instance_url() + '/beacon'
-        print 'burl', self['beacon_url']
         return self['beacon_url']
 
     def beacon(self, **params):
         # raises an exception if there's no ID
-        print 'and params are', params
         return client.get(self._beacon_url(), params)
 
     def help(self):

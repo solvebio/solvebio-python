@@ -12,31 +12,9 @@ else:
 
 import solvebio
 
-### START - TODO: remove once done with development
-
-import subprocess
-import sys
-import pydevd
-
-local_ip = subprocess.check_output(['ssh', 'local',
-                                    'cat /Users/jhuttner/DEBUG_IP']).strip()
-
-sys.path.append('/home/vagrant/pycharm-debug')
-pydevd.settrace(local_ip, port=63342, stdoutToServer=True,
-                stderrToServer=True, suspend=False)
-
-print 'Debugger imported'
-print 'Pydevd attached to IP Address: ', local_ip
-
-### END
-
 
 class SolveBioTestCase(unittest.TestCase):
-    # TODO - should remove this!!
-    TEST_DATASET_NAME = 'HGNC/1.0.0-1/HGNC'
-
-    # TODO - should always use this
-    TEST_DATASET_FULL_PATH = 'solvebio:python_client_testing:/1.0.0-1/HGNC'
+    TEST_DATASET_FULL_PATH = 'solvebio:public:/HGNC/1.0.0-1/HGNC'
 
     def setUp(self):
         super(SolveBioTestCase, self).setUp()

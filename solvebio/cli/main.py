@@ -51,6 +51,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Create the dataset if it doesn\'t exist',
                 },
                 {
+                    'flags': '--create-vault',
+                    'action': 'store_true',
+                    'help': 'Create the vault if it doesn\'t exist',
+                },
+                {
                     'flags': '--vault',
                     'help': 'The name of the vault to use when '
                             'creating a new dataset (via --create-dataset)',
@@ -103,7 +108,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'Options are "append" (default) or "overwrite".'
                 },
                 {
-                    'name': 'dataset',
+                    'name': 'dataset_name',
                     'help': 'The name of the dataset'
                 },
                 {
@@ -118,15 +123,20 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'help': 'Create a SolveBio dataset',
             'arguments': [
                 {
+                    'flags': '--create-vault',
+                    'action': 'store_true',
+                    'help': 'Create the vault if it doesn\'t exist',
+                },
+                {
                     'flags': '--vault',
                     'help': 'The name of the vault to use when '
-                           'creating a new dataset (via --create-dataset)',
+                            'creating a new dataset (via --create-dataset)',
                 },
                 {
                     'flags': '--path',
                     'help': 'The path in the vault where the dataset should '
-                           'be created when creating a new dataset'
-                           '(via --create-dataset)',
+                            'be created when creating a new dataset'
+                            '(via --create-dataset)',
                 },
                 {
                     'flags': '--template-id',
@@ -151,8 +161,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'medium (<500M), large (>=500M)'
                 },
                 {
-                    'name': 'dataset',
-                    'help': 'The full name of the dataset'
+                    'name': 'dataset_name',
+                    'help': 'The name of the dataset'
                 }
             ]
         }

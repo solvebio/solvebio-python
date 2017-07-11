@@ -7,8 +7,7 @@ from .helper import SolveBioTestCase
 
 class BatchQueryTest(SolveBioTestCase):
     def setUp(self):
-        self.dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH,
-                                                force_use_v1=True)
+        self.dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH)
         super(BatchQueryTest, self).setUp()
 
     def test_invalid_batch_query(self):

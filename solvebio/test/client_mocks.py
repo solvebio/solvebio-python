@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import os
 
 from solvebio.resource.solveobject import convert_to_solve_object
 
@@ -113,6 +112,7 @@ class FakeDatasetTemplateResponse(Fake201Response):
             'class_name': self.class_name,
             'name': None,
             'id': 100,
+            'vault_parent_object_id': 99,
             'account': {
                 'name': None,
                 'domain': None,
@@ -140,11 +140,11 @@ def fake_dataset_create(*args, **kwargs):
     return FakeDatasetResponse(kwargs).create()
 
 
-def fake_data_tpl_create(*args, **kwargs):
+def fake_dataset_tmpl_create(*args, **kwargs):
     return FakeDatasetTemplateResponse(kwargs).create()
 
 
-def fake_data_tpl_retrieve(rid, *args, **kwargs):
+def fake_dataset_tmpl_retrieve(rid, *args, **kwargs):
     return FakeDatasetTemplateResponse(kwargs).retrieve(rid)
 
 

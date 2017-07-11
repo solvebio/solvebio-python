@@ -10,11 +10,10 @@ class DatasetTemplate(CreateableAPIResource, ListableAPIResource,
     DatasetTemplates contain the schema of a Dataset, including some
     properties and all the fields.
     """
-    USES_V2_ENDPOINT = True
+    RESOURCE_VERSION = 2
 
     LIST_FIELDS = (
         ('id', 'ID'),
         ('name', 'Name'),
-        ('version', 'Version'),
         ('description', 'Description'),
     )
