@@ -23,6 +23,8 @@ class Object(CreateableAPIResource,
 
     LIST_FIELDS = (
         ('id', 'ID'),
+        ('vault_id', 'Vault ID'),
+        ('vault_name', 'Vault Name'),
         ('object_type', 'Object Type'),
         ('path', 'Path'),
         ('filename', 'Filename'),
@@ -63,7 +65,3 @@ class Object(CreateableAPIResource,
         else:
             raise Exception('Object not found with {} {}'
                             .format(name, filter_[name]))
-
-    def help(self):
-        # TODO: add a help file?
-        open_help('/library/{0}'.format(self['id']))

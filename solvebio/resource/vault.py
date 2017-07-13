@@ -65,6 +65,3 @@ class Vault(CreateableAPIResource,
     @classmethod
     def objects(cls, partial_path):
         return cls._list_helper(partial_path, None)
-
-    def help(self):
-        open_help('/library/{0}'.format(self['id']))

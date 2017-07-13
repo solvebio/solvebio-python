@@ -32,7 +32,7 @@ To list all datasets from all vaults, run:
 
     Dataset.all()
 
-To retrieve a dataset by its full path, send your account name, the vault
+To retrieve a dataset by its full path, send your account domain, the vault
 name, and the dataset path, all separated by a colon:
 
     Dataset.get_by_full_path('acme:test-vault:/path/to/my/dataset')
