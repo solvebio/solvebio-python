@@ -1,5 +1,4 @@
 """Solvebio Object API resource"""
-from ..help import open_help
 from ..client import client
 
 from .solveobject import convert_to_solve_object

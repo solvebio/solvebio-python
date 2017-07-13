@@ -22,7 +22,7 @@ class DatasetTests(SolveBioTestCase):
                         'fields_url',
                         'genome_builds', 'is_genomic',
                         'id',
-                        'name', 'updated_at',
+                        'updated_at',
                         'url',
                         'documents_count']
 

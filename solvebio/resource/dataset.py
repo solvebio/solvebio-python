@@ -103,7 +103,7 @@ class Dataset(CreateableAPIResource,
 
         vaults = Vault.all(name=vault_name)
 
-        if len(vaults.data) == 0:
+        if len(vaults) == 0:
             if create_vault:
                 vault = Vault.create(name=vault_name,
                                      require_unique_paths=True,
@@ -114,7 +114,7 @@ class Dataset(CreateableAPIResource,
                 raise Exception('Vault does not exist with name {}'.format(
                     vault_name))
         else:
-            vault = vaults.data[0]
+            vault = vaults[0]
             if vault.name.lower() != vault_name.lower():
                 raise Exception('Vault name from API does not match '
                                 'user-provided value')
@@ -177,11 +177,12 @@ class Dataset(CreateableAPIResource,
                 'up fields')
 
         if name:
+            params.update({
+                'name': name,
+            })
             fields = client.get(self.fields_url, params)
-            for i in fields['data']:
-                if i['name'] == name:
-                    result = DatasetField.retrieve(i['id'])
-                    return result
+            result = DatasetField.retrieve(fields['data'][0]['id'])
+            return result
 
         response = client.get(self.fields_url, params)
         results = convert_to_solve_object(response)

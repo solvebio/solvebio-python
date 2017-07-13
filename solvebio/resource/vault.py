@@ -1,6 +1,5 @@
 """Solvebio Vault API resource"""
-# from ..client import client
-from ..help import open_help
+from ..client import client
 
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
@@ -26,42 +25,51 @@ class Vault(CreateableAPIResource,
     LIST_FIELDS = (
         ('id', 'ID'),
         ('name', 'Name'),
+        ('is_public', 'Is Public'),
+        ('vault_type', 'Vault Type'),
         ('description', 'Description'),
     )
 
-    @classmethod
-    def _list_helper(cls, partial_path, object_type):
+    def _object_list_helper(self, object_type, **params):
         from solvebio import Object
 
-        parts = partial_path.split(':')
-
-        if len(parts) != 2:
-            raise Exception('Requires format account:vault_name')
-
-        account_domain, vault_name = parts
+        params.update({
+            'vault_id': self.id,
+        })
 
         if object_type:
-            items = Object.all(object_type=object_type,
-                               account_domain=account_domain,
-                               name=vault_name)
-        else:
-            items = Object.all(account_domain=account_domain,
-                               name=vault_name)
+            params.update({
+                'object_type': object_type,
+            })
+
+        items = Object.all(**params)
 
         return items
 
-    @classmethod
-    def files(cls, partial_path):
-        return cls._list_helper(partial_path, 'file')
+    def files(self, **params):
+        return self._object_list_helper('file', **params)
+
+    def folders(self, **params):
+        return self._object_list_helper('folder', **params)
+
+    def datasets(self, **params):
+        return self._object_list_helper('dataset', **params)
+
+    def objects(self, **params):
+        print 'id is', self.id
+        return self._object_list_helper(None, **params)
+
+    def search(self, query, **params):
+        params.update({
+            'query': query,
+        })
+        return self._object_list_helper(None, **params)
 
     @classmethod
-    def folders(cls, partial_path):
-        return cls._list_helper(partial_path, 'folder')
-
-    @classmethod
-    def datasets(cls, partial_path):
-        return cls._list_helper(partial_path, 'dataset')
-
-    @classmethod
-    def objects(cls, partial_path):
-        return cls._list_helper(partial_path, None)
+    def get_personal_vault(cls):
+        user = client.get('/v1/user', {})
+        # TODO - this will have to change if the format of the personal vaults
+        # changes.
+        name = 'user-{}'.format(user['id'])
+        vaults = Vault.all(name=name)
+        return Vault.retrieve(vaults.data[0].id)
