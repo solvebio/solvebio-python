@@ -71,7 +71,7 @@ class Dataset(CreateableAPIResource,
         from solvebio import Object
         from solvebio import SolveError
 
-        create_vault = kwargs.pop('create_vault')
+        create_vault = kwargs.pop('create_vault', False)
 
         if path[0] != '/':
             raise Exception(
