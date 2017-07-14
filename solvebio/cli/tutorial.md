@@ -37,7 +37,8 @@ name, and the dataset path, all separated by a colon:
 
     Dataset.get_by_full_path('acme:test-vault:/path/to/my/dataset')
 
-Similarly, to retrieve a publicly available dataset, run:
+Similarly, to retrieve a publicly available dataset, use the `solvebio` 
+account domain, the `public` vault, and the appropriate dataset path:
 
     Dataset.get_by_full_path('solvebio:public:/ICGC/3.0.0-23/Donor')
 
