@@ -57,8 +57,6 @@ class Object(CreateableAPIResource,
             if allow_multiple:
                 return objects
             else:
-                for i in objects:
-                    print i
                 raise Exception('Multiple objects found with {0} {1}'
                                 .format(name, filter_[name]))
         elif len(objects) == 1:

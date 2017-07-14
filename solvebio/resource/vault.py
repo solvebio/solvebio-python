@@ -72,7 +72,6 @@ class Vault(CreateableAPIResource,
         return self._object_list_helper('dataset', **params)
 
     def ls(self, **params):
-        print 'id is', self.id
         return self._object_list_helper(None, **params)
 
     @property
