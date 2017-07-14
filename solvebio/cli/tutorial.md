@@ -55,7 +55,8 @@ methods on a Vault object:
     vault.files()
     vault.folders()
     vault.datasets()
-    vault.objects()  # Includes files, folders, and datatsets
+    vault.ls()  # Includes files, folders, and datatsets
+
 
 Every user has a dedicated, non-shareable, personal vault which is private
 to them.  This vault can be obtained by running:
@@ -65,6 +66,19 @@ to them.  This vault can be obtained by running:
     > 'user-3000'  # This is automatically generated based on your User ID
                    # and cannot be changed.
 
+
+The objects contained in a vault (files, folders, and datasets) can be
+retrieved directly using the Object class, or via the `objects` property of a
+Vault instance:
+
+    Object.retrieve(488353213969592764)
+    Object.all(path='/1000G')
+    Object.all(path='/1000G', vault_id=7205)
+    Object.all(path='/1000G', vault_name='public')
+
+    vault = Vault.get_personal_vault()
+    vault.objects.all(path='/1000G')
+    vault.objects.all(query='GRC')
 
 
 ## Query a Dataset

@@ -8,6 +8,20 @@ from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
 
 
+class ObjectHelper(object):
+    def __init__(self, vault_id):
+        self.vault_id = vault_id
+
+    def all(self, **params):
+        from solvebio import Object
+
+        if 'vault_id' in params:
+            raise Exception('The vault_id is implied and cannot be modified')
+
+        params.update({'vault_id': self.vault_id})
+        return Object.all(**params)
+
+
 class Vault(CreateableAPIResource,
             ListableAPIResource,
             DeletableAPIResource,
@@ -29,6 +43,9 @@ class Vault(CreateableAPIResource,
         ('vault_type', 'Vault Type'),
         ('description', 'Description'),
     )
+
+    def __init__(self, vault_id):
+        super(Vault, self).__init__(vault_id)
 
     def _object_list_helper(self, object_type, **params):
         from solvebio import Object
@@ -54,9 +71,13 @@ class Vault(CreateableAPIResource,
     def datasets(self, **params):
         return self._object_list_helper('dataset', **params)
 
-    def objects(self, **params):
+    def ls(self, **params):
         print 'id is', self.id
         return self._object_list_helper(None, **params)
+
+    @property
+    def objects(self):
+        return ObjectHelper(self.id)
 
     def search(self, query, **params):
         params.update({

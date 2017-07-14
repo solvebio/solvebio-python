@@ -79,7 +79,7 @@ class ListObject(SolveObject):
             return self.request('get', self['links']['prev'], params=params)
         return None
 
-    def objects(self):
+    def solve_objects(self):
         return convert_to_solve_object(self['data'])
 
     def set_tabulate(self, fields, **kwargs):
