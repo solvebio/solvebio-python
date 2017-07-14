@@ -100,6 +100,6 @@ class Vault(CreateableAPIResource,
         user = client.get('/v1/user', {})
         # TODO - this will have to change if the format of the personal vaults
         # changes.
-        name = 'user-{}'.format(user['id'])
+        name = 'user-{0}'.format(user['id'])
         vaults = Vault.all(name=name)
         return Vault.retrieve(vaults.data[0].id)

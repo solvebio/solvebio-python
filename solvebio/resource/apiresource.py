@@ -44,8 +44,8 @@ class APIResource(SolveObject):
     @classmethod
     def class_url(cls):
         """Returns a versioned URI string for this class"""
-        base = 'v{}'.format(getattr(cls, 'RESOURCE_VERSION', '1'))
-        return "/{}/{}".format(base, class_to_api_name(cls.class_name()))
+        base = 'v{0}'.format(getattr(cls, 'RESOURCE_VERSION', '1'))
+        return "/{0}/{1}".format(base, class_to_api_name(cls.class_name()))
 
     def instance_url(self):
         """Get instance URL by ID"""
@@ -128,8 +128,8 @@ class SingletonAPIResource(APIResource):
         Returns a versioned URI string for this class,
         and don't pluralize the class name.
         """
-        base = 'v{}'.format(getattr(cls, 'RESOURCE_VERSION', '1'))
-        return "/{}/{}".format(base, class_to_api_name(
+        base = 'v{0}'.format(getattr(cls, 'RESOURCE_VERSION', '1'))
+        return "/{0}/{1}".format(base, class_to_api_name(
             cls.class_name(), pluralize=False))
 
     def instance_url(self):

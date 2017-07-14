@@ -59,10 +59,10 @@ class Object(CreateableAPIResource,
             else:
                 for i in objects:
                     print i
-                raise Exception('Multiple objects found with {} {}'
+                raise Exception('Multiple objects found with {0} {1}'
                                 .format(name, filter_[name]))
         elif len(objects) == 1:
             return objects[0]
         else:
-            raise NotFoundError('Object not found with {} {}'
+            raise NotFoundError('Object not found with {0} {1}'
                                 .format(name, filter_[name]))

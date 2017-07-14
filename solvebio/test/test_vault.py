@@ -26,4 +26,4 @@ class VaultTests(SolveBioTestCase):
         ]
 
         for f in check_fields:
-            self.assertTrue(f in vault, '{} field is present'.format(f))
+            self.assertTrue(f in vault, '{0} field is present'.format(f))

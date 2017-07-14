@@ -112,7 +112,7 @@ class Dataset(CreateableAPIResource,
                                      vault_type='general',
                                      provider='SolveBio')
             else:
-                raise Exception('Vault does not exist with name {}'.format(
+                raise Exception('Vault does not exist with name {0}'.format(
                     vault_name))
         else:
             vault = vaults.objects()[0]
@@ -132,7 +132,7 @@ class Dataset(CreateableAPIResource,
                                          vault_id=vault.id)
                 if obj.object_type != 'folder':
                     raise Exception(
-                        'Path {} is a {} and not a folder'.format(
+                        'Path {0} is a {1} and not a folder'.format(
                             obj.path, obj.object_type)
                     )
                 else:

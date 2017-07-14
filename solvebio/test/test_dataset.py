@@ -27,7 +27,7 @@ class DatasetTests(SolveBioTestCase):
                         'documents_count']
 
         for f in check_fields:
-            self.assertTrue(f in dataset, '{} field is present'.format(f))
+            self.assertTrue(f in dataset, '{0} field is present'.format(f))
 
     def test_dataset_fields(self):
         dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH)

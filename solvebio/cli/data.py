@@ -100,7 +100,7 @@ def _make_full_path(s1, s2, s3):
 
 def _assert_object_type(obj, object_type):
     if obj.object_type != object_type:
-        raise ObjectTypeError('{} is a {} but must be a folder'.format(
+        raise ObjectTypeError('{0} is a {1} but must be a folder'.format(
             obj.path,
             obj.object_type,
         ))
@@ -174,7 +174,7 @@ def _upload_file(vault_id, parent_object_id, path):
         size=size,
     )
 
-    print('Notice: File created for {} at {}'.format(path, obj.path,))
+    print('Notice: File created for {0} at {1}'.format(path, obj.path,))
 
     upload_url = obj.upload_url
 
@@ -189,11 +189,12 @@ def _upload_file(vault_id, parent_object_id, path):
                                headers=headers)
 
     if upload_resp.status_code != 200:
-        print('Notice: Upload status code for {} was {}'.format(
+        print('Notice: Upload status code for {0} was {1}'.format(
             path, upload_resp.status_code
         ))
     else:
-        print('Notice: Successfully uploaded {} to {}'.format(path, obj.path))
+        print('Notice: Successfully uploaded {0} to {1}'.format(path,
+                                                                obj.path))
 
 
 def _upload_folder(domain, vault, base_remote_path, base_local_path,
@@ -229,7 +230,7 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
             filename=local_start,
         )
 
-        print('Notice: Folder created for {} at {}'.format(
+        print('Notice: Folder created for {0} at {1}'.format(
             base_local_path,
             new_folder.path,
         ))
@@ -268,7 +269,7 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
                     filename=d,
                 )
 
-                print('Notice: Folder created for {} at {}'
+                print('Notice: Folder created for {0} at {1}'
                       .format(os.path.join(root, d), new_obj.path))
 
         # Upload the files that do not yet exist on the remote

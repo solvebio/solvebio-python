@@ -148,5 +148,4 @@ Add the parameter `exact=True` to request exact matches.
 
 ## Next Steps
 
-To learn more about a dataset and its fields, use `dataset.help()`.
-For more information on queries and filters, see the API reference: https://www.solvebio.com/docs/api?python
+For more information on queries and filters, see the API reference: https://docs.solvebio.com/guides/quickstarts/python/

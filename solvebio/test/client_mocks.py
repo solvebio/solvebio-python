@@ -98,7 +98,7 @@ class FakeDatasetResponse(Fake201Response):
                 'domain': None,
             },
             'is_genomic': False,
-            'path': '/{}'.format(data['name']),
+            'path': '/{0}'.format(data['name']),
         }
         self.object.update(data)
 
