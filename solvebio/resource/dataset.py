@@ -104,7 +104,7 @@ class Dataset(CreateableAPIResource,
 
         # Dataset not found, create it step-by-step
         vaults = Vault.all(name=vault_name)
-        if len(vaults.objects()) == 0:
+        if len(vaults.solve_objects()) == 0:
             if create_vault:
                 vault = Vault.create(name=vault_name,
                                      require_unique_paths=True,
@@ -115,7 +115,7 @@ class Dataset(CreateableAPIResource,
                 raise Exception('Vault does not exist with name {0}'.format(
                     vault_name))
         else:
-            vault = vaults.objects()[0]
+            vault = vaults.solve_objects()[0]
             if vault.name.lower() != vault_name.lower():
                 raise Exception('Vault name from API does not match '
                                 'user-provided value')

@@ -26,7 +26,11 @@ class Fake201Response():
         return obj
 
     def all(self, *args, **kwargs):
-        return [self.create()]
+        class ExtendedList(list):
+            def solve_objects(self):
+                return convert_to_solve_object(self)
+
+        return ExtendedList([self.create()])
 
 
 class FakeMigrationResponse(Fake201Response):
