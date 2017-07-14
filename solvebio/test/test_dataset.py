@@ -101,7 +101,7 @@ class DatasetTests(SolveBioTestCase):
     """
     # TODO support a Genomic test dataset (grab clinvar one from API build)
     def test_dataset_beacon(self):
-        obj = Object.retrieve_by_full_path(self.TEST_DATASET_FULL_PATH)
+        obj = Object.get_by_full_path(self.TEST_DATASET_FULL_PATH)
         resp = Dataset.retrieve(obj['dataset_id']).beacon(chromosome="6",
                                                           coordinate=123,
                                                           allele='G')

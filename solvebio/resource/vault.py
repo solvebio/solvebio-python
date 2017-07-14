@@ -43,7 +43,6 @@ class Vault(CreateableAPIResource,
             })
 
         items = Object.all(**params)
-
         return items
 
     def files(self, **params):
@@ -64,6 +63,16 @@ class Vault(CreateableAPIResource,
             'query': query,
         })
         return self._object_list_helper(None, **params)
+
+    @classmethod
+    def get_by_name(cls, name):
+        parts = name.split(':')
+
+        if len(parts) != 2:
+            raise Exception('Name must be of the form account:vault_name')
+        else:
+            vaults = Vault.all(account_domain=parts[0], name=parts[1])
+            return Vault.retrieve(vaults.data[0].id)
 
     @classmethod
     def get_personal_vault(cls):

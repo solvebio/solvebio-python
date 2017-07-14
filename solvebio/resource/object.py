@@ -1,4 +1,6 @@
 """Solvebio Object API resource"""
+from solvebio.errors import NotFoundError
+
 from ..client import client
 
 from .solveobject import convert_to_solve_object
@@ -31,13 +33,13 @@ class Object(CreateableAPIResource,
     )
 
     @classmethod
-    def retrieve_by_full_path(cls, full_path, **params):
+    def get_by_full_path(cls, full_path, **params):
         _params = {'full_path': full_path}
         _params.update(params)
         return cls._retrieve_helper(_params, 'full_path', **params)
 
     @classmethod
-    def retrieve_by_path(cls, path, **params):
+    def get_by_path(cls, path, **params):
         _params = {'path': path}
         _params.update(params)
         return cls._retrieve_helper(_params, 'path', **params)
@@ -62,5 +64,5 @@ class Object(CreateableAPIResource,
         elif len(objects) == 1:
             return objects[0]
         else:
-            raise Exception('Object not found with {} {}'
-                            .format(name, filter_[name]))
+            raise NotFoundError('Object not found with {} {}'
+                                .format(name, filter_[name]))

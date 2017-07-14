@@ -5,6 +5,7 @@ import time
 from ..client import client
 from ..help import open_help
 from ..query import Query
+from ..errors import NotFoundError
 
 from .solveobject import convert_to_solve_object
 from .apiresource import CreateableAPIResource
@@ -60,7 +61,7 @@ class Dataset(CreateableAPIResource,
     def get_by_full_path(cls, full_path, **kwargs):
         from solvebio import Object
 
-        obj = Object.retrieve_by_full_path(full_path)
+        obj = Object.get_by_full_path(full_path)
         dataset = Dataset.retrieve(obj['dataset_id'], **kwargs)
         return dataset
 
@@ -94,9 +95,7 @@ class Dataset(CreateableAPIResource,
                 dataset.save()
 
             return dataset
-        except SolveError:
-            raise
-        except:
+        except NotFoundError:
             pass
 
         # Dataset not found, create it step-by-step
@@ -125,24 +124,19 @@ class Dataset(CreateableAPIResource,
         new_folders = []
         id_map = {'/': None}
 
-        class InvalidObjectTypeException(Exception):
-            pass
-
         while curr_path != '/':
             try:
-                obj = Object.retrieve_by_path(curr_path,
-                                              vault_id=vault.id)
+                obj = Object.get_by_path(curr_path,
+                                         vault_id=vault.id)
                 if obj.object_type != 'folder':
-                    raise InvalidObjectTypeException(
+                    raise Exception(
                         'Path {} is a {} and not a folder'.format(
                             obj.path, obj.object_type)
                     )
                 else:
                     id_map[curr_path] = obj.id
                     break
-            except (InvalidObjectTypeException, SolveError) as e:
-                raise
-            except Exception as e:
+            except NotFoundError:
                 folders_to_create.append(curr_path)
                 curr_path = '/'.join(curr_path.split('/')[:-1])
                 if curr_path == '':

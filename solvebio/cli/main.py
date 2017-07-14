@@ -165,7 +165,27 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'The name of the dataset'
                 }
             ]
-        }
+        },
+        'upload': {
+            'func': data.upload,
+            'help': 'Upload a file or directory to a SolveBio Vault',
+            'arguments': [
+                {
+                    'flags': '--vault',
+                    'help': 'The name of the vault to use when '
+                            'creating a new dataset (via --create-dataset)',
+                },
+                {
+                    'flags': '--path',
+                    'help': 'The path in the vault where the files and '
+                            'folders should be created',
+                },
+                {
+                    'name': 'local_path',
+                    'help': 'The path to the local file or directory to upload'
+                }
+            ]
+        },
     }
 
     def __init__(self, *args, **kwargs):

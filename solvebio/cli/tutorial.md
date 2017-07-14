@@ -44,14 +44,24 @@ Similarly, to retrieve a publicly available dataset, run:
 SolveBio maintains a list of publicly available datasets.  To list them,
 run:
 
-    Vault.list('solvebio:public')
+    vault = Vault.get_by_name('solvebio:public')
 
-You can browse any Vault from the client as well, simply by running:
+You can browse any Vault from the client as well, simply by calling the 
+available methods on a Vault object:
 
-    Vault.files('acme:test-vault')
-    Vault.folders('acme:test-vault')
-    Vault.datasets('acme:test-vault')
-    Vault.objects('acme:test-vault')  # Includes files, folders, and datatsets
+    vault = Vault.get_by_name('solvebio:public')
+    vault.files()
+    vault.folders()
+    vault.datasets()
+    vault.objects()  # Includes files, folders, and datatsets
+    
+Every user has a dedicated, non-shareable, personal vault which is private 
+to them.  This vault can be obtained by running:
+
+    vault = Vault.get_personal_vault()
+    vault.name
+    > 'user-3000'  # This is automatically generated based on your User ID 
+                   # and cannot be changed.
 
 
 
@@ -61,7 +71,7 @@ Every dataset in SolveBio can be queried the same way. You can build queries man
 
 In this example, we will query the latest Variants dataset from ClinVar.
 
-    dataset = Dataset.retrieve('ClinVar/Variants')
+    dataset = Dataset.get_by_full_path('solvebio:public:/ClinVar/3.7.4-2017-01-04/Variants-GRCh38')
     dataset.query()
 
 
@@ -97,24 +107,16 @@ Use the "Filter" class to do more advanced filtering. For example, combine a few
 
 ## Genomic Datasets
 
-Some SolveBio datasets allow querying by genome build. We call these "genomic datasets". To find out if a dataset is genomic, and what genome builds are supported:
-
-    dataset.is_genomic
-    > True
-    dataset.genome_builds
-    > ['GRCh38', 'GRCh37']
-
-
-By default, build 'GRCh37' will be selected if it is available. If not, the most recent build will be selected by default. To manually select a genome build when querying, specify the build as a query parameter:
-
-    dataset.query(genome_build='GRCh38')
-
+Some SolveBio datasets are suffixed with a genome build (GRCh37, GRCh38, 
+NCBI36) to indicate they are genomic datasets.  Please ensure that you 
+are using the dataset whose genomic build is compatible with your other 
+tools and procedures.
 
 On genomic datasets, you may query by position (single nucleotide) or by range:
 
-    dataset.query(genome_build='GRCh37').position('chr1', 976629)
+    dataset.query().position('chr1', 976629)
     > ...
-    dataset.query(genome_build='GRCh37').range('chr1', 976629, 1000000)
+    dataset.query().range('chr1', 976629, 1000000)
     > ...
 
 
@@ -122,9 +124,9 @@ Position and range queries return all results that overlap with the specified co
 Add the parameter `exact=True` to request exact matches.
 
 
-    dataset.query(genome_build='GRCh37').position('chr1', 883516, exact=True)
+    dataset.query().position('chr1', 883516, exact=True)
     > ...
-    dataset.query(genome_build='GRCh37').range('chr9', 136289550, 136289579, exact=True)
+    dataset.query().range('chr9', 136289550, 136289579, exact=True)
     > ...
 
 
@@ -132,5 +134,3 @@ Add the parameter `exact=True` to request exact matches.
 
 To learn more about a dataset and its fields, use `dataset.help()`.
 For more information on queries and filters, see the API reference: https://www.solvebio.com/docs/api?python
-
-

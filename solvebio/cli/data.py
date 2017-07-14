@@ -2,13 +2,23 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import base64
+import binascii
 import gzip
 import json
+import mimetypes
+import os
+import re
 import sys
+
+import requests
 
 import solvebio
 
+from solvebio.client import client
 from solvebio.utils.files import check_gzip_path
+from solvebio.utils.md5sum import md5sum
+from solvebio.errors import ObjectTypeError, NotFoundError
 
 
 def create_dataset(args):
@@ -84,6 +94,217 @@ def create_dataset(args):
     )
 
 
+def _make_full_path(s1, s2, s3):
+    return ':'.join([s1, s2, s3])
+
+
+def _assert_object_type(obj, object_type):
+    if obj.object_type != object_type:
+        raise ObjectTypeError('{} is a {} but must be a folder'.format(
+            obj.path,
+            obj.object_type,
+        ))
+
+def upload(args):
+    """
+    Given a folder or file, upload all the folders and files contained
+    within it, skipping ones that already exist on the remote.
+    """
+    from solvebio import Object, Vault
+
+    vault_name = args.vault
+    # '--path /remote/path1 local/path2'
+    # base_remote_path = /remote/path1
+    # base_local_path = local/path2
+    # local_shart = 'path2'
+    base_remote_path = args.path
+    base_local_path = args.local_path.rstrip('/')
+    local_start = os.path.basename(base_local_path)
+
+    user = client.get('/v1/user', {})
+    domain = user['account']['domain']
+
+    vaults = Vault.all(name=vault_name)
+
+    if len(vaults) == 0:
+        raise Exception('Vault not found')
+    else:
+        vault = vaults.data[0]
+
+    if os.path.isdir(base_local_path):
+        return _upload_folder(domain, vault, base_remote_path, base_local_path,
+                              local_start)
+    else:
+        if base_remote_path != '/':
+            base_full_remote_path = _make_full_path(
+                domain,
+                vault.name,
+                base_remote_path,
+            )
+            base_remote_object = Object.get_by_full_path(
+                base_full_remote_path)
+            _assert_object_type(base_remote_object, 'folder')
+            base_remote_object_id = base_remote_object.id
+            base_remote_path = base_remote_object.path
+        else:
+            base_remote_object_id = None
+            base_remote_path = '/'
+
+        return _upload_file(vault.id,
+                            base_remote_object_id,
+                            base_local_path)
+
+
+def _upload_file(vault_id, parent_object_id, path):
+    from solvebio import Object
+
+    md5, _ = md5sum(path, multipart_threshold=None)
+    _, mimetype = mimetypes.guess_type(path)
+    size = os.path.getsize(path)
+
+    # Create the file, and upload it to the Upload URL
+    obj = Object.create(
+        vault_id=vault_id,
+        parent_object_id=parent_object_id,
+        object_type='file',
+        filename=os.path.basename(path),
+        md5=md5,
+        mimetype=mimetype,
+        size=size,
+    )
+
+    print('Notice: File created for {} at {}'.format(path, obj.path,))
+
+    upload_url = obj.upload_url
+
+    headers = {
+        'Content-MD5': base64.b64encode(binascii.unhexlify(md5)),
+        'Content-Type': mimetype,
+        'Content-Length': str(size),
+    }
+
+    upload_resp = requests.put(upload_url,
+                               data=open(path, 'r'),
+                               headers=headers)
+
+    if upload_resp.status_code != 200:
+        print('Notice: Upload status code for {} was {}'.format(
+            path, upload_resp.status_code
+        ))
+    else:
+        print('Notice: Successfully uploaded {} to {}'.format(path, obj.path))
+
+
+def _upload_folder(domain, vault, base_remote_path, base_local_path,
+                   local_start):
+    from solvebio import Object
+
+    # Create the root folder if it does not exist on the remote
+    try:
+        full_root_path = _make_full_path(
+            domain,
+            vault.name,
+            os.path.join(base_remote_path, local_start),
+        )
+        root_object = Object.get_by_full_path(full_root_path)
+        _assert_object_type(root_object, 'folder')
+    except NotFoundError:
+        if base_remote_path == '/':
+            parent_object_id = None
+        else:
+            base_remote_full_path = _make_full_path(
+                domain,
+                vault.name,
+                base_remote_path,
+            )
+            obj = Object.get_by_full_path(base_remote_full_path)
+            _assert_object_type(obj, 'folder')
+            parent_object_id = obj.id
+
+
+        new_folder = Object.create(
+            vault_id=vault.id,
+            parent_object_id=parent_object_id,
+            object_type='folder',
+            filename=local_start,
+        )
+
+        print('Notice: Folder created for {} at {}'.format(
+            base_local_path,
+            new_folder.path,
+        ))
+
+    for root, dirs, files in os.walk(base_local_path):
+
+        # Create the sub-folders that do not exist on the remote
+        for d in dirs:
+            dirpath = os.path.join(
+                base_remote_path,
+                re.sub('^' + os.path.dirname(base_local_path), '', root).lstrip('/'),  # noqa
+                d
+            )
+            full_path = _make_full_path(domain, vault.name, dirpath)
+
+            try:
+                Object.get_by_full_path(full_path, object_type='folder')
+            except NotFoundError:
+                # Create the folder
+                if os.path.dirname(dirpath) == '/':
+                    parent_object_id = None
+                else:
+                    parent_full_path = _make_full_path(
+                        domain, vault.name,
+                        os.path.dirname(dirpath))
+
+                    parent = Object.get_by_full_path(parent_full_path)
+                    _assert_object_type(parent, 'folder')
+                    parent_object_id = parent.id
+
+                # Make the API call
+                new_obj = Object.create(
+                    vault_id=vault.id,
+                    parent_object_id=parent_object_id,
+                    object_type='folder',
+                    filename=d,
+                )
+
+                print('Notice: Folder created for {} at {}'
+                      .format(os.path.join(root, d), new_obj.path))
+
+        # Upload the files that do not yet exist on the remote
+        for f in files:
+            file_full_path = _make_full_path(
+                domain,
+                vault.name,
+                os.path.join(
+                    base_remote_path,
+                    re.sub('^' + os.path.dirname(base_local_path),
+                           '',
+                           root).lstrip('/'),
+                    f,
+                )
+            )
+            try:
+                Object.get_by_full_path(file_full_path)
+            except NotFoundError:
+                parent_full_path = _make_full_path(
+                    domain,
+                    vault.name,
+                    os.path.dirname(
+                        os.path.join(
+                            base_remote_path,
+                            re.sub('^' + os.path.dirname(base_local_path),
+                                   '',
+                                   root).lstrip('/'),
+                            f,
+                        )
+                    )
+                )
+                parent = Object.get_by_full_path(parent_full_path)
+                _assert_object_type(parent, 'folder')
+                _upload_file(vault.id, parent.id, os.path.join(root, f))
+
+
 def import_file(args):
     """
     Given a dataset and a local path, upload and import the file(s).
@@ -124,6 +345,9 @@ def import_file(args):
 
     # Generate a manifest from the local files
     manifest = solvebio.Manifest()
+    print('args.file =' + str(args.file))
+    import sys
+    sys.exit(1)
     manifest.add(*args.file)
 
     # Create the manifest-based import
