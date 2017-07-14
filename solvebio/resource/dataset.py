@@ -66,7 +66,7 @@ class Dataset(CreateableAPIResource,
         return dataset
 
     @classmethod
-    def get_or_create_by_name(cls, vault_name, path, name, **kwargs):
+    def get_or_create(cls, vault_name, path, name, **kwargs):
         from solvebio import Vault
         from solvebio import Object
         from solvebio import SolveError

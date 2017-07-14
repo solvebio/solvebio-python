@@ -80,7 +80,7 @@ def create_dataset(args):
         description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
     genome_builds = [args.genome_build] if is_genomic else None
-    return solvebio.Dataset.get_or_create_by_name(
+    return solvebio.Dataset.get_or_create(
         vault_name=args.vault,
         path=args.path,
         name=args.dataset_name,
