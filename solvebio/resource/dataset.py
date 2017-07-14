@@ -73,8 +73,13 @@ class Dataset(CreateableAPIResource,
 
         create_vault = kwargs.pop('create_vault')
 
-        path = re.sub('//+', '/', path)
+        if path[0] != '/':
+            raise Exception(
+                'Paths are absolute and must begin with a "/"'
+                .format(vault_name)
+            )
 
+        path = re.sub('//+', '/', path)
         if path != '/':
             path.rstrip('/')
 
@@ -99,10 +104,8 @@ class Dataset(CreateableAPIResource,
             pass
 
         # Dataset not found, create it step-by-step
-
         vaults = Vault.all(name=vault_name)
-
-        if len(vaults) == 0:
+        if len(vaults.objects()) == 0:
             if create_vault:
                 vault = Vault.create(name=vault_name,
                                      require_unique_paths=True,
@@ -113,7 +116,7 @@ class Dataset(CreateableAPIResource,
                 raise Exception('Vault does not exist with name {}'.format(
                     vault_name))
         else:
-            vault = vaults[0]
+            vault = vaults.objects()[0]
             if vault.name.lower() != vault_name.lower():
                 raise Exception('Vault name from API does not match '
                                 'user-provided value')
