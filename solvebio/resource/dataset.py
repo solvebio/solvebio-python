@@ -76,7 +76,6 @@ class Dataset(CreateableAPIResource,
         if path[0] != '/':
             raise Exception(
                 'Paths are absolute and must begin with a "/"'
-                .format(vault_name)
             )
 
         path = re.sub('//+', '/', path)
@@ -349,6 +348,8 @@ class Dataset(CreateableAPIResource,
 
         if not follow:
             return active_tasks
+        else:
+            print("Found {0} active tasks".format(len(active_tasks)))
 
         while True:
             for task in active_tasks:
