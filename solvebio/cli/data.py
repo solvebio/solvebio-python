@@ -105,6 +105,7 @@ def _assert_object_type(obj, object_type):
             obj.object_type,
         ))
 
+
 def upload(args):
     """
     Given a folder or file, upload all the folders and files contained
@@ -220,7 +221,6 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
             obj = Object.get_by_full_path(base_remote_full_path)
             _assert_object_type(obj, 'folder')
             parent_object_id = obj.id
-
 
         new_folder = Object.create(
             vault_id=vault.id,
