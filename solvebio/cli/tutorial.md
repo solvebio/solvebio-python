@@ -37,7 +37,7 @@ name, and the dataset path, all separated by a colon:
 
     Dataset.get_by_full_path('acme:test-vault:/path/to/my/dataset')
 
-Similarly, to retrieve a publicly available dataset, use the `solvebio` 
+Similarly, to retrieve a publicly available dataset, use the `solvebio`
 account domain, the `public` vault, and the appropriate dataset path:
 
     Dataset.get_by_full_path('solvebio:public:/ICGC/3.0.0-23/Donor')
@@ -46,22 +46,23 @@ SolveBio maintains a list of publicly available datasets.  To list them,
 run:
 
     vault = Vault.get_by_name('solvebio:public')
+    vault.datasets()
 
-You can browse any Vault from the client as well, simply by calling the 
-available methods on a Vault object:
+You can browse any Vault from the client simply by calling the appropriate
+methods on a Vault object:
 
     vault = Vault.get_by_name('solvebio:public')
     vault.files()
     vault.folders()
     vault.datasets()
     vault.objects()  # Includes files, folders, and datatsets
-    
-Every user has a dedicated, non-shareable, personal vault which is private 
+
+Every user has a dedicated, non-shareable, personal vault which is private
 to them.  This vault can be obtained by running:
 
     vault = Vault.get_personal_vault()
     vault.name
-    > 'user-3000'  # This is automatically generated based on your User ID 
+    > 'user-3000'  # This is automatically generated based on your User ID
                    # and cannot be changed.
 
 
@@ -108,9 +109,9 @@ Use the "Filter" class to do more advanced filtering. For example, combine a few
 
 ## Genomic Datasets
 
-Some SolveBio datasets are suffixed with a genome build (GRCh37, GRCh38, 
-NCBI36) to indicate they are genomic datasets.  Please ensure that you 
-are using the dataset whose genomic build is compatible with your other 
+Some SolveBio datasets are suffixed with a genome build (GRCh37, GRCh38,
+NCBI36) to indicate they are genomic datasets.  Please ensure that you
+are using the dataset whose genomic build is compatible with your other
 tools and procedures.
 
 On genomic datasets, you may query by position (single nucleotide) or by range:
