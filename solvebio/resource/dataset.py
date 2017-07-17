@@ -78,9 +78,10 @@ class Dataset(CreateableAPIResource,
                 'Paths are absolute and must begin with a "/"'
             )
 
+        # Remove double slashes and strip trailing slash
         path = re.sub('//+', '/', path)
         if path != '/':
-            path.rstrip('/')
+            path = path.rstrip('/')
 
         try:
             test_path = Dataset.make_full_path(vault_name, path, name)
