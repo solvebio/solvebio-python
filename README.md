@@ -93,16 +93,18 @@ A vault is similar to a filesystem in that it provides a folder-based
 hierarchy in which additional folders, files, and SolveBio Datasets can be
 stored.  The folders, files, and SolveBio Datasets in a vault are
 collectively referred to as "objects" and can be accessed using the
-`Vault` or `Object` class.
+`Vault` or `Object` classes.
 
 Vaults have an advanced permission model that provides for three different
 levels of access: read, write, and admin.  Permissions are settable through
 the SolveBio UI.  For detailed information on the permission model, please
 visit this link:
 
+TODO: Link
+
 As part of the migration onto Version 2, SolveBio has automatically applied
-the permissions users have set on Depositories to the new Vaults which we
-have created to replace them.
+the permissions set on Depositories to the new Vaults which we have created to 
+replace them.
 
 It is likely that any scripts you have written which utilize the
 Python client will need to be modified to be compatible with Version 2.
@@ -110,7 +112,7 @@ Below is an exhaustive list of all the things that have changed in the
 user-facing methods of the client.  If you encounter any issues migrating
 your code, please submit a support ticket and we would be happy to assist you.
 
-Changes:
+### Changes:
 
 1. Dataset retrieval by name
 
@@ -122,8 +124,8 @@ For example, to create dataset named "July Analysis", in a
 vault named `"Research", in the "/Tests" folder in that vault, make the
 following call:
 
-    Old: Dataset.get_or_create_by_full_name('analysis/Tests/July Analysis')
-    New: Dataset.get_or_create('analysis', '/Tests', 'July Analysis')
+    Old: Dataset.get_or_create_by_full_name('Research/Tests/July Analysis')
+    New: Dataset.get_or_create('Research', '/Tests', 'July Analysis')
 
 If you wish to automatically create the vault if it does not exist, add the
 `create_vault=True` flag.
@@ -132,7 +134,7 @@ If you wish to automatically create the vault if it does not exist, add the
 
 "Full Path" is a triplet consisting of account domain, vault name, and
 the dataset's path in the vault.  Retrieval of a dataset by its full path can
-be performed in a single call.
+be performed in a single call:
 
     Dataset.get_by_full_path("account_domain:vault_name:object_path")
     Dataset.get_by_full_path("solvebio:public:/ICGC/3.0.0-23/Donor")
@@ -154,7 +156,7 @@ name, e.g. `Variants-GRCh38`.
 provided by the `Object` class.  Objects are files, folders, or SolveBio
 Datasets that exist inside a vault.  As part of your account's migration onto
 Version 2 of SolveBio, we have automatically moved datasets located in
-Depository X and DepositoryVersion Y to a Vault named "X" in a folder named
+Depository X and DepositoryVersion Y to a Vault named "X" and a folder named
 "Y".  If the dataset being migrated had the `genome_build` property set, the
 dataset was renamed to $original_name-$genome_build".  Otherwise, the name
 remained unchanged.
@@ -169,26 +171,6 @@ name:
 
 
     create-dataset --capacity=small --vault=test --path=/  test-dataset
-
-
-Enhanced Command-Line Uploading
--------------------------------
-
-A new command-line method called "upload" has been added.  This method
-allows users to upload a file or folder to a vault.  If a folder is
-uploaded, calling the "upload" method again will result in a cross-checking
-of the local folder and SolveBio folder, and upload/create only the
-local files and folders that do not already exist on SolveBio.
-
-    solvebio upload --vault analysis --path=/july_2017  local/foo/bar
-
-This command will create a folder named `/july_2017/bar` in the `analysis`
-vault, and upload everything inside `local/foo/bar` on the local machine to
-`/july_2017/bar` in that vault.
-
-Note that comparison is performed by filename, not by file content.  Thus, the
-"upload" command will never replace a remote file with a local file of the same
-name but with updated contents.
 
 
 Vault Browsing
@@ -231,3 +213,23 @@ Then, call a shortcut method:
 Search for files, folders, and datasets in a vault using the `search` method:
 
     vault.search('hello')
+
+
+Enhanced Command-Line Uploading
+-------------------------------
+
+A new command-line method called "upload" has been added.  This method
+allows users to upload a file or folder to a vault.  If a folder is
+uploaded, calling the "upload" method again will result in a cross-checking
+of the local folder and SolveBio folder, and upload/create only the
+local files and folders that do not already exist on SolveBio.
+
+    solvebio upload --vault analysis --path=/july_2017  local/foo/bar
+
+This command will create a folder named `/july_2017/bar` in the `analysis`
+vault, and upload everything inside `local/foo/bar` on the local machine to
+`/july_2017/bar` in that vault.
+
+Note that comparison is performed by filename, not by file content.  Thus, the
+"upload" command will never replace a remote file with a local file of the same
+name but with updated contents.
