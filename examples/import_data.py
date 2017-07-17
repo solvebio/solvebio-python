@@ -14,11 +14,11 @@ dataset = solvebio.Dataset.get_or_create(
 manifest = solvebio.Manifest()
 manifest.add_file('path/to/file.vcf.gz')
 
-# Create the import and automatically approve it
+# Create the import
 imp = solvebio.DatasetImport.create(
     dataset_id=dataset.id,
-    manifest=manifest.manifest,
-    auto_approve=True)
+    manifest=manifest.manifest
+)
 
 # Prints updates as the data is processed
 # and indexed into SolveBio
@@ -42,7 +42,7 @@ new_records = [
 
 imp = solvebio.DatasetImport.create(
     dataset_id=dataset.id,
-    data_records=new_records,
-    auto_approve=True)
+    data_records=new_records
+)
 
 imp.follow()

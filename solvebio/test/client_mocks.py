@@ -55,7 +55,6 @@ class FakeMigrationResponse(Fake201Response):
             'target': None,
             'target_fields': [],
             'include_errors': False,
-            'auto_approve': False,
         }
         self.object.update(data)
 

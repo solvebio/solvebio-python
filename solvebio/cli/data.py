@@ -317,7 +317,6 @@ def import_file(args):
         * vault_name
         * genome_build
         * follow (default: False)
-        * auto_approve (default: False)
         * dataset
         * capacity
         * file (list)
@@ -353,8 +352,8 @@ def import_file(args):
         dataset_id=dataset.id,
         manifest=manifest.manifest,
         genome_build=args.genome_build,
-        commit_mode=args.commit_mode,
-        auto_approve=args.auto_approve)
+        commit_mode=args.commit_mode
+    )
 
     if args.follow:
         imp.follow()
