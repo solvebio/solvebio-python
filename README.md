@@ -121,13 +121,12 @@ Old: Dataset.get_or_create_by_full_name(full_name)
 New: Dataset.get_or_create(vault_name, parent_path, dataset_name)
 ```
 
-For example, to create dataset named "July Analysis", in a
-vault named `"Research", in the "/Tests" folder in that vault, make the
-following call:
+For example, to create dataset named "EGFR_analysis" in the "/July-2017" folder
+of the "Research" vault, make the following call:
     
 ```
-Old: Dataset.get_or_create_by_full_name('Research/Tests/July Analysis')
-New: Dataset.get_or_create('Research', '/Tests', 'July Analysis')
+Dataset.get_or_create($vault_name, $parent_path, $name)
+Dataset.get_or_create('Research', '/July_2017', 'EGFR_analysis')
 ```
 
 If you wish to automatically create the vault if it does not exist, add the
@@ -162,7 +161,7 @@ Dataset.get_by_full_path("solvebio:public:/ClinVar/3.7.0-2015-12-06/Variants-GRC
 provided by the `Object` class.  Objects are files, folders, or SolveBio
 Datasets that exist inside a vault.  As part of your account's migration onto
 Version 2 of SolveBio, we have automatically moved datasets located in
-Depository X and DepositoryVersion Y to a Vault named "X" and a folder named
+Depository "X" and DepositoryVersion "Y" to a Vault named "X" and a folder named
 "Y".  If the dataset being migrated had the `genome_build` property set, the
 dataset was renamed to $original_name-$genome_build".  Otherwise, the name
 remained unchanged.
@@ -172,9 +171,8 @@ remained unchanged.
 The `objects` property of a resource has been renamed `solve_objects`.
 
 6.  The `import` and `create-dataset` command-line utilities now require
-`--vault` and `--path` arguments.  The `--dataset` argument is now just a
-name:
-
+`--vault` and `--path` arguments.  The `dataset` argument (`test-dataset` 
+below) no longer can contain slashes.
 
 ```
 create-dataset --capacity=small --vault=test --path=/  test-dataset
@@ -219,7 +217,6 @@ vault.files()
 vault.folders()
 vault.datasets()
 vault.objects()  # Includes files, folders, and datasets
-
 ```
 
 
