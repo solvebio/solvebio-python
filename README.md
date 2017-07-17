@@ -116,19 +116,19 @@ your code, please submit a support ticket and we would be happy to assist you.
 
 1. Dataset retrieval by name
 
-    ```
-    Old: Dataset.get_or_create_by_full_name(full_name)
-    New: Dataset.get_or_create(vault_name, parent_path, dataset_name)
-    ```
+```
+Old: Dataset.get_or_create_by_full_name(full_name)
+New: Dataset.get_or_create(vault_name, parent_path, dataset_name)
+```
 
 For example, to create dataset named "July Analysis", in a
 vault named `"Research", in the "/Tests" folder in that vault, make the
 following call:
     
-    ```
-    Old: Dataset.get_or_create_by_full_name('Research/Tests/July Analysis')
-    New: Dataset.get_or_create('Research', '/Tests', 'July Analysis')
-    ```
+```
+Old: Dataset.get_or_create_by_full_name('Research/Tests/July Analysis')
+New: Dataset.get_or_create('Research', '/Tests', 'July Analysis')
+```
 
 If you wish to automatically create the vault if it does not exist, add the
 `create_vault=True` flag.
@@ -139,11 +139,10 @@ If you wish to automatically create the vault if it does not exist, add the
 the dataset's path in the vault.  Retrieval of a dataset by its full path can
 be performed in a single call:
 
-
-    ```
-    Dataset.get_by_full_path("account_domain:vault_name:object_path")
-    Dataset.get_by_full_path("solvebio:public:/ICGC/3.0.0-23/Donor")
-    ```
+```
+Dataset.get_by_full_path("account_domain:vault_name:object_path")
+Dataset.get_by_full_path("solvebio:public:/ICGC/3.0.0-23/Donor")
+```
 
 3.  Removal of `genome_build` filter
 
@@ -151,9 +150,9 @@ The `genome_build` field on the Dataset entity is no longer a supported
 filter.  The genome build of public datasets is now indicated in the dataset
 name, e.g. `Variants-GRCh38`.
 
-    ```
-    Dataset.get_by_full_path("solvebio:public:/ClinVar/3.7.0-2015-12-06/Variants-GRCh38")
-    ```
+```
+Dataset.get_by_full_path("solvebio:public:/ClinVar/3.7.0-2015-12-06/Variants-GRCh38")
+```
 
 4.  Removal of `Depository` and `DepositoryVersion` classes.
 
@@ -177,9 +176,9 @@ The `objects` property of a resource has been renamed `solve_objects`.
 name:
 
 
-    ```
-    create-dataset --capacity=small --vault=test --path=/  test-dataset
-    ```
+```
+create-dataset --capacity=small --vault=test --path=/  test-dataset
+```
 
 Vault Browsing
 --------------
@@ -195,9 +194,9 @@ different vault.
 
 Your personal dataset can be retrieved using the following method:
 
-    ```
-    Vault.get_personal_vault()
-    ```
+```
+Vault.get_personal_vault()
+```
 
 
 ### Shortcuts
@@ -206,29 +205,29 @@ shortcuts.
 
 First, retrieve a vault:
 
-    ```
-    vault = Vault.get_personal_vault()
-    vault = Vault.get_by_name('solvebio:public')
-    vault = Vault.get_by_name('your_account_domain:vault_name')
-    ```
+```
+vault = Vault.get_personal_vault()
+vault = Vault.get_by_name('solvebio:public')
+vault = Vault.get_by_name('your_account_domain:vault_name')
+```
 
 
 Then, call a shortcut method:
  
-    ```
-    vault.files()
-    vault.folders()
-    vault.datasets()
-    vault.objects()  # Includes files, folders, and datasets
-    
-    ```
+```
+vault.files()
+vault.folders()
+vault.datasets()
+vault.objects()  # Includes files, folders, and datasets
+
+```
 
 
 Search for files, folders, and datasets in a vault using the `search` method:
     
-    ```
-    vault.search('hello')
-    ```
+```
+vault.search('hello')
+```
 
 
 Enhanced Command-Line Uploading
@@ -240,9 +239,9 @@ uploaded, calling the "upload" method again will result in a cross-checking
 of the local folder and SolveBio folder, and upload/create only the
 local files and folders that do not already exist on SolveBio.
 
-    ```
-    solvebio upload --vault analysis --path=/july_2017  local/foo/bar
-    ```
+```
+solvebio upload --vault analysis --path=/july_2017  local/foo/bar
+```
 
 This command will create a folder named `/july_2017/bar` in the `analysis`
 vault, and upload everything inside `local/foo/bar` on the local machine to
