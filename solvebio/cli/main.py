@@ -95,13 +95,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Follow the import\'s progress until it completes'
                 },
                 {
-                    'flags': '--auto-approve',
-                    'action': 'store_true',
-                    'default': False,
-                    'help': 'Automatically approve all dataset commits for '
-                            'the import (may require admin role)'
-                },
-                {
                     'flags': '--commit-mode',
                     'default': 'append',
                     'help': 'Commit mode to use when importing data. '

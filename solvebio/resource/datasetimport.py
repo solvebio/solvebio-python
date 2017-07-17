@@ -65,23 +65,11 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
             return
 
         print("Validation completed. Beginning indexing of commits.")
-        unapproved_commits = [c for c in self.dataset_commits
-                              if not c.is_approved]
-        if unapproved_commits:
-            # Nothing we can do here!
-            print("One or more commits need admin approval.")
-            print("Visit the following page to approve them: "
-                  "https://my.solvebio.com/jobs/imports/{0}"
-                  .format(self.id))
 
-        # follow approved, unfinished commits
+        # Follow unfinished commits
         while True:
-            approved_commits = [
-                c for c in self.dataset_commits if c.is_approved
-            ]
-
             unfinished_commits = [
-                c for c in approved_commits
+                c for c in self.dataset_commits
                 if c.status in ['queued', 'running']
             ]
 
@@ -89,10 +77,10 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
                 print("All commits have finished processing")
                 break
 
-            if len(approved_commits) > 1:
-                print("{0}/{1} approved commits have finished processing"
-                      .format(len(approved_commits) - len(unfinished_commits),
-                              len(approved_commits)))
+            if len(unfinished_commits) > 1:
+                print("{0}/{1} commits have finished processing"
+                      .format(len(unfinished_commits),
+                              len(self.dataset_commits)))
 
             # prints a status for each one
             for commit in unfinished_commits:

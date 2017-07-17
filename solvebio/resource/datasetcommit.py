@@ -29,19 +29,11 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
         return DatasetImport.retrieve(self['dataset_import_id'])
 
     def follow(self, loop=True):
-        if not self.is_approved:
-            # Nothing we can do here!
-            print("This commit needs admin approval.")
-            print("Visit the following page to approve them: "
-                  "https://my.solvebio.com/jobs/imports/{0}"
-                  .format(self.id))
-            return
-
         print("View your commit status on MESH: "
               "https://my.solvebio.com/jobs/commits/{0}"
               .format(self.id))
 
-        # follow approved, unfinished commits
+        # follow unfinished commits
         while self.status in ['queued', 'running']:
             if self.status == 'running':
                 print("Commit '{0}' ({4}) is {1}: {2}/{3} records indexed"

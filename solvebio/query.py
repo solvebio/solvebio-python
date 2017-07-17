@@ -678,7 +678,6 @@ class Query(object):
 
         * target_fields
         * include_errors
-        * auto_approve
         * commit_mode
 
         """

@@ -11,12 +11,12 @@ To run the example commands, download the [example_input.json](https://github.co
 
 In your command line:
 ```bash
-solvebio import DOMAIN:ExampleDepo/1.0.0/ExampleDataset example_input.json --create-dataset --auto-approve
+solvebio import DOMAIN:ExampleDepo/1.0.0/ExampleDataset example_input.json --create-dataset
 ```
 
 If you want to add SolveBio entities to your data, you can with a template file (you can also do it later on the SolveBio web interface).
 ```
-solvebio import DOMAIN:ExampleDepo/1.0.0/ExampleEntityDataset example_input.json --create-dataset --auto-approve --template-file example_template.json
+solvebio import DOMAIN:ExampleDepo/1.0.0/ExampleEntityDataset example_input.json --create-dataset --template-file example_template.json
 ```
 
 To get a full list of the arguments options available, try

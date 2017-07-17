@@ -313,7 +313,6 @@ class Dataset(CreateableAPIResource,
         * source_params
         * target_fields
         * include_errors
-        * auto_approve
         * commit_mode
 
         """
