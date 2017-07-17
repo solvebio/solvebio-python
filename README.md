@@ -80,3 +80,154 @@ To tag new versions:
 
     git tag `cat solvebio/version.py | cut -d "'" -f 2`
     git push --tags origin master
+
+
+Migrating to version 2
+----------------------
+
+Version 2 of the Python client removes support for the `Depository` and
+`DepositoryVersion` classes, and adds support for the `Vault` and `Object`
+classes.
+
+A vault is similar to a filesystem in that it provides a folder-based
+hierarchy in which additional folders, files, and SolveBio Datasets can be
+stored.  The folders, files, and SolveBio Datasets in a vault are
+collectively referred to as "objects" and can be accessed using the
+`Vault` or `Object` class.
+
+Vaults have an advanced permission model that provides for three different
+levels of access: read, write, and admin.  Permissions are settable through
+the SolveBio UI.  For detailed information on the permission model, please
+visit this link:
+
+As part of the migration onto Version 2, SolveBio has automatically applied
+the permissions users have set on Depositories to the new Vaults which we
+have created to replace them.
+
+It is likely that any scripts you have written which utilize the
+Python client will need to be modified to be compatible with Version 2.
+Below is an exhaustive list of all the things that have changed in the
+user-facing methods of the client.  If you encounter any issues migrating
+your code, please submit a support ticket and we would be happy to assist you.
+
+Changes:
+
+1. Dataset retrieval by name
+
+
+    Old: Dataset.get_or_create_by_full_name(full_name)
+    New: Dataset.get_or_create(vault_name, parent_path, dataset_name)
+
+For example, to create dataset named "July Analysis", in a
+vault named `"Research", in the "/Tests" folder in that vault, make the
+following call:
+
+    Old: Dataset.get_or_create_by_full_name('analysis/Tests/July Analysis')
+    New: Dataset.get_or_create('analysis', '/Tests', 'July Analysis')
+
+If you wish to automatically create the vault if it does not exist, add the
+`create_vault=True` flag.
+
+2.  Dataset retrieval by Full Path
+
+"Full Path" is a triplet consisting of account domain, vault name, and
+the dataset's path in the vault.  Retrieval of a dataset by its full path can
+be performed in a single call.
+
+    Dataset.get_by_full_path("account_domain:vault_name:object_path")
+    Dataset.get_by_full_path("solvebio:public:/ICGC/3.0.0-23/Donor")
+
+
+3.  Removal of `genome_build` filter
+
+The `genome_build` field on the Dataset entity is no longer a supported
+filter.  The genome build of public datasets is now indicated in the dataset
+name, e.g. `Variants-GRCh38`.
+
+    Dataset.get_by_full_path("solvebio:public:/ClinVar/3.7.0-2015-12-06/Variants-GRCh38")
+
+4.  Removal of `Depository` and `DepositoryVersion` classes.
+
+`Depository` has been replaced by the `Vault` class.
+
+`DepositoryVersion` was an inflexible class whose functionality is now
+provided by the `Object` class.  Objects are files, folders, or SolveBio
+Datasets that exist inside a vault.  As part of your account's migration onto
+Version 2 of SolveBio, we have automatically moved datasets located in
+Depository X and DepositoryVersion Y to a Vault named "X" in a folder named
+"Y".  If the dataset being migrated had the `genome_build` property set, the
+dataset was renamed to $original_name-$genome_build".  Otherwise, the name
+remained unchanged.
+
+5.  Renaming of "objects" to "solve_objects"
+
+The `objects` property of a resource has been renamed `solve_objects`.
+
+6.  The `import` and `create-dataset` command-line utilities now require
+`--vault` and `--path` arguments.  The `--dataset` argument is now just a
+name:
+
+
+    create-dataset --capacity=small --vault=test --path=/  test-dataset
+
+
+Enhanced Command-Line Uploading
+-------------------------------
+
+A new command-line method called "upload" has been added.  This method
+allows users to upload a file or folder to a vault.  If a folder is
+uploaded, calling the "upload" method again will result in a cross-checking
+of the local folder and SolveBio folder, and upload/create only the
+local files and folders that do not already exist on SolveBio.
+
+    solvebio upload --vault analysis --path=/july_2017  local/foo/bar
+
+This command will create a folder named `/july_2017/bar` in the `analysis`
+vault, and upload everything inside `local/foo/bar` on the local machine to
+`/july_2017/bar` in that vault.
+
+Note that comparison is performed by filename, not by file content.  Thus, the
+"upload" command will never replace a remote file with a local file of the same
+name but with updated contents.
+
+
+Vault Browsing
+--------------
+
+
+### Your Personal Vault
+
+Each user has a personal vault that is accessible to that user only.  Other
+users cannot list the contents of this vault, cannot access the objects
+contained in it, and cannot modify it in any way.  To provide access to
+objects stored in your personal vault, you must copy the objects into a
+different vault.
+
+Your personal dataset can be retrieved using the following method:
+
+    Vault.get_personal_vault()
+
+
+### Shortcuts
+Browsing the contents of a vault can be easily performed using the following
+shortcuts.
+
+First, retrieve a vault:
+
+    vault = Vault.get_personal_vault()
+    vault = Vault.get_by_name('solvebio:public')
+    vault = Vault.get_by_name('your_account_domain:vault_name')
+
+
+Then, call a shortcut method:
+
+
+    vault.files()
+    vault.folders()
+    vault.datasets()
+    vault.objects()  # Includes files, folders, and datasets
+
+
+Search for files, folders, and datasets in a vault using the `search` method:
+
+    vault.search('hello')
