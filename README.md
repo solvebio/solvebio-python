@@ -103,7 +103,7 @@ visit this link:
 TODO: Link
 
 As part of the migration onto Version 2, SolveBio has automatically applied
-the permissions set on Depositories to the new Vaults which we have created to 
+the permissions set on Depositories to the new Vaults which we have created to
 replace them.
 
 It is likely that any scripts you have written which utilize the
@@ -124,7 +124,7 @@ New: Dataset.get_or_create(vault_name, parent_path, dataset_name)
 For example, to create dataset named "July Analysis", in a
 vault named `"Research", in the "/Tests" folder in that vault, make the
 following call:
-    
+
 ```
 Old: Dataset.get_or_create_by_full_name('Research/Tests/July Analysis')
 New: Dataset.get_or_create('Research', '/Tests', 'July Analysis')
@@ -142,6 +142,15 @@ be performed in a single call:
 ```
 Dataset.get_by_full_path("account_domain:vault_name:object_path")
 Dataset.get_by_full_path("solvebio:public:/ICGC/3.0.0-23/Donor")
+```
+
+In order to get the full path of an existing dataset, search for datasets
+within a vault.
+
+```
+# Get all of the Clinvar datasets that are version 3 and above
+v = Vault.get_by_name(name='solvebio:public')
+v.datasets(query='Clinvar/3')
 ```
 
 3.  Removal of `genome_build` filter
@@ -175,10 +184,14 @@ The `objects` property of a resource has been renamed `solve_objects`.
 `--vault` and `--path` arguments.  The `--dataset` argument is now just a
 name:
 
-
 ```
 create-dataset --capacity=small --vault=test --path=/  test-dataset
 ```
+
+7. Removal of DatasetCommit approval. The `auto_approve`, `is_approved` and
+`approved_by` attributes have been removed. The `/approve` endpoint has also
+been removed. All commits will be approved automatically.
+
 
 Vault Browsing
 --------------
@@ -213,7 +226,7 @@ vault = Vault.get_by_name('your_account_domain:vault_name')
 
 
 Then, call a shortcut method:
- 
+
 ```
 vault.files()
 vault.folders()
@@ -224,7 +237,7 @@ vault.objects()  # Includes files, folders, and datasets
 
 
 Search for files, folders, and datasets in a vault using the `search` method:
-    
+
 ```
 vault.search('hello')
 ```
