@@ -82,7 +82,7 @@ To tag new versions:
     git push --tags origin master
 
 
-Migrating to version 2
+Migrating to Version 2
 ----------------------
 
 Version 2 of the Python client removes support for the `Depository` and
