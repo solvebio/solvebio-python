@@ -346,9 +346,6 @@ def import_file(args):
 
     # Generate a manifest from the local files
     manifest = solvebio.Manifest()
-    print('args.file =' + str(args.file))
-    import sys
-    sys.exit(1)
     manifest.add(*args.file)
 
     # Create the manifest-based import
