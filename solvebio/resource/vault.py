@@ -107,7 +107,8 @@ class Vault(CreateableAPIResource,
 
             if len(vaults.data) == 0:
                 raise Exception('Vault does not exist with name "{0}" '
-                                'for domain "{1}"'.format(name, account_domain))
+                                'for domain "{1}"'.format(name,
+                                                          account_domain))
             else:
                 return Vault.retrieve(vaults.data[0].id)
         else:
