@@ -86,13 +86,33 @@ class Vault(CreateableAPIResource,
 
     @classmethod
     def get_by_name(cls, name):
+        from solvebio import SolveError
+
         parts = name.split(':')
 
-        if len(parts) != 2:
-            raise Exception('Name must be of the form account:vault_name')
+        if len(parts) == 1 or len(parts) == 2:
+            if len(parts) == 1:
+                name = parts[0]
+
+                try:
+                    user = client.get('/v1/user', {})
+                    account_domain = user['account']['domain']
+                except SolveError as e:
+                    raise Exception("Error obtaining account domain: "
+                                    "{0}".format(e))
+            else:
+                account_domain, name = parts
+
+            vaults = Vault.all(account_domain=account_domain, name=name)
+
+            if len(vaults.data) == 0:
+                raise Exception('Vault does not exist with name "{0}" '
+                                'for domain "{1}"'.format(name, account_domain))
+            else:
+                return Vault.retrieve(vaults.data[0].id)
         else:
-            vaults = Vault.all(account_domain=parts[0], name=parts[1])
-            return Vault.retrieve(vaults.data[0].id)
+            raise Exception('Name must be of the form "name" or '
+                            '"account:vault_name"')
 
     @classmethod
     def get_personal_vault(cls):

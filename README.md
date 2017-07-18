@@ -221,6 +221,7 @@ First, retrieve a vault:
 vault = Vault.get_personal_vault()
 vault = Vault.get_by_name('solvebio:public')
 vault = Vault.get_by_name('your_account_domain:vault_name')
+vault = Vault.get_by_name('vault_name')  # Searches inside your account domain
 ```
 
 
