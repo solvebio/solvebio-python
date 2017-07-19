@@ -12,9 +12,9 @@ from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
+
+from .task import Task
 from .datasetfield import DatasetField
-from .datasetimport import DatasetImport
-from .datasetcommit import DatasetCommit
 from .datasetexport import DatasetExport
 from .datasetmigration import DatasetMigration
 
@@ -338,26 +338,23 @@ class Dataset(CreateableAPIResource,
 
         return migration
 
-    def tasks(self, follow=False):
+    def activity(self, follow=False):
         statuses = ['running', 'queued', 'pending']
-        active_tasks = \
-            list(DatasetImport.all(dataset=self.id, status=statuses)) + \
-            list(DatasetCommit.all(dataset=self.id, status=statuses)) + \
-            list(DatasetExport.all(dataset=self.id, status=statuses)) + \
-            list(DatasetMigration.all(target=self.id, status=statuses))
+        activity = list(Task.all(target_object=self.id,
+                                 status=','.join(statuses)))
 
+        print("Found {0} active task(s)".format(len(activity)))
         if not follow:
-            return active_tasks
-        else:
-            print("Found {0} active tasks".format(len(active_tasks)))
+            return activity
 
         while True:
-            for task in active_tasks:
+            if not activity:
+                break
+
+            for task in activity:
                 task.follow()
 
             time.sleep(5.0)
-            active_tasks = self.tasks()
-            if not active_tasks:
-                break
+            activity = self.activity()
 
-        return active_tasks
+        return activity

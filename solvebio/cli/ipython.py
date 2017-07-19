@@ -71,6 +71,9 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     from solvebio import Upload  # noqa
     from solvebio import User  # noqa
     from solvebio import Vault  # noqa
+    from solvebio import Task  # noqa
+    from solvebio import VaultSyncTask  # noqa
+    from solvebio import ObjectCopyTask  # noqa
     from solvebio.utils.printing import pager  # noqa
 
     # Add some convenience functions to the interactive shell
