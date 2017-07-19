@@ -1,5 +1,6 @@
 """Solvebio Task API Resource"""
 from .apiresource import ListableAPIResource
+from solvebio.resource import types
 
 
 class Task(ListableAPIResource):
@@ -17,11 +18,11 @@ class Task(ListableAPIResource):
         ('created_at', 'Created'),
     )
 
-    def follow(self):
-        # Get object status but do not loop
-        self.child_object().follow(loop=False)
-
     def child_object(self):
-        from solvebio.resource import types
+        """ Get Task child object class """
         child_klass = types.get(self.task_type.split('.')[1])
         return child_klass.retrieve(self.task_id)
+
+    def follow(self):
+        """ Follow the child object but do not loop """
+        self.child_object().follow(loop=False)
