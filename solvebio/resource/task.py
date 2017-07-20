@@ -1,6 +1,5 @@
 """Solvebio Task API Resource"""
 from .apiresource import ListableAPIResource
-from solvebio.resource import types
 
 
 class Task(ListableAPIResource):
@@ -20,6 +19,7 @@ class Task(ListableAPIResource):
 
     def child_object(self):
         """ Get Task child object class """
+        from . import types
         child_klass = types.get(self.task_type.split('.')[1])
         return child_klass.retrieve(self.task_id)
 
