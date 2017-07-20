@@ -90,16 +90,7 @@ class Dataset(CreateableAPIResource,
             raise
 
         try:
-            dataset = Dataset.get_by_full_path(test_path)
-
-            # If the dataset exists but the genome_builds don't match,
-            # update it with the new builds.
-            if dataset.is_genomic and \
-                    dataset.genome_builds != kwargs.get('genome_builds'):
-                dataset.genome_builds = kwargs.get('genome_builds')
-                dataset.save()
-
-            return dataset
+            return Dataset.get_by_full_path(test_path)
         except NotFoundError:
             pass
 
