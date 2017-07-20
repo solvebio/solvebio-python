@@ -100,7 +100,6 @@ class FakeDatasetResponse(Fake201Response):
                 'name': None,
                 'domain': None,
             },
-            'is_genomic': False,
             'path': '/{0}'.format(data['name']),
         }
         self.object.update(data)
@@ -122,7 +121,6 @@ class FakeDatasetTemplateResponse(Fake201Response):
             },
             'fields': None,
             'entity_type': None,
-            'is_genomic': False,
         }
         self.object.update(data)
 

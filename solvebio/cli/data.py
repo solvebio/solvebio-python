@@ -28,7 +28,6 @@ def create_dataset(args):
         * dataset (full name)
         * template_id
         * template_file
-        * genome_build
         * capacity
 
     """
@@ -67,7 +66,6 @@ def create_dataset(args):
         tpl = None
         fields = []
         entity_type = None
-        is_genomic = bool(args.genome_build)
         description = None
 
     if tpl:
@@ -75,17 +73,13 @@ def create_dataset(args):
               .format(args.dataset_name, tpl.name))
         fields = tpl.fields
         entity_type = tpl.entity_type
-        is_genomic = bool(args.genome_build) or tpl.is_genomic
         # include template used to create
         description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
-    genome_builds = [args.genome_build] if is_genomic else None
     return solvebio.Dataset.get_or_create(
         vault_name=args.vault,
         path=args.path,
         name=args.dataset_name,
-        is_genomic=is_genomic,
-        genome_builds=genome_builds,
         capacity=args.capacity,
         entity_type=entity_type,
         fields=fields,
@@ -315,7 +309,6 @@ def import_file(args):
         * create_dataset
         * template_id
         * vault_name
-        * genome_build
         * follow (default: False)
         * dataset
         * capacity
@@ -351,7 +344,6 @@ def import_file(args):
     imp = solvebio.DatasetImport.create(
         dataset_id=dataset.id,
         manifest=manifest.manifest,
-        genome_build=args.genome_build,
         commit_mode=args.commit_mode
     )
 
