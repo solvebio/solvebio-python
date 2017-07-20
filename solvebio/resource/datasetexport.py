@@ -20,8 +20,8 @@ class DatasetExport(CreateableAPIResource, ListableAPIResource,
 
     LIST_FIELDS = (
         ('id', 'ID'),
-        ('title', 'Title'),
-        ('description', 'Description'),
+        ('documents_count', 'Records'),
+        ('format', 'Format'),
         ('status', 'Status'),
         ('created_at', 'Created'),
     )
@@ -30,11 +30,7 @@ class DatasetExport(CreateableAPIResource, ListableAPIResource,
         from .dataset import Dataset
         return Dataset.retrieve(self['dataset'])
 
-    def follow(self):
-        print("View your export status on MESH: "
-              "https://my.solvebio.com/jobs/export/{0}"
-              .format(self.id))
-
+    def follow(self, loop=True):
         if self.status == 'queued':
             print("Waiting for export (id = {0}) to start..."
                   .format(self.id))
@@ -52,6 +48,9 @@ class DatasetExport(CreateableAPIResource, ListableAPIResource,
                               self.status,
                               self.metadata['progress']['processed_records'],
                               self.documents_count))
+
+            if not loop:
+                return
 
             time.sleep(3)
             self.refresh()

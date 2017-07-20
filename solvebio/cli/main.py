@@ -175,7 +175,9 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'name': 'local_path',
-                    'help': 'The path to the local file or directory to upload'
+                    'help': 'The path to the local file or directory '
+                            'to upload',
+                    'nargs': '+'
                 }
             ]
         },
