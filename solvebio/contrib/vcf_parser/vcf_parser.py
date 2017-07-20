@@ -240,7 +240,25 @@ class ExpandingVCFParser(object):
         variant_sbid = _variant_sbid(allele=allele,
                                      **genomic_coordinates)
 
-        return {
+        # Prepare genotype data
+        hom_ref = []
+        het = []
+        hom_alt = []
+        geno_data = []
+        for call in row.samples:
+            curr_geno_data = {}
+            for geno_key, geno_value  in call.data._asdict().iteritems():
+              curr_geno_data[geno_key] = geno_value
+            curr_geno_data['sample_id'] = call.sample
+            geno_data.append(curr_geno_data)
+            if(curr_geno_data['GT'] == '0/0'):
+                hom_ref.append(call.sample)
+            if(curr_geno_data['GT'] == '0/1'):
+                het.append(call.sample)
+            if(curr_geno_data['GT'] == '1/1'):
+                hom_alt.append(call.sample)
+
+        result = {
             'genomic_coordinates': genomic_coordinates,
             'variant': variant_sbid,
             'allele': allele,
@@ -251,6 +269,17 @@ class ExpandingVCFParser(object):
             'qual': row.QUAL,
             'filter': row.FILTER
         }
+
+        if geno_data:
+          result['genotypes'] = geno_data
+          result['samples_by_genotype'] = {}
+          result['samples_by_genotype']['hom_ref'] = hom_ref
+          result['samples_by_genotype']['het'] = het
+          result['samples_by_genotype']['hom_alt'] = hom_alt
+
+        return result
+
+
 
 if __name__ == '__main__':
     import sys
