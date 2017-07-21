@@ -32,10 +32,7 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
         from .dataset import Dataset
         return Dataset.retrieve(self['dataset'])
 
-    def follow(self):
-        print("View your import status on MESH: "
-              "https://my.solvebio.com/jobs/imports/{0}"
-              .format(self.id))
+    def follow(self, loop=True):
 
         if self.status == 'queued':
             print("Waiting for import (id = {0}) to start..."
@@ -54,6 +51,11 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
                 if self.status == 'running':
                     print("Processing and validating file(s), "
                           "this may take a few minutes...")
+
+            if not loop:
+                print("Import {0} is {1}"
+                      .format(self.id, self.status))
+                return
 
         if self.status == 'failed':
             print("Import processing and validation failed.")

@@ -20,7 +20,6 @@ class DatasetTests(SolveBioTestCase):
                         'vault_object_id',
                         'description',
                         'fields_url',
-                        'genome_builds', 'is_genomic',
                         'id',
                         'updated_at',
                         'url',

@@ -106,6 +106,9 @@ from .resource import (
     Upload,
     User,
     Vault,
+    VaultSyncTask,
+    ObjectCopyTask,
+    Task
 )
 
 
@@ -159,8 +162,11 @@ __all__ = [
     'GenomicFilter',
     'Manifest',
     'Object',
+    'ObjectCopyTask',
     'Query',
     'SolveError',
+    'VaultSyncTask',
+    'Task',
     'Upload',
     'Vault',
     'User',

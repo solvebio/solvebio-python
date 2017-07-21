@@ -30,11 +30,7 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
         return DatasetImport.retrieve(self['dataset_import_id'])
 
     def follow(self, loop=True):
-        print("View your commit status on MESH: "
-              "https://my.solvebio.com/jobs/commits/{0}"
-              .format(self.id))
-
-        # follow unfinished commits
+        # Follow unfinished commits
         while self.status in ['queued', 'running']:
             if self.status == 'running':
                 print("Commit '{0}' ({4}) is {1}: {2}/{3} records indexed"

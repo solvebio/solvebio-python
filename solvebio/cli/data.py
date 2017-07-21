@@ -28,7 +28,6 @@ def create_dataset(args):
         * dataset (full name)
         * template_id
         * template_file
-        * genome_build
         * capacity
 
     """
@@ -67,7 +66,6 @@ def create_dataset(args):
         tpl = None
         fields = []
         entity_type = None
-        is_genomic = bool(args.genome_build)
         description = None
 
     if tpl:
@@ -75,17 +73,13 @@ def create_dataset(args):
               .format(args.dataset_name, tpl.name))
         fields = tpl.fields
         entity_type = tpl.entity_type
-        is_genomic = bool(args.genome_build) or tpl.is_genomic
         # include template used to create
         description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
-    genome_builds = [args.genome_build] if is_genomic else None
     return solvebio.Dataset.get_or_create(
         vault_name=args.vault,
         path=args.path,
         name=args.dataset_name,
-        is_genomic=is_genomic,
-        genome_builds=genome_builds,
         capacity=args.capacity,
         entity_type=entity_type,
         fields=fields,
@@ -119,8 +113,7 @@ def upload(args):
     # base_local_path = local/path2
     # local_shart = 'path2'
     base_remote_path = args.path
-    base_local_path = args.local_path.rstrip('/')
-    local_start = os.path.basename(base_local_path)
+    base_local_paths = args.local_path
 
     user = client.get('/v1/user', {})
     domain = user['account']['domain']
@@ -132,28 +125,33 @@ def upload(args):
     else:
         vault = vaults.data[0]
 
-    if os.path.isdir(base_local_path):
-        return _upload_folder(domain, vault, base_remote_path, base_local_path,
-                              local_start)
-    else:
-        if base_remote_path != '/':
-            base_full_remote_path = _make_full_path(
-                domain,
-                vault.name,
-                base_remote_path,
-            )
-            base_remote_object = Object.get_by_full_path(
-                base_full_remote_path)
-            _assert_object_type(base_remote_object, 'folder')
-            base_remote_object_id = base_remote_object.id
-            base_remote_path = base_remote_object.path
-        else:
-            base_remote_object_id = None
-            base_remote_path = '/'
+    for local_path in base_local_paths:
 
-        return _upload_file(vault.id,
-                            base_remote_object_id,
-                            base_local_path)
+        local_path = local_path.rstrip('/')
+        local_start = os.path.basename(local_path)
+
+        if os.path.isdir(local_path):
+            _upload_folder(domain, vault, base_remote_path,
+                           local_path, local_start)
+        else:
+            if base_remote_path != '/':
+                base_full_remote_path = _make_full_path(
+                    domain,
+                    vault.name,
+                    base_remote_path,
+                )
+                base_remote_object = Object.get_by_full_path(
+                    base_full_remote_path)
+                _assert_object_type(base_remote_object, 'folder')
+                base_remote_object_id = base_remote_object.id
+                base_remote_path = base_remote_object.path
+            else:
+                base_remote_object_id = None
+                base_remote_path = '/'
+
+            _upload_file(vault.id,
+                         base_remote_object_id,
+                         local_path)
 
 
 def _upload_file(vault_id, parent_object_id, path):
@@ -317,7 +315,6 @@ def import_file(args):
         * create_dataset
         * template_id
         * vault_name
-        * genome_build
         * follow (default: False)
         * dataset
         * capacity
@@ -353,7 +350,6 @@ def import_file(args):
     imp = solvebio.DatasetImport.create(
         dataset_id=dataset.id,
         manifest=manifest.manifest,
-        genome_build=args.genome_build,
         commit_mode=args.commit_mode
     )
 
