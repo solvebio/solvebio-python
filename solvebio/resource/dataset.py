@@ -28,6 +28,7 @@ class Dataset(CreateableAPIResource,
     within a vault folder.
     """
     RESOURCE_VERSION = 2
+    PRINTABLE_NAME = 'dataset'
 
     LIST_FIELDS = (
         ('id', 'ID'),
@@ -60,58 +61,67 @@ class Dataset(CreateableAPIResource,
     @classmethod
     def get_by_full_path(cls, full_path, **kwargs):
         from solvebio import Object
-
-        obj = Object.get_by_full_path(full_path)
-        dataset = Dataset.retrieve(obj['dataset_id'], **kwargs)
-        return dataset
-
-    @classmethod
-    def get_or_create(cls, vault_name, path, name, **kwargs):
-        from solvebio import Vault
-        from solvebio import Object
         from solvebio import SolveError
 
-        create_vault = kwargs.pop('create_vault', False)
+        parts = full_path.split(':', 2)
 
-        if path[0] != '/':
+        if len(parts) == 3:
+            account_domain, vault_name, object_path = parts
+        elif len(parts) == 2:
+            vault_name, object_path = parts
+            try:
+                user = client.get('/v1/user', {})
+                account_domain = user['account']['domain']
+            except SolveError as e:
+                print("Error obtaining account domain: {0}".format(e))
+                raise
+        else:
+            raise Exception('Full path must be of the format: '
+                            '"vault_name:object_path" or '
+                            '"account_domain:vault_name:object_path"')
+
+        if object_path[0] != '/':
             raise Exception(
                 'Paths are absolute and must begin with a "/"'
             )
 
         # Remove double slashes and strip trailing slash
-        path = re.sub('//+', '/', path)
-        if path != '/':
-            path = path.rstrip('/')
+        object_path = re.sub('//+', '/', object_path)
+        if object_path != '/':
+            object_path = object_path.rstrip('/')
+
+        test_path = ':'.join([account_domain, vault_name, object_path])
+        obj = Object.get_by_full_path(test_path)
+        dataset = Dataset.retrieve(obj['dataset_id'], **kwargs)
+        return dataset
+
+    @classmethod
+    def get_or_create_by_full_path(cls, full_path, **kwargs):
+        from solvebio import Vault
+        from solvebio import Object
+
+        create_vault = kwargs.pop('create_vault', False)
+        create_folders = kwargs.pop('create_folders', True)
 
         try:
-            test_path = Dataset.make_full_path(vault_name, path, name)
-        except SolveError as e:
-            print("Error obtaining account domain: {0}".format(e))
-            raise
-
-        try:
-            dataset = Dataset.get_by_full_path(test_path)
-
-            # If the dataset exists but the genome_builds don't match,
-            # update it with the new builds.
-            if dataset.is_genomic and \
-                    dataset.genome_builds != kwargs.get('genome_builds'):
-                dataset.genome_builds = kwargs.get('genome_builds')
-                dataset.save()
-
-            return dataset
+            return Dataset.get_by_full_path(full_path)
         except NotFoundError:
             pass
 
         # Dataset not found, create it step-by-step
+
+        parts = full_path.split(':', 2)
+
+        if len(parts) == 3:
+            account_domain, vault_name, object_path = parts
+        elif len(parts) == 2:
+            vault_name, object_path = parts
+
         vaults = Vault.all(name=vault_name)
+
         if len(vaults.solve_objects()) == 0:
             if create_vault:
-                vault = Vault.create(name=vault_name,
-                                     require_unique_paths=True,
-                                     is_public=False,
-                                     vault_type='general',
-                                     provider='SolveBio')
+                vault = Vault.create(name=vault_name)
             else:
                 raise Exception('Vault does not exist with name {0}'.format(
                     vault_name))
@@ -122,7 +132,7 @@ class Dataset(CreateableAPIResource,
                                 'user-provided value')
 
         # Create the folders to hold the dataset if they do not already exist.
-        curr_path = path
+        curr_path = os.path.dirname(object_path)
         folders_to_create = []
         new_folders = []
         id_map = {'/': None}
@@ -140,6 +150,11 @@ class Dataset(CreateableAPIResource,
                     id_map[curr_path] = obj.id
                     break
             except NotFoundError:
+                if not create_folders:
+                    raise Exception('Folder {} does not exist.  Pass '
+                                    'create_folders=True to auto-create '
+                                    'missing folders')
+
                 folders_to_create.append(curr_path)
                 curr_path = '/'.join(curr_path.split('/')[:-1])
                 if curr_path == '':
@@ -155,14 +170,14 @@ class Dataset(CreateableAPIResource,
             new_folders.append(new_folder)
             id_map[folder] = new_folder.id
 
-        if path == '/':
+        if os.path.dirname(object_path) == '/':
             parent_folder_id = None
         elif new_folders:
             parent_folder_id = new_folders[-1].id
         else:
-            parent_folder_id = id_map[path]
+            parent_folder_id = id_map[os.path.dirname(object_path)]
 
-        return Dataset.create(name=name,
+        return Dataset.create(name=os.path.basename(object_path),
                               vault_id=vault.id,
                               vault_parent_object_id=parent_folder_id,
                               **kwargs)

@@ -15,6 +15,8 @@ except ImportError:
 from ..client import client, _handle_api_error, _handle_request_error
 from ..utils.tabulate import tabulate
 from ..utils.printing import pager
+# from solvebio.errors import NotFoundError
+from ..errors import NotFoundError
 
 from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object
@@ -148,6 +150,13 @@ class CreateableAPIResource(APIResource):
 class DeletableAPIResource(APIResource):
 
     def delete(self, **params):
+        if not params.pop('force', False):
+            res = raw_input('Are you sure you want to delete this %s? '
+                            '[y/N] ' % self.PRINTABLE_NAME)
+            if res.strip().lower() != 'y':
+                print('Not performing deletion.')
+                return
+
         response = self.request('delete', self.instance_url(), params=params)
         return convert_to_solve_object(response)
 
@@ -214,6 +223,27 @@ class ListableAPIResource(APIResource):
                 results.set_tabulate(fields, headers=headers, sort=False)
 
         return results
+
+    @classmethod
+    def _retrieve_helper(cls, model_name, field_name, error_value, **params):
+        url = cls.class_url()
+        response = client.get(url, params)
+        print 'params are', params
+        results = convert_to_solve_object(response)
+        objects = results.data
+        allow_multiple = params.pop('allow_multiple', None)
+
+        if len(objects) > 1:
+            if allow_multiple:
+                return objects
+            else:
+                raise Exception('Multiple {0}s found with {1} "{2}"'
+                                .format(model_name, field_name, error_value))
+        elif len(objects) == 1:
+            return objects[0]
+        else:
+            raise NotFoundError('No {0} found with {1} "{2}"'
+                                .format(model_name, field_name, error_value))
 
     @classmethod
     def pager(cls, **params):

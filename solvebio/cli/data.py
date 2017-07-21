@@ -127,8 +127,8 @@ def upload(args):
 
     vaults = Vault.all(name=vault_name)
 
-    if len(vaults) == 0:
-        raise Exception('Vault not found')
+    if len(vaults.data) == 0:
+        raise Exception('Vault not found with name "{0}"'.format(vault_name))
     else:
         vault = vaults.data[0]
 
@@ -303,7 +303,9 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
                 )
                 parent = Object.get_by_full_path(parent_full_path)
                 _assert_object_type(parent, 'folder')
-                _upload_file(vault.id, parent.id, os.path.join(root, f))
+                # _upload_file(vault.id, parent.id, os.path.join(root, f))
+                Object.upload_file(os.path.join(root, f), parent.path,
+                                   vault.name)
 
 
 def import_file(args):

@@ -18,6 +18,7 @@ class DatasetField(CreateableAPIResource,
     users with documentation about each field.
     """
     RESOURCE_VERSION = 2
+    PRINTABLE_NAME = 'dataset field'
 
     def facets(self, **params):
         response = client.get(self.facets_url, params)

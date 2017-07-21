@@ -11,6 +11,7 @@ class DatasetTemplate(CreateableAPIResource, ListableAPIResource,
     properties and all the fields.
     """
     RESOURCE_VERSION = 2
+    PRINTABLE_NAME = 'dataset template'
 
     LIST_FIELDS = (
         ('id', 'ID'),

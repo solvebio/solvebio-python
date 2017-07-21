@@ -112,31 +112,74 @@ Below is an exhaustive list of all the things that have changed in the
 user-facing methods of the client.  If you encounter any issues migrating
 your code, please submit a support ticket and we would be happy to assist you.
 
-### Changes:
+### Naming Conventions
 
-1. Dataset retrieval by name
+It is useful to know the different names for the various entities (or combined
+entities) that are available via the Client.  The naming conventions are
+as follows:
+
+```
+
+solvebio:public:/ClinVar/3.7.0-2015-12-06/Variants-GRCh37
++------+
+(1)
+         +----+
+         (2)
++-------------+
+(3)
+                +---------------------------------------+
+                (4)
+                                          +-------------+
+                                          (5)
++-------------------------------------------------------+
+(6)
+```
+```
+(1) - Account Domain
+(2) - Vault Name
+(3) - Vault Full Path
+(4) - Object Path
+(5) - Object Filename
+(6) - Object Full Path
+
+```
+
+### Changes in V2
+
+1. Dataset creation changes
 
 ```
 Old: Dataset.get_or_create_by_full_name(full_name)
-New: Dataset.get_or_create(vault_name, parent_path, dataset_name)
+New: Dataset.get_or_create_by_full_path(account_domain:vault_name:/parent/path/dataset_name)
 ```
 
-For example, to create dataset named "EGFR_analysis" in the "/July-2017" folder
-of the "Research" vault, make the following call:
-    
+For example, if you belong to the "acme" domain, then to create a dataset
+named named "EGFR_analysis" in the "/July-2017" folder of the "Research" vault,
+make the following call:
+
 ```
-Dataset.get_or_create($vault_name, $parent_path, $name)
-Dataset.get_or_create('Research', '/July_2017', 'EGFR_analysis')
+Dataset.get_or_create_by_full_path('Research:/July_2017EGFR_analysis')
+Dataset.get_or_create_by_full_path('Acme:Research:/July_2017/EGFR_analysis')
+```
+
+If you wish to auto-create the vault, add the `create_vault=True` flag.
+If you wish to auto-create the folder(s), add the `create_folders=True` flag.
+
+You can optionally leave off the account domain in front, but note that this
+will not work if your object path includes a colon:
+
+```
+Dataset.get_or_create_by_full_path('Research:/July_2017/EGFR_analysis')
 ```
 
 If you wish to automatically create the vault if it does not exist, add the
 `create_vault=True` flag.
 
-2.  Dataset retrieval by Full Path
+2.  Dataset retrieval changes
 
-"Full Path" is a triplet consisting of account domain, vault name, and
-the dataset's path in the vault.  Retrieval of a dataset by its full path can
-be performed in a single call:
+A dataset's "full_path" is a triplet consisting of account domain, vault
+name, and the dataset's path in the vault (see above).  Retrieval of a dataset
+by its full path can be performed in a single call:
 
 ```
 Dataset.get_by_full_path("account_domain:vault_name:object_path")
@@ -166,13 +209,13 @@ Dataset.get_by_full_path("solvebio:public:/ClinVar/3.7.0-2015-12-06/Variants-GRC
 
 `Depository` has been replaced by the `Vault` class.
 
-`DepositoryVersion` was an inflexible class whose functionality is now
-provided by the `Object` class.  Objects are files, folders, or SolveBio
+`DepositoryVersion` was functionality is now provided by the `Object` class.
+Objects are files, folders, or SolveBio
 Datasets that exist inside a vault.  As part of your account's migration onto
 Version 2 of SolveBio, we have automatically moved datasets located in
 Depository "X" and DepositoryVersion "Y" to a Vault named "X" and a folder named
 "Y".  If the dataset being migrated had the `genome_build` property set, the
-dataset was renamed to $original_name-$genome_build".  Otherwise, the name
+dataset was renamed to `$original_name-$genome_build`.  Otherwise, the name
 remained unchanged.
 
 5.  Renaming of "objects" to "solve_objects"
@@ -180,7 +223,7 @@ remained unchanged.
 The `objects` property of a resource has been renamed `solve_objects`.
 
 6.  The `import` and `create-dataset` command-line utilities now require
-`--vault` and `--path` arguments.  The `dataset` argument (`test-dataset` 
+`--vault` and `--path` arguments.  The `dataset` argument (`test-dataset`
 below) no longer can contain slashes.
 
 ```
@@ -219,19 +262,21 @@ First, retrieve a vault:
 
 ```
 vault = Vault.get_personal_vault()
-vault = Vault.get_by_name('solvebio:public')
-vault = Vault.get_by_name('your_account_domain:vault_name')
-vault = Vault.get_by_name('vault_name')  # Searches inside your account domain
+vault = Vault.get_by_full_path('solvebio:public')
+vault = Vault.get_by_full_path('your_account_domain:vault_name')
+vault = Vault.get_by_full_path('vault_name')  # Searches inside your account domain
 ```
 
 
-Then, call a shortcut method:
+Then, call the appropriate method:
 
 ```
 vault.files()
 vault.folders()
 vault.datasets()
-vault.objects()  # Includes files, folders, and datasets
+vault.objects()                 # Includes files, folders, and datasets
+
+vault.files(filename='hello')   # Can pass filters to all of these methods
 ```
 
 
@@ -239,11 +284,55 @@ Search for files, folders, and datasets in a vault using the `search` method:
 
 ```
 vault.search('hello')
+vault.search('hello', object_type='folder')
+vault.search('hello', object_type='file')
+vault.search('hello', object_type='dataset')
+```
+
+Creation
+--------
+```
+Vault.get_or_create_by_full_path('acme:test1')
+Vault.get_or_create_by_full_path('test1')
+```
+
+File Upload
+-----------
+```
+v = Vault.get_personal_vault()
+v.upload_file('analysis.tsv', '/')
+>>> Notice: Successfully uploaded analysis.tsv to /analysis.tsv
+```
+
+Re-uploading the same file to the same path auto-increments the filename on
+the server.  This is required because no two objects can have the same full
+path.
+
+```
+v = Vault.get_personal_vault()
+v.upload_file('analysis.tsv', '/')
+>>> Notice: Successfully uploaded analysis.tsv to /analysis-1.tsv
 ```
 
 
-Enhanced Command-Line Uploading
--------------------------------
+Deletion
+--------
+
+Deletion of any object requires a confirmation from the user.
+You can disable this confirmation by passing the `force=True` flag.
+
+```
+folder = Object.retrieve(504311238004931284)
+folder.delete()
+>>> Are you sure you want to delete this object? [y/N] n
+>>> Not performing deletion.
+```
+```
+folder.delete(force=True)
+```
+
+Enhanced Command-Line File Uploading
+------------------------------------
 
 A new command-line method called "upload" has been added.  This method
 allows users to upload a file or folder to a vault.  If a folder is
