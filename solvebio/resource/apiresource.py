@@ -228,7 +228,6 @@ class ListableAPIResource(APIResource):
     def _retrieve_helper(cls, model_name, field_name, error_value, **params):
         url = cls.class_url()
         response = client.get(url, params)
-        print 'params are', params
         results = convert_to_solve_object(response)
         objects = results.data
         allow_multiple = params.pop('allow_multiple', None)
