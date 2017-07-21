@@ -65,6 +65,10 @@ class Object(CreateableAPIResource,
         _, mimetype = mimetypes.guess_type(local_path)
         size = os.path.getsize(local_path)
 
+        if md5sum('/dev/null')[0] == md5:
+            print('Notice: Cannot upload empty file {0}'.format(local_path))
+            return
+
         vault = Vault.get_by_full_path(vault_name)
 
         if remote_path == '/':
@@ -108,6 +112,7 @@ class Object(CreateableAPIResource,
             print('Notice: Upload status code for {0} was {1}'.format(
                 local_path, upload_resp.status_code
             ))
+            obj.delete(force=True)
         else:
             print('Notice: Successfully uploaded {0} to {1}'.format(local_path,
                                                                     obj.path))
