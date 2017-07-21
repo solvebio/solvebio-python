@@ -45,13 +45,13 @@ account domain, the `public` vault, and the appropriate dataset path:
 SolveBio maintains a list of publicly available datasets.  To list them,
 run:
 
-    vault = Vault.get_by_name('solvebio:public')
+    vault = Vault.get_by_full_path('solvebio:public')
     vault.datasets()
 
 You can browse any Vault from the client simply by calling the appropriate
 methods on a Vault object:
 
-    vault = Vault.get_by_name('solvebio:public')
+    vault = Vault.get_by_full_path('solvebio:public')
     vault.files()
     vault.folders()
     vault.datasets()

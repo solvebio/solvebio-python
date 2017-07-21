@@ -191,7 +191,7 @@ within a vault.
 
 ```
 # Get all of the Clinvar datasets that are version 3 and above
-v = Vault.get_by_name(name='solvebio:public')
+v = Vault.get_by_full_path(name='solvebio:public')
 v.datasets(query='Clinvar/3')
 ```
 

@@ -47,8 +47,7 @@ class Object(CreateableAPIResource,
 
     @classmethod
     def get_by_path(cls, path, **params):
-        _params = {'path': path}
-        _params.update(params)
+        params.update({'path': path})
         return cls._retrieve_helper('object', 'path', path, **params)
 
     @classmethod

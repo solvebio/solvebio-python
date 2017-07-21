@@ -55,7 +55,7 @@ class Vault(CreateableAPIResource,
         return self._object_list_helper(object_type='dataset', **params)
 
     def objects(self, **params):
-        return self._object_list_helper(object_type='dataset', **params)
+        return self._object_list_helper(**params)
 
     def ls(self, **params):
         return self._object_list_helper(**params)

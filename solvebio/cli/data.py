@@ -149,54 +149,12 @@ def upload(args):
                 base_remote_object = Object.get_by_full_path(
                     base_full_remote_path)
                 _assert_object_type(base_remote_object, 'folder')
-                base_remote_object_id = base_remote_object.id
                 base_remote_path = base_remote_object.path
             else:
-                base_remote_object_id = None
                 base_remote_path = '/'
 
-            _upload_file(vault.id,
-                         base_remote_object_id,
-                         local_path)
-
-
-def _upload_file(vault_id, parent_object_id, path):
-    md5, _ = md5sum(path, multipart_threshold=None)
-    _, mimetype = mimetypes.guess_type(path)
-    size = os.path.getsize(path)
-
-    # Create the file, and upload it to the Upload URL
-    obj = Object.create(
-        vault_id=vault_id,
-        parent_object_id=parent_object_id,
-        object_type='file',
-        filename=os.path.basename(path),
-        md5=md5,
-        mimetype=mimetype,
-        size=size,
-    )
-
-    print('Notice: File created for {0} at {1}'.format(path, obj.path,))
-
-    upload_url = obj.upload_url
-
-    headers = {
-        'Content-MD5': base64.b64encode(binascii.unhexlify(md5)),
-        'Content-Type': mimetype,
-        'Content-Length': str(size),
-    }
-
-    upload_resp = requests.put(upload_url,
-                               data=open(path, 'r'),
-                               headers=headers)
-
-    if upload_resp.status_code != 200:
-        print('Notice: Upload status code for {0} was {1}'.format(
-            path, upload_resp.status_code
-        ))
-    else:
-        print('Notice: Successfully uploaded {0} to {1}'.format(path,
-                                                                obj.path))
+            Object.upload_file(local_path, base_remote_path,
+                               vault.name)
 
 
 def _upload_folder(domain, vault, base_remote_path, base_local_path,
@@ -303,7 +261,6 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
                 )
                 parent = Object.get_by_full_path(parent_full_path)
                 _assert_object_type(parent, 'folder')
-                # _upload_file(vault.id, parent.id, os.path.join(root, f))
                 Object.upload_file(os.path.join(root, f), parent.path,
                                    vault.name)
 
