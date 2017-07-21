@@ -158,7 +158,7 @@ named named "EGFR_analysis" in the "/July-2017" folder of the "Research" vault,
 make the following call:
 
 ```
-Dataset.get_or_create_by_full_path('Research:/July_2017EGFR_analysis')
+Dataset.get_or_create_by_full_path('Research:/July_2017/EGFR_analysis')
 Dataset.get_or_create_by_full_path('Acme:Research:/July_2017/EGFR_analysis')
 ```
 
@@ -237,7 +237,14 @@ been removed. All commits will be approved automatically.
 
 Vault Browsing
 --------------
+### Browse
 
+List all the vaults you currently have access to.
+
+
+```
+Vault.all()
+```
 
 ### Your Personal Vault
 
@@ -276,7 +283,7 @@ vault.folders()
 vault.datasets()
 vault.objects()                 # Includes files, folders, and datasets
 
-vault.files(filename='hello')   # Can pass filters to all of these methods
+vault.files(filename='hello.txt')   # Can pass filters to all of these methods
 ```
 
 
