@@ -27,4 +27,5 @@ class UploadTest(SolveBioTestCase):
                             'Upload.retrieve(id)')
         # Clean up
         expect = [('is_deleted', True), ('id', upload.id)]
-        self.check_response(upload.delete(), expect, 'Delete an upload')
+        self.check_response(upload.delete(force=True), expect,
+                            'Delete an upload')

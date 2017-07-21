@@ -69,12 +69,8 @@ class Dataset(CreateableAPIResource,
             account_domain, vault_name, object_path = parts
         elif len(parts) == 2:
             vault_name, object_path = parts
-            try:
-                user = client.get('/v1/user', {})
-                account_domain = user['account']['domain']
-            except SolveError as e:
-                print("Error obtaining account domain: {0}".format(e))
-                raise
+            user = client.get('/v1/user', {})
+            account_domain = user['account']['domain']
         else:
             raise Exception('Full path must be of the format: '
                             '"vault_name:object_path" or '
@@ -116,8 +112,10 @@ class Dataset(CreateableAPIResource,
             account_domain, vault_name, object_path = parts
         elif len(parts) == 2:
             vault_name, object_path = parts
+            user = client.get('/v1/user', {})
+            account_domain = user['account']['domain']
 
-        vaults = Vault.all(name=vault_name)
+        vaults = Vault.all(account_domain=account_domain, name=vault_name)
 
         if len(vaults.solve_objects()) == 0:
             if create_vault:

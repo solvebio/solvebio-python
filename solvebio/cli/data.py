@@ -76,10 +76,8 @@ def create_dataset(args):
         # include template used to create
         description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
-    return solvebio.Dataset.get_or_create(
-        vault_name=args.vault,
-        path=args.path,
-        name=args.dataset_name,
+    return solvebio.Dataset.get_or_create_by_full_path(
+        ':'.join([args.vault, os.path.join(args.path, args.dataset_name)]),
         capacity=args.capacity,
         entity_type=entity_type,
         fields=fields,
