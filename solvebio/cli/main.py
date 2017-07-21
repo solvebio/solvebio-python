@@ -58,10 +58,12 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'flags': '--vault',
                     'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset)',
+                            'creating a new dataset (via --create-dataset), '
+                            'defaults to your personal vault',
                 },
                 {
                     'flags': '--path',
+                    'default': '/',
                     'help': 'The path in the vault where the dataset should '
                             'be created when creating a new dataset'
                             '(via --create-dataset)',
@@ -123,10 +125,12 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'flags': '--vault',
                     'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset)',
+                            'creating a new dataset (via --create-dataset), '
+                            'defaults to your personal vault',
                 },
                 {
                     'flags': '--path',
+                    'default': '/',
                     'help': 'The path in the vault where the dataset should '
                             'be created when creating a new dataset'
                             '(via --create-dataset)',
@@ -166,7 +170,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'flags': '--vault',
                     'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset)',
+                            'creating a new dataset (via --create-dataset), '
+                            'defaults to your personal vault',
                 },
                 {
                     'flags': '--path',

@@ -3,7 +3,7 @@ import solvebio
 solvebio.login()
 
 # Create a dataset
-dataset = solvebio.Dataset.get_or_create(
+dataset = solvebio.Dataset.get_or_create_by_full_path(
     'Test Vault',           # The name of the vault to use
     '/SampleImport/1.0.0',  # The folder that will contain your dataset
     'SampleDataset',        # The name of your dataset

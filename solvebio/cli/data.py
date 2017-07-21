@@ -15,6 +15,7 @@ import requests
 
 import solvebio
 
+from solvebio import Object, Vault
 from solvebio.client import client
 from solvebio.utils.files import check_gzip_path
 from solvebio.utils.md5sum import md5sum
@@ -31,6 +32,11 @@ def create_dataset(args):
         * capacity
 
     """
+    if args.vault:
+        vault_name = args.vault
+    else:
+        vault_name = Vault.get_personal_vault().name
+
     # Accept a template_id or a template_file
     if args.template_id:
         # Validate the template ID
@@ -77,7 +83,7 @@ def create_dataset(args):
         description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
     return solvebio.Dataset.get_or_create_by_full_path(
-        ':'.join([args.vault, os.path.join(args.path, args.dataset_name)]),
+        ':'.join([vault_name, os.path.join(args.path, args.dataset_name)]),
         capacity=args.capacity,
         entity_type=entity_type,
         fields=fields,
@@ -103,9 +109,11 @@ def upload(args):
     Given a folder or file, upload all the folders and files contained
     within it, skipping ones that already exist on the remote.
     """
-    from solvebio import Object, Vault
+    if args.vault:
+        vault_name = args.vault
+    else:
+        vault_name = Vault.get_personal_vault().name
 
-    vault_name = args.vault
     # '--path /remote/path1 local/path2'
     # base_remote_path = /remote/path1
     # base_local_path = local/path2
@@ -153,8 +161,6 @@ def upload(args):
 
 
 def _upload_file(vault_id, parent_object_id, path):
-    from solvebio import Object
-
     md5, _ = md5sum(path, multipart_threshold=None)
     _, mimetype = mimetypes.guess_type(path)
     size = os.path.getsize(path)
@@ -195,8 +201,6 @@ def _upload_file(vault_id, parent_object_id, path):
 
 def _upload_folder(domain, vault, base_remote_path, base_local_path,
                    local_start):
-    from solvebio import Object
-
     # Create the root folder if it does not exist on the remote
     try:
         full_root_path = _make_full_path(
@@ -313,6 +317,7 @@ def import_file(args):
         * create_dataset
         * template_id
         * vault_name
+        * path
         * follow (default: False)
         * dataset
         * capacity
@@ -322,12 +327,17 @@ def import_file(args):
     if not solvebio.api_key:
         solvebio.login()
 
+    if args.vault:
+        vault_name = args.vault
+    else:
+        vault_name = Vault.get_personal_vault().name
+
     # Ensure the dataset exists. Create if necessary.
     if args.create_dataset:
         dataset = create_dataset(args)
     else:
         try:
-            full_path = solvebio.Dataset.make_full_path(args.vault,
+            full_path = solvebio.Dataset.make_full_path(vault_name,
                                                         args.path,
                                                         args.dataset_name)
             dataset = solvebio.Dataset.get_by_full_path(full_path)

@@ -61,7 +61,6 @@ class Dataset(CreateableAPIResource,
     @classmethod
     def get_by_full_path(cls, full_path, **kwargs):
         from solvebio import Object
-        from solvebio import SolveError
 
         parts = full_path.split(':', 2)
 
