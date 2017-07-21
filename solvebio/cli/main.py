@@ -66,7 +66,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'default': '/',
                     'help': 'The path in the vault where the dataset should '
                             'be created when creating a new dataset'
-                            '(via --create-dataset)',
+                            '(via --create-dataset), defaults to "/"',
                 },
                 {
                     'flags': '--template-id',
@@ -132,8 +132,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--path',
                     'default': '/',
                     'help': 'The path in the vault where the dataset should '
-                            'be created when creating a new dataset'
-                            '(via --create-dataset)',
+                            'be created when creating a new dataset '
+                            '(via --create-dataset), defaults to "/"',
                 },
                 {
                     'flags': '--template-id',
@@ -175,8 +175,9 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'flags': '--path',
+                    'default': '/',
                     'help': 'The path in the vault where the files and '
-                            'folders should be created',
+                            'folders should be created, defaults to "/"',
                 },
                 {
                     'name': 'local_path',
