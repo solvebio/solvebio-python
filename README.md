@@ -100,7 +100,7 @@ levels of access: read, write, and admin.  Permissions are settable through
 the SolveBio UI.  For detailed information on the permission model, please
 visit this link:
 
-TODO: Link
+https://support.solvebio.com/hc/en-us/articles/227732207
 
 As part of the migration onto Version 2, SolveBio has automatically applied
 the permissions set on Depositories to the new Vaults which we have created to
