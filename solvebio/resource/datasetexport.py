@@ -57,4 +57,5 @@ class DatasetExport(CreateableAPIResource, ListableAPIResource,
             self.refresh()
 
         if self.status == 'completed':
-            print("Export complete!")
+            print('Export complete! Run <export_obj>'
+                  '.download(path=<some_path>) to download.')
