@@ -10,6 +10,13 @@ This module has been tested on Python 2.6+, Python 3.1+ and PyPy.
 For more information about SolveBio visit [solvebio.com](https://www.solvebio.com).
 
 
+Compatibility
+-------------
+
+This version of the Python Client is compatible with Vault-based datasets
+only (released on July 28th, 2017).
+
+
 Dependencies (Ubuntu)
 --------------------
 
