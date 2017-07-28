@@ -51,6 +51,24 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Create the dataset if it doesn\'t exist',
                 },
                 {
+                    'flags': '--create-vault',
+                    'action': 'store_true',
+                    'help': 'Create the vault if it doesn\'t exist',
+                },
+                {
+                    'flags': '--vault',
+                    'help': 'The name of the vault to use when '
+                            'creating a new dataset (via --create-dataset), '
+                            'defaults to your personal vault',
+                },
+                {
+                    'flags': '--path',
+                    'default': '/',
+                    'help': 'The path in the vault where the dataset should '
+                            'be created when creating a new dataset'
+                            '(via --create-dataset), defaults to "/"',
+                },
+                {
                     'flags': '--template-id',
                     'help': 'The template ID used when '
                             'creating a new dataset (via --create-dataset)',
@@ -79,22 +97,14 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Follow the import\'s progress until it completes'
                 },
                 {
-                    'flags': '--auto-approve',
-                    'action': 'store_true',
-                    'default': False,
-                    'help': 'Automatically approve all dataset commits for '
-                            'the import (may require admin role)'
-                },
-                {
                     'flags': '--commit-mode',
                     'default': 'append',
                     'help': 'Commit mode to use when importing data. '
                             'Options are "append" (default) or "overwrite".'
                 },
                 {
-                    'name': 'dataset',
-                    'help': 'The full name of the dataset '
-                            '(<depository>/<version>/<dataset>)'
+                    'name': 'dataset_name',
+                    'help': 'The name of the dataset'
                 },
                 {
                     'name': 'file',
@@ -107,6 +117,24 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'func': data.create_dataset,
             'help': 'Create a SolveBio dataset',
             'arguments': [
+                {
+                    'flags': '--create-vault',
+                    'action': 'store_true',
+                    'help': 'Create the vault if it doesn\'t exist',
+                },
+                {
+                    'flags': '--vault',
+                    'help': 'The name of the vault to use when '
+                            'creating a new dataset (via --create-dataset), '
+                            'defaults to your personal vault',
+                },
+                {
+                    'flags': '--path',
+                    'default': '/',
+                    'help': 'The path in the vault where the dataset should '
+                            'be created when creating a new dataset '
+                            '(via --create-dataset), defaults to "/"',
+                },
                 {
                     'flags': '--template-id',
                     'help': 'The template ID used when '
@@ -130,12 +158,35 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'medium (<500M), large (>=500M)'
                 },
                 {
-                    'name': 'dataset',
-                    'help': 'The full name of the dataset '
-                            '(<depository>/<version>/<dataset>)'
+                    'name': 'dataset_name',
+                    'help': 'The name of the dataset'
                 }
             ]
-        }
+        },
+        'upload': {
+            'func': data.upload,
+            'help': 'Upload a file or directory to a SolveBio Vault',
+            'arguments': [
+                {
+                    'flags': '--vault',
+                    'help': 'The name of the vault to use when '
+                            'creating a new dataset (via --create-dataset), '
+                            'defaults to your personal vault',
+                },
+                {
+                    'flags': '--path',
+                    'default': '/',
+                    'help': 'The path in the vault where the files and '
+                            'folders should be created, defaults to "/"',
+                },
+                {
+                    'name': 'local_path',
+                    'help': 'The path to the local file or directory '
+                            'to upload',
+                    'nargs': '+'
+                }
+            ]
+        },
     }
 
     def __init__(self, *args, **kwargs):

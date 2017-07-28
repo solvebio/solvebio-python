@@ -7,7 +7,7 @@ from .helper import SolveBioTestCase
 class LookupTests(SolveBioTestCase):
     # Using new version of HGNC for testing lookup
     # because original test dataset did not contain sbids.
-    TEST_DATASET_NAME = 'HGNC/2.1.2-2016-01-11/HGNC'
+    TEST_DATASET_FULL_PATH = 'solvebio:public:/HGNC/2.1.2-2016-01-11/HGNC'
 
     final_lookup_one = [{
         '_id': '37133',
@@ -103,7 +103,7 @@ class LookupTests(SolveBioTestCase):
 
     def setUp(self):
         super(LookupTests, self).setUp()
-        self.dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
+        self.dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH)
 
     def test_lookup_error(self):
         # Check that incorrect lookup results in empty list.
@@ -115,6 +115,7 @@ class LookupTests(SolveBioTestCase):
 
     def test_lookup_correct(self):
         # Check that lookup with specific sbid is correct.
+        self.maxDiff = 1e6
         sbid_one = '37133'
         lookup_one = self.dataset.lookup(sbid_one)
         self.assertEqual(lookup_one, self.final_lookup_one)

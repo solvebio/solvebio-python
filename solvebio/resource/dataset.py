@@ -1,17 +1,20 @@
+import os
+import re
 import time
 
 from ..client import client
 from ..help import open_help
 from ..query import Query
+from ..errors import NotFoundError
 
 from .solveobject import convert_to_solve_object
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
+
+from .task import Task
 from .datasetfield import DatasetField
-from .datasetimport import DatasetImport
-from .datasetcommit import DatasetCommit
 from .datasetexport import DatasetExport
 from .datasetmigration import DatasetMigration
 
@@ -22,75 +25,159 @@ class Dataset(CreateableAPIResource,
               UpdateableAPIResource):
     """
     Datasets are access points to data. Dataset names are unique
-    within versions of a depository.
+    within a vault folder.
     """
+    RESOURCE_VERSION = 2
+    PRINTABLE_NAME = 'dataset'
+
     LIST_FIELDS = (
-        ('full_name', 'Name'),
-        ('depository', 'Depository'),
-        ('title', 'Title'),
+        ('id', 'ID'),
+        ('vault_name', 'Vault Name'),
+        ('vault_object_path', 'Vault Object Path'),
+        ('vault_object_filename', 'Vault Object Filename'),
+        ('created_at', 'Created'),
         ('description', 'Description'),
     )
 
     @classmethod
-    def get_or_create_by_full_name(cls, full_name, **kwargs):
-        from solvebio import Depository
-        from solvebio import DepositoryVersion
+    def make_full_path(cls, vault_name, path, name):
         from solvebio import SolveError
 
         try:
-            dataset = Dataset.retrieve(full_name)
-            # If the dataset exists but the genome_builds don't match,
-            # update it with the new builds.
-            if dataset.is_genomic and \
-                    dataset.genome_builds != kwargs.get('genome_builds'):
-                dataset.genome_builds = kwargs.get('genome_builds')
-                dataset.save()
-
-            return dataset
+            user = client.get('/v1/user', {})
+            domain = user['account']['domain']
         except SolveError as e:
-            if e.status_code != 404:
-                raise e
+            print("Error obtaining account domain: {0}".format(e))
+            raise
+
+        result = ':'.join([
+            domain,
+            vault_name,
+            os.path.join('/' + path.lstrip('/'), name),
+        ])
+
+        return result
+
+    @classmethod
+    def get_by_full_path(cls, full_path, **kwargs):
+        from solvebio import Object
+
+        parts = full_path.split(':', 2)
+
+        if len(parts) == 3:
+            account_domain, vault_name, object_path = parts
+        elif len(parts) == 2:
+            vault_name, object_path = parts
+            user = client.get('/v1/user', {})
+            account_domain = user['account']['domain']
+        else:
+            raise Exception('Full path must be of the format: '
+                            '"vault_name:object_path" or '
+                            '"account_domain:vault_name:object_path"')
+
+        if object_path[0] != '/':
+            raise Exception(
+                'Paths are absolute and must begin with a "/"'
+            )
+
+        # Remove double slashes and strip trailing slash
+        object_path = re.sub('//+', '/', object_path)
+        if object_path != '/':
+            object_path = object_path.rstrip('/')
+
+        test_path = ':'.join([account_domain, vault_name, object_path])
+        obj = Object.get_by_full_path(test_path)
+        dataset = Dataset.retrieve(obj['dataset_id'], **kwargs)
+        return dataset
+
+    @classmethod
+    def get_or_create_by_full_path(cls, full_path, **kwargs):
+        from solvebio import Vault
+        from solvebio import Object
+
+        create_vault = kwargs.pop('create_vault', False)
+        create_folders = kwargs.pop('create_folders', True)
+
+        try:
+            return Dataset.get_by_full_path(full_path)
+        except NotFoundError:
+            pass
 
         # Dataset not found, create it step-by-step
-        try:
-            # Split the name into parts
-            depo, version, dataset_name = full_name.split('/')
-        except ValueError:
-            raise ValueError(
-                "Invalid dataset name '{0}'. Please ensure that it is "
-                "in the following format: "
-                "'<depository>/<version>/<dataset>'"
-                .format(full_name))
 
-        try:
-            depo = Depository.retrieve(depo)
-        except SolveError as e:
-            if e.status_code != 404:
-                raise e
-            depo = Depository.create(name=depo, title=depo)
+        parts = full_path.split(':', 2)
 
-        try:
-            version = DepositoryVersion.retrieve(
-                '{0}/{1}'.format(depo.name, version))
-        except SolveError as e:
-            if e.status_code != 404:
-                raise e
-            version = DepositoryVersion.create(
-                depository_id=depo.id, name=version, title=version)
+        if len(parts) == 3:
+            account_domain, vault_name, object_path = parts
+        elif len(parts) == 2:
+            vault_name, object_path = parts
+            user = client.get('/v1/user', {})
+            account_domain = user['account']['domain']
 
-        # Use a default title (dataset name) if none is provided
-        title = kwargs.pop('title', dataset_name)
-        return Dataset.create(
-            depository_version_id=version.id,
-            name=dataset_name, title=title, **kwargs)
+        vaults = Vault.all(account_domain=account_domain, name=vault_name)
 
-    def depository_version(self):
-        from .depositoryversion import DepositoryVersion
-        return DepositoryVersion.retrieve(self['depository_version'])
+        if len(vaults.solve_objects()) == 0:
+            if create_vault:
+                vault = Vault.create(name=vault_name)
+            else:
+                raise Exception('Vault does not exist with name {0}'.format(
+                    vault_name))
+        else:
+            vault = vaults.solve_objects()[0]
+            if vault.name.lower() != vault_name.lower():
+                raise Exception('Vault name from API does not match '
+                                'user-provided value')
 
-    def depository(self):
-        from .depository import Depository
-        return Depository.retrieve(self['depository'])
+        # Create the folders to hold the dataset if they do not already exist.
+        curr_path = os.path.dirname(object_path)
+        folders_to_create = []
+        new_folders = []
+        id_map = {'/': None}
+
+        while curr_path != '/':
+            try:
+                obj = Object.get_by_path(curr_path,
+                                         vault_id=vault.id)
+                if obj.object_type != 'folder':
+                    raise Exception(
+                        'Path {0} is a {1} and not a folder'.format(
+                            obj.path, obj.object_type)
+                    )
+                else:
+                    id_map[curr_path] = obj.id
+                    break
+            except NotFoundError:
+                if not create_folders:
+                    raise Exception('Folder {} does not exist.  Pass '
+                                    'create_folders=True to auto-create '
+                                    'missing folders')
+
+                folders_to_create.append(curr_path)
+                curr_path = '/'.join(curr_path.split('/')[:-1])
+                if curr_path == '':
+                    break
+
+        for folder in reversed(folders_to_create):
+            new_folder = Object.create(
+                object_type='folder',
+                vault_id=vault.id,
+                filename=os.path.basename(folder),
+                parent_object_id=id_map[os.path.dirname(folder)],
+            )
+            new_folders.append(new_folder)
+            id_map[folder] = new_folder.id
+
+        if os.path.dirname(object_path) == '/':
+            parent_folder_id = None
+        elif new_folders:
+            parent_folder_id = new_folders[-1].id
+        else:
+            parent_folder_id = id_map[os.path.dirname(object_path)]
+
+        return Dataset.create(name=os.path.basename(object_path),
+                              vault_id=vault.id,
+                              vault_parent_object_id=parent_folder_id,
+                              **kwargs)
 
     def fields(self, name=None, **params):
         if 'fields_url' not in self:
@@ -99,16 +186,19 @@ class Dataset(CreateableAPIResource,
                 'up fields')
 
         if name:
-            # construct the field's full_name if a field name is provided
-            return DatasetField.retrieve(
-                '/'.join([self['full_name'], name]))
+            params.update({
+                'name': name,
+            })
+            fields = client.get(self.fields_url, params)
+            result = DatasetField.retrieve(fields['data'][0]['id'])
+            return result
 
         response = client.get(self.fields_url, params)
         results = convert_to_solve_object(response)
         results.set_tabulate(
-            ['name', 'data_type', 'description'],
-            headers=['Field', 'Data Type', 'Description'],
-            aligns=['left', 'left', 'left'], sort=True)
+            ['name', 'data_type', 'entity_type', 'description'],
+            headers=['Field', 'Data Type', 'Entity Type', 'Description'],
+            aligns=['left', 'left', 'left', 'left'], sort=True)
 
         return results
 
@@ -157,7 +247,7 @@ class Dataset(CreateableAPIResource,
                 raise Exception(
                     'No Dataset ID was provided. '
                     'Please instantiate the Dataset '
-                    'object with an ID or full_name.')
+                    'object with an ID.')
             # automatically construct the data_url from the ID
             return self.instance_url() + '/data'
         return self['data_url']
@@ -176,7 +266,7 @@ class Dataset(CreateableAPIResource,
                 raise Exception(
                     'No Dataset ID was provided. '
                     'Please instantiate the Dataset '
-                    'object with an ID or full_name.')
+                    'object with an ID.')
             # automatically construct the data_url from the ID
             self['beacon_url'] = self.instance_url() + '/beacon'
         return self['beacon_url']
@@ -185,26 +275,8 @@ class Dataset(CreateableAPIResource,
         # raises an exception if there's no ID
         return client.get(self._beacon_url(), params)
 
-    def _changelog_url(self, version=None):
-        if 'changelog_url' not in self:
-            if 'id' not in self or not self['id']:
-                raise Exception(
-                    'No Dataset ID was provided. '
-                    'Please instantiate the Dataset '
-                    'object with an ID or full_name.')
-            # automatically construct the data_url from the ID
-            self['changelog_url'] = self.instance_url() + '/changelog'
-        if version:
-            return self['changelog_url'] + '/' + version
-        else:
-            return self['changelog_url']
-
-    def changelog(self, version=None, **params):
-        # raises an exception if there's no ID
-        return client.get(self._changelog_url(version), params)
-
     def help(self):
-        open_help('/library/{0}'.format(self['full_name']))
+        open_help('/library/{0}'.format(self['id']))
 
     def import_file(self, path, **kwargs):
         """
@@ -218,7 +290,7 @@ class Dataset(CreateableAPIResource,
             raise Exception(
                 'No Dataset ID found. '
                 'Please instantiate or retrieve a dataset '
-                'with an ID or full_name.')
+                'with an ID.')
 
         manifest = Manifest()
         manifest.add(path)
@@ -232,7 +304,7 @@ class Dataset(CreateableAPIResource,
             raise Exception(
                 'No Dataset ID was provided. '
                 'Please instantiate the Dataset '
-                'object with an ID or full_name.')
+                'object with an ID.')
 
         export = DatasetExport.create(
             dataset_id=self['id'],
@@ -253,7 +325,6 @@ class Dataset(CreateableAPIResource,
         * source_params
         * target_fields
         * include_errors
-        * auto_approve
         * commit_mode
 
         """
@@ -261,7 +332,7 @@ class Dataset(CreateableAPIResource,
             raise Exception(
                 'No source dataset ID found. '
                 'Please instantiate the Dataset '
-                'object with an ID or full_name.')
+                'object with an ID.')
 
         # Target can be provided as a Dataset, or as an ID.
         if isinstance(target, Dataset):
@@ -279,24 +350,23 @@ class Dataset(CreateableAPIResource,
 
         return migration
 
-    def tasks(self, follow=False):
+    def activity(self, follow=False):
         statuses = ['running', 'queued', 'pending']
-        active_tasks = \
-            list(DatasetImport.all(dataset=self.id, status=statuses)) + \
-            list(DatasetCommit.all(dataset=self.id, status=statuses)) + \
-            list(DatasetExport.all(dataset=self.id, status=statuses)) + \
-            list(DatasetMigration.all(target=self.id, status=statuses))
+        activity = list(Task.all(target_object=self.id,
+                                 status=','.join(statuses)))
 
+        print("Found {0} active task(s)".format(len(activity)))
         if not follow:
-            return active_tasks
+            return activity
 
         while True:
-            for task in active_tasks:
+            if not activity:
+                break
+
+            for task in activity:
                 task.follow()
 
             time.sleep(5.0)
-            active_tasks = self.tasks()
-            if not active_tasks:
-                break
+            activity = self.activity()
 
-        return active_tasks
+        return activity

@@ -87,7 +87,7 @@ class SolveBio(object):
         except DatasetAlias.DoesNotExist:
             pass
 
-        # if the alias_or_id matches the Dataset regex, return it
+        # If the alias_or_id matches the Dataset regex, return it
         if isinstance(alias, six.integer_types) or \
                 re.match(Dataset.FULL_NAME_REGEX, alias):
             return Dataset(alias)

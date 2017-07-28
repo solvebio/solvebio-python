@@ -77,6 +77,7 @@ class Upload(DeletableAPIResource, DownloadableAPIResource,
     contain individual JSON records, one per line.
     """
     RETRIES = 3
+    PRINTABLE_NAME = 'upload'
 
     @classmethod
     def create(cls, path, **params):

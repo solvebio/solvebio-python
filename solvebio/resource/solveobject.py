@@ -84,10 +84,6 @@ class SolveObject(dict):
         if isinstance(self.get('id'), int):
             ident_parts.append('id=%d' % (self.get('id'),))
 
-        if isinstance(self.get('full_name'), six.text_type):
-            ident_parts.append(
-                'full_name=%s' % (self.get('full_name'),))
-
         _repr = '<%s at %s> JSON: %s' % (
             ' '.join(ident_parts), hex(id(self)), str(self))
 

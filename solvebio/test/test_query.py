@@ -12,7 +12,7 @@ class BaseQueryTest(SolveBioTestCase):
     """Test Paging Queries"""
     def setUp(self):
         super(BaseQueryTest, self).setUp()
-        self.dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
+        self.dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH)
 
     def test_basic(self):
         results = self.dataset.query().filter(

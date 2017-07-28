@@ -12,9 +12,17 @@ try:
 except ImportError:
     from urllib.parse import quote_plus
 
+try:
+    # python3 renames raw_input to input
+    input = raw_input
+except NameError:
+    pass
+
 from ..client import client, _handle_api_error, _handle_request_error
 from ..utils.tabulate import tabulate
 from ..utils.printing import pager
+# from solvebio.errors import NotFoundError
+from ..errors import NotFoundError
 
 from .util import class_to_api_name
 from .solveobject import SolveObject, convert_to_solve_object
@@ -38,16 +46,17 @@ class APIResource(SolveObject):
         if cls == APIResource:
             raise NotImplementedError(
                 'APIResource is an abstract class.  You should perform '
-                'actions on its subclasses (e.g. Depository, Dataset)')
+                'actions on its subclasses (e.g. Vault, Object, Dataset)')
         return str(quote_plus(cls.__name__))
 
     @classmethod
     def class_url(cls):
         """Returns a versioned URI string for this class"""
-        return "/v1/{0}".format(class_to_api_name(cls.class_name()))
+        base = 'v{0}'.format(getattr(cls, 'RESOURCE_VERSION', '1'))
+        return "/{0}/{1}".format(base, class_to_api_name(cls.class_name()))
 
     def instance_url(self):
-        'Get instance URL by ID or full name (if available)'
+        """Get instance URL by ID"""
         id = self.get('id')
         base = self.class_url()
 
@@ -78,7 +87,7 @@ class ListObject(SolveObject):
             return self.request('get', self['links']['prev'], params=params)
         return None
 
-    def objects(self):
+    def solve_objects(self):
         return convert_to_solve_object(self['data'])
 
     def set_tabulate(self, fields, **kwargs):
@@ -127,7 +136,8 @@ class SingletonAPIResource(APIResource):
         Returns a versioned URI string for this class,
         and don't pluralize the class name.
         """
-        return "/v1/{0}".format(class_to_api_name(
+        base = 'v{0}'.format(getattr(cls, 'RESOURCE_VERSION', '1'))
+        return "/{0}/{1}".format(base, class_to_api_name(
             cls.class_name(), pluralize=False))
 
     def instance_url(self):
@@ -146,6 +156,13 @@ class CreateableAPIResource(APIResource):
 class DeletableAPIResource(APIResource):
 
     def delete(self, **params):
+        if not params.pop('force', False):
+            res = input('Are you sure you want to delete this %s? '
+                        '[y/N] ' % self.PRINTABLE_NAME)
+            if res.strip().lower() != 'y':
+                print('Not performing deletion.')
+                return
+
         response = self.request('delete', self.instance_url(), params=params)
         return convert_to_solve_object(response)
 
@@ -212,6 +229,26 @@ class ListableAPIResource(APIResource):
                 results.set_tabulate(fields, headers=headers, sort=False)
 
         return results
+
+    @classmethod
+    def _retrieve_helper(cls, model_name, field_name, error_value, **params):
+        url = cls.class_url()
+        response = client.get(url, params)
+        results = convert_to_solve_object(response)
+        objects = results.data
+        allow_multiple = params.pop('allow_multiple', None)
+
+        if len(objects) > 1:
+            if allow_multiple:
+                return objects
+            else:
+                raise Exception('Multiple {0}s found with {1} "{2}"'
+                                .format(model_name, field_name, error_value))
+        elif len(objects) == 1:
+            return objects[0]
+        else:
+            raise NotFoundError('No {0} found with {1} "{2}"'
+                                .format(model_name, field_name, error_value))
 
     @classmethod
     def pager(cls, **params):

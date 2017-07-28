@@ -14,6 +14,9 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
     For interactive use, DatasetMigration can be "followed" to watch
     the progression of the task.
     """
+    RESOURCE_VERSION = 2
+    PRINTABLE_NAME = 'dataset migration'
+
     LIST_FIELDS = (
         ('id', 'ID'),
         ('status', 'Status'),
@@ -24,11 +27,7 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
         ('updated_at', 'Updated'),
     )
 
-    def follow(self):
-        print("View your migration status on MESH: "
-              "https://my.solvebio.com/jobs/migrations/{0}"
-              .format(self.id))
-
+    def follow(self, loop=True):
         _status = self.status
         if self.status == 'queued':
             print("Waiting for migration (id = {0}) to start..."
@@ -49,6 +48,9 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
                               self.status,
                               processed_records,
                               self.documents_count))
+
+            if not loop:
+                return
 
             time.sleep(3)
             self.refresh()
