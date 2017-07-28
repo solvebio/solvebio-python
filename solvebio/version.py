@@ -3,4 +3,4 @@
 
 # This file should define a variable VERSION which we use as the
 # debugger version number.
-VERSION = '1.17.1'
+VERSION = '2.0.0'
