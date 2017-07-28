@@ -12,6 +12,12 @@ try:
 except ImportError:
     from urllib.parse import quote_plus
 
+try:
+    # python3 renames raw_input to input
+    input = raw_input
+except NameError:
+    pass
+
 from ..client import client, _handle_api_error, _handle_request_error
 from ..utils.tabulate import tabulate
 from ..utils.printing import pager
@@ -151,8 +157,8 @@ class DeletableAPIResource(APIResource):
 
     def delete(self, **params):
         if not params.pop('force', False):
-            res = raw_input('Are you sure you want to delete this %s? '
-                            '[y/N] ' % self.PRINTABLE_NAME)
+            res = input('Are you sure you want to delete this %s? '
+                        '[y/N] ' % self.PRINTABLE_NAME)
             if res.strip().lower() != 'y':
                 print('Not performing deletion.')
                 return
