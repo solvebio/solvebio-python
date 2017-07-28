@@ -151,5 +151,5 @@ class Vault(CreateableAPIResource,
         # TODO - this will have to change if the format of the personal vaults
         # changes.
         name = 'user-{0}'.format(user['id'])
-        vaults = Vault.all(name=name)
+        vaults = Vault.all(name=name, vault_type='user')
         return Vault.retrieve(vaults.data[0].id)
