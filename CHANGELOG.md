@@ -1,5 +1,31 @@
 # Change Log
 
+## [v2.0.0](https://github.com/solvebio/solvebio-python/tree/v2.0.0) (2017-07-28)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.17.1...v2.0.0)
+
+**Implemented enhancements:**
+
+- When an export is complete, add a message to indicate that the user should download the file [\#164](https://github.com/solvebio/solvebio-python/issues/164)
+- Allow `solvebio import` shortcut to take an upload id [\#120](https://github.com/solvebio/solvebio-python/issues/120)
+- HTTP Caching support for data query requests [\#11](https://github.com/solvebio/solvebio-python/issues/11)
+
+**Fixed bugs:**
+
+- Check for existence in depository.latest\_version\(\) [\#124](https://github.com/solvebio/solvebio-python/issues/124)
+
+**Closed issues:**
+
+- Add "upload" command-line sub-command [\#149](https://github.com/solvebio/solvebio-python/issues/149)
+- Autocomplete on query filters \(kwargs\)? [\#4](https://github.com/solvebio/solvebio-python/issues/4)
+
+**Merged pull requests:**
+
+- remove genome build and is\_genomic [\#177](https://github.com/solvebio/solvebio-python/pull/177) ([jsh2134](https://github.com/jsh2134))
+- Upload multiple files in upload shortcut [\#176](https://github.com/solvebio/solvebio-python/pull/176) ([jsh2134](https://github.com/jsh2134))
+- Activity [\#175](https://github.com/solvebio/solvebio-python/pull/175) ([jsh2134](https://github.com/jsh2134))
+- force absolute path. fix bug with name lookup [\#174](https://github.com/solvebio/solvebio-python/pull/174) ([jsh2134](https://github.com/jsh2134))
+- Hyrule Support for Python Client [\#172](https://github.com/solvebio/solvebio-python/pull/172) ([jhuttner](https://github.com/jhuttner))
+
 ## [v1.17.1](https://github.com/solvebio/solvebio-python/tree/v1.17.1) (2017-06-05)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.17.0...v1.17.1)
 
@@ -323,13 +349,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
-
-## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
 
 ## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+
+## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
