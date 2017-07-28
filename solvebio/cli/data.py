@@ -2,23 +2,17 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import base64
-import binascii
 import gzip
 import json
-import mimetypes
 import os
 import re
 import sys
-
-import requests
 
 import solvebio
 
 from solvebio import Object, Vault
 from solvebio.client import client
 from solvebio.utils.files import check_gzip_path
-from solvebio.utils.md5sum import md5sum
 from solvebio.errors import ObjectTypeError, NotFoundError
 
 
