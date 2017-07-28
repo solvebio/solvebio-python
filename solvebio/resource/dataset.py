@@ -196,9 +196,9 @@ class Dataset(CreateableAPIResource,
         response = client.get(self.fields_url, params)
         results = convert_to_solve_object(response)
         results.set_tabulate(
-            ['name', 'data_type', 'description'],
-            headers=['Field', 'Data Type', 'Description'],
-            aligns=['left', 'left', 'left'], sort=True)
+            ['name', 'data_type', 'entity_type', 'description'],
+            headers=['Field', 'Data Type', 'Entity Type', 'Description'],
+            aligns=['left', 'left', 'left', 'left'], sort=True)
 
         return results
 
