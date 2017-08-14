@@ -253,7 +253,6 @@ class Query(object):
         self._ordering = ordering
         self._debug = debug
         self._error = error
-
         if filters:
             if isinstance(filters, Filter):
                 filters = [filters]
@@ -421,6 +420,8 @@ class Query(object):
         Returns: List of JSON API filters
         """
         rv = []
+
+        # Filters should always be a list
         for f in filters:
             if isinstance(f, Filter):
                 if f.filters:
@@ -432,7 +433,9 @@ class Query(object):
                 val = f[key]
 
                 if isinstance(val, dict):
-                    filter_filters = self._process_filters(val)
+                    # pass val (a dict) as list
+                    # so that it gets processed properly
+                    filter_filters = self._process_filters([val])
                     if len(filter_filters) == 1:
                         filter_filters = filter_filters[0]
                     rv.append({key: filter_filters})
