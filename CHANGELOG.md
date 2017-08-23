@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2.0.1](https://github.com/solvebio/solvebio-python/tree/v2.0.1) (2017-08-23)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.0.0...v2.0.1)
+
+**Merged pull requests:**
+
+- update filter creation to correctly handle nested dict filters [\#180](https://github.com/solvebio/solvebio-python/pull/180) ([jsh2134](https://github.com/jsh2134))
+
 ## [v2.0.0](https://github.com/solvebio/solvebio-python/tree/v2.0.0) (2017-07-28)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.17.1...v2.0.0)
 
@@ -349,13 +356,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
-
-## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
 
 ## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+
+## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
