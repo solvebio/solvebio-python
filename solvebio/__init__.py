@@ -103,7 +103,6 @@ from .resource import (
     DatasetTemplate,
     Manifest,
     Object,
-    Upload,
     User,
     Vault,
     VaultSyncTask,
@@ -167,7 +166,6 @@ __all__ = [
     'SolveError',
     'VaultSyncTask',
     'Task',
-    'Upload',
     'Vault',
     'User',
     'VERSION'
