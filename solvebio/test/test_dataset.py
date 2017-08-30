@@ -41,7 +41,7 @@ class DatasetTests(SolveBioTestCase):
                             'ordering', 'is_hidden', 'is_valid',
                             'is_list', 'entity_type', 'expression',
                             'name', 'updated_at', 'is_read_only',
-                            'id', 'url'])
+                            'id', 'url', 'vaut_id'])
         self.assertSetEqual(set(dataset_field.keys()), check_fields)
         expected = """
 
