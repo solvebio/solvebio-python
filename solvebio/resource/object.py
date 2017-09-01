@@ -61,6 +61,8 @@ class Object(CreateableAPIResource,
             print("Error obtaining account domain: {0}".format(e))
             raise
 
+        local_path = os.path.expanduser(local_path)
+
         md5, _ = md5sum(local_path, multipart_threshold=None)
         _, mimetype = mimetypes.guess_type(local_path)
         size = os.path.getsize(local_path)
