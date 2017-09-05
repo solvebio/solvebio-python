@@ -16,9 +16,13 @@ from .object import Object
 from .upload import Upload
 from .vault import Vault
 from .task import Task
+from .beacon import Beacon
+from .beaconset import BeaconSet
 
 
 types = {
+    'Beacon': Beacon,
+    'BeaconSet': BeaconSet,
     'Dataset': Dataset,
     'DatasetImport': DatasetImport,
     'DatasetExport': DatasetExport,
