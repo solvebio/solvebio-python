@@ -94,6 +94,8 @@ from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
 from .annotate import Annotator, Expression
 from .resource import (
+    Beacon,
+    BeaconSet,
     Dataset,
     DatasetCommit,
     DatasetExport,
@@ -150,6 +152,8 @@ __all__ = [
     'Annotator',
     'Expression',
     'BatchQuery',
+    'Beacon',
+    'BeaconSet',
     'Dataset',
     'DatasetCommit',
     'DatasetField',
