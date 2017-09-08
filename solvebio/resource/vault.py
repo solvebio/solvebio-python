@@ -2,6 +2,7 @@
 from ..client import client
 from ..errors import NotFoundError
 
+from . import Object
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import SearchableAPIResource
@@ -153,3 +154,22 @@ class Vault(CreateableAPIResource,
         name = 'user-{0}'.format(user['id'])
         vaults = Vault.all(name=name, vault_type='user')
         return Vault.retrieve(vaults.data[0].id)
+
+    @classmethod
+    def get_or_create_uploads_path(cls):
+        v = cls.get_personal_vault()
+        default_path = 'Uploads'
+        full_path = '{0}:/{1}'.format(v.full_path, default_path)
+
+        try:
+            upload_dir = Object.get_by_full_path(full_path)
+        except NotFoundError:
+            print("Uploads directory not found. Creating {0}"
+                  .format(full_path))
+            upload_dir = Object.create(
+                vault_id=v.id,
+                object_type='folder',
+                filename=default_path,
+            )
+
+        return upload_dir.path

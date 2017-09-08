@@ -10,7 +10,7 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
                     UpdateableAPIResource, DeletableAPIResource):
     """
     DatasetImports represent an import task that takes
-    either an uploaded file or file manifest (list of file URLs)
+    either an object_id or a file manifest (list of file URLs)
     and converts them to a SolveBio-compatible format which can
     then be indexed by a dataset.
 

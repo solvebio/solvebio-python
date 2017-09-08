@@ -13,7 +13,6 @@ from .vault_sync_task import VaultSyncTask
 from .object_copy_task import ObjectCopyTask
 from .manifest import Manifest
 from .object import Object
-from .upload import Upload
 from .vault import Vault
 from .task import Task
 from .beacon import Beacon
@@ -35,7 +34,6 @@ types = {
     'ObjectCopyTask': ObjectCopyTask,
     'ECSTask': Task,
     'VaultSyncTask': VaultSyncTask,
-    'Upload': Upload,
     'User': User,
     'Vault': Vault,
     'list': ListObject
