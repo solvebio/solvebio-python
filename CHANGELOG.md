@@ -1,5 +1,17 @@
 # Change Log
 
+## [v2.1.0](https://github.com/solvebio/solvebio-python/tree/v2.1.0) (2017-09-08)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.0.1...v2.1.0)
+
+**Closed issues:**
+
+- Add beacon and beacon set support [\#184](https://github.com/solvebio/solvebio-python/issues/184)
+
+**Merged pull requests:**
+
+- Use Object based uploads, deprecate Upload resource [\#186](https://github.com/solvebio/solvebio-python/pull/186) ([jsh2134](https://github.com/jsh2134))
+- add basic BeaconSet and Beacon resources [\#185](https://github.com/solvebio/solvebio-python/pull/185) ([davecap](https://github.com/davecap))
+
 ## [v2.0.1](https://github.com/solvebio/solvebio-python/tree/v2.0.1) (2017-08-23)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.0.0...v2.0.1)
 
