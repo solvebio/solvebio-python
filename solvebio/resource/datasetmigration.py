@@ -56,8 +56,33 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
             self.refresh()
 
         if self.status == 'completed':
-            print("Migration is complete, view the result: "
+            # Follow unfinished commits
+            while True:
+                unfinished_commits = [
+                    c for c in self.dataset_commits
+                    if c.status in ['queued', 'running']
+                ]
+
+                if not unfinished_commits:
+                    print("All commits have finished processing")
+                    break
+
+                if len(unfinished_commits) > 1:
+                    print("{0}/{1} commits have finished processing"
+                          .format(len(unfinished_commits),
+                                  len(self.dataset_commits)))
+
+                # prints a status for each one
+                for commit in unfinished_commits:
+                    commit.follow(loop=False)
+
+                # sleep
+                time.sleep(10)
+
+                # refresh status
+                for commit in unfinished_commits:
+                    commit.refresh()
+
+            print("View your data: "
                   "https://my.solvebio.com/data/{0}"
                   .format(self['target']))
-
-        # TODO: Follow commits
