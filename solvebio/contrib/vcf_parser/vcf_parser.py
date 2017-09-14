@@ -267,6 +267,8 @@ class ExpandingVCFParser(object):
             alt_dosage[1] = []
             alt_dosage[2] = []
             alt_dosage["-"] = []
+
+            #Currently hard-coded list of genotype tag fields to include if present
             geno_tag_list = ['GT', 'AD', 'DP', 'GQ', 'PL']
 
             for call in row.samples:
@@ -296,13 +298,17 @@ class ExpandingVCFParser(object):
                 if self.include_genotypes_keyed_by_sample_id:
                   geno_dict2 = dict(curr_geno_data)
                   del geno_dict2['id']
-                  result['gty' + call.sample] = geno_dict2
+                  result['gty' + "_" + call.sample] = geno_dict2
 
             if self.include_genotypes_keyed_by_alt_dosage:
               result['gty_alt_dose_0'] = alt_dosage[0]
               result['gty_alt_dose_1'] = alt_dosage[1]
               result['gty_alt_dose_2'] = alt_dosage[2]
               result['gty_missing'] = alt_dosage["-"]
+              result['gty_alt_dose_0_count'] = len(alt_dosage[0])
+              result['gty_alt_dose_1_count'] = len(alt_dosage[1])
+              result['gty_alt_dose_2_count'] = len(alt_dosage[2])
+              result['gty_missing_count'] = len(alt_dosage["-"])
 
         return result
 
