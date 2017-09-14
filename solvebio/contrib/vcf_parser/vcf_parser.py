@@ -250,25 +250,32 @@ class ExpandingVCFParser(object):
             'row_id': row.ID,
             'reference_allele': row.REF,
             'alternate_alleles': alternate_alleles,
-            #'info': self._parse_info(row.INFO),
+            'info': self._parse_info(row.INFO),
             'qual': row.QUAL,
-            'filter': row.FILTER
+            'filter': row.FILTER,
+            'alt_allele_index': alt_allele_index
         }
 
         # Prepare genotype data
-        hom_ref = []
-        het = []
-        hom_alt = []
+
         geno_data = []
         alt_dosage = {}
         alt_dosage[0] = []
         alt_dosage[1] = []
         alt_dosage[2] = []
+        alt_dosage["-"] = []
+
+        geno_tag_list = ['GT','AD','DP','GQ','PL']
+        include_genotypes_keyed_by_sample_id = True
+        include_genotypes_keyed_by_alt_dosage = True
+
         for call in row.samples:
             curr_geno_data = {}
             for geno_key, geno_value  in call.data._asdict().iteritems():
-              curr_geno_data[geno_key] = geno_value
-            curr_geno_data['sample_id'] = call.sample
+              if geno_key in geno_tag_list:
+                curr_geno_data[geno_key] = geno_value
+            curr_geno_data['id'] = call.sample
+
             geno_data.append(curr_geno_data)
             print("####### Processing sample: " + call.sample)
             print("GT: " + curr_geno_data['GT'])
@@ -278,27 +285,35 @@ class ExpandingVCFParser(object):
               print("alleles_in_genotype: " + str(alleles_in_genotype))
               print("alt_Allele_index: " + str(alt_allele_index))
               alt_allele_dosage = 0
+
               for a in alleles_in_genotype:
-                if int(a) == alt_allele_index:
-                  alt_allele_dosage = alt_allele_dosage + 1
+                if a != ".":
+                  if int(a) == alt_allele_index:
+                    alt_allele_dosage = alt_allele_dosage + 1
 
               if alt_allele_dosage > 2:
                   raise ValueError('Allele dosage cannot be greater than 2')
               print("alt_Allele_dosage: " + str(alt_allele_dosage))
               print("indexed_alt_alelle_dosage: " + str(alt_dosage[alt_allele_dosage]))
-              alt_dosage[alt_allele_dosage].append(call.sample)
 
+              if "." not in alleles_in_genotype:
+                alt_dosage[alt_allele_dosage].append(curr_geno_data)
+              else:
+                alt_dosage["-"].append(curr_geno_data)
 
-        if geno_data:
-          result['genotypes'] = geno_data
-          #result['samples_by_genotype'] = {}
+            if include_genotypes_keyed_by_sample_id:
+              print("###### In genotype keye by sample id")
+              geno_dict2 = dict(curr_geno_data)
+              del geno_dict2['id']
+              result['gty' + call.sample] = geno_dict2
+
+        if include_genotypes_keyed_by_alt_dosage:
           result['gty_alt_dose_0'] = alt_dosage[0]
           result['gty_alt_dose_1'] = alt_dosage[1]
-          result['gty_alt_dosa_2'] = alt_dosage[2]
+          result['gty_alt_dose_2'] = alt_dosage[2]
+          result['gty_missing'] = alt_dosage["-"]
 
         return result
-
-
 
 if __name__ == '__main__':
     import sys
