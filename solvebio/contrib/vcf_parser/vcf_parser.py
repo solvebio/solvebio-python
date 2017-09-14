@@ -240,23 +240,8 @@ class ExpandingVCFParser(object):
         variant_sbid = _variant_sbid(allele=allele,
                                      **genomic_coordinates)
 
-        # Prepare genotype data
-        hom_ref = []
-        het = []
-        hom_alt = []
-        geno_data = []
-        for call in row.samples:
-            curr_geno_data = {}
-            for geno_key, geno_value  in call.data._asdict().iteritems():
-              curr_geno_data[geno_key] = geno_value
-            curr_geno_data['sample_id'] = call.sample
-            geno_data.append(curr_geno_data)
-            if(curr_geno_data['GT'] == '0/0'):
-                hom_ref.append(call.sample)
-            if(curr_geno_data['GT'] == '0/1'):
-                het.append(call.sample)
-            if(curr_geno_data['GT'] == '1/1'):
-                hom_alt.append(call.sample)
+        # get the allele index, where ref allele is 0, of the alt allele being processed now
+        alt_allele_index = alternate_alleles.index(allele) + 1
 
         result = {
             'genomic_coordinates': genomic_coordinates,
@@ -265,17 +250,51 @@ class ExpandingVCFParser(object):
             'row_id': row.ID,
             'reference_allele': row.REF,
             'alternate_alleles': alternate_alleles,
-            'info': self._parse_info(row.INFO),
+            #'info': self._parse_info(row.INFO),
             'qual': row.QUAL,
             'filter': row.FILTER
         }
 
+        # Prepare genotype data
+        hom_ref = []
+        het = []
+        hom_alt = []
+        geno_data = []
+        alt_dosage = {}
+        alt_dosage[0] = []
+        alt_dosage[1] = []
+        alt_dosage[2] = []
+        for call in row.samples:
+            curr_geno_data = {}
+            for geno_key, geno_value  in call.data._asdict().iteritems():
+              curr_geno_data[geno_key] = geno_value
+            curr_geno_data['sample_id'] = call.sample
+            geno_data.append(curr_geno_data)
+            print("####### Processing sample: " + call.sample)
+            print("GT: " + curr_geno_data['GT'])
+            print("allele: " + allele)
+            if 'GT' in curr_geno_data:
+              alleles_in_genotype = curr_geno_data['GT'].replace('|' ,'/').split("/")
+              print("alleles_in_genotype: " + str(alleles_in_genotype))
+              print("alt_Allele_index: " + str(alt_allele_index))
+              alt_allele_dosage = 0
+              for a in alleles_in_genotype:
+                if int(a) == alt_allele_index:
+                  alt_allele_dosage = alt_allele_dosage + 1
+
+              if alt_allele_dosage > 2:
+                  raise ValueError('Allele dosage cannot be greater than 2')
+              print("alt_Allele_dosage: " + str(alt_allele_dosage))
+              print("indexed_alt_alelle_dosage: " + str(alt_dosage[alt_allele_dosage]))
+              alt_dosage[alt_allele_dosage].append(call.sample)
+
+
         if geno_data:
           result['genotypes'] = geno_data
-          result['samples_by_genotype'] = {}
-          result['samples_by_genotype']['hom_ref'] = hom_ref
-          result['samples_by_genotype']['het'] = het
-          result['samples_by_genotype']['hom_alt'] = hom_alt
+          #result['samples_by_genotype'] = {}
+          result['gty_alt_dose_0'] = alt_dosage[0]
+          result['gty_alt_dose_1'] = alt_dosage[1]
+          result['gty_alt_dosa_2'] = alt_dosage[2]
 
         return result
 
