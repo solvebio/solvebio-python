@@ -67,7 +67,7 @@ class Object(CreateableAPIResource,
         _, mimetype = mimetypes.guess_type(local_path)
         size = os.path.getsize(local_path)
 
-        if md5sum('/dev/null')[0] == md5:
+        if md5sum(os.devnull)[0] == md5:
             print('Notice: Cannot upload empty file {0}'.format(local_path))
             return
 
