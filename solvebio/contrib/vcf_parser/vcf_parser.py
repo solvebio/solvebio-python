@@ -252,6 +252,7 @@ class ExpandingVCFParser(object):
             'filter': row.FILTER
         }
 
+
 if __name__ == '__main__':
     import sys
     import json

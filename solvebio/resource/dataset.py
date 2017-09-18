@@ -3,7 +3,6 @@ import re
 import time
 
 from ..client import client
-from ..help import open_help
 from ..query import Query
 from ..errors import NotFoundError
 
