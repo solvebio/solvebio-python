@@ -73,7 +73,7 @@ class SolveObject(dict):
 
         for k, v in six.iteritems(values):
             super(SolveObject, self).__setitem__(
-                k, convert_to_solve_object(v, self._client))
+                k, convert_to_solve_object(v, client=self._client))
 
     def request(self, method, url, **kwargs):
         response = self._client.request(method, url, **kwargs)
