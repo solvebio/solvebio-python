@@ -33,8 +33,8 @@ class Vault(CreateableAPIResource,
         ('description', 'Description'),
     )
 
-    def __init__(self, vault_id):
-        super(Vault, self).__init__(vault_id)
+    def __init__(self, vault_id, **kwargs):
+        super(Vault, self).__init__(vault_id, **kwargs)
 
     def _object_list_helper(self, **params):
         from solvebio import Object
