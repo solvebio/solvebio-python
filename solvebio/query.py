@@ -226,7 +226,8 @@ class Query(object):
             page_size=DEFAULT_PAGE_SIZE,
             result_class=dict,
             debug=False,
-            error=None):
+            error=None,
+            **kwargs):
         """
         Creates a new Query object.
 
@@ -281,6 +282,8 @@ class Query(object):
 
         if self._page_size <= 0:
             raise Exception('\'page_size\' parameter must be > 0')
+
+        self.client = kwargs.get('client', client)
 
     def _clone(self, filters=None, limit=None):
         new = self.__class__(self._dataset_id,
@@ -639,7 +642,7 @@ class Query(object):
 
         # If the request results in a SolveError (ie bad filter) set the error.
         try:
-            self._response = client.post(self._data_url, _params)
+            self._response = self.client.post(self._data_url, _params)
         except SolveError as e:
             self._error = e
             raise
@@ -725,7 +728,7 @@ class BatchQuery(object):
     BatchQuery accepts a list of Query objects and executes them
     in a single request to /v2/batch_query.
     """
-    def __init__(self, queries):
+    def __init__(self, queries, **kwargs):
         """
         Expects a list of Query objects.
         """
@@ -733,6 +736,7 @@ class BatchQuery(object):
             queries = [queries]
 
         self._queries = queries
+        self.client = kwargs.get('client', client)
 
     def _build_query(self):
         query = {'queries': []}
@@ -753,5 +757,5 @@ class BatchQuery(object):
     def execute(self, **params):
         _params = self._build_query()
         _params.update(**params)
-        response = client.post('/v2/batch_query', _params)
+        response = self.client.post('/v2/batch_query', _params)
         return response

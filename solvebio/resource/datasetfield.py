@@ -1,6 +1,4 @@
 """Solvebio DatasetField API Resource"""
-from ..client import client
-
 from .solveobject import convert_to_solve_object
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
@@ -21,7 +19,7 @@ class DatasetField(CreateableAPIResource,
     PRINTABLE_NAME = 'dataset field'
 
     def facets(self, **params):
-        response = client.get(self.facets_url, params)
+        response = self.client.get(self.facets_url, params)
         return convert_to_solve_object(response)
 
     def help(self):

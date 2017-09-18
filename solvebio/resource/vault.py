@@ -43,7 +43,7 @@ class Vault(CreateableAPIResource,
             'vault_id': self.id,
         })
 
-        items = Object.all(**params)
+        items = Object.all(client=self._client, **params)
         return items
 
     def files(self, **params):
@@ -70,7 +70,7 @@ class Vault(CreateableAPIResource,
         if path == '/' or path is None:
             params['vault_parent_object_id'] = None
         else:
-            user = client.get('/v1/user', {})
+            user = self._client.get('/v1/user', {})
             account_domain = user['account']['domain']
 
             parent_object = Object.get_by_full_path(':'.join([
@@ -87,11 +87,11 @@ class Vault(CreateableAPIResource,
         from solvebio import Object
 
         params.update({'vault_id': self.id, 'object_type': 'folder'})
-        return Object.create(**params)
+        return Object.create(client=self._client, **params)
 
-    def upload_file(self, local_path, remote_path):
+    def upload_file(self, local_path, remote_path, **kwargs):
         from solvebio import Object
-        return Object.upload_file(local_path, remote_path, self.name)
+        return Object.upload_file(local_path, remote_path, self.name, **kwargs)
 
     def search(self, query, **params):
         params.update({
@@ -100,15 +100,17 @@ class Vault(CreateableAPIResource,
         return self._object_list_helper(**params)
 
     @classmethod
-    def get_by_full_path(cls, full_path):
+    def get_by_full_path(cls, full_path, **kwargs):
         from solvebio import SolveError
+
+        _client = kwargs.pop('client', client)
 
         parts = full_path.split(':')
 
         if len(parts) == 1 or len(parts) == 2:
             if len(parts) == 1:
                 try:
-                    user = client.get('/v1/user', {})
+                    user = _client.get('/v1/user', {})
                     account_domain = user['account']['domain']
                 except SolveError as e:
                     raise Exception("Error obtaining account domain: "
@@ -118,7 +120,8 @@ class Vault(CreateableAPIResource,
 
             return Vault._retrieve_helper('vault', 'name', parts[-1],
                                           account_domain=account_domain,
-                                          name=parts[-1])
+                                          name=parts[-1],
+                                          client=_client)
 
             # vaults = Vault.all(account_domain=account_domain, name=full_path)
 
@@ -133,9 +136,11 @@ class Vault(CreateableAPIResource,
                             '"account_domain:vault_name"')
 
     @classmethod
-    def get_or_create_by_full_path(cls, full_path):
+    def get_or_create_by_full_path(cls, full_path, **kwargs):
+        _client = kwargs.pop('client', client)
+
         try:
-            return Vault.get_by_full_path(full_path)
+            return Vault.get_by_full_path(full_path, client=_client)
         except NotFoundError:
             pass
 
@@ -144,25 +149,27 @@ class Vault(CreateableAPIResource,
         parts = full_path.split(':', 2)
         vault_name = parts[-1]
 
-        return Vault.create(name=vault_name)
+        return Vault.create(name=vault_name, client=_client)
 
     @classmethod
-    def get_personal_vault(cls):
-        user = client.get('/v1/user', {})
+    def get_personal_vault(cls, **kwargs):
+        _client = kwargs.pop('client', client)
+        user = _client.get('/v1/user', {})
         # TODO - this will have to change if the format of the personal vaults
         # changes.
         name = 'user-{0}'.format(user['id'])
-        vaults = Vault.all(name=name, vault_type='user')
-        return Vault.retrieve(vaults.data[0].id)
+        vaults = Vault.all(name=name, vault_type='user', client=_client)
+        return Vault.retrieve(vaults.data[0].id, client=_client)
 
     @classmethod
-    def get_or_create_uploads_path(cls):
-        v = cls.get_personal_vault()
+    def get_or_create_uploads_path(cls, **kwargs):
+        _client = kwargs.pop('client', client)
+        v = cls.get_personal_vault(client=_client)
         default_path = 'Uploads'
         full_path = '{0}:/{1}'.format(v.full_path, default_path)
 
         try:
-            upload_dir = Object.get_by_full_path(full_path)
+            upload_dir = Object.get_by_full_path(full_path, client=_client)
         except NotFoundError:
             print("Uploads directory not found. Creating {0}"
                   .format(full_path))
@@ -170,6 +177,7 @@ class Vault(CreateableAPIResource,
                 vault_id=v.id,
                 object_type='folder',
                 filename=default_path,
+                client=_client
             )
 
         return upload_dir.path

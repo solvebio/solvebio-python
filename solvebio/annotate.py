@@ -18,6 +18,7 @@ class Annotator(object):
         self.buffer = []
         self.fields = fields
         self.include_errors = include_errors
+        self.client = kwargs.get('client', client)
 
     def annotate(self, records, chunk_size=CHUNK_SIZE):
         """Annotate a set of records with stored fields.
@@ -49,15 +50,16 @@ class Annotator(object):
             'include_errors': self.include_errors
         }
 
-        for r in client.post('/v1/annotate', data)['results']:
+        for r in self.client.post('/v1/annotate', data)['results']:
             yield r
 
 
 class Expression(object):
     """Runs a single SolveBio expression."""
 
-    def __init__(self, expr):
+    def __init__(self, expr, **kwargs):
         self.expr = expr
+        self.client = kwargs.get('client', client)
 
     def evaluate(self, data=None, data_type='string', is_list=False):
         """Evaluates the expression with the provided context and format."""
@@ -67,7 +69,7 @@ class Expression(object):
             'data_type': data_type,
             'is_list': is_list
         }
-        res = client.post('/v1/evaluate', payload)
+        res = self.client.post('/v1/evaluate', payload)
         return res['result']
 
     def __repr__(self):

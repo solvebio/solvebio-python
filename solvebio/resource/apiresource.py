@@ -88,7 +88,7 @@ class ListObject(SolveObject):
         return None
 
     def solve_objects(self):
-        return convert_to_solve_object(self['data'])
+        return convert_to_solve_object(self['data'], client=self._client)
 
     def set_tabulate(self, fields, **kwargs):
         self._tabulate = lambda data:\
@@ -119,7 +119,8 @@ class ListObject(SolveObject):
             self.refresh_from(next_page)
             self._i = 0
 
-        obj = convert_to_solve_object(self['data'][self._i])
+        obj = convert_to_solve_object(self['data'][self._i],
+                                      client=self._client)
         self._i += 1
         return obj
 
@@ -127,8 +128,9 @@ class ListObject(SolveObject):
 class SingletonAPIResource(APIResource):
 
     @classmethod
-    def retrieve(cls):
-        return super(SingletonAPIResource, cls).retrieve(None)
+    def retrieve(cls, **kwargs):
+        _client = kwargs.pop('client', client)
+        return super(SingletonAPIResource, cls).retrieve(None, client=_client)
 
     @classmethod
     def class_url(cls):
@@ -148,9 +150,10 @@ class CreateableAPIResource(APIResource):
 
     @classmethod
     def create(cls, **params):
+        _client = params.pop('client', client)
         url = cls.class_url()
-        response = client.post(url, data=params)
-        return convert_to_solve_object(response)
+        response = _client.post(url, data=params)
+        return convert_to_solve_object(response, client=_client)
 
 
 class DeletableAPIResource(APIResource):
@@ -164,7 +167,7 @@ class DeletableAPIResource(APIResource):
                 return
 
         response = self.request('delete', self.instance_url(), params=params)
-        return convert_to_solve_object(response)
+        return convert_to_solve_object(response, client=self._client)
 
 
 class DownloadableAPIResource(APIResource):
@@ -217,9 +220,10 @@ class ListableAPIResource(APIResource):
 
     @classmethod
     def all(cls, **params):
+        _client = params.pop('client', client)
         url = cls.class_url()
-        response = client.get(url, params)
-        results = convert_to_solve_object(response)
+        response = _client.get(url, params)
+        results = convert_to_solve_object(response, client=_client)
 
         # If the object has LIST_FIELDS, setup tabulate
         if len(results.data) > 0:
@@ -232,9 +236,10 @@ class ListableAPIResource(APIResource):
 
     @classmethod
     def _retrieve_helper(cls, model_name, field_name, error_value, **params):
+        _client = params.pop('client', client)
         url = cls.class_url()
-        response = client.get(url, params)
-        results = convert_to_solve_object(response)
+        response = _client.get(url, params)
+        results = convert_to_solve_object(response, client=_client)
         objects = results.data
         allow_multiple = params.pop('allow_multiple', None)
 
@@ -263,10 +268,11 @@ class SearchableAPIResource(APIResource):
 
     @classmethod
     def search(cls, query='', **params):
+        _client = params.pop('client', client)
         params.update({'q': query})
         url = cls.class_url()
-        response = client.get(url, params)
-        results = convert_to_solve_object(response)
+        response = _client.get(url, params)
+        results = convert_to_solve_object(response, client=_client)
 
         # If the object has LIST_FIELDS, setup tabulate
         if len(results.data) > 0:
