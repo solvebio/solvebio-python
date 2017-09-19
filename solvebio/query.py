@@ -213,6 +213,9 @@ class Query(object):
     # that iterating over a query can cause more fetches.
     DEFAULT_PAGE_SIZE = 100
 
+    # Special case for Query class to pre-set SolveClient
+    _client = None
+
     def __init__(
             self,
             dataset_id,
@@ -283,7 +286,9 @@ class Query(object):
         if self._page_size <= 0:
             raise Exception('\'page_size\' parameter must be > 0')
 
-        self._client = kwargs.get('client') or getattr(self, '_client', client)
+        # Set up the SolveClient
+        # (kwargs overrides pre-set, which overrides global)
+        self._client = kwargs.get('client') or self._client or client
 
     def _clone(self, filters=None, limit=None):
         new = self.__class__(self._dataset_id,
@@ -295,7 +300,8 @@ class Query(object):
                              ordering=self._ordering,
                              page_size=self._page_size,
                              result_class=self._result_class,
-                             debug=self._debug)
+                             debug=self._debug,
+                             client=self._client)
         new._filters += self._filters
 
         if filters:
