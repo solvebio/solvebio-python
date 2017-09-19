@@ -103,7 +103,7 @@ class Vault(CreateableAPIResource,
     def get_by_full_path(cls, full_path, **kwargs):
         from solvebio import SolveError
 
-        _client = kwargs.pop('client', client)
+        _client = kwargs.pop('client', getattr(cls, '_client', client))
 
         parts = full_path.split(':')
 
@@ -137,7 +137,7 @@ class Vault(CreateableAPIResource,
 
     @classmethod
     def get_or_create_by_full_path(cls, full_path, **kwargs):
-        _client = kwargs.pop('client', client)
+        _client = kwargs.pop('client', getattr(cls, '_client', client))
 
         try:
             return Vault.get_by_full_path(full_path, client=_client)
@@ -153,7 +153,7 @@ class Vault(CreateableAPIResource,
 
     @classmethod
     def get_personal_vault(cls, **kwargs):
-        _client = kwargs.pop('client', client)
+        _client = kwargs.pop('client', getattr(cls, '_client', client))
         user = _client.get('/v1/user', {})
         # TODO - this will have to change if the format of the personal vaults
         # changes.
@@ -163,7 +163,7 @@ class Vault(CreateableAPIResource,
 
     @classmethod
     def get_or_create_uploads_path(cls, **kwargs):
-        _client = kwargs.pop('client', client)
+        _client = kwargs.pop('client', getattr(cls, '_client', client))
         v = cls.get_personal_vault(client=_client)
         default_path = 'Uploads'
         full_path = '{0}:/{1}'.format(v.full_path, default_path)

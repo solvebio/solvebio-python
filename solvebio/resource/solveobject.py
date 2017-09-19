@@ -33,7 +33,7 @@ class SolveObject(dict):
     def __init__(self, id=None, **params):
         super(SolveObject, self).__init__()
 
-        self._client = params.pop('client', client)
+        self._client = params.pop('client', getattr(self, '_client', client))
 
         # store manually updated values for partial updates
         self._unsaved_values = set()

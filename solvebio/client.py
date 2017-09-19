@@ -3,6 +3,8 @@ from __future__ import absolute_import
 
 import json
 import time
+import inspect
+
 import solvebio
 
 from .version import VERSION
@@ -90,8 +92,9 @@ class SolveTokenAuth(AuthBase):
 class SolveClient(object):
     """A requests-based HTTP client for SolveBio API resources"""
 
-    def __init__(self, api_host=None, token=None, token_type='Token'):
-        self.set_host(api_host)
+    def __init__(self, host=None, token=None, token_type='Token',
+                 include_resources=True):
+        self.set_host(host)
         self.set_token(token, token_type)
         self._headers = {
             'Content-Type': 'application/json',
@@ -118,12 +121,31 @@ class SolveClient(object):
         self._session = Session()
         self._session.mount(self._host, adapter)
 
-    def set_host(self, api_host=None):
-        self._host = api_host or solvebio.api_host
+        # Import all resources into the client
+        if include_resources:
+            for name, class_ in inspect.getmembers(solvebio, inspect.isclass):
+                subclass = type(name, (class_,), {'_client': self})
+                setattr(self, name, subclass)
+
+    def set_host(self, host=None):
+        self._host = host or solvebio.api_host
         validate_api_host_url(self._host)
 
     def set_token(self, token=None, token_type='Token'):
         self._auth = SolveTokenAuth(token, token_type)
+
+    def whoami(self):
+        try:
+            user = self.get('/v1/user', {})
+        except:
+            print('Not logged-in.')
+        else:
+            email = user['email']
+            domain = user['account']['domain']
+            role = user['role']
+            print('You are logged-in to the "{0}" domain '
+                  'as {1} with role {2}.'
+                  .format(domain, email, role))
 
     def get(self, url, params, **kwargs):
         """Issues an HTTP GET across the wire via the Python requests
@@ -247,5 +269,7 @@ class SolveClient(object):
         logger.debug(prepped.headers)
         logger.debug(prepped.body)
 
+    def __repr__(self):
+        return '<SolveClient {0} {1}>'.format(self._host, self._auth.token)
 
-client = SolveClient()
+client = SolveClient(include_resources=False)

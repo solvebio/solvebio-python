@@ -69,6 +69,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     from solvebio import Manifest  # noqa
     from solvebio import Object  # noqa
     from solvebio import Query  # noqa
+    from solvebio import SolveClient  # noqa
     from solvebio import SolveError  # noqa
     from solvebio import User  # noqa
     from solvebio import Vault  # noqa

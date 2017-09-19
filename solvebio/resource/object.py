@@ -54,7 +54,7 @@ class Object(CreateableAPIResource,
     def upload_file(cls, local_path, remote_path, vault_name, **kwargs):
         from solvebio import Object, Vault
 
-        _client = kwargs.pop('client', client)
+        _client = kwargs.pop('client', getattr(cls, '_client', client))
 
         try:
             user = _client.get('/v1/user', {})
