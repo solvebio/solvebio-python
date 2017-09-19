@@ -30,7 +30,7 @@ def convert_to_solve_object(resp, **kwargs):
 class SolveObject(dict):
     """Base class for all SolveBio API resource objects"""
 
-    # Allow pre-setting a SolveClient
+    # Allows pre-setting a SolveClient
     _client = None
 
     def __init__(self, id=None, **params):

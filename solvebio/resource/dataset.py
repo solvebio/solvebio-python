@@ -42,7 +42,7 @@ class Dataset(CreateableAPIResource,
     def make_full_path(cls, vault_name, path, name, **kwargs):
         from solvebio import SolveError
 
-        _client = kwargs.pop('client', getattr(cls, '_client', client))
+        _client = kwargs.pop('client', None) or cls._client or client
 
         try:
             user = _client.get('/v1/user', {})
@@ -63,7 +63,7 @@ class Dataset(CreateableAPIResource,
     def get_by_full_path(cls, full_path, **kwargs):
         from solvebio import Object
 
-        _client = kwargs.pop('client', getattr(cls, '_client', client))
+        _client = kwargs.pop('client', None) or cls._client or client
         parts = full_path.split(':', 2)
 
         if len(parts) == 3:
@@ -97,7 +97,7 @@ class Dataset(CreateableAPIResource,
         from solvebio import Vault
         from solvebio import Object
 
-        _client = kwargs.pop('client', getattr(cls, '_client', client))
+        _client = kwargs.pop('client', None) or cls._client or client
         create_vault = kwargs.pop('create_vault', False)
         create_folders = kwargs.pop('create_folders', True)
 

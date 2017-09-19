@@ -129,7 +129,7 @@ class SingletonAPIResource(APIResource):
 
     @classmethod
     def retrieve(cls, **kwargs):
-        _client = kwargs.pop('client', getattr(cls, '_client', client))
+        _client = kwargs.pop('client', None) or cls._client or client
         return super(SingletonAPIResource, cls).retrieve(None, client=_client)
 
     @classmethod
@@ -150,7 +150,7 @@ class CreateableAPIResource(APIResource):
 
     @classmethod
     def create(cls, **params):
-        _client = params.pop('client', getattr(cls, '_client', client))
+        _client = params.pop('client', None) or cls._client or client
         url = cls.class_url()
         response = _client.post(url, data=params)
         return convert_to_solve_object(response, client=_client)
@@ -220,7 +220,7 @@ class ListableAPIResource(APIResource):
 
     @classmethod
     def all(cls, **params):
-        _client = params.pop('client', getattr(cls, '_client', client))
+        _client = params.pop('client', None) or cls._client or client
         url = cls.class_url()
         response = _client.get(url, params)
         results = convert_to_solve_object(response, client=_client)
@@ -236,7 +236,7 @@ class ListableAPIResource(APIResource):
 
     @classmethod
     def _retrieve_helper(cls, model_name, field_name, error_value, **params):
-        _client = params.pop('client', getattr(cls, '_client', client))
+        _client = params.pop('client', None) or cls._client or client
         url = cls.class_url()
         response = _client.get(url, params)
         results = convert_to_solve_object(response, client=_client)
@@ -268,7 +268,7 @@ class SearchableAPIResource(APIResource):
 
     @classmethod
     def search(cls, query='', **params):
-        _client = params.pop('client', getattr(cls, '_client', client))
+        _client = params.pop('client', None) or cls._client or client
         params.update({'q': query})
         url = cls.class_url()
         response = _client.get(url, params)

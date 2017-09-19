@@ -14,11 +14,14 @@ class Annotator(object):
     """
     CHUNK_SIZE = 100
 
+    # Allows pre-setting a SolveClient
+    _client = None
+
     def __init__(self, fields, include_errors=False, **kwargs):
         self.buffer = []
         self.fields = fields
         self.include_errors = include_errors
-        self._client = kwargs.get('client') or getattr(self, '_client', client)
+        self._client = kwargs.get('client') or self._client or client
 
     def annotate(self, records, chunk_size=CHUNK_SIZE):
         """Annotate a set of records with stored fields.
@@ -57,9 +60,12 @@ class Annotator(object):
 class Expression(object):
     """Runs a single SolveBio expression."""
 
+    # Allows pre-setting a SolveClient
+    _client = None
+
     def __init__(self, expr, **kwargs):
         self.expr = expr
-        self._client = kwargs.get('client') or getattr(self, '_client', client)
+        self._client = kwargs.get('client') or self._client or client
 
     def evaluate(self, data=None, data_type='string', is_list=False):
         """Evaluates the expression with the provided context and format."""

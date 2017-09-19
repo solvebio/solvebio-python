@@ -734,6 +734,9 @@ class BatchQuery(object):
     BatchQuery accepts a list of Query objects and executes them
     in a single request to /v2/batch_query.
     """
+    # Allows pre-setting a SolveClient
+    _client = None
+
     def __init__(self, queries, **kwargs):
         """
         Expects a list of Query objects.
@@ -742,7 +745,7 @@ class BatchQuery(object):
             queries = [queries]
 
         self._queries = queries
-        self._client = kwargs.get('client') or getattr(self, '_client', client)
+        self._client = kwargs.get('client') or self._client or client
 
     def _build_query(self):
         query = {'queries': []}
