@@ -11,7 +11,7 @@ from .util import json
 def convert_to_solve_object(resp, **kwargs):
     from . import types
 
-    _client = kwargs.pop('client', client)
+    _client = kwargs.pop('client', None)
 
     if isinstance(resp, list):
         return [convert_to_solve_object(i, client=_client) for i in resp]
