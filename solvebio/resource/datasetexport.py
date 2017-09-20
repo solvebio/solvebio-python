@@ -47,7 +47,7 @@ class DatasetExport(CreateableAPIResource, ListableAPIResource,
                 print("Export '{0}' is {1}: {2}/{3} records exported"
                       .format(self.id,
                               self.status,
-                              self.metadata['progress']['processed_records'],
+                              self.metadata.get('progress', {}).get('processed_records', 0),  # noqa
                               self.documents_count))
 
             if not loop:
