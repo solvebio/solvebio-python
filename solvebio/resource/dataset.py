@@ -352,7 +352,7 @@ class Dataset(CreateableAPIResource,
 
     def activity(self, follow=False):
         statuses = ['running', 'queued', 'pending']
-        activity = list(Task.all(target_object=self.id,
+        activity = list(Task.all(target_object_id=self.id,
                                  status=','.join(statuses)))
 
         print("Found {0} active task(s)".format(len(activity)))
