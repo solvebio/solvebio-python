@@ -97,9 +97,11 @@ class ExpandingVCFParser(object):
         self.genome_build = kwargs.pop('genome_build', 'GRCh37')
         self.reader_class = kwargs.pop('reader_class', VCFReader)
 
-        self.include_genotypes_keyed_by_sample_id = kwargs.pop('include_genotypes_keyed_by_sample_id', False)
-        self.include_genotypes_keyed_by_alt_dosage = kwargs.pop('include_genotypes_keyed_alt_dosage', False)
-
+        # temporary hack turning genotypes on always, for some reason now getting "unexpected keyword argument" error
+        #self.include_genotypes_keyed_by_sample_id = kwargs.pop('include_genotypes_keyed_by_sample_id', False)
+        #self.include_genotypes_keyed_by_alt_dosage = kwargs.pop('include_genotypes_keyed_by_alt_dosage', False)
+        self.include_genotypes_keyed_by_sample_id = True
+        self.include_genotypes_keyed_by_alt_dosage = True
 
         self.reader_kwargs = kwargs
         # Set default reader kwargs
@@ -228,6 +230,9 @@ class ExpandingVCFParser(object):
             """Generates a SolveBio variant ID (SBID)."""
             return '{build}-{chromosome}-{start}-{stop}-{allele}'\
                 .format(**kwargs).upper()
+
+        print("###3 In row to dict")
+
 
         if allele == '.':
             # Try to use the ref, if '.' is supplied for alt.
