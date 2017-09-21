@@ -97,8 +97,8 @@ class ExpandingVCFParser(object):
         self.genome_build = kwargs.pop('genome_build', 'GRCh37')
         self.reader_class = kwargs.pop('reader_class', VCFReader)
 
-        self.include_genotypes_keyed_by_sample_id = kwargs.pop('include_genotypes_keyed_by_sample_id', False)
-        self.include_genotypes_keyed_by_alt_dosage = kwargs.pop('include_genotypes_keyed_by_alt_dosage', False)
+        self.gty_fields_keyed_by_sample_id = kwargs.pop('gty_fields_keyed_by_sample_id', [])
+        self.gty_fields_keyed_by_alt_dosage = kwargs.pop('gty_fields_keyed_by_alt_dosage', [])
         self.reader_kwargs = kwargs
         # Set default reader kwargs
         if fsock:
@@ -259,7 +259,7 @@ class ExpandingVCFParser(object):
         }
 
         # Prepare genotype data
-        if self.include_genotypes_keyed_by_alt_dosage or self.include_genotypes_keyed_by_sample_id:
+        if self.gty_fields_keyed_by_sample_id or self.gty_fields_keyed_by_alt_dosage:
             alt_dosage = {}
             alt_dosage[0] = []
             alt_dosage[1] = []
@@ -272,9 +272,18 @@ class ExpandingVCFParser(object):
             for call in row.samples:
                 curr_geno_data = {}
                 for geno_key, geno_value  in call.data._asdict().iteritems():
-                  if geno_key in geno_tag_list:
-                    curr_geno_data[geno_key] = geno_value
-                curr_geno_data['id'] = call.sample
+                   curr_geno_data[geno_key] = geno_value
+
+                geno_data_for_keyed_by_sample_id = {}
+                for field in self.gty_fields_keyed_by_sample_id:
+                    geno_data_for_keyed_by_sample_id[field] = curr_geno_data.get(field, ".")
+
+                geno_data_for_keyed_by_alt_dosage = {}
+                for field in self.gty_fields_keyed_by_alt_dosage:
+                    geno_data_for_keyed_by_alt_dosage[field] = curr_geno_data.get(field, ".")
+                if self.gty_fields_keyed_by_alt_dosage:
+                    geno_data_for_keyed_by_alt_dosage['id'] = call.sample
+
 
                 if 'GT' in curr_geno_data:
                   alleles_in_genotype = curr_geno_data['GT'].replace('|' ,'/').split("/")
@@ -289,16 +298,14 @@ class ExpandingVCFParser(object):
                       raise ValueError('Allele dosage cannot be greater than 2')
 
                   if "." not in alleles_in_genotype:
-                    alt_dosage[alt_allele_dosage].append(curr_geno_data)
+                    alt_dosage[alt_allele_dosage].append(geno_data_for_keyed_by_alt_dosage)
                   else:
-                    alt_dosage["-"].append(curr_geno_data)
+                    alt_dosage["-"].append(geno_data_for_keyed_by_alt_dosage)
 
-                if self.include_genotypes_keyed_by_sample_id:
-                  geno_dict2 = dict(curr_geno_data)
-                  del geno_dict2['id']
-                  result['gty' + "_" + call.sample] = geno_dict2
+                if self.gty_fields_keyed_by_sample_id:
+                  result['gty' + "_" + call.sample] = geno_data_for_keyed_by_sample_id
 
-            if self.include_genotypes_keyed_by_alt_dosage:
+            if self.gty_fields_keyed_by_alt_dosage:
               result['gty_alt_dose_0'] = alt_dosage[0]
               result['gty_alt_dose_1'] = alt_dosage[1]
               result['gty_alt_dose_2'] = alt_dosage[2]
