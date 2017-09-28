@@ -51,7 +51,7 @@ class Object(CreateableAPIResource,
         return cls._retrieve_helper('object', 'path', path, **params)
 
     @classmethod
-    def upload_file(cls, local_path, remote_path, vault_name):
+    def upload_file(cls, local_path, remote_path, vault_name, **kwargs):
         from solvebio import Object, Vault
 
         try:
@@ -83,6 +83,11 @@ class Object(CreateableAPIResource,
             ]))
             parent_object_id = parent_obj.id
 
+        description = kwargs.get(
+            'description',
+            'File uploaded via python client'
+        )
+
         # Create the file, and upload it to the Upload URL
         obj = Object.create(
             vault_id=vault.id,
@@ -92,6 +97,7 @@ class Object(CreateableAPIResource,
             md5=md5,
             mimetype=mimetype,
             size=size,
+            description=description
         )
 
         print('Notice: File created for {0} at {1}'.format(local_path,

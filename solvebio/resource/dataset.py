@@ -114,19 +114,15 @@ class Dataset(CreateableAPIResource,
             user = client.get('/v1/user', {})
             account_domain = user['account']['domain']
 
-        vaults = Vault.all(account_domain=account_domain, name=vault_name)
-
-        if len(vaults.solve_objects()) == 0:
-            if create_vault:
-                vault = Vault.create(name=vault_name)
-            else:
+        if create_vault:
+            vault = Vault.get_or_create_by_full_path(
+                '{0}:{1}'.format(account_domain, vault_name))
+        else:
+            vaults = Vault.all(account_domain=account_domain, name=vault_name)
+            if len(vaults.solve_objects()) == 0:
                 raise Exception('Vault does not exist with name {0}'.format(
                     vault_name))
-        else:
             vault = vaults.solve_objects()[0]
-            if vault.name.lower() != vault_name.lower():
-                raise Exception('Vault name from API does not match '
-                                'user-provided value')
 
         # Create the folders to hold the dataset if they do not already exist.
         curr_path = os.path.dirname(object_path)
