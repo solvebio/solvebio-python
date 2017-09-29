@@ -28,13 +28,16 @@ class Manifest(object):
         default_upload_path = solvebio.Vault.get_or_create_uploads_path()
         vault_name = solvebio.Vault.get_personal_vault().name
         print("Uploading file: {0} to {1}".format(path, default_upload_path))
-        upload = solvebio.Object.upload_file(
+        file_ = solvebio.Object.upload_file(
             path, default_upload_path, vault_name)
         print("Successfuly uploaded file {0} (id:{1} size:{2} md5:{3})"
-              .format(path, upload.id, upload.size, upload.md5))
+              .format(path, file_.id, file_.size, file_.md5))
 
         self.manifest['files'].append({
-            'logical_object_id': upload.id,
+            'object_id': file_.id,
+            'name': file_.filename,
+            'md5': file_.md5,
+            'size': file_.size
         })
 
     def add_url(self, url, **kwargs):

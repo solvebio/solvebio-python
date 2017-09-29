@@ -85,6 +85,11 @@ class Object(CreateableAPIResource,
             ]), client=_client)
             parent_object_id = parent_obj.id
 
+        description = kwargs.get(
+            'description',
+            'File uploaded via python client'
+        )
+
         # Create the file, and upload it to the Upload URL
         obj = Object.create(
             vault_id=vault.id,
@@ -94,6 +99,7 @@ class Object(CreateableAPIResource,
             md5=md5,
             mimetype=mimetype,
             size=size,
+            description=description,
             client=_client
         )
 

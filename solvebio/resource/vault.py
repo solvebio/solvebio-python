@@ -122,15 +122,6 @@ class Vault(CreateableAPIResource,
                                           account_domain=account_domain,
                                           name=parts[-1],
                                           client=_client)
-
-            # vaults = Vault.all(account_domain=account_domain, name=full_path)
-
-            # if len(vaults.data) == 0:
-            #     raise Exception('Vault does not exist with full path "{0}" '
-            #                     'for domain "{1}"'.format(full_path,
-            #                                               account_domain))
-            # else:
-            #     return Vault.retrieve(vaults.data[0].id)
         else:
             raise Exception('Full path must be of the form "vault_name" or '
                             '"account_domain:vault_name"')

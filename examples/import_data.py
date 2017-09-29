@@ -2,12 +2,17 @@ import solvebio
 
 solvebio.login()
 
+vault = solvebio.Vault.get_personal_vault()
+
+# The folders that will contain your dataset
+path = '/SampleImport/1.0.0'
+
+# The name of your dataset
+dataset_name = 'SampleDataset'
+
 # Create a dataset
 dataset = solvebio.Dataset.get_or_create_by_full_path(
-    'Test Vault',           # The name of the vault to use
-    '/SampleImport/1.0.0',  # The folder that will contain your dataset
-    'SampleDataset',        # The name of your dataset
-    create_vault=True,      # Create the vault if does not already exist
+    '{0}:/{1}/{2}'.format(vault.name, path, dataset_name),
 )
 
 # Create a manifest object and a file to it
