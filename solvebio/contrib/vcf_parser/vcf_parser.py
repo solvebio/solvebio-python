@@ -97,6 +97,8 @@ class ExpandingVCFParser(object):
         self.genome_build = kwargs.pop('genome_build', 'GRCh37')
         self.reader_class = kwargs.pop('reader_class', VCFReader)
 
+        self.gty_fields_keyed_by_sample_id = kwargs.pop('gty_fields_keyed_by_sample_id', [])
+        self.gty_fields_keyed_by_alt_dosage = kwargs.pop('gty_fields_keyed_by_alt_dosage', [])
         self.reader_kwargs = kwargs
         # Set default reader kwargs
         if fsock:
@@ -240,7 +242,10 @@ class ExpandingVCFParser(object):
         variant_sbid = _variant_sbid(allele=allele,
                                      **genomic_coordinates)
 
-        return {
+        # get the allele index, where ref allele is 0, of the alt allele being processed now
+        alt_allele_index = alternate_alleles.index(allele) + 1
+
+        result = {
             'genomic_coordinates': genomic_coordinates,
             'variant': variant_sbid,
             'allele': allele,
@@ -249,8 +254,68 @@ class ExpandingVCFParser(object):
             'alternate_alleles': alternate_alleles,
             'info': self._parse_info(row.INFO),
             'qual': row.QUAL,
-            'filter': row.FILTER
+            'filter': row.FILTER,
+            'alt_allele_index': alt_allele_index
         }
+
+        # Prepare genotype data
+        if self.gty_fields_keyed_by_sample_id or self.gty_fields_keyed_by_alt_dosage:
+            alt_dosage = {}
+            alt_dosage[0] = []
+            alt_dosage[1] = []
+            alt_dosage[2] = []
+            alt_dosage["-"] = []
+
+            #Currently hard-coded list of genotype tag fields to include if present
+            geno_tag_list = ['GT', 'AD', 'DP', 'GQ', 'PL']
+
+            for call in row.samples:
+                curr_geno_data = {}
+                for geno_key, geno_value  in call.data._asdict().iteritems():
+                   curr_geno_data[geno_key] = geno_value
+
+                geno_data_for_keyed_by_sample_id = {}
+                for field in self.gty_fields_keyed_by_sample_id:
+                    geno_data_for_keyed_by_sample_id[field] = curr_geno_data.get(field, ".")
+
+                geno_data_for_keyed_by_alt_dosage = {}
+                for field in self.gty_fields_keyed_by_alt_dosage:
+                    geno_data_for_keyed_by_alt_dosage[field] = curr_geno_data.get(field, ".")
+                if self.gty_fields_keyed_by_alt_dosage:
+                    geno_data_for_keyed_by_alt_dosage['id'] = call.sample
+
+
+                if 'GT' in curr_geno_data:
+                  alleles_in_genotype = curr_geno_data['GT'].replace('|' ,'/').split("/")
+                  alt_allele_dosage = 0
+
+                  for a in alleles_in_genotype:
+                    if a != ".":
+                      if int(a) == alt_allele_index:
+                        alt_allele_dosage = alt_allele_dosage + 1
+
+                  if alt_allele_dosage > 2:
+                      raise ValueError('Allele dosage cannot be greater than 2')
+
+                  if "." not in alleles_in_genotype:
+                    alt_dosage[alt_allele_dosage].append(geno_data_for_keyed_by_alt_dosage)
+                  else:
+                    alt_dosage["-"].append(geno_data_for_keyed_by_alt_dosage)
+
+                if self.gty_fields_keyed_by_sample_id:
+                  result['gty' + "_" + call.sample] = geno_data_for_keyed_by_sample_id
+
+            if self.gty_fields_keyed_by_alt_dosage:
+              result['gty_alt_dose_0'] = alt_dosage[0]
+              result['gty_alt_dose_1'] = alt_dosage[1]
+              result['gty_alt_dose_2'] = alt_dosage[2]
+              result['gty_missing'] = alt_dosage["-"]
+              result['gty_alt_dose_0_count'] = len(alt_dosage[0])
+              result['gty_alt_dose_1_count'] = len(alt_dosage[1])
+              result['gty_alt_dose_2_count'] = len(alt_dosage[2])
+              result['gty_missing_count'] = len(alt_dosage["-"])
+
+        return result
 
 if __name__ == '__main__':
     import sys
