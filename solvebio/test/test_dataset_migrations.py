@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-import unittest
 import mock
+
+from .helper import SolveBioTestCase
 
 from solvebio.test.client_mocks import fake_migration_create
 
 
-class TestDatasetMigrations(unittest.TestCase):
+class TestDatasetMigrations(SolveBioTestCase):
 
     @mock.patch('solvebio.resource.DatasetMigration.create')
     def test_migration_from_query(self, Create):

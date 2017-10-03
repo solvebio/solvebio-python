@@ -5,7 +5,7 @@ from .helper import SolveBioTestCase
 
 class BatchQueryTest(SolveBioTestCase):
     def setUp(self):
-        self.dataset = self.Dataset.get_by_full_path(
+        self.dataset = self.client.Dataset.get_by_full_path(
             self.TEST_DATASET_FULL_PATH)
         super(BatchQueryTest, self).setUp()
 

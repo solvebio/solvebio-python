@@ -29,7 +29,7 @@ class DatasetTests(SolveBioTestCase):
             self.assertTrue(f in dataset, '{0} field is present'.format(f))
 
     def test_dataset_fields(self):
-        dataset = self.Dataset.get_by_full_path(
+        dataset = self.client.Dataset.get_by_full_path(
             self.TEST_DATASET_FULL_PATH)
         fields = dataset.fields()
         dataset_field = fields.data[0]
