@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-# from solvebio import Annotator
-# from solvebio import Expression
-
 from .helper import SolveBioTestCase
 
 

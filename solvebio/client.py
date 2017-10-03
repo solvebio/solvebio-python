@@ -123,7 +123,10 @@ class SolveClient(object):
 
         # Import all resources into the client
         if include_resources:
+            skip = ('SolveError', 'SolveClient',)
             for name, class_ in inspect.getmembers(solvebio, inspect.isclass):
+                if name in skip:
+                    continue
                 subclass = type(name, (class_,), {'_client': self})
                 setattr(self, name, subclass)
 
