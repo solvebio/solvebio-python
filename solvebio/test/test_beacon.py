@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from solvebio.resource import Dataset
 
 from .helper import SolveBioTestCase
 
@@ -11,7 +10,7 @@ class BeaconTests(SolveBioTestCase):
         Check that current Clinvar/Variants returns correct
         fields for beacon
         """
-        dataset = Dataset.get_by_full_path(
+        dataset = self.client.Dataset.get_by_full_path(
             'solvebio:public:/ClinVar/3.7.0-2015-12-06/Variants-GRCh37')
 
         beacon = dataset.beacon(chromosome='6',
@@ -27,7 +26,7 @@ class BeaconTests(SolveBioTestCase):
         # Check that Clinvar/Variants version 3.7.0-2015-12-06
         # returns true for specific case
 
-        dataset = Dataset.get_by_full_path(
+        dataset = self.client.Dataset.get_by_full_path(
             'solvebio:public:/ClinVar/3.7.0-2015-12-06/Variants-GRCh37')
 
         beacontwo = dataset.beacon(chromosome='13',

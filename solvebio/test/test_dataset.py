@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from solvebio.resource import Dataset
 
 from .helper import SolveBioTestCase
 
@@ -10,7 +9,8 @@ class DatasetTests(SolveBioTestCase):
     """
 
     def test_dataset_retrieval(self):
-        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH)
+        dataset = self.client.Dataset.get_by_full_path(
+            self.TEST_DATASET_FULL_PATH)
         self.assertTrue('id' in dataset,
                         'Should be able to get id in dataset')
 
@@ -29,7 +29,8 @@ class DatasetTests(SolveBioTestCase):
             self.assertTrue(f in dataset, '{0} field is present'.format(f))
 
     def test_dataset_fields(self):
-        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH)
+        dataset = self.Dataset.get_by_full_path(
+            self.TEST_DATASET_FULL_PATH)
         fields = dataset.fields()
         dataset_field = fields.data[0]
         self.assertTrue('id' in dataset_field,
@@ -92,7 +93,8 @@ class DatasetTests(SolveBioTestCase):
                          'tabulated dataset fields')
 
     def test_dataset_facets(self):
-        dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH)
+        dataset = self.client.Dataset.get_by_full_path(
+            self.TEST_DATASET_FULL_PATH)
         field = dataset.fields('status')
         facets = field.facets()
         self.assertTrue(len(facets['facets']) >= 0)
