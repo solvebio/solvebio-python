@@ -5,9 +5,9 @@ from .helper import SolveBioTestCase
 
 class BatchQueryTest(SolveBioTestCase):
     def setUp(self):
+        super(BatchQueryTest, self).setUp()
         self.dataset = self.client.Dataset.get_by_full_path(
             self.TEST_DATASET_FULL_PATH)
-        super(BatchQueryTest, self).setUp()
 
     def test_invalid_batch_query(self):
         queries = [
