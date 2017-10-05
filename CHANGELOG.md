@@ -1,5 +1,18 @@
 # Change Log
 
+## [v2.2.0](https://github.com/solvebio/solvebio-python/tree/v2.2.0) (2017-10-05)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.1.0...v2.2.0)
+
+**Fixed bugs:**
+
+- incorrect filter parameter [\#192](https://github.com/solvebio/solvebio-python/pull/192) ([jsh2134](https://github.com/jsh2134))
+
+**Merged pull requests:**
+
+- update sample script [\#196](https://github.com/solvebio/solvebio-python/pull/196) ([jsh2134](https://github.com/jsh2134))
+- update manifest info [\#193](https://github.com/solvebio/solvebio-python/pull/193) ([jsh2134](https://github.com/jsh2134))
+- Support for isolated SolveClient \(with non-global tokens\) [\#191](https://github.com/solvebio/solvebio-python/pull/191) ([davecap](https://github.com/davecap))
+
 ## [v2.1.0](https://github.com/solvebio/solvebio-python/tree/v2.1.0) (2017-09-08)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.0.1...v2.1.0)
 
@@ -368,13 +381,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
-
-## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
 
 ## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+
+## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
