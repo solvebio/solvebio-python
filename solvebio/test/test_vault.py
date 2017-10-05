@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from solvebio.resource import Vault
+# from solvebio.resource import Vault
 
 from .helper import SolveBioTestCase
 
@@ -7,12 +7,12 @@ from .helper import SolveBioTestCase
 class VaultTests(SolveBioTestCase):
 
     def test_vaults(self):
-        vaults = Vault.all()
+        vaults = self.client.Vault.all()
         vault = vaults.data[0]
         self.assertTrue('id' in vault,
                         'Should be able to get id in vault')
 
-        vault2 = Vault.retrieve(vault.id)
+        vault2 = self.client.Vault.retrieve(vault.id)
         self.assertEqual(vault, vault2,
                          "Retrieving vault id {0} found by all()"
                          .format(vault.id))

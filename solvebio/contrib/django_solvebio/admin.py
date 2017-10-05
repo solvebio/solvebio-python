@@ -8,4 +8,5 @@ class DatasetAliasAdmin(admin.ModelAdmin):
     list_display = ['alias', 'dataset_id']
     search_fields = ['alias', 'dataset_id']
 
+
 admin.site.register(models.DatasetAlias, DatasetAliasAdmin)

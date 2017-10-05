@@ -8,11 +8,13 @@ from ..client import client
 from .util import json
 
 
-def convert_to_solve_object(resp):
+def convert_to_solve_object(resp, **kwargs):
     from . import types
 
+    _client = kwargs.pop('client', None)
+
     if isinstance(resp, list):
-        return [convert_to_solve_object(i) for i in resp]
+        return [convert_to_solve_object(i, client=_client) for i in resp]
     elif isinstance(resp, dict) and not isinstance(resp, SolveObject):
         resp = resp.copy()
         klass_name = resp.get('class_name')
@@ -20,7 +22,7 @@ def convert_to_solve_object(resp):
             klass = types.get(klass_name, SolveObject)
         else:
             klass = SolveObject
-        return klass.construct_from(resp)
+        return klass.construct_from(resp, client=_client)
     else:
         return resp
 
@@ -28,8 +30,13 @@ def convert_to_solve_object(resp):
 class SolveObject(dict):
     """Base class for all SolveBio API resource objects"""
 
+    # Allows pre-setting a SolveClient
+    _client = None
+
     def __init__(self, id=None, **params):
         super(SolveObject, self).__init__()
+
+        self._client = params.pop('client', self._client or client)
 
         # store manually updated values for partial updates
         self._unsaved_values = set()
@@ -57,9 +64,9 @@ class SolveObject(dict):
         self._unsaved_values.add(k)
 
     @classmethod
-    def construct_from(cls, values):
+    def construct_from(cls, values, **kwargs):
         """Used to create a new object from an HTTP response"""
-        instance = cls(values.get('id'))
+        instance = cls(values.get('id'), **kwargs)
         instance.refresh_from(values)
         return instance
 
@@ -69,11 +76,11 @@ class SolveObject(dict):
 
         for k, v in six.iteritems(values):
             super(SolveObject, self).__setitem__(
-                k, convert_to_solve_object(v))
+                k, convert_to_solve_object(v, client=self._client))
 
     def request(self, method, url, **kwargs):
-        response = client.request(method, url, **kwargs)
-        return convert_to_solve_object(response)
+        response = self._client.request(method, url, **kwargs)
+        return convert_to_solve_object(response, client=self._client)
 
     def __repr__(self):
         if isinstance(self.get('class_name'), six.string_types):

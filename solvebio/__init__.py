@@ -93,6 +93,7 @@ from .version import VERSION  # noqa
 from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
 from .annotate import Annotator, Expression
+from .client import SolveClient
 from .resource import (
     Beacon,
     BeaconSet,
@@ -167,6 +168,7 @@ __all__ = [
     'Object',
     'ObjectCopyTask',
     'Query',
+    'SolveClient',
     'SolveError',
     'VaultSyncTask',
     'Task',
