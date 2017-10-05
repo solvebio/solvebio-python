@@ -5,8 +5,10 @@ import json
 
 import mock
 
-from solvebio.cli import main
 from .helper import SolveBioTestCase
+
+import solvebio
+from solvebio.cli import main
 from solvebio import DatasetTemplate
 from solvebio.test.client_mocks import fake_vault_all
 from solvebio.test.client_mocks import fake_object_all
@@ -16,6 +18,10 @@ from solvebio.test.client_mocks import fake_dataset_tmpl_retrieve
 
 
 class CLITests(SolveBioTestCase):
+    def setUp(self):
+        super(CLITests, self).setUp()
+        # Set the global key for CLI tests only
+        solvebio.api_key = os.environ.get('SOLVEBIO_API_KEY', None)
 
     def test_whoami(self):
         email, token = main.main(['whoami'])

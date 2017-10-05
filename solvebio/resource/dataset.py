@@ -3,7 +3,6 @@ import re
 import time
 
 from ..client import client
-from ..help import open_help
 from ..query import Query
 from ..errors import NotFoundError
 
@@ -40,11 +39,13 @@ class Dataset(CreateableAPIResource,
     )
 
     @classmethod
-    def make_full_path(cls, vault_name, path, name):
+    def make_full_path(cls, vault_name, path, name, **kwargs):
         from solvebio import SolveError
 
+        _client = kwargs.pop('client', None) or cls._client or client
+
         try:
-            user = client.get('/v1/user', {})
+            user = _client.get('/v1/user', {})
             domain = user['account']['domain']
         except SolveError as e:
             print("Error obtaining account domain: {0}".format(e))
@@ -62,13 +63,14 @@ class Dataset(CreateableAPIResource,
     def get_by_full_path(cls, full_path, **kwargs):
         from solvebio import Object
 
+        _client = kwargs.pop('client', None) or cls._client or client
         parts = full_path.split(':', 2)
 
         if len(parts) == 3:
             account_domain, vault_name, object_path = parts
         elif len(parts) == 2:
             vault_name, object_path = parts
-            user = client.get('/v1/user', {})
+            user = _client.get('/v1/user', {})
             account_domain = user['account']['domain']
         else:
             raise Exception('Full path must be of the format: '
@@ -86,8 +88,8 @@ class Dataset(CreateableAPIResource,
             object_path = object_path.rstrip('/')
 
         test_path = ':'.join([account_domain, vault_name, object_path])
-        obj = Object.get_by_full_path(test_path)
-        dataset = Dataset.retrieve(obj['dataset_id'], **kwargs)
+        obj = Object.get_by_full_path(test_path, client=_client)
+        dataset = Dataset.retrieve(obj['dataset_id'], client=_client, **kwargs)
         return dataset
 
     @classmethod
@@ -95,11 +97,12 @@ class Dataset(CreateableAPIResource,
         from solvebio import Vault
         from solvebio import Object
 
+        _client = kwargs.pop('client', None) or cls._client or client
         create_vault = kwargs.pop('create_vault', False)
         create_folders = kwargs.pop('create_folders', True)
 
         try:
-            return Dataset.get_by_full_path(full_path)
+            return Dataset.get_by_full_path(full_path, client=_client)
         except NotFoundError:
             pass
 
@@ -111,14 +114,16 @@ class Dataset(CreateableAPIResource,
             account_domain, vault_name, object_path = parts
         elif len(parts) == 2:
             vault_name, object_path = parts
-            user = client.get('/v1/user', {})
+            user = _client.get('/v1/user', {})
             account_domain = user['account']['domain']
 
         if create_vault:
             vault = Vault.get_or_create_by_full_path(
-                '{0}:{1}'.format(account_domain, vault_name))
+                '{0}:{1}'.format(account_domain, vault_name),
+                client=_client)
         else:
-            vaults = Vault.all(account_domain=account_domain, name=vault_name)
+            vaults = Vault.all(account_domain=account_domain, name=vault_name,
+                               client=_client)
             if len(vaults.solve_objects()) == 0:
                 raise Exception('Vault does not exist with name {0}'.format(
                     vault_name))
@@ -133,7 +138,8 @@ class Dataset(CreateableAPIResource,
         while curr_path != '/':
             try:
                 obj = Object.get_by_path(curr_path,
-                                         vault_id=vault.id)
+                                         vault_id=vault.id,
+                                         client=_client)
                 if obj.object_type != 'folder':
                     raise Exception(
                         'Path {0} is a {1} and not a folder'.format(
@@ -159,6 +165,7 @@ class Dataset(CreateableAPIResource,
                 vault_id=vault.id,
                 filename=os.path.basename(folder),
                 parent_object_id=id_map[os.path.dirname(folder)],
+                client=_client
             )
             new_folders.append(new_folder)
             id_map[folder] = new_folder.id
@@ -173,6 +180,7 @@ class Dataset(CreateableAPIResource,
         return Dataset.create(name=os.path.basename(object_path),
                               vault_id=vault.id,
                               vault_parent_object_id=parent_folder_id,
+                              client=_client,
                               **kwargs)
 
     def fields(self, name=None, **params):
@@ -185,12 +193,13 @@ class Dataset(CreateableAPIResource,
             params.update({
                 'name': name,
             })
-            fields = client.get(self.fields_url, params)
-            result = DatasetField.retrieve(fields['data'][0]['id'])
+            fields = self._client.get(self.fields_url, params)
+            result = DatasetField.retrieve(fields['data'][0]['id'],
+                                           client=self._client)
             return result
 
-        response = client.get(self.fields_url, params)
-        results = convert_to_solve_object(response)
+        response = self._client.get(self.fields_url, params)
+        results = convert_to_solve_object(response, client=self._client)
         results.set_tabulate(
             ['name', 'data_type', 'entity_type', 'description'],
             headers=['Field', 'Data Type', 'Entity Type', 'Description'],
@@ -204,8 +213,8 @@ class Dataset(CreateableAPIResource,
                 'Please use Dataset.retrieve({ID}) before retrieving '
                 'a template')
 
-        response = client.get(self.template_url, params)
-        return convert_to_solve_object(response)
+        response = self._client.get(self.template_url, params)
+        return convert_to_solve_object(response, client=self._client)
 
     def commits(self, **params):
         if 'commits_url' not in self:
@@ -213,8 +222,8 @@ class Dataset(CreateableAPIResource,
                 'Please use Dataset.retrieve({ID}) before looking '
                 'up commits')
 
-        response = client.get(self.commits_url, params)
-        results = convert_to_solve_object(response)
+        response = self._client.get(self.commits_url, params)
+        results = convert_to_solve_object(response, client=self._client)
         results.set_tabulate(
             ['id', 'title', 'description', 'status', 'created_at'],
             headers=['ID', 'Title', 'Description', 'Status', 'Created'],
@@ -228,8 +237,8 @@ class Dataset(CreateableAPIResource,
                 'Please use Dataset.retrieve({ID}) before looking '
                 'up imports')
 
-        response = client.get(self.imports_url, params)
-        results = convert_to_solve_object(response)
+        response = self._client.get(self.imports_url, params)
+        results = convert_to_solve_object(response, client=self._client)
         results.set_tabulate(
             ['id', 'title', 'description', 'status', 'created_at'],
             headers=['ID', 'Title', 'Description', 'Status', 'Created'],
@@ -250,11 +259,11 @@ class Dataset(CreateableAPIResource,
 
     def query(self, query=None, **params):
         self._data_url()  # raises an exception if there's no ID
-        return Query(self['id'], query=query, **params)
+        return Query(self['id'], query=query, client=self._client, **params)
 
     def lookup(self, *sbids):
         lookup_url = self._data_url() + '/' + ','.join(sbids)
-        return client.get(lookup_url, {})['results']
+        return self._client.get(lookup_url, {})['results']
 
     def _beacon_url(self):
         if 'beacon_url' not in self:
@@ -269,10 +278,7 @@ class Dataset(CreateableAPIResource,
 
     def beacon(self, **params):
         # raises an exception if there's no ID
-        return client.get(self._beacon_url(), params)
-
-    def help(self):
-        open_help('/library/{0}'.format(self['id']))
+        return self._client.get(self._beacon_url(), params)
 
     def import_file(self, path, **kwargs):
         """
@@ -349,7 +355,8 @@ class Dataset(CreateableAPIResource,
     def activity(self, follow=False):
         statuses = ['running', 'queued', 'pending']
         activity = list(Task.all(target_object_id=self.id,
-                                 status=','.join(statuses)))
+                                 status=','.join(statuses),
+                                 client=self._client))
 
         print("Found {0} active task(s)".format(len(activity)))
         if not follow:

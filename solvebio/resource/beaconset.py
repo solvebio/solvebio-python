@@ -1,5 +1,3 @@
-from ..client import client
-
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import UpdateableAPIResource
@@ -43,4 +41,4 @@ class BeaconSet(CreateableAPIResource,
             'query': query,
             'entity_type': entity_type
         }
-        return client.post(self._query_url(), data)
+        return self._client.post(self._query_url(), data)

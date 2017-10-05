@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from solvebio.resource import Dataset
 
 from .helper import SolveBioTestCase
 
@@ -103,7 +102,8 @@ class LookupTests(SolveBioTestCase):
 
     def setUp(self):
         super(LookupTests, self).setUp()
-        self.dataset = Dataset.get_by_full_path(self.TEST_DATASET_FULL_PATH)
+        self.dataset = self.client.Dataset.get_by_full_path(
+            self.TEST_DATASET_FULL_PATH)
 
     def test_lookup_error(self):
         # Check that incorrect lookup results in empty list.

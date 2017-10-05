@@ -213,6 +213,9 @@ class Query(object):
     # that iterating over a query can cause more fetches.
     DEFAULT_PAGE_SIZE = 100
 
+    # Special case for Query class to pre-set SolveClient
+    _client = None
+
     def __init__(
             self,
             dataset_id,
@@ -226,7 +229,8 @@ class Query(object):
             page_size=DEFAULT_PAGE_SIZE,
             result_class=dict,
             debug=False,
-            error=None):
+            error=None,
+            **kwargs):
         """
         Creates a new Query object.
 
@@ -282,6 +286,10 @@ class Query(object):
         if self._page_size <= 0:
             raise Exception('\'page_size\' parameter must be > 0')
 
+        # Set up the SolveClient
+        # (kwargs overrides pre-set, which overrides global)
+        self._client = kwargs.get('client') or self._client or client
+
     def _clone(self, filters=None, limit=None):
         new = self.__class__(self._dataset_id,
                              query=self._query,
@@ -292,7 +300,8 @@ class Query(object):
                              ordering=self._ordering,
                              page_size=self._page_size,
                              result_class=self._result_class,
-                             debug=self._debug)
+                             debug=self._debug,
+                             client=self._client)
         new._filters += self._filters
 
         if filters:
@@ -639,7 +648,7 @@ class Query(object):
 
         # If the request results in a SolveError (ie bad filter) set the error.
         try:
-            self._response = client.post(self._data_url, _params)
+            self._response = self._client.post(self._data_url, _params)
         except SolveError as e:
             self._error = e
             raise
@@ -725,7 +734,10 @@ class BatchQuery(object):
     BatchQuery accepts a list of Query objects and executes them
     in a single request to /v2/batch_query.
     """
-    def __init__(self, queries):
+    # Allows pre-setting a SolveClient
+    _client = None
+
+    def __init__(self, queries, **kwargs):
         """
         Expects a list of Query objects.
         """
@@ -733,6 +745,7 @@ class BatchQuery(object):
             queries = [queries]
 
         self._queries = queries
+        self._client = kwargs.get('client') or self._client or client
 
     def _build_query(self):
         query = {'queries': []}
@@ -753,5 +766,5 @@ class BatchQuery(object):
     def execute(self, **params):
         _params = self._build_query()
         _params.update(**params)
-        response = client.post('/v2/batch_query', _params)
+        response = self._client.post('/v2/batch_query', _params)
         return response

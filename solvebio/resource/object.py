@@ -54,8 +54,10 @@ class Object(CreateableAPIResource,
     def upload_file(cls, local_path, remote_path, vault_name, **kwargs):
         from solvebio import Object, Vault
 
+        _client = kwargs.pop('client', None) or cls._client or client
+
         try:
-            user = client.get('/v1/user', {})
+            user = _client.get('/v1/user', {})
             account_domain = user['account']['domain']
         except SolveError as e:
             print("Error obtaining account domain: {0}".format(e))
@@ -71,7 +73,7 @@ class Object(CreateableAPIResource,
             print('Notice: Cannot upload empty file {0}'.format(local_path))
             return
 
-        vault = Vault.get_by_full_path(vault_name)
+        vault = Vault.get_by_full_path(vault_name, client=_client)
 
         if remote_path == '/':
             parent_object_id = None
@@ -80,7 +82,7 @@ class Object(CreateableAPIResource,
                 account_domain,
                 vault_name,
                 remote_path,
-            ]))
+            ]), client=_client)
             parent_object_id = parent_obj.id
 
         description = kwargs.get(
@@ -97,7 +99,8 @@ class Object(CreateableAPIResource,
             md5=md5,
             mimetype=mimetype,
             size=size,
-            description=description
+            description=description,
+            client=_client
         )
 
         print('Notice: File created for {0} at {1}'.format(local_path,
