@@ -1,5 +1,16 @@
 # Change Log
 
+## [v2.2.1](https://github.com/solvebio/solvebio-python/tree/v2.2.1) (2017-10-18)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.2.0...v2.2.1)
+
+**Fixed bugs:**
+
+- Task resource does not use local SolveClient [\#197](https://github.com/solvebio/solvebio-python/issues/197)
+
+**Merged pull requests:**
+
+- fix issue where task method did not pass client through [\#198](https://github.com/solvebio/solvebio-python/pull/198) ([davecap](https://github.com/davecap))
+
 ## [v2.2.0](https://github.com/solvebio/solvebio-python/tree/v2.2.0) (2017-10-05)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.1.0...v2.2.0)
 
