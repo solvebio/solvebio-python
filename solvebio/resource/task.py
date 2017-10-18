@@ -21,7 +21,7 @@ class Task(ListableAPIResource):
         """ Get Task child object class """
         from . import types
         child_klass = types.get(self.task_type.split('.')[1])
-        return child_klass.retrieve(self.task_id)
+        return child_klass.retrieve(self.task_id, client=self._client)
 
     def follow(self):
         """ Follow the child object but do not loop """

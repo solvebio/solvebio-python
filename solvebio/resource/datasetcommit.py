@@ -22,12 +22,10 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
     )
 
     def dataset(self):
-        from .dataset import Dataset
-        return Dataset.retrieve(self['dataset'])
+        self._client.Dataset.retrieve(self['dataset'])
 
     def dataset_import(self):
-        from .datasetimport import DatasetImport
-        return DatasetImport.retrieve(self['dataset_import_id'])
+        self._client.DatasetImport.retrieve(self['dataset_import_id'])
 
     def follow(self, loop=True):
         # Follow unfinished commits
