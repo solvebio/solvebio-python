@@ -95,6 +95,7 @@ from .query import Query, BatchQuery, Filter, GenomicFilter
 from .annotate import Annotator, Expression
 from .client import SolveClient
 from .resource import (
+    Application,
     Beacon,
     BeaconSet,
     Dataset,
@@ -151,6 +152,7 @@ def login(**kwargs):
 
 __all__ = [
     'Annotator',
+    'Application',
     'Expression',
     'BatchQuery',
     'Beacon',

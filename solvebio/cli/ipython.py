@@ -53,6 +53,7 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
     # inside the ipython shell users don't have run imports
     import solvebio  # noqa
     from solvebio import Annotator  # noqa
+    from solvebio import Application  # noqa
     from solvebio import Beacon  # noqa
     from solvebio import BeaconSet  # noqa
     from solvebio import BatchQuery  # noqa

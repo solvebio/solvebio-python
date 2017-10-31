@@ -17,9 +17,11 @@ from .vault import Vault
 from .task import Task
 from .beacon import Beacon
 from .beaconset import BeaconSet
+from .application import Application
 
 
 types = {
+    'Application': Application,
     'Beacon': Beacon,
     'BeaconSet': BeaconSet,
     'Dataset': Dataset,
