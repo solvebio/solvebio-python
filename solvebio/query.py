@@ -675,6 +675,7 @@ class Query(object):
             dataset_id=self._dataset_id,
             format=format,
             params=params,
+            client=self._client
         )
 
         if follow:
@@ -716,6 +717,7 @@ class Query(object):
             source_id=self._dataset_id,
             target_id=target_id,
             source_params=params,
+            client=self._client,
             **kwargs)
 
         if follow:
@@ -726,7 +728,7 @@ class Query(object):
     def annotate(self, fields, **kwargs):
         from solvebio.annotate import Annotator
 
-        return Annotator(fields, **kwargs).annotate(self)
+        return Annotator(fields, client=self._client, **kwargs).annotate(self)
 
 
 class BatchQuery(object):
