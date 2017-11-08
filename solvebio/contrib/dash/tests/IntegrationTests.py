@@ -14,7 +14,7 @@ from .utils import invincible, wait_for
 class IntegrationTests(unittest.TestCase):
     def percy_snapshot(cls, name):
         if ('PERCY_PROJECT' in os.environ and
-                os.environ['PERCY_PROJECT'] == 'solvebio/dash-solvebio-auth'):
+                os.environ['PERCY_PROJECT'] == 'solvebio/contrib/dash'):
 
             snapshot_name = '{} - Py{}'.format(
                 name, sys.version_info.major
@@ -32,9 +32,9 @@ class IntegrationTests(unittest.TestCase):
         cls.driver = webdriver.Chrome()
 
         if ('PERCY_PROJECT' in os.environ and
-                os.environ['PERCY_PROJECT'] == 'solvebio/dash-solvebio-auth'):
+                os.environ['PERCY_PROJECT'] == 'solvebio/contrib/dash'):
             loader = percy.ResourceLoader(
-              webdriver=cls.driver
+                webdriver=cls.driver
             )
             cls.percy_runner = percy.Runner(loader=loader)
 
@@ -45,7 +45,7 @@ class IntegrationTests(unittest.TestCase):
         super(IntegrationTests, cls).tearDownClass()
         cls.driver.quit()
         if ('PERCY_PROJECT' in os.environ and
-                os.environ['PERCY_PROJECT'] == 'solvebio/dash-solvebio-auth'):
+                os.environ['PERCY_PROJECT'] == 'solvebio/contrib/dash'):
             cls.percy_runner.finalize_build()
 
     def setUp(self):

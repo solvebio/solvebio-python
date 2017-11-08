@@ -225,7 +225,7 @@ class LoginFlow(unittest.TestCase):
         app.config.scripts.serve_locally = True
         SolveBioAuth(
             app,
-            'https://dash-solvebio-auth-app.herokuapp.com',
+            'https://solvebio-dash-auth-app.herokuapp.com',
             oauth_client_id
         )
         app.layout = html.Div()
