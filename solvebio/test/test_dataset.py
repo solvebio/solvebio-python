@@ -89,8 +89,7 @@ class DatasetTests(SolveBioTestCase):
 | uniprot_id_uniprot           | string      |               |               |
 | vega_ids                     | string      |               |               |
 """
-        self.assertEqual("{0}".format(fields), expected[1:-1],
-                         'tabulated dataset fields')
+        self.assertEqual("{0}".format(fields), expected[1:-1])
 
     def test_dataset_facets(self):
         dataset = self.client.Dataset.get_by_full_path(
