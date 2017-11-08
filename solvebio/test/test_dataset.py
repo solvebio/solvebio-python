@@ -50,7 +50,7 @@ class DatasetTests(SolveBioTestCase):
 |------------------------------+-------------+---------------+---------------|
 | accession_numbers            | string      |               |               |
 | approved_name                | string      |               |               |
-| approved_symbol              | string      |               |               |
+| approved_symbol              | string      | gene          |               |
 | ccds_ids                     | string      |               |               |
 | chromosome                   | string      |               |               |
 | date_approved                | date        |               |               |
