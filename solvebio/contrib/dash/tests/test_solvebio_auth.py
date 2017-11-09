@@ -56,13 +56,13 @@ def create_apps(client_id):
     apps = dict((k, dash.Dash(k)) for k in app_permissions)
     for app in list(apps.values()):
         app.scripts.config.serve_locally = True
-    auths = {
-        k: SolveBioAuth(
+    auths = dict(
+        (k, SolveBioAuth(
             apps[k],
             'http://localhost:5000',
             client_id
-        ) for k in app_permissions
-    }
+        )) for k in app_permissions
+    )
     apps['unregistered'] = dash.Dash('unregistered')
     apps['unregistered'].scripts.config.serve_locally = True
     return apps, auths
