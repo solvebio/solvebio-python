@@ -29,6 +29,7 @@ def convert_to_solve_object(resp, **kwargs):
 
 class SolveObject(dict):
     """Base class for all SolveBio API resource objects"""
+    ID_ATTR = 'id'
 
     # Allows pre-setting a SolveClient
     _client = None
@@ -42,7 +43,7 @@ class SolveObject(dict):
         self._unsaved_values = set()
 
         if id:
-            self['id'] = id
+            self[self.ID_ATTR] = id
 
     def __setattr__(self, k, v):
         if k[0] == '_' or k in self.__dict__:
@@ -66,7 +67,7 @@ class SolveObject(dict):
     @classmethod
     def construct_from(cls, values, **kwargs):
         """Used to create a new object from an HTTP response"""
-        instance = cls(values.get('id'), **kwargs)
+        instance = cls(values.get(cls.ID_ATTR), **kwargs)
         instance.refresh_from(values)
         return instance
 
@@ -88,8 +89,9 @@ class SolveObject(dict):
         else:
             ident_parts = [type(self).__name__]
 
-        if isinstance(self.get('id'), int):
-            ident_parts.append('id=%d' % (self.get('id'),))
+        if isinstance(self.get(self.ID_ATTR), int):
+            ident_parts.append(
+                '%s=%d' % (self.ID_ATTR, self.get(self.ID_ATTR),))
 
         _repr = '<%s at %s> JSON: %s' % (
             ' '.join(ident_parts), hex(id(self)), str(self))

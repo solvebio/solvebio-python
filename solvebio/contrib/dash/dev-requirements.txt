@@ -1,0 +1,13 @@
+dash_core_components
+dash_html_components
+dash_renderer
+dash>=0.18.3
+percy
+selenium
+mock
+tox
+tox-pyenv
+six
+requests[security]
+flake8
+solvebio>=2.2.1

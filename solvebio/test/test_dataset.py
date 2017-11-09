@@ -42,7 +42,6 @@ class DatasetTests(SolveBioTestCase):
                             'ordering', 'is_hidden', 'is_valid',
                             'is_list', 'entity_type', 'expression',
                             'name', 'updated_at', 'is_read_only',
-                            'is_transient',
                             'id', 'url', 'vault_id'])
         self.assertSetEqual(set(dataset_field.keys()), check_fields)
         expected = """
@@ -51,7 +50,7 @@ class DatasetTests(SolveBioTestCase):
 |------------------------------+-------------+---------------+---------------|
 | accession_numbers            | string      |               |               |
 | approved_name                | string      |               |               |
-| approved_symbol              | string      |               |               |
+| approved_symbol              | string      | gene          |               |
 | ccds_ids                     | string      |               |               |
 | chromosome                   | string      |               |               |
 | date_approved                | date        |               |               |
@@ -90,8 +89,7 @@ class DatasetTests(SolveBioTestCase):
 | uniprot_id_uniprot           | string      |               |               |
 | vega_ids                     | string      |               |               |
 """
-        self.assertEqual("{0}".format(fields), expected[1:-1],
-                         'tabulated dataset fields')
+        self.assertEqual("{0}".format(fields), expected[1:-1])
 
     def test_dataset_facets(self):
         dataset = self.client.Dataset.get_by_full_path(
