@@ -697,8 +697,7 @@ class Query(object):
 
         * target_fields
         * include_errors
-        * preserve_source_expressions
-        * validations
+        * validation_params
         * metadata
         * commit_mode
 
