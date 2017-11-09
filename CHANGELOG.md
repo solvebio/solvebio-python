@@ -1,5 +1,17 @@
 # Change Log
 
+## [v2.3.0](https://github.com/solvebio/solvebio-python/tree/v2.3.0) (2017-11-09)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.2.1...v2.3.0)
+
+**Implemented enhancements:**
+
+- Add support for entity filters in Query class [\#195](https://github.com/solvebio/solvebio-python/issues/195)
+
+**Merged pull requests:**
+
+- add support for entities query param \(closes \#195\) [\#202](https://github.com/solvebio/solvebio-python/pull/202) ([davecap](https://github.com/davecap))
+- add Application resource [\#200](https://github.com/solvebio/solvebio-python/pull/200) ([davecap](https://github.com/davecap))
+
 ## [v2.2.1](https://github.com/solvebio/solvebio-python/tree/v2.2.1) (2017-10-18)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.2.0...v2.2.1)
 
