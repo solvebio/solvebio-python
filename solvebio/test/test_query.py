@@ -296,3 +296,8 @@ class BaseQueryTest(SolveBioTestCase):
             limit=limit, exclude_fields=['hgnc_id'])
         self.assertEqual(len(results[0].keys()), 40)
         self.assertTrue('hgnc_id' not in results[0].keys())
+
+    def test_entity_filters(self):
+        entities = [('gene', 'BRCA2')]
+        query = self.dataset.query(entities=entities)
+        self.assertEqual(query.count(), 1)
