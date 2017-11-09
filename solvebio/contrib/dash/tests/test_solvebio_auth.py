@@ -53,7 +53,7 @@ def get_cookie(res, cookie_name):
 
 def create_apps(client_id):
     app_permissions = ['private']
-    apps = {k: dash.Dash(k) for k in app_permissions}
+    apps = dict((k, dash.Dash(k)) for k in app_permissions)
     for app in list(apps.values()):
         app.scripts.config.serve_locally = True
     auths = {
