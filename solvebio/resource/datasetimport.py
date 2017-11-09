@@ -18,7 +18,6 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
     the progression of an import job.
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'dataset import'
 
     LIST_FIELDS = (
         ('id', 'ID'),
