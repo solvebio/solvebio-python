@@ -1,6 +1,7 @@
-from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import DeletableAPIResource
+from .apiresource import CreateableAPIResource
+from .solveobject import convert_to_solve_object
 
 import time
 
@@ -26,6 +27,24 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
         ('created_at', 'Created'),
         ('updated_at', 'Updated'),
     )
+
+    @property
+    def source_id(self):
+        return self['source']['id']
+
+    @property
+    def source(self):
+        response = self._client.get(self['source']['url'], {})
+        return convert_to_solve_object(response, client=self._client)
+
+    @property
+    def target_id(self):
+        return self['target']['id']
+
+    @property
+    def target(self):
+        response = self._client.get(self['target']['url'], {})
+        return convert_to_solve_object(response, client=self._client)
 
     def follow(self, loop=True):
         _status = self.status
