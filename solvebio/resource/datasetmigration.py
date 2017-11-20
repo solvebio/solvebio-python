@@ -29,23 +29,12 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
     )
 
     @property
-    def source_id(self):
-        try:
-            return self['source']['id']
-        except:
-            return None
-
-    @property
     def source(self):
         if not self.source_id:
             return
 
-        response = self._client.get(self.source_id, {})
+        response = self._client.get(self['source']['url'], {})
         return convert_to_solve_object(response, client=self._client)
-
-    @property
-    def target_id(self):
-        return self['target']['id']
 
     @property
     def target(self):

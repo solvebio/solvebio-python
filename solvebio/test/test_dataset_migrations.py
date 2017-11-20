@@ -20,10 +20,16 @@ class TestDatasetMigrations(SolveBioTestCase):
         query = source\
             .query(limit=10, fields=['my_field'])\
             .filter(my_field=999)
-        migration = query.migrate(target=target, commit_mode='overwrite',
+        migration = query.migrate(target=target,
+                                  commit_mode='overwrite',
                                   follow=False)
         self.assertEqual(migration.source_id, source.id)
         self.assertEqual(migration.target_id, target.id)
+
+        # validate
+        self.assertEqual(migration.source.id, source.id)
+        self.assertEqual(migration.target.id, target.id)
+
         self.assertEqual(migration.commit_mode, 'overwrite')
         self.assertEqual(migration.source_params['fields'],
                          ['my_field'])
