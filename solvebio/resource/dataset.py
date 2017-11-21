@@ -27,7 +27,6 @@ class Dataset(CreateableAPIResource,
     within a vault folder.
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'dataset'
 
     LIST_FIELDS = (
         ('id', 'ID'),
