@@ -27,7 +27,6 @@ class Object(CreateableAPIResource,
     though more may be added later: folder, file, and SolveBio Dataset.
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'object'
 
     LIST_FIELDS = (
         ('id', 'ID'),

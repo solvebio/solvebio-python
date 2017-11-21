@@ -160,9 +160,11 @@ class CreateableAPIResource(APIResource):
 class DeletableAPIResource(APIResource):
 
     def delete(self, **params):
+        printable_name = class_to_api_name(
+            self.class_name(), pluralize=False).replace('_', ' ')
         if not params.pop('force', False):
             res = input('Are you sure you want to delete this %s? '
-                        '[y/N] ' % self.PRINTABLE_NAME)
+                        '[y/N] ' % printable_name)
             if res.strip().lower() != 'y':
                 print('Not performing deletion.')
                 return

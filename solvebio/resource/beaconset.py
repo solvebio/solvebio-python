@@ -14,7 +14,6 @@ class BeaconSet(CreateableAPIResource,
     used to query a group of related datasets in a single API request.
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'beacon set'
 
     LIST_FIELDS = (
         ('id', 'ID'),

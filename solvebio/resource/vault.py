@@ -23,7 +23,6 @@ class Vault(CreateableAPIResource,
     each other (i.e. they come from the same data source or project).
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'vault'
 
     LIST_FIELDS = (
         ('id', 'ID'),

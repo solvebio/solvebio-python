@@ -11,7 +11,6 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
     DatasetCommits represent a change made to a Dataset.
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'dataset commit'
 
     LIST_FIELDS = (
         ('id', 'ID'),

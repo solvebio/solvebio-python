@@ -17,7 +17,6 @@ class DatasetExport(CreateableAPIResource, ListableAPIResource,
     the progression of the task.
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'dataset export'
 
     LIST_FIELDS = (
         ('id', 'ID'),
