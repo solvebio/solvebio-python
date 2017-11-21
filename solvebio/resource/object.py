@@ -1,8 +1,9 @@
 """Solvebio Object API resource"""
+import os
 import base64
 import binascii
 import mimetypes
-import os
+
 import requests
 
 from solvebio import SolveError
@@ -15,7 +16,6 @@ from .apiresource import ListableAPIResource
 from .apiresource import SearchableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
-from .solveobject import convert_to_solve_object
 
 
 class Object(CreateableAPIResource,
@@ -135,9 +135,7 @@ class Object(CreateableAPIResource,
     def parent(self):
         """ Returns the parent object """
         if self['parent_object_id']:
-            response = self._client.get(
-                os.path.join(self.class_url(), self['parent_object_id']), {})
-            return convert_to_solve_object(response, client=self._client)
+            return self.retrieve(self['parent_object_id'], client=self._client)
 
         return None
 
@@ -145,6 +143,4 @@ class Object(CreateableAPIResource,
     def vault(self):
         """ Returns the vault object """
         from . import Vault
-        response = self._client.get(
-            os.path.join(Vault.class_url(), str(self['vault_id'])), {})
-        return convert_to_solve_object(response, client=self._client)
+        return Vault.retrieve(self['vault_id'], client=self._client)
