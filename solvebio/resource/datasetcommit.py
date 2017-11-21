@@ -23,8 +23,7 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
 
     @property
     def dataset(self):
-        response = self._client.get(self['dataset']['url'], {})
-        return convert_to_solve_object(response, client=self._client)
+        return convert_to_solve_object(self['dataset'], client=self._client)
 
     @property
     def parent_object(self):

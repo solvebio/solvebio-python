@@ -29,13 +29,8 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
     )
 
     @property
-    def dataset_id(self):
-        return self['dataset']['id']
-
-    @property
     def dataset(self):
-        response = self._client.get(self['dataset']['url'], {})
-        return convert_to_solve_object(response, client=self._client)
+        return convert_to_solve_object(self['dataset'], client=self._client)
 
     def follow(self, loop=True):
 
