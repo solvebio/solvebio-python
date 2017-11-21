@@ -379,7 +379,7 @@ class Dataset(CreateableAPIResource,
     #
     @property
     def vault_object(self):
-        from . import Object
+        from solvebio import Object
         response = self._client.get(
             os.path.join(Object.class_url(), self['vault_object_id']), {})
         return convert_to_solve_object(response, client=self._client)

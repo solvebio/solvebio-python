@@ -140,3 +140,11 @@ class Object(CreateableAPIResource,
             return convert_to_solve_object(response, client=self._client)
 
         return None
+
+    @property
+    def vault(self):
+        """ Returns the vault object """
+        from . import Vault
+        response = self._client.get(
+            os.path.join(Vault.class_url(), str(self['vault_id'])), {})
+        return convert_to_solve_object(response, client=self._client)

@@ -14,16 +14,6 @@ class DatasetTests(SolveBioTestCase):
         self.assertTrue('id' in dataset,
                         'Should be able to get id in dataset')
 
-        # get vault object
-        self.assertEqual(dataset.vault_object.path,
-                         self.TEST_DATASET_FULL_PATH)
-
-        # get vault object parent
-        self.assertEqual(
-            dataset.vault_object.parent.path,
-            '/'.join(self.TEST_DATASET_FULL_PATH.split('/')[:-1])
-        )
-
         check_fields = ['class_name', 'created_at',
                         'data_url',
                         'vault_id',
@@ -37,6 +27,26 @@ class DatasetTests(SolveBioTestCase):
 
         for f in check_fields:
             self.assertTrue(f in dataset, '{0} field is present'.format(f))
+
+    def test_dataset_tree_traversal_shortcuts(self):
+        dataset = self.client.Dataset.get_by_full_path(
+            self.TEST_DATASET_FULL_PATH)
+
+        # get vault object
+        self.assertEqual(dataset.vault_object.full_path,
+                         self.TEST_DATASET_FULL_PATH)
+
+        # get vault object parent
+        self.assertEqual(
+            dataset.vault_object.parent.full_path,
+            '/'.join(self.TEST_DATASET_FULL_PATH.split('/')[:-1])
+        )
+
+        # get vault
+        self.assertEqual(
+            dataset.vault_object.vault.full_path,
+            ':'.join(self.TEST_DATASET_FULL_PATH.split(':')[:-1])
+        )
 
     def test_dataset_fields(self):
         dataset = self.client.Dataset.get_by_full_path(

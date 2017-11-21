@@ -2,7 +2,6 @@
 from ..client import client
 from ..errors import NotFoundError
 
-from . import Object
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import SearchableAPIResource
@@ -154,6 +153,7 @@ class Vault(CreateableAPIResource,
 
     @classmethod
     def get_or_create_uploads_path(cls, **kwargs):
+        from solvebio import Object
         _client = kwargs.pop('client', None) or cls._client or client
         v = cls.get_personal_vault(client=_client)
         default_path = 'Uploads'
