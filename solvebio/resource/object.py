@@ -15,6 +15,7 @@ from .apiresource import ListableAPIResource
 from .apiresource import SearchableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
+from .solveobject import convert_to_solve_object
 
 
 class Object(CreateableAPIResource,
@@ -129,3 +130,13 @@ class Object(CreateableAPIResource,
                                                                     obj.path))
 
         return obj
+
+    @property
+    def parent(self):
+        """ Returns the parent object """
+        if self['parent_object_id']:
+            response = self._client.get(
+                os.path.join(self.class_url(), self['parent_object_id']), {})
+            return convert_to_solve_object(response, client=self._client)
+
+        return None

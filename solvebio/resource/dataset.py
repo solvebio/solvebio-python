@@ -373,3 +373,13 @@ class Dataset(CreateableAPIResource,
             activity = self.activity()
 
         return activity
+
+    #
+    # Vault properties
+    #
+    @property
+    def vault_object(self):
+        from . import Object
+        response = self._client.get(
+            os.path.join(Object.class_url(), self['vault_object_id']), {})
+        return convert_to_solve_object(response, client=self._client)

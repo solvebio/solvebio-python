@@ -14,6 +14,16 @@ class DatasetTests(SolveBioTestCase):
         self.assertTrue('id' in dataset,
                         'Should be able to get id in dataset')
 
+        # get vault object
+        self.assertEqual(dataset.vault_object.path,
+                         self.TEST_DATASET_FULL_PATH)
+
+        # get vault object parent
+        self.assertEqual(
+            dataset.vault_object.parent.path,
+            '/'.join(self.TEST_DATASET_FULL_PATH.split('/')[:-1])
+        )
+
         check_fields = ['class_name', 'created_at',
                         'data_url',
                         'vault_id',
