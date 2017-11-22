@@ -17,6 +17,7 @@ class Task(ListableAPIResource):
         ('created_at', 'Created'),
     )
 
+    @property
     def child_object(self):
         """ Get Task child object class """
         from . import types

@@ -43,7 +43,7 @@ class FakeMigrationResponse(Fake201Response):
             'class_name': self.class_name,
             'id': 100,
             'commit_mode': 'append',
-            'source': None,
+            'source': dict(id=data.get('source_id')),
             'source_params': {
                 "fields": None,
                 "route": None,
@@ -52,7 +52,7 @@ class FakeMigrationResponse(Fake201Response):
                 "limit": None,
                 "debug": False
             },
-            'target': None,
+            'target': dict(id=data.get('target_id')),
             'target_fields': [],
             'include_errors': False,
         }

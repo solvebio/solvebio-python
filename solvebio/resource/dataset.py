@@ -372,3 +372,11 @@ class Dataset(CreateableAPIResource,
             activity = self.activity()
 
         return activity
+
+    #
+    # Vault properties
+    #
+    @property
+    def vault_object(self):
+        from solvebio import Object
+        return Object.retrieve(self['vault_object_id'], client=self._client)
