@@ -1,5 +1,13 @@
 # Change Log
 
+## [v2.3.1](https://github.com/solvebio/solvebio-python/tree/v2.3.1) (2017-11-22)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.0...v2.3.1)
+
+**Merged pull requests:**
+
+- update retrieval of datasets by jobs/tasks [\#204](https://github.com/solvebio/solvebio-python/pull/204) ([jsh2134](https://github.com/jsh2134))
+- replace PRINTABLE\_NAME with something dynamic [\#203](https://github.com/solvebio/solvebio-python/pull/203) ([davecap](https://github.com/davecap))
+
 ## [v2.3.0](https://github.com/solvebio/solvebio-python/tree/v2.3.0) (2017-11-09)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.2.1...v2.3.0)
 
@@ -404,13 +412,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
-
-## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
 
 ## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+
+## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
