@@ -26,4 +26,4 @@ class Task(ListableAPIResource):
 
     def follow(self):
         """ Follow the child object but do not loop """
-        self.child_object().follow(loop=False)
+        self.child_object.follow(loop=False)
