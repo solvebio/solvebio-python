@@ -59,10 +59,10 @@ class Vault(CreateableAPIResource,
     def ls(self, **params):
         return self._object_list_helper(**params)
 
-    def create_dataset(self, **params):
+    def create_dataset(self, name, **params):
         from solvebio import Dataset, Object
 
-        params.update({'vault_id': self.id})
+        params['vault_id'] = self.id
         path = params.pop('path', None)
 
         if path == '/' or path is None:
@@ -79,12 +79,17 @@ class Vault(CreateableAPIResource,
 
             params['vault_parent_object_id'] = parent_object.id
 
+        params['name'] = name
         return Dataset.create(**params)
 
-    def create_folder(self, **params):
+    def create_folder(self, filename, **params):
         from solvebio import Object
 
-        params.update({'vault_id': self.id, 'object_type': 'folder'})
+        params.update({
+            'filename': filename,
+            'vault_id': self.id,
+            'object_type': 'folder'
+        })
         return Object.create(client=self._client, **params)
 
     def upload_file(self, local_path, remote_path, **kwargs):
