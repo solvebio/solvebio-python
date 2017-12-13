@@ -67,13 +67,14 @@ class Object(CreateableAPIResource,
 
         local_path = os.path.expanduser(local_path)
 
+        if os.stat(local_path).st_size == 0:
+            print('Notice: Cannot upload empty file {0}'.format(local_path))
+            return
+
+        # Get MD5, mimetype, and file size for the object
         md5, _ = md5sum(local_path, multipart_threshold=None)
         _, mimetype = mimetypes.guess_type(local_path)
         size = os.path.getsize(local_path)
-
-        if md5sum('/dev/null')[0] == md5:
-            print('Notice: Cannot upload empty file {0}'.format(local_path))
-            return
 
         vault = Vault.get_by_full_path(vault_name, client=_client)
 
