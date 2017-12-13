@@ -36,6 +36,11 @@ class SolveBioAuth(OAuthBase):
             methods=['get']
         )
 
+        self._oauth_redirect_uri = urljoin(
+            self._app_url,
+            '{}_oauth-redirect'.format(
+                self._app.config['requests_pathname_prefix']))
+
         # Handle optional parameters
         self._oauth_client_secret = kwargs.get('client_secret')
         self._solvebio_url = \
@@ -90,10 +95,6 @@ class SolveBioAuth(OAuthBase):
         if self._oauth_grant_type == 'authorization_code':
             # Authorization Code flow
             auth_code = oauth_data['code']
-            redirect_uri = urljoin(
-                flask.request.url_root,
-                '{}_oauth-redirect'.format(
-                    self._app.config['requests_pathname_prefix']))
 
             # Request the access token with the auth code
             oauth_data = requests.post(
@@ -101,7 +102,7 @@ class SolveBioAuth(OAuthBase):
                 data={
                     'client_id': self._oauth_client_id,
                     'grant_type': self._oauth_grant_type,
-                    'redirect_uri': redirect_uri,
+                    'redirect_uri': self._oauth_redirect_uri,
                     'code': auth_code
                 }).json()
         else:
