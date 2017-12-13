@@ -13,7 +13,6 @@ class Beacon(CreateableAPIResource,
     must be created within Beacon Sets.
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'beacon'
 
     LIST_FIELDS = (
         ('id', 'ID'),

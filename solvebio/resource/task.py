@@ -17,12 +17,13 @@ class Task(ListableAPIResource):
         ('created_at', 'Created'),
     )
 
+    @property
     def child_object(self):
         """ Get Task child object class """
         from . import types
         child_klass = types.get(self.task_type.split('.')[1])
-        return child_klass.retrieve(self.task_id)
+        return child_klass.retrieve(self.task_id, client=self._client)
 
     def follow(self):
         """ Follow the child object but do not loop """
-        self.child_object().follow(loop=False)
+        self.child_object.follow(loop=False)

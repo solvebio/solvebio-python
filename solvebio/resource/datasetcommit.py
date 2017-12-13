@@ -1,8 +1,9 @@
 import time
 
-from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
+from .apiresource import CreateableAPIResource
 from .apiresource import UpdateableAPIResource
+from .solveobject import convert_to_solve_object
 
 
 class DatasetCommit(CreateableAPIResource, ListableAPIResource,
@@ -11,7 +12,6 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
     DatasetCommits represent a change made to a Dataset.
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'dataset commit'
 
     LIST_FIELDS = (
         ('id', 'ID'),
@@ -21,13 +21,16 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
         ('created_at', 'Created'),
     )
 
+    @property
     def dataset(self):
-        from .dataset import Dataset
-        return Dataset.retrieve(self['dataset'])
+        return convert_to_solve_object(self['dataset'], client=self._client)
 
-    def dataset_import(self):
-        from .datasetimport import DatasetImport
-        return DatasetImport.retrieve(self['dataset_import_id'])
+    @property
+    def parent_object(self):
+        """ Get the commit objects parent Import or Migration """
+        from . import types
+        parent_klass = types.get(self.parent_job_model.split('.')[1])
+        return parent_klass.retrieve(self.parent_job_id, client=self._client)
 
     def follow(self, loop=True):
         # Follow unfinished commits

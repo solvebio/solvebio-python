@@ -1,8 +1,9 @@
 """Solvebio Object API resource"""
+import os
 import base64
 import binascii
 import mimetypes
-import os
+
 import requests
 
 from solvebio import SolveError
@@ -27,7 +28,6 @@ class Object(CreateableAPIResource,
     though more may be added later: folder, file, and SolveBio Dataset.
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'object'
 
     LIST_FIELDS = (
         ('id', 'ID'),
@@ -130,3 +130,17 @@ class Object(CreateableAPIResource,
                                                                     obj.path))
 
         return obj
+
+    @property
+    def parent(self):
+        """ Returns the parent object """
+        if self['parent_object_id']:
+            return self.retrieve(self['parent_object_id'], client=self._client)
+
+        return None
+
+    @property
+    def vault(self):
+        """ Returns the vault object """
+        from . import Vault
+        return Vault.retrieve(self['vault_id'], client=self._client)

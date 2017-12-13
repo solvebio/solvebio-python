@@ -1,7 +1,8 @@
-from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
-from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
+from .apiresource import CreateableAPIResource
+from .apiresource import UpdateableAPIResource
+from .solveobject import convert_to_solve_object
 
 import time
 
@@ -18,7 +19,6 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
     the progression of an import job.
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'dataset import'
 
     LIST_FIELDS = (
         ('id', 'ID'),
@@ -28,9 +28,9 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
         ('created_at', 'Created'),
     )
 
+    @property
     def dataset(self):
-        from .dataset import Dataset
-        return Dataset.retrieve(self['dataset'])
+        return convert_to_solve_object(self['dataset'], client=self._client)
 
     def follow(self, loop=True):
 

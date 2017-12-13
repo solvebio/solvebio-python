@@ -27,7 +27,6 @@ class Dataset(CreateableAPIResource,
     within a vault folder.
     """
     RESOURCE_VERSION = 2
-    PRINTABLE_NAME = 'dataset'
 
     LIST_FIELDS = (
         ('id', 'ID'),
@@ -373,3 +372,11 @@ class Dataset(CreateableAPIResource,
             activity = self.activity()
 
         return activity
+
+    #
+    # Vault properties
+    #
+    @property
+    def vault_object(self):
+        from solvebio import Object
+        return Object.retrieve(self['vault_object_id'], client=self._client)

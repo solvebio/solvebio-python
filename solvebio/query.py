@@ -224,6 +224,7 @@ class Query(object):
             filters=None,
             fields=None,
             exclude_fields=None,
+            entities=None,
             ordering=None,
             limit=float('inf'),
             page_size=DEFAULT_PAGE_SIZE,
@@ -241,6 +242,7 @@ class Query(object):
           - `result_class` (optional): Class of object returned by query.
           - `fields` (optional): List of specific fields to retrieve.
           - `exclude_fields` (optional): List of specific fields to exclude.
+          - `entities` (optional): List of entity tuples to filter on.
           - `ordering` (optional): List of fields to order the results by.
           - `filters` (optional): Filter or List of filter objects.
           - `limit` (optional): Maximum number of query results to return.
@@ -254,6 +256,7 @@ class Query(object):
         self._result_class = result_class
         self._fields = fields
         self._exclude_fields = exclude_fields
+        self._entities = entities
         self._ordering = ordering
         self._debug = debug
         self._error = error
@@ -297,6 +300,7 @@ class Query(object):
                              limit=self._limit,
                              fields=self._fields,
                              exclude_fields=self._exclude_fields,
+                             entities=self._entities,
                              ordering=self._ordering,
                              page_size=self._page_size,
                              result_class=self._result_class,
@@ -613,6 +617,9 @@ class Query(object):
         if self._exclude_fields is not None:
             q['exclude_fields'] = self._exclude_fields
 
+        if self._entities is not None:
+            q['entities'] = self._entities
+
         if self._ordering is not None:
             q['ordering'] = self._ordering
 
@@ -675,6 +682,7 @@ class Query(object):
             dataset_id=self._dataset_id,
             format=format,
             params=params,
+            client=self._client
         )
 
         if follow:
@@ -690,6 +698,8 @@ class Query(object):
 
         * target_fields
         * include_errors
+        * validation_params
+        * metadata
         * commit_mode
 
         """
@@ -716,6 +726,7 @@ class Query(object):
             source_id=self._dataset_id,
             target_id=target_id,
             source_params=params,
+            client=self._client,
             **kwargs)
 
         if follow:
@@ -726,7 +737,7 @@ class Query(object):
     def annotate(self, fields, **kwargs):
         from solvebio.annotate import Annotator
 
-        return Annotator(fields, **kwargs).annotate(self)
+        return Annotator(fields, client=self._client, **kwargs).annotate(self)
 
 
 class BatchQuery(object):

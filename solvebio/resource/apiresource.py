@@ -57,15 +57,16 @@ class APIResource(SolveObject):
 
     def instance_url(self):
         """Get instance URL by ID"""
-        id = self.get('id')
+        id_ = self.get(self.ID_ATTR)
         base = self.class_url()
 
-        if id:
-            return '/'.join([base, six.text_type(id)])
+        if id_:
+            return '/'.join([base, six.text_type(id_)])
         else:
             raise Exception(
                 'Could not determine which URL to request: %s instance '
-                'has invalid ID: %r' % (type(self).__name__, id), 'id')
+                'has invalid ID: %r' % (type(self).__name__, id_),
+                self.ID_ATTR)
 
 
 class ListObject(SolveObject):
@@ -159,9 +160,11 @@ class CreateableAPIResource(APIResource):
 class DeletableAPIResource(APIResource):
 
     def delete(self, **params):
+        printable_name = class_to_api_name(
+            self.class_name(), pluralize=False).replace('_', ' ')
         if not params.pop('force', False):
             res = input('Are you sure you want to delete this %s? '
-                        '[y/N] ' % self.PRINTABLE_NAME)
+                        '[y/N] ' % printable_name)
             if res.strip().lower() != 'y':
                 print('Not performing deletion.')
                 return
@@ -295,7 +298,7 @@ class UpdateableAPIResource(APIResource):
         params = {}
         if obj._unsaved_values:
             for k in obj._unsaved_values:
-                if k == 'id':
+                if k == 'id' or k == self.ID_ATTR:
                     continue
                 params[k] = getattr(obj, k) or ""
         return params

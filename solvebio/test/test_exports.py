@@ -25,6 +25,8 @@ class ExportsTests(SolveBioTestCase):
         reference_file = 'solvebio/test/data/test_export.csv'
         export = self.query.export(follow=True, format='csv')
         export.download(test_file)
+
+        self.assertTrue(export.dataset.id, self.dataset.id)
         self.assertTrue(path.isfile(test_file))
         self.assertEqual(
             hashlib.sha1(open(test_file, 'rb').read()).hexdigest(),
