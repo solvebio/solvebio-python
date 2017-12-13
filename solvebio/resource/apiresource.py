@@ -215,7 +215,7 @@ class DownloadableAPIResource(APIResource):
         response = self.request(
             'get', download_url, params=kwargs, allow_redirects=False)
 
-        return response['url']
+        return response.get('url') or response.get('download_url')
 
 
 class ListableAPIResource(APIResource):

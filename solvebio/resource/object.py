@@ -16,13 +16,15 @@ from .apiresource import ListableAPIResource
 from .apiresource import SearchableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
+from .apiresource import DownloadableAPIResource
 
 
 class Object(CreateableAPIResource,
              ListableAPIResource,
              DeletableAPIResource,
              SearchableAPIResource,
-             UpdateableAPIResource):
+             UpdateableAPIResource,
+             DownloadableAPIResource):
     """
     An object is a resource in a Vault.  It has three possible types,
     though more may be added later: folder, file, and SolveBio Dataset.
