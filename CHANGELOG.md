@@ -1,5 +1,25 @@
 # Change Log
 
+## [v2.3.3](https://github.com/solvebio/solvebio-python/tree/v2.3.3) (2017-12-13)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.2...v2.3.3)
+
+**Fixed bugs:**
+
+- Unable to download Vault Objects [\#212](https://github.com/solvebio/solvebio-python/issues/212)
+- Dash auth wrapper redirect URL is incorrect if different from provided app\_url [\#210](https://github.com/solvebio/solvebio-python/issues/210)
+- File upload with version 2.1.0 on Windows 7 [\#189](https://github.com/solvebio/solvebio-python/issues/189)
+
+**Closed issues:**
+
+- Deploy v2.3.2 to pypi [\#207](https://github.com/solvebio/solvebio-python/issues/207)
+
+**Merged pull requests:**
+
+- add DownloadableAPIResource mixin to Object resource and add support for Object download response to the mixin [\#213](https://github.com/solvebio/solvebio-python/pull/213) ([davecap](https://github.com/davecap))
+- use the provided app\_url instead of flask's url\_root \(fixes \#210\) [\#211](https://github.com/solvebio/solvebio-python/pull/211) ([davecap](https://github.com/davecap))
+- add required args to create\_folder and create\_dataset [\#209](https://github.com/solvebio/solvebio-python/pull/209) ([davecap](https://github.com/davecap))
+- use cross-platform /dev/null \(closes \#189\) [\#190](https://github.com/solvebio/solvebio-python/pull/190) ([davecap](https://github.com/davecap))
+
 ## [v2.3.2](https://github.com/solvebio/solvebio-python/tree/v2.3.2) (2017-11-28)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.1...v2.3.2)
 
