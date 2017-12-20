@@ -56,19 +56,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Create the vault if it doesn\'t exist',
                 },
                 {
-                    'flags': '--vault',
-                    'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset), '
-                            'defaults to your personal vault',
-                },
-                {
-                    'flags': '--path',
-                    'default': '/',
-                    'help': 'The path in the vault where the dataset should '
-                            'be created when creating a new dataset'
-                            '(via --create-dataset), defaults to "/"',
-                },
-                {
                     'flags': '--template-id',
                     'help': 'The template ID used when '
                             'creating a new dataset (via --create-dataset)',
@@ -103,8 +90,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'Options are "append" (default) or "overwrite".'
                 },
                 {
-                    'name': 'dataset_name',
-                    'help': 'The name of the dataset'
+                    'name': 'dataset_full_path',
+                    'help': 'The full path to the dataset in the following format: <domain>:<vault>:</object/path/variants>'  # noqa
                 },
                 {
                     'name': 'file',
@@ -123,19 +110,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Create the vault if it doesn\'t exist',
                 },
                 {
-                    'flags': '--vault',
-                    'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset), '
-                            'defaults to your personal vault',
-                },
-                {
-                    'flags': '--path',
-                    'default': '/',
-                    'help': 'The path in the vault where the dataset should '
-                            'be created when creating a new dataset '
-                            '(via --create-dataset), defaults to "/"',
-                },
-                {
                     'flags': '--template-id',
                     'help': 'The template ID used when '
                             'creating a new dataset (via --create-dataset)',
@@ -146,11 +120,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'creating a new dataset (via --create-dataset)',
                 },
                 {
-                    'flags': '--genome-build',
-                    'help': 'If the dataset template is genomic, provide a '
-                            'genome build for your data (i.e. GRCh37)'
-                },
-                {
                     'flags': '--capacity',
                     'default': 'small',
                     'help': 'Specifies the capacity of the dataset: '
@@ -158,8 +127,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'medium (<500M), large (>=500M)'
                 },
                 {
-                    'name': 'dataset_name',
-                    'help': 'The name of the dataset'
+                    'name': 'dataset_full_path',
+                    'help': 'The full path to the dataset in the following format: <domain>:<vault>:</object/path/variants>'  # noqa
                 }
             ]
         },

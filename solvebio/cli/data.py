@@ -26,11 +26,6 @@ def create_dataset(args):
         * capacity
 
     """
-    if args.vault:
-        vault_name = args.vault
-    else:
-        vault_name = Vault.get_personal_vault().name
-
     # Accept a template_id or a template_file
     if args.template_id:
         # Validate the template ID
@@ -62,7 +57,7 @@ def create_dataset(args):
         print("A new dataset template was created with id: {0}".format(tpl.id))
     else:
         print("Creating a new dataset {0} without a template."
-              .format(args.dataset_name))
+              .format(args.dataset_full_path))
         tpl = None
         fields = []
         entity_type = None
@@ -70,14 +65,14 @@ def create_dataset(args):
 
     if tpl:
         print("Creating new dataset {0} using the template '{1}'."
-              .format(args.dataset_name, tpl.name))
+              .format(args.dataset_full_path, tpl.name))
         fields = tpl.fields
         entity_type = tpl.entity_type
         # include template used to create
         description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
     return solvebio.Dataset.get_or_create_by_full_path(
-        ':'.join([vault_name, os.path.join(args.path, args.dataset_name)]),
+        args.dataset_full_path,
         capacity=args.capacity,
         entity_type=entity_type,
         fields=fields,
@@ -278,25 +273,17 @@ def import_file(args):
     if not solvebio.api_key:
         solvebio.login()
 
-    if args.vault:
-        vault_name = args.vault
-    else:
-        vault_name = Vault.get_personal_vault().name
-
     # Ensure the dataset exists. Create if necessary.
     if args.create_dataset:
         dataset = create_dataset(args)
     else:
         try:
-            full_path = solvebio.Dataset.make_full_path(vault_name,
-                                                        args.path,
-                                                        args.dataset_name)
-            dataset = solvebio.Dataset.get_by_full_path(full_path)
+            dataset = solvebio.Dataset.get_by_full_path(args.dataset_full_path)
         except solvebio.SolveError as e:
             if e.status_code != 404:
                 raise e
 
-            print("Dataset not found: {0}".format(args.dataset_name))
+            print("Dataset not found: {0}".format(args.dataset_full_path))
             print("Tip: use the --create-dataset flag "
                   "to create one from a template")
             sys.exit(1)
