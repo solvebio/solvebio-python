@@ -15,10 +15,8 @@ class Application(CreateableAPIResource,
     RESOURCE_VERSION = 2
 
     LIST_FIELDS = (
-        ('id', 'ID'),
         ('client_id', 'Client ID'),
         ('name', 'Name'),
         ('description', 'Description'),
         ('web_url', 'web_url'),
-        ('created_at', 'Created'),
     )
