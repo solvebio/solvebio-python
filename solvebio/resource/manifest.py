@@ -42,15 +42,9 @@ class Manifest(object):
         })
 
     def add_url(self, url, **kwargs):
-        self.manifest['files'].append({
-            'url': url,
-            'name': kwargs.get('name'),
-            'format': kwargs.get('format'),
-            'size': kwargs.get('size'),
-            'md5': kwargs.get('md5'),
-            'base64_md5': kwargs.get('base64_md5'),
-            'reader_params': kwargs.get('reader_params')
-        })
+        manifest_item = dict(url=url)
+        manifest_item.update(kwargs)
+        self.manifest['files'].append(manifest_item)
 
     def add(self, *args):
         """
