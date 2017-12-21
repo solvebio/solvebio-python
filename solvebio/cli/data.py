@@ -10,8 +10,8 @@ import sys
 
 import solvebio
 
-from solvebio import Object, Vault
-from solvebio.client import client
+from solvebio import Vault
+from solvebio import Object
 from solvebio.utils.files import check_gzip_path
 from solvebio.errors import ObjectTypeError, NotFoundError
 
@@ -81,10 +81,6 @@ def create_dataset(args):
     )
 
 
-def _make_full_path(s1, s2, s3):
-    return ':'.join([s1, s2, s3])
-
-
 def _assert_object_type(obj, object_type):
     if obj.object_type != object_type:
         raise ObjectTypeError('{0} is a {1} but must be a folder'.format(
@@ -98,27 +94,18 @@ def upload(args):
     Given a folder or file, upload all the folders and files contained
     within it, skipping ones that already exist on the remote.
     """
-    if args.vault:
-        vault_name = args.vault
-    else:
-        vault_name = Vault.get_personal_vault().name
 
-    # '--path /remote/path1 local/path2'
-    # base_remote_path = /remote/path1
-    # base_local_path = local/path2
-    # local_shart = 'path2'
-    base_remote_path = args.path
     base_local_paths = args.local_path
+    base_remote_path, path_dict = Object._to_full_path_helper(args.path)
+    vault_path = path_dict['domain'] + ':' + path_dict['vault']
 
-    user = client.get('/v1/user', {})
-    domain = user['account']['domain']
+    # assert vault exists
+    vault = Vault.get_by_full_path(vault_path)
 
-    vaults = Vault.all(name=vault_name)
-
-    if len(vaults.data) == 0:
-        raise Exception('Vault not found with name "{0}"'.format(vault_name))
-    else:
-        vault = vaults.data[0]
+    # If not the vault root, validate remote path exists and is a folder
+    if path_dict['path'] != '/':
+        _assert_object_type(Object.get_by_full_path(
+            base_remote_path), 'folder')
 
     for local_path in base_local_paths:
 
@@ -126,55 +113,40 @@ def upload(args):
         local_start = os.path.basename(local_path)
 
         if os.path.isdir(local_path):
-            _upload_folder(domain, vault, base_remote_path,
-                           local_path, local_start)
+            _upload_folder(path_dict['domain'], vault,
+                           base_remote_path, local_path, local_start)
         else:
-            if base_remote_path != '/':
-                base_full_remote_path = _make_full_path(
-                    domain,
-                    vault.name,
-                    base_remote_path,
-                )
-                base_remote_object = Object.get_by_full_path(
-                    base_full_remote_path)
-                _assert_object_type(base_remote_object, 'folder')
-                base_remote_path = base_remote_object.path
-            else:
-                base_remote_path = '/'
-
-            Object.upload_file(local_path, base_remote_path,
-                               vault.name)
+            Object.upload_file(
+                local_path, path_dict['path'], path_dict['vault'])
 
 
-def _upload_folder(domain, vault, base_remote_path, base_local_path,
-                   local_start):
-    # Create the root folder if it does not exist on the remote
+def _upload_folder(domain, vault, base_remote_path,
+                   base_local_path, local_start):
+
+    # Create the upload root folder if it does not exist on the remote
     try:
-        full_root_path = _make_full_path(
-            domain,
-            vault.name,
-            os.path.join(base_remote_path, local_start),
+        upload_root_path, _ = Object._to_full_path_helper(
+            os.path.join(base_remote_path, local_start)
         )
-        root_object = Object.get_by_full_path(full_root_path)
-        _assert_object_type(root_object, 'folder')
+        obj = Object.get_by_full_path(upload_root_path)
+        _assert_object_type(obj, 'folder')
     except NotFoundError:
-        if base_remote_path == '/':
+        base_remote_path, path_dict = \
+            Object._to_full_path_helper(base_remote_path)
+
+        if path_dict['path'] == '/':
             parent_object_id = None
         else:
-            base_remote_full_path = _make_full_path(
-                domain,
-                vault.name,
-                base_remote_path,
-            )
-            obj = Object.get_by_full_path(base_remote_full_path)
+            obj = Object.get_by_full_path(base_remote_path)
             _assert_object_type(obj, 'folder')
             parent_object_id = obj.id
 
+        # Create base folder
         new_folder = Object.create(
             vault_id=vault.id,
             parent_object_id=parent_object_id,
             object_type='folder',
-            filename=local_start,
+            filename=local_start
         )
 
         print('Notice: Folder created for {0} at {1}'.format(
@@ -191,19 +163,15 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
                 re.sub('^' + os.path.dirname(base_local_path), '', root).lstrip('/'),  # noqa
                 d
             )
-            full_path = _make_full_path(domain, vault.name, dirpath)
 
             try:
-                Object.get_by_full_path(full_path, object_type='folder')
+                Object.get_by_full_path(dirpath, object_type='folder')
             except NotFoundError:
                 # Create the folder
-                if os.path.dirname(dirpath) == '/':
+                if os.path.dirname(dirpath.split(':')[-1]) == '/':
                     parent_object_id = None
                 else:
-                    parent_full_path = _make_full_path(
-                        domain, vault.name,
-                        os.path.dirname(dirpath))
-
+                    parent_full_path = os.path.dirname(dirpath)
                     parent = Object.get_by_full_path(parent_full_path)
                     _assert_object_type(parent, 'folder')
                     parent_object_id = parent.id
@@ -221,31 +189,23 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
 
         # Upload the files that do not yet exist on the remote
         for f in files:
-            file_full_path = _make_full_path(
-                domain,
-                vault.name,
-                os.path.join(
-                    base_remote_path,
-                    re.sub('^' + os.path.dirname(base_local_path),
-                           '',
-                           root).lstrip('/'),
-                    f,
-                )
+            file_full_path = os.path.join(
+                base_remote_path,
+                re.sub('^' + os.path.dirname(base_local_path),
+                       '',
+                       root).lstrip('/'),
+                f,
             )
             try:
                 Object.get_by_full_path(file_full_path)
             except NotFoundError:
-                parent_full_path = _make_full_path(
-                    domain,
-                    vault.name,
-                    os.path.dirname(
-                        os.path.join(
-                            base_remote_path,
-                            re.sub('^' + os.path.dirname(base_local_path),
-                                   '',
-                                   root).lstrip('/'),
-                            f,
-                        )
+                parent_full_path = os.path.dirname(
+                    os.path.join(
+                        base_remote_path,
+                        re.sub('^' + os.path.dirname(base_local_path),
+                               '',
+                               root).lstrip('/'),
+                        f,
                     )
                 )
                 parent = Object.get_by_full_path(parent_full_path)

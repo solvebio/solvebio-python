@@ -61,32 +61,8 @@ class Dataset(CreateableAPIResource,
     @classmethod
     def get_by_full_path(cls, full_path, **kwargs):
         from solvebio import Object
-
         _client = kwargs.pop('client', None) or cls._client or client
-        parts = full_path.split(':', 2)
-
-        if len(parts) == 3:
-            account_domain, vault_name, object_path = parts
-        elif len(parts) == 2:
-            vault_name, object_path = parts
-            user = _client.get('/v1/user', {})
-            account_domain = user['account']['domain']
-        else:
-            raise Exception('Full path must be of the format: '
-                            '"vault_name:object_path" or '
-                            '"account_domain:vault_name:object_path"')
-
-        if object_path[0] != '/':
-            raise Exception(
-                'Paths are absolute and must begin with a "/"'
-            )
-
-        # Remove double slashes and strip trailing slash
-        object_path = re.sub('//+', '/', object_path)
-        if object_path != '/':
-            object_path = object_path.rstrip('/')
-
-        test_path = ':'.join([account_domain, vault_name, object_path])
+        test_path, _ = Object._to_full_path_helper(full_path, client=_client)
         obj = Object.get_by_full_path(test_path, client=_client)
         dataset = Dataset.retrieve(obj['dataset_id'], client=_client, **kwargs)
         return dataset
@@ -106,7 +82,6 @@ class Dataset(CreateableAPIResource,
             pass
 
         # Dataset not found, create it step-by-step
-
         parts = full_path.split(':', 2)
 
         if len(parts) == 3:

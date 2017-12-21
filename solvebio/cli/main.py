@@ -137,16 +137,10 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'help': 'Upload a file or directory to a SolveBio Vault',
             'arguments': [
                 {
-                    'flags': '--vault',
-                    'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset), '
-                            'defaults to your personal vault',
-                },
-                {
                     'flags': '--path',
                     'default': '/',
-                    'help': 'The path in the vault where the files and '
-                            'folders should be created, defaults to "/"',
+                    'help': 'The full path where the files and folders should '
+                    'be created, defaults to "<personal-vault>:/"',
                 },
                 {
                     'name': 'local_path',

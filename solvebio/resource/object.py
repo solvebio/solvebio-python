@@ -1,5 +1,6 @@
 """Solvebio Object API resource"""
 import os
+import re
 import base64
 import binascii
 import mimetypes
@@ -40,6 +41,43 @@ class Object(CreateableAPIResource,
         ('filename', 'Filename'),
         ('description', 'Description'),
     )
+
+    @classmethod
+    def _to_full_path_helper(cls, full_path, **kwargs):
+        """ Helper method to return full path
+
+            If no vault, use personal vault.
+
+        """
+        _client = kwargs.pop('client', None) or cls._client or client
+        parts = full_path.split(':', 2)
+
+        if len(parts) == 3:
+            account_domain, vault_name, object_path = parts
+        else:
+            user = _client.get('/v1/user', {})
+            account_domain = user['account']['domain']
+            if len(parts) == 2:
+                vault_name, object_path = parts
+            else:
+                vault_name = 'user-{}'.format(user['id'])
+                object_path = full_path or '/'
+
+        if object_path[0] != '/':
+            raise Exception(
+                'Paths {} are absolute and must begin with a "/"'
+                .format(object_path)
+            )
+
+        # Remove double slashes and strip trailing slash
+        object_path = re.sub('//+', '/', object_path)
+        if object_path != '/':
+            object_path = object_path.rstrip('/')
+
+        path = ':'.join([account_domain, vault_name, object_path])
+        return path, dict(domain=account_domain,
+                          vault=vault_name,
+                          path=object_path)
 
     @classmethod
     def get_by_full_path(cls, full_path, **params):
