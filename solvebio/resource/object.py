@@ -51,27 +51,38 @@ class Object(CreateableAPIResource,
             If no path, uses /
         """
         _client = kwargs.pop('client', None) or cls._client or client
-        parts = path.split(':', 2)
 
+        # Remove double slashes and leading ':'
+        path = re.sub('//+', '/', path.lstrip(':'))
+
+        parts = path.split(':', 2)
         if len(parts) == 3:
             account_domain, vault_name, object_path = parts
+        elif len(parts) == 2:
+            # if no slash assume user means root
+            if '/' not in parts[1]:
+                account_domain, vault_name = parts
+                object_path = '/'
+            else:
+                # if second part begins with slash, assume missing domain
+                if parts[1][0] == '/':
+                    account_domain = \
+                        _client.get('/v1/user', {})['account']['domain']
+                    vault_name, object_path = parts
+                # else assumes missing ":" between vault and path
+                else:
+                    account_domain = parts[0]
+                    vault_name, object_path = parts[1].split('/', 1)
         else:
             user = _client.get('/v1/user', {})
             account_domain = user['account']['domain']
-            if len(parts) == 2:
-                vault_name, object_path = parts
-            else:
-                vault_name = 'user-{}'.format(user['id'])
-                object_path = path or '/'
+            vault_name = 'user-{}'.format(user['id'])
+            object_path = path or '/'
 
         if object_path[0] != '/':
-            raise Exception(
-                'Paths {} are absolute and must begin with a "/"'
-                .format(object_path)
-            )
+            object_path = '/' + object_path
 
-        # Remove double slashes and strip trailing slash
-        object_path = re.sub('//+', '/', object_path)
+        # Strip trailing slash
         if object_path != '/':
             object_path = object_path.rstrip('/')
 

@@ -52,14 +52,23 @@ class Vault(CreateableAPIResource,
             If no vault, uses personal vault.
         """
         _client = kwargs.pop('client', None) or cls._client or client
-        parts = path.split(':', 1)
+        parts = path.split(':')
 
-        if len(parts) == 2:
+        if not path or len(parts) > 2:
+            raise Exception(
+                'Vault path "{}" invalid. Must be of the format: '
+                '"account_domain:vault_name".'.format(path)
+            )
+        elif len(parts) == 2:
             account_domain, vault_name = parts
         else:
             user = _client.get('/v1/user', {})
             account_domain = user['account']['domain']
-            vault_name = '{}:{}'.format(account_domain, path)
+            vault_name = path
+
+        # Strip any paths from the vault_name
+        if '/' in vault_name:
+            vault_name = vault_name.split('/', 1)[0]
 
         full_path = ':'.join([account_domain, vault_name])
         return full_path, dict(domain=account_domain,

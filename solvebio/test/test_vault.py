@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-# from solvebio.resource import Vault
 
 from .helper import SolveBioTestCase
 
@@ -27,3 +26,31 @@ class VaultTests(SolveBioTestCase):
 
         for f in check_fields:
             self.assertTrue(f in vault, '{0} field is present'.format(f))
+
+    def test_vault_paths(self):
+        vaults = self.client.Vault.all()
+        for vault in vaults:
+            v, v_paths = self.client.Vault.validate_path(vault.full_path)
+            self.assertEqual(v, vault.full_path)
+
+        domain = self.client.User.retrieve().account.domain
+        test_cases = [
+            ['myVault', '{}:myVault'.format(domain)],
+            ['{}:myVault'.format(domain), '{}:myVault'.format(domain)],
+            ['acme:myVault', 'acme:myVault'],
+            # this assumes user f-ed and forgot the semi-colon for path
+            ['acme:myVault/uploads_folder', 'acme:myVault'],
+            ['myVault/uploads_folder', '{}:myVault'.format(domain)],
+        ]
+        for case, expected in test_cases:
+            v, v_paths = self.client.Vault.validate_path(case)
+            self.assertEqual(v, expected)
+
+        error_test_cases = [
+            '',
+            'myDomain:myVault:/the/heack',
+            'oops:myDomain:myVault',
+        ]
+        for case in error_test_cases:
+            with self.assertRaises(Exception):
+                v, v_paths = self.client.Vault.validate_path(case)
