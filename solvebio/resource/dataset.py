@@ -39,7 +39,6 @@ class Dataset(CreateableAPIResource,
     @classmethod
     def make_full_path(cls, vault_name, path, name, **kwargs):
         from solvebio import SolveError
-w
 
         _client = kwargs.pop('client', None) or cls._client or client
 
