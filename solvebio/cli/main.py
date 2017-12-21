@@ -91,7 +91,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'name': 'dataset_full_path',
-                    'help': 'The full path to the dataset in the following format: <domain>:<vault>:</object/path/variants>'  # noqa
+                    'help': 'The full path to the dataset in the following format: "domain:vault:/path/variants"'  # noqa
                 },
                 {
                     'name': 'file',

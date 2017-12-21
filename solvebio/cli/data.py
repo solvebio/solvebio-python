@@ -96,7 +96,7 @@ def upload(args):
     """
 
     base_local_paths = args.local_path
-    base_remote_path, path_dict = Object._to_full_path_helper(args.path)
+    base_remote_path, path_dict = Object.validate_path(args.path)
     vault_path = path_dict['domain'] + ':' + path_dict['vault']
 
     # assert vault exists
@@ -125,14 +125,14 @@ def _upload_folder(domain, vault, base_remote_path,
 
     # Create the upload root folder if it does not exist on the remote
     try:
-        upload_root_path, _ = Object._to_full_path_helper(
+        upload_root_path, _ = Object.validate_path(
             os.path.join(base_remote_path, local_start)
         )
         obj = Object.get_by_full_path(upload_root_path)
         _assert_object_type(obj, 'folder')
     except NotFoundError:
         base_remote_path, path_dict = \
-            Object._to_full_path_helper(base_remote_path)
+            Object.validate_path(base_remote_path)
 
         if path_dict['path'] == '/':
             parent_object_id = None

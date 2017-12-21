@@ -43,14 +43,15 @@ class Object(CreateableAPIResource,
     )
 
     @classmethod
-    def _to_full_path_helper(cls, full_path, **kwargs):
-        """ Helper method to return full path
+    def validate_path(cls, path, **kwargs):
+        """ Helper method to return a full path
 
-            If no vault, use personal vault.
-
+            If no account_domain, assumes user's account domain
+            If no vault, uses personal vault.
+            If no path, uses /
         """
         _client = kwargs.pop('client', None) or cls._client or client
-        parts = full_path.split(':', 2)
+        parts = path.split(':', 2)
 
         if len(parts) == 3:
             account_domain, vault_name, object_path = parts
@@ -61,7 +62,7 @@ class Object(CreateableAPIResource,
                 vault_name, object_path = parts
             else:
                 vault_name = 'user-{}'.format(user['id'])
-                object_path = full_path or '/'
+                object_path = path or '/'
 
         if object_path[0] != '/':
             raise Exception(
@@ -74,10 +75,10 @@ class Object(CreateableAPIResource,
         if object_path != '/':
             object_path = object_path.rstrip('/')
 
-        path = ':'.join([account_domain, vault_name, object_path])
-        return path, dict(domain=account_domain,
-                          vault=vault_name,
-                          path=object_path)
+        full_path = ':'.join([account_domain, vault_name, object_path])
+        return full_path, dict(domain=account_domain,
+                               vault=vault_name,
+                               path=object_path)
 
     @classmethod
     def get_by_full_path(cls, full_path, **params):

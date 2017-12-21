@@ -44,6 +44,27 @@ class Vault(CreateableAPIResource,
         items = Object.all(client=self._client, **params)
         return items
 
+    @classmethod
+    def validate_path(cls, path, **kwargs):
+        """ Helper method to return a full path
+
+            If no account_domain, assumes user's account domain
+            If no vault, uses personal vault.
+        """
+        _client = kwargs.pop('client', None) or cls._client or client
+        parts = path.split(':', 1)
+
+        if len(parts) == 2:
+            account_domain, vault_name = parts
+        else:
+            user = _client.get('/v1/user', {})
+            account_domain = user['account']['domain']
+            vault_name = '{}:{}'.format(account_domain, path)
+
+        full_path = ':'.join([account_domain, vault_name])
+        return full_path, dict(domain=account_domain,
+                               vault=vault_name)
+
     def files(self, **params):
         return self._object_list_helper(object_type='file', **params)
 
@@ -68,15 +89,9 @@ class Vault(CreateableAPIResource,
         if path == '/' or path is None:
             params['vault_parent_object_id'] = None
         else:
-            user = self._client.get('/v1/user', {})
-            account_domain = user['account']['domain']
-
-            parent_object = Object.get_by_full_path(':'.join([
-                account_domain,
-                self.name,
-                path,
-            ]))
-
+            parent_object = Object.get_by_full_path(
+                ':'.join([self.full_path, path])
+            )
             params['vault_parent_object_id'] = parent_object.id
 
         params['name'] = name
@@ -104,28 +119,16 @@ class Vault(CreateableAPIResource,
 
     @classmethod
     def get_by_full_path(cls, full_path, **kwargs):
-        from solvebio import SolveError
-
         _client = kwargs.pop('client', None) or cls._client or client
-
-        parts = full_path.split(':')
-
-        if len(parts) == 1 or len(parts) == 2:
-            if len(parts) == 1:
-                try:
-                    user = _client.get('/v1/user', {})
-                    account_domain = user['account']['domain']
-                except SolveError as e:
-                    raise Exception("Error obtaining account domain: "
-                                    "{0}".format(e))
-            else:
-                account_domain, full_path = parts
-
-            return Vault._retrieve_helper('vault', 'name', parts[-1],
-                                          account_domain=account_domain,
-                                          name=parts[-1],
-                                          client=_client)
-        else:
+        try:
+            full_path, parts = cls.validate_path(full_path)
+            return Vault._retrieve_helper(
+                'vault', 'name', parts['vault'],
+                account_domain=parts['domain'],
+                name=parts['vault'],
+                client=_client
+            )
+        except:
             raise Exception('Full path must be of the form "vault_name" or '
                             '"account_domain:vault_name"')
 
@@ -139,7 +142,6 @@ class Vault(CreateableAPIResource,
             pass
 
         # Vault not found, create it
-
         parts = full_path.split(':', 2)
         vault_name = parts[-1]
 
