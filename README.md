@@ -234,11 +234,11 @@ remained unchanged.
 The `objects` property of a resource has been renamed `solve_objects`.
 
 6.  The `import` and `create-dataset` command-line utilities now require
-`--vault` and `--path` arguments.  The `dataset` argument (`test-dataset`
+`--dataset_full_path` arguments.  The `dataset` argument (`test-dataset`
 below) no longer can contain slashes.
 
 ```
-create-dataset --capacity=small --vault=test --path=/  test-dataset
+create-dataset --capacity=small --dataset_ful_path=acme:test:/examples test-dataset
 ```
 
 7. Removal of DatasetCommit approval. The `auto_approve`, `is_approved` and
