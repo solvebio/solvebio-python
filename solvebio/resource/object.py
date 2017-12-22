@@ -76,7 +76,7 @@ class Object(CreateableAPIResource,
         else:
             user = _client.get('/v1/user', {})
             account_domain = user['account']['domain']
-            vault_name = 'user-{}'.format(user['id'])
+            vault_name = 'user-{0}'.format(user['id'])
             object_path = path or '/'
 
         if object_path[0] != '/':

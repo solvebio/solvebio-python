@@ -17,18 +17,18 @@ class ObjectTests(SolveBioTestCase):
 
         user = self.client.User.retrieve()
         domain = user.account.domain
-        user_vault = '{}:user-{}'.format(domain, user.id)
+        user_vault = '{0}:user-{1}'.format(domain, user.id)
         test_cases = [
-            ['{}:myVault'.format(domain), '{}:myVault:/'.format(domain)],
+            ['{0}:myVault'.format(domain), '{0}:myVault:/'.format(domain)],
             ['acme:myVault', 'acme:myVault:/'],
-            ['myVault', '{}:/myVault'.format(user_vault)],
+            ['myVault', '{0}:/myVault'.format(user_vault)],
             ['acme:myVault:/uploads_folder', 'acme:myVault:/uploads_folder'],
             ['acme:myVault:/uploads_folder', 'acme:myVault:/uploads_folder'],
             ['acme:myVault/uploads_folder', 'acme:myVault:/uploads_folder'],
-            ['myVault:/uploads_folder', '{}:myVault:/uploads_folder'.format(domain)],  # noqa
-            ['/uploads_folder', '{}:/uploads_folder'.format(user_vault)],
-            [':/uploads_folder', '{}:/uploads_folder'.format(user_vault)],
-            ['myVault/uploads_folder', '{}:/myVault/uploads_folder'.format(user_vault)],  # noqa
+            ['myVault:/uploads_folder', '{0}:myVault:/uploads_folder'.format(domain)],  # noqa
+            ['/uploads_folder', '{0}:/uploads_folder'.format(user_vault)],
+            [':/uploads_folder', '{0}:/uploads_folder'.format(user_vault)],
+            ['myVault/uploads_folder', '{0}:/myVault/uploads_folder'.format(user_vault)],  # noqa
         ]
         for case, expected in test_cases:
             print case

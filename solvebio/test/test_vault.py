@@ -35,12 +35,12 @@ class VaultTests(SolveBioTestCase):
 
         domain = self.client.User.retrieve().account.domain
         test_cases = [
-            ['myVault', '{}:myVault'.format(domain)],
-            ['{}:myVault'.format(domain), '{}:myVault'.format(domain)],
+            ['myVault', '{0}:myVault'.format(domain)],
+            ['{0}:myVault'.format(domain), '{0}:myVault'.format(domain)],
             ['acme:myVault', 'acme:myVault'],
             # this assumes user f-ed and forgot the semi-colon for path
             ['acme:myVault/uploads_folder', 'acme:myVault'],
-            ['myVault/uploads_folder', '{}:myVault'.format(domain)],
+            ['myVault/uploads_folder', '{0}:myVault'.format(domain)],
         ]
         for case, expected in test_cases:
             v, v_paths = self.client.Vault.validate_path(case)
