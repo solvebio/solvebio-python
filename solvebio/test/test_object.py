@@ -31,7 +31,6 @@ class ObjectTests(SolveBioTestCase):
             ['myVault/uploads_folder', '{0}:/myVault/uploads_folder'.format(user_vault)],  # noqa
         ]
         for case, expected in test_cases:
-            print case
             p, _ = self.client.Object.validate_path(case)
             self.assertEqual(p, expected)
 
