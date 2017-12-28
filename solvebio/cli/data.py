@@ -20,12 +20,37 @@ def create_dataset(args):
     """
     Attempt to create a new dataset given the following params:
 
-        * dataset (full name)
+        * full_path
         * template_id
         * template_file
         * capacity
+        * create_vault
 
     """
+
+    #
+    # Deprecations
+    #
+    if args.vault:
+        raise Exception(
+            '[Deprecated] Pass vault path as part of "full_path"'
+        )
+
+    if args.path:
+        raise Exception(
+            '[Deprecated] Pass path as part of "full_path"'
+        )
+
+    if args.dataset_name:
+        raise Exception(
+            '[Deprecated] Pass dataset_name as part of "full_path"'
+        )
+
+    if args.genome_build:
+        raise Exception(
+            '[Deprecated] The genome_build parameter has been deprecated.'
+        )
+
     # Accept a template_id or a template_file
     if args.template_id:
         # Validate the template ID
@@ -57,7 +82,7 @@ def create_dataset(args):
         print("A new dataset template was created with id: {0}".format(tpl.id))
     else:
         print("Creating a new dataset {0} without a template."
-              .format(args.dataset_full_path))
+              .format(args.full_path))
         tpl = None
         fields = []
         entity_type = None
@@ -65,14 +90,14 @@ def create_dataset(args):
 
     if tpl:
         print("Creating new dataset {0} using the template '{1}'."
-              .format(args.dataset_full_path, tpl.name))
+              .format(args.full_path, tpl.name))
         fields = tpl.fields
         entity_type = tpl.entity_type
         # include template used to create
         description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
     return solvebio.Dataset.get_or_create_by_full_path(
-        args.dataset_full_path,
+        args.full_path,
         capacity=args.capacity,
         entity_type=entity_type,
         fields=fields,
@@ -94,9 +119,13 @@ def upload(args):
     Given a folder or file, upload all the folders and files contained
     within it, skipping ones that already exist on the remote.
     """
+    if args.path:
+        raise Exception(
+            '[Deprecated] Use --full-path instead'
+        )
 
     base_local_paths = args.local_path
-    base_remote_path, path_dict = Object.validate_path(args.path)
+    base_remote_path, path_dict = Object.validate_path(args.full_path)
     vault_path = path_dict['domain'] + ':' + path_dict['vault']
 
     # assert vault exists
@@ -222,14 +251,31 @@ def import_file(args):
 
         * create_dataset
         * template_id
-        * vault_name
-        * path
-        * follow (default: False)
-        * dataset
+        * full_path
+        * commit_mode
         * capacity
         * file (list)
+        * follow (default: False)
 
     """
+    #
+    # Deprecations
+    #
+    if args.vault:
+        raise Exception(
+            '[Deprecated] Pass vault path as part of "full_path"'
+        )
+
+    if args.path:
+        raise Exception(
+            '[Deprecated] Pass path as part of "full_path"'
+        )
+
+    if args.dataset_name:
+        raise Exception(
+            '[Deprecated] Pass dataset_name as part of "full_path"'
+        )
+
     if not solvebio.api_key:
         solvebio.login()
 
@@ -238,12 +284,12 @@ def import_file(args):
         dataset = create_dataset(args)
     else:
         try:
-            dataset = solvebio.Dataset.get_by_full_path(args.dataset_full_path)
+            dataset = solvebio.Dataset.get_by_full_path(args.full_path)
         except solvebio.SolveError as e:
             if e.status_code != 404:
                 raise e
 
-            print("Dataset not found: {0}".format(args.dataset_full_path))
+            print("Dataset not found: {0}".format(args.full_path))
             print("Tip: use the --create-dataset flag "
                   "to create one from a template")
             sys.exit(1)

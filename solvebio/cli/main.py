@@ -90,13 +90,25 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'Options are "append" (default) or "overwrite".'
                 },
                 {
-                    'name': 'dataset_full_path',
+                    'name': 'full_path',
                     'help': 'The full path to the dataset in the following format: "domain:vault:/path/variants"'  # noqa
                 },
                 {
                     'name': 'file',
                     'help': 'One or more local files to import',
                     'nargs': '+'
+                },
+                {
+                    'flags': '--vault',
+                    'help': '[Deprecated] Pass vault path as part of "full_path"'  # noqa
+                },
+                {
+                    'flags': '--path',
+                    'help': '[Deprecated] Pass path as part of "full_path"'  # noqa
+                },
+                {
+                    'name': 'dataset_name',
+                    'help': '[Deprecated] Pass dataset_name as part of "full_path"'  # noqa
                 }
             ]
         },
@@ -127,9 +139,25 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'medium (<500M), large (>=500M)'
                 },
                 {
-                    'name': 'dataset_full_path',
+                    'name': 'full_path',
                     'help': 'The full path to the dataset in the following format: <domain>:<vault>:</object/path/variants>'  # noqa
-                }
+                },
+                {
+                    'flags': '--vault',
+                    'help': '[Deprecated] Pass vault path as part of "full_path"'  # noqa
+                },
+                {
+                    'flags': '--path',
+                    'help': '[Deprecated] Pass path as part of "full_path"'  # noqa
+                },
+                {
+                    'name': 'dataset_name',
+                    'help': '[Deprecated] Pass dataset_name as part of "full_path"'  # noqa
+                },
+                {
+                    'flags': '--genome-build',
+                    'help': '[Deprecated] This parameter is no longer in use."'  # noqa
+                },
             ]
         },
         'upload': {
@@ -137,7 +165,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'help': 'Upload a file or directory to a SolveBio Vault',
             'arguments': [
                 {
-                    'flags': '--path',
+                    'flags': '--full-path',
                     'default': '/',
                     'help': 'The full path where the files and folders should '
                     'be created, defaults to "<personal-vault>:/"',
@@ -147,6 +175,10 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'The path to the local file or directory '
                             'to upload',
                     'nargs': '+'
+                },
+                {
+                    'flags': '--path',
+                    'help': '[Deprecated] Use --full-path'
                 }
             ]
         },
