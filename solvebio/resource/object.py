@@ -50,6 +50,8 @@ class Object(CreateableAPIResource,
             If no vault, uses personal vault.
             If no path, uses /
         """
+        from solvebio.resource.vault import Vault
+
         _client = kwargs.pop('client', None) or cls._client or client
 
         # Remove double slashes and leading ':'
@@ -69,15 +71,26 @@ class Object(CreateableAPIResource,
                     account_domain = \
                         _client.get('/v1/user', {})['account']['domain']
                     vault_name, object_path = parts
-                # else assumes missing ":" between vault and path
                 else:
-                    account_domain = parts[0]
-                    vault_name, object_path = parts[1].split('/', 1)
+                    raise Exception('Full path must be of the format: '
+                                    '"vault_name:object_path" or '
+                                    '"account_domain:vault_name:object_path"')
+                    # TODO maybe no good
+                    # assumes missing ":" between vault and path
+                    #   mydomain:myvault/here/is/path
+                    #   myvault:here/is/path
+                    # account_domain = parts[0]
+                    # vault_name, object_path = parts[1].split('/', 1)
         else:
-            user = _client.get('/v1/user', {})
-            account_domain = user['account']['domain']
-            vault_name = 'user-{0}'.format(user['id'])
-            object_path = path or '/'
+            # if slash assume user means private vault
+            if '/' in parts[0]:
+                vault = Vault.get_personal_vault(client=_client)
+                account_domain, vault_name = vault.full_path.split(':')
+                object_path = parts[0]
+            else:
+                raise Exception('Full path must be of the format: '
+                                '"vault_name:object_path" or '
+                                '"account_domain:vault_name:object_path"')
 
         if object_path[0] != '/':
             object_path = '/' + object_path

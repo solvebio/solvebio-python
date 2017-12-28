@@ -21,14 +21,12 @@ class ObjectTests(SolveBioTestCase):
         test_cases = [
             ['{0}:myVault'.format(domain), '{0}:myVault:/'.format(domain)],
             ['acme:myVault', 'acme:myVault:/'],
-            ['myVault', '{0}:/myVault'.format(user_vault)],
             ['acme:myVault:/uploads_folder', 'acme:myVault:/uploads_folder'],
-            ['acme:myVault:/uploads_folder', 'acme:myVault:/uploads_folder'],
-            ['acme:myVault/uploads_folder', 'acme:myVault:/uploads_folder'],
             ['myVault:/uploads_folder', '{0}:myVault:/uploads_folder'.format(domain)],  # noqa
             ['/uploads_folder', '{0}:/uploads_folder'.format(user_vault)],
             [':/uploads_folder', '{0}:/uploads_folder'.format(user_vault)],
             ['myVault/uploads_folder', '{0}:/myVault/uploads_folder'.format(user_vault)],  # noqa
+            ['oops:myDomain:myVault', 'oops:myDomain:/myVault'],
         ]
         for case, expected in test_cases:
             p, _ = self.client.Object.validate_path(case)
@@ -36,9 +34,9 @@ class ObjectTests(SolveBioTestCase):
 
         error_test_cases = [
             '',
-            'myDomain:myVault:/the/heack',
-            'oops:myDomain:myVault',
+            'myVault',
+            'acme:myVault/uploads_folder'
         ]
         for case in error_test_cases:
             with self.assertRaises(Exception):
-                v, v_paths = self.client.Vault.validate_path(case)
+                v, v_paths = self.client.Object.validate_path(case)
