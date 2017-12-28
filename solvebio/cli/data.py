@@ -33,22 +33,22 @@ def create_dataset(args):
     #
     if args.vault:
         raise Exception(
-            '[Deprecated] Pass vault path as part of "full_path"'
+            '[Deprecated] --vault has been deprecated. Pass vault path as part of "full_path"'  # noqa
         )
 
     if args.path:
         raise Exception(
-            '[Deprecated] Pass path as part of "full_path"'
+            '[Deprecated] --path has been deprecated. Pass path as part of "full_path"'  # noqa
         )
 
     if args.dataset_name:
         raise Exception(
-            '[Deprecated] Pass dataset_name as part of "full_path"'
+            '[Deprecated] "dataset_name" has been deprecated. Pass as part of "full_path"'  # noqa
         )
 
     if args.genome_build:
         raise Exception(
-            '[Deprecated] The genome_build parameter has been deprecated.'
+            '[Deprecated] The --genome_build parameter has been deprecated.'
         )
 
     # Accept a template_id or a template_file
@@ -121,7 +121,7 @@ def upload(args):
     """
     if args.path:
         raise Exception(
-            '[Deprecated] Use --full-path instead'
+            '[Deprecated] Flag --path has been deprecated. Use --full-path instead'  # noqa
         )
 
     base_local_paths = args.local_path
@@ -263,17 +263,17 @@ def import_file(args):
     #
     if args.vault:
         raise Exception(
-            '[Deprecated] Pass vault path as part of "full_path"'
+            '[Deprecated] --vault has been deprecated. Pass vault path as part of "full_path"'  # noqa
         )
 
     if args.path:
         raise Exception(
-            '[Deprecated] Pass path as part of "full_path"'
+            '[Deprecated] --path has been deprecated. Pass path as part of "full_path"'  # noqa
         )
 
     if args.dataset_name:
         raise Exception(
-            '[Deprecated] Pass dataset_name as part of "full_path"'
+            '[Deprecated] "dataset_name" has been deprecated. Pass as part of "full_path"'  # noqa
         )
 
     if not solvebio.api_key:
