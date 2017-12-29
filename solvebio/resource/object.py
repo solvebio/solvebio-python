@@ -73,8 +73,8 @@ class Object(CreateableAPIResource,
                     vault_name, object_path = parts
                 else:
                     raise Exception('Full path must be of the format: '
-                                    '"vault_name:object_path" or '
-                                    '"account_domain:vault_name:object_path"')
+                                    '"vault_name:/object_path" or '
+                                    '"account_domain:vault_name:/object_path"')
                     # TODO maybe no good
                     # assumes missing ":" between vault and path
                     #   mydomain:myvault/here/is/path
@@ -89,8 +89,8 @@ class Object(CreateableAPIResource,
                 object_path = parts[0]
             else:
                 raise Exception('Full path must be of the format: '
-                                '"vault_name:object_path" or '
-                                '"account_domain:vault_name:object_path"')
+                                '"vault_name:/object_path" or '
+                                '"account_domain:vault_name:/object_path"')
 
         if object_path[0] != '/':
             object_path = '/' + object_path
