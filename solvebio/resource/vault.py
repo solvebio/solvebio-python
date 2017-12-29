@@ -129,17 +129,13 @@ class Vault(CreateableAPIResource,
     @classmethod
     def get_by_full_path(cls, full_path, **kwargs):
         _client = kwargs.pop('client', None) or cls._client or client
-        try:
-            full_path, parts = cls.validate_path(full_path)
-            return Vault._retrieve_helper(
-                'vault', 'name', parts['vault'],
-                account_domain=parts['domain'],
-                name=parts['vault'],
-                client=_client
-            )
-        except:
-            raise Exception('Full path must be of the form "vault_name" or '
-                            '"account_domain:vault_name"')
+        full_path, parts = cls.validate_path(full_path)
+        return Vault._retrieve_helper(
+            'vault', 'name', full_path,
+            account_domain=parts['domain'],
+            name=parts['vault'],
+            client=_client
+        )
 
     @classmethod
     def get_or_create_by_full_path(cls, full_path, **kwargs):
