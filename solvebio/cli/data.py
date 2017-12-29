@@ -41,11 +41,6 @@ def create_dataset(args):
             '[Deprecated] --path has been deprecated. Pass path as part of "full_path"'  # noqa
         )
 
-    if args.dataset_name:
-        raise Exception(
-            '[Deprecated] "dataset_name" has been deprecated. Pass as part of "full_path"'  # noqa
-        )
-
     if args.genome_build:
         raise Exception(
             '[Deprecated] The --genome_build parameter has been deprecated.'

@@ -151,10 +151,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': '[Deprecated] Pass path as part of "full_path"'  # noqa
                 },
                 {
-                    'name': 'dataset_name',
-                    'help': '[Deprecated] Pass dataset_name as part of "full_path"'  # noqa
-                },
-                {
                     'flags': '--genome-build',
                     'help': '[Deprecated] This parameter is no longer in use."'  # noqa
                 },
