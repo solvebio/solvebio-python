@@ -36,11 +36,6 @@ def create_dataset(args):
             '[Deprecated] --vault has been deprecated. Pass vault path as part of "full_path"'  # noqa
         )
 
-    if args.path:
-        raise Exception(
-            '[Deprecated] --path has been deprecated. Pass path as part of "full_path"'  # noqa
-        )
-
     if args.genome_build:
         raise Exception(
             '[Deprecated] The --genome_build parameter has been deprecated.'
@@ -259,16 +254,6 @@ def import_file(args):
     if args.vault:
         raise Exception(
             '[Deprecated] --vault has been deprecated. Pass vault path as part of "full_path"'  # noqa
-        )
-
-    if args.path:
-        raise Exception(
-            '[Deprecated] --path has been deprecated. Pass path as part of "full_path"'  # noqa
-        )
-
-    if args.dataset_name:
-        raise Exception(
-            '[Deprecated] "dataset_name" has been deprecated. Pass as part of "full_path"'  # noqa
         )
 
     if not solvebio.api_key:
