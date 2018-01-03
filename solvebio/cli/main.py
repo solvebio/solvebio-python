@@ -90,18 +90,28 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'Options are "append" (default) or "overwrite".'
                 },
                 {
-                    'name': 'full_path',
-                    'help': 'The full path to the dataset in the following format: "domain:vault:/path/variants"'  # noqa
+                    'flags': '--full-path',
+                    'help': 'The full path to the dataset in the format: '
+                    '"domain:vault:/path/dataset". '
+                    'Overrides --vault and --path'
+                },
+                {
+                    'flags': '--vault',
+                    'help':
+                    'The vault containing the dataset (use with --path). '
+                    'Defaults to your personal vault. '
+                    'Overridden by --full-path'
+                },
+                {
+                    'flags': '--path',
+                    'help': 'The path to the dataset (relative to the vault). '
+                    'Used with --vault, overridden by --full-path'
                 },
                 {
                     'name': 'file',
                     'help': 'One or more local files to import',
                     'nargs': '+'
                 },
-                {
-                    'flags': '--vault',
-                    'help': '[Deprecated] Pass vault path as part of "full_path"'  # noqa
-                }
             ]
         },
         'create-dataset': {
@@ -131,20 +141,22 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'medium (<500M), large (>=500M)'
                 },
                 {
-                    'name': 'full_path',
-                    'help': 'The full path to the dataset in the following format: <domain>:<vault>:</object/path/variants>'  # noqa
+                    'flags': '--full-path',
+                    'help': 'The full path to the dataset in the format: '
+                    '"domain:vault:/path/dataset". '
+                    'Overrides --vault and --path'
                 },
                 {
                     'flags': '--vault',
-                    'help': '[Deprecated] Pass vault path as part of "full_path"'  # noqa
+                    'help':
+                    'The vault containing the dataset (use with --path). '
+                    'Defaults to your personal vault. '
+                    'Overridden by --full-path'
                 },
                 {
                     'flags': '--path',
-                    'help': '[Deprecated] Pass path as part of "full_path"'  # noqa
-                },
-                {
-                    'flags': '--genome-build',
-                    'help': '[Deprecated] This parameter is no longer in use."'  # noqa
+                    'help': 'The path to the dataset (relative to the vault). '
+                    'Used with --vault, overridden by --full-path'
                 },
             ]
         },
@@ -154,19 +166,28 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'arguments': [
                 {
                     'flags': '--full-path',
-                    'default': '/',
                     'help': 'The full path where the files and folders should '
-                    'be created, defaults to "<personal-vault>:/"',
+                    'be created, defaults to the root of your personal vault. '
+                    'Overrides --vault and --path'
+                },
+                {
+                    'flags': '--vault',
+                    'help': 'The vault where the files will be uploaded. '
+                    'Defaults to your personal vault. '
+                    'Overridden by --full-path'
+                },
+                {
+                    'flags': '--path',
+                    'help': 'The path (relative to a vault) '
+                    'where the files will be uploaded. '
+                    'Defaults to the root directory (/). '
+                    'Overridden by --full-path'
                 },
                 {
                     'name': 'local_path',
                     'help': 'The path to the local file or directory '
                             'to upload',
                     'nargs': '+'
-                },
-                {
-                    'flags': '--path',
-                    'help': '[Deprecated] Use --full-path'
                 }
             ]
         },
