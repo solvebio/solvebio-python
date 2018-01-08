@@ -83,13 +83,12 @@ class Object(CreateableAPIResource,
             vault/path         -> object "path" in the root of "vault"
             /path              -> object "path" in the root of personal vault
             vault/             -> root of "vault"
-            ~/                 -> root of your personal vault
             /                  -> root of your personal vault
 
         The following two formats are not supported:
 
             path               -> invalid/ambiguous path (exception)
-            vault:path         -> unsupported, interpreted as domain:vault
+            vault:path         -> invalid/ambiguous path (exception)
             vault:path/path    -> unsupported, interpreted as domain:vault/path
 
         """
