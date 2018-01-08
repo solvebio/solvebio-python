@@ -16,51 +16,6 @@ from solvebio.utils.files import check_gzip_path
 from solvebio.errors import ObjectTypeError, NotFoundError
 
 
-# def _full_path_from_args(args):
-#     """
-#     Handles the following args:
-
-#     * full_path
-#     * vault
-#     * path
-
-#     This function parses "full_path" with the following defaults:
-
-#     * Vault: your personal vault
-#     * Path: the root of the vault (/)
-
-#     Overrides the values for "vault" and "path" if they are provided.
-#     """
-#     full_path, path_dict = Object.validate_path(
-#         args.full_path, vault=args.vault, path=args.path)
-
-#     # Set defaults for each component
-#     vault = Vault.get_personal_vault().name
-#     path = '/'
-#     # Not all commands require a filename
-#     filename = ''
-
-#     if args.full_path:
-#         # Validate and split up the path into components
-#         return args.full_path
-
-#     # Manual overrides for vault and path
-#     if args.vault:
-#         vault = args.vault
-
-#     if args.path:
-#         path = args.path
-
-#     # Path should always start and end with slash
-#     path = path.strip()
-#     if not path[0] == '/':
-#         path = '/' + path
-#     if not path[-1] == '/':
-#         path += '/'
-
-#     return '{0}:{1}{2}'.format(vault, path, filename)
-
-
 def _assert_object_type(obj, object_type):
     if obj.object_type != object_type:
         raise ObjectTypeError('{0} is a {1} but must be a {2}'.format(
