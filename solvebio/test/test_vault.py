@@ -48,7 +48,8 @@ class VaultTests(SolveBioTestCase):
 
         error_test_cases = [
             '',
-            'myDomain:myVault:/the/heack',
+            'my_Domain:myVault:/the/heack',
+            'my Domain:my:Vault:/the/heack',
             'oops:myDomain:myVault',
         ]
         for case in error_test_cases:
