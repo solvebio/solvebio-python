@@ -42,67 +42,107 @@ class Object(CreateableAPIResource,
         ('description', 'Description'),
     )
 
-    @classmethod
-    def validate_path(cls, path, **kwargs):
-        """ Helper method to return a full path
+    # Regex describing a path within a vault.
+    # Matching group 'path' will not contain a leading forward-slash
+    PATH_RE = re.compile(r'^(?:[^/]*)\/(?P<path>([^/:]+/?)*)$')
 
-            If no account_domain, assumes user's account domain
-            If no vault, uses personal vault.
-            If no path, uses /
+    @classmethod
+    def validate_path(cls, full_path, **kwargs):
+        """Helper method to parse a full or partial path and
+        return a full path as well as a dict containing path parts.
+
+        Uses the following rules when processing the path:
+
+            * If no domain, uses the current user's account domain
+            * If no vault, uses the current user's personal vault.
+            * If no path, uses '/' (vault root)
+
+        Returns a tuple containing:
+
+            * The validated full_path
+            * A dictionary with the components:
+                * domain: the domain of the vault
+                * vault: the name of the vault, without domain
+                * vault_full_path: domain:vault
+                * path: the path within the vault
+                * parent_path: the parent path to the object
+                * filename: the object's filename (if any)
+                * full_path: the validated full path
+
+        The following components may be overridden using kwargs:
+
+            * vault
+            * path
+
+
+        The following path formats are supported:
+
+            domain:vault:/path -> object "path" in the root of "domain:vault"
+            domain:vault/path  -> object "path" in the root of "domain:vault"
+            vault:/path        -> object "path" in the root of "vault"
+            vault/path         -> object "path" in the root of "vault"
+            /path              -> object "path" in the root of personal vault
+            vault/             -> root of "vault"
+            ~/                 -> root of your personal vault
+            /                  -> root of your personal vault
+
+        The following two formats are not supported:
+
+            path               -> invalid/ambiguous path (exception)
+            vault:path         -> unsupported, interpreted as domain:vault
+            vault:path/path    -> unsupported, interpreted as domain:vault/path
+
         """
         from solvebio.resource.vault import Vault
 
         _client = kwargs.pop('client', None) or cls._client or client
 
-        # Remove double slashes and leading ':'
-        path = re.sub('//+', '/', path.lstrip(':'))
+        # Clean the input: remove double slashes and leading ':'
+        full_path = re.sub('//+', '/', full_path.lstrip(':'))
 
-        parts = path.split(':', 2)
-        if len(parts) == 3:
-            account_domain, vault_name, object_path = parts
-        elif len(parts) == 2:
-            # if no slash assume user means root
-            if '/' not in parts[1]:
-                account_domain, vault_name = parts
-                object_path = '/'
-            else:
-                # if second part begins with slash, assume missing domain
-                if parts[1][0] == '/':
-                    account_domain = \
-                        _client.get('/v1/user', {})['account']['domain']
-                    vault_name, object_path = parts
-                else:
-                    raise Exception('Full path must be of the format: '
-                                    '"vault_name:/object_path" or '
-                                    '"account_domain:vault_name:/object_path"')
-                    # TODO maybe no good
-                    # assumes missing ":" between vault and path
-                    #   mydomain:myvault/here/is/path
-                    #   myvault:here/is/path
-                    # account_domain = parts[0]
-                    # vault_name, object_path = parts[1].split('/', 1)
+        # Parse the vault's full_path, using overrides if any
+        raw_vault = kwargs.get('vault') or full_path
+        try:
+            vault_full_path, path_dict = \
+                Vault.validate_path(raw_vault, client=_client)
+        except:
+            raise Exception(
+                'Could not determine vault from object path "{0}". '
+                'Paths must be in one of the following formats: '
+                '"vault:/path", "domain:vault:/path", or "/path"'
+                .format(raw_vault))
+
+        if kwargs.get('path'):
+            # If an override path is passed, ensure it looks like
+            # a path (i.e. starts with a forward slash).
+            raw_path = kwargs.get('path')
+            if raw_path[0] != '/':
+                raw_path = '/' + raw_path
         else:
-            # if slash assume user means private vault
-            if '/' in parts[0]:
-                vault = Vault.get_personal_vault(client=_client)
-                account_domain, vault_name = vault.full_path.split(':')
-                object_path = parts[0]
-            else:
-                raise Exception('Full path must be of the format: '
-                                '"vault_name:/object_path" or '
-                                '"account_domain:vault_name:/object_path"')
+            # If no override path, extract it from the full path.
+            raw_path = full_path
 
-        if object_path[0] != '/':
-            object_path = '/' + object_path
+        # By default, the path is the root dir.
+        object_path = '/'
+        match = cls.PATH_RE.match(raw_path)
+        if match:
+            # Handle root path (where path is None)
+            _path = match.groupdict()['path']
+            if _path:
+                # Append it to root path and emove any trailing slash
+                object_path += _path.rstrip('/')
+        else:
+            raise Exception(
+                'Object path "{0}" is invalid. '
+                'Paths must be in one of the following formats: '
+                '"vault:/path", "domain:vault:/path", or "/path"'
+                .format(raw_path))
 
-        # Strip trailing slash
-        if object_path != '/':
-            object_path = object_path.rstrip('/')
-
-        full_path = ':'.join([account_domain, vault_name, object_path])
-        return full_path, dict(domain=account_domain,
-                               vault=vault_name,
-                               path=object_path)
+        path_dict['path'] = object_path
+        # TODO: parent_path and filename
+        full_path = '{domain}:{vault}:{path}'.format(**path_dict)
+        path_dict['full_path'] = path_dict
+        return full_path, path_dict
 
     @classmethod
     def get_by_full_path(cls, full_path, **params):

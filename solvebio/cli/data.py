@@ -16,32 +16,57 @@ from solvebio.utils.files import check_gzip_path
 from solvebio.errors import ObjectTypeError, NotFoundError
 
 
-def _full_path_from_args(args):
-    """
-    Handles the following args:
+# def _full_path_from_args(args):
+#     """
+#     Handles the following args:
 
-    * full-path
-    * vault
-    * path
+#     * full_path
+#     * vault
+#     * path
 
-    Always uses "full_path" if provided (overrides vault and path).
-    Otherwise, attempts to use "vault" and "path".
+#     This function parses "full_path" with the following defaults:
 
-    If no paths are specified, defaults to personal-vault:/
-    """
-    if args.full_path:
-        return args.full_path
+#     * Vault: your personal vault
+#     * Path: the root of the vault (/)
 
-    return '{0}:{1}'.format(
-        args.vault or Vault.get_personal_vault().name,
-        args.path or '/')
+#     Overrides the values for "vault" and "path" if they are provided.
+#     """
+#     full_path, path_dict = Object.validate_path(
+#         args.full_path, vault=args.vault, path=args.path)
+
+#     # Set defaults for each component
+#     vault = Vault.get_personal_vault().name
+#     path = '/'
+#     # Not all commands require a filename
+#     filename = ''
+
+#     if args.full_path:
+#         # Validate and split up the path into components
+#         return args.full_path
+
+#     # Manual overrides for vault and path
+#     if args.vault:
+#         vault = args.vault
+
+#     if args.path:
+#         path = args.path
+
+#     # Path should always start and end with slash
+#     path = path.strip()
+#     if not path[0] == '/':
+#         path = '/' + path
+#     if not path[-1] == '/':
+#         path += '/'
+
+#     return '{0}:{1}{2}'.format(vault, path, filename)
 
 
 def _assert_object_type(obj, object_type):
     if obj.object_type != object_type:
-        raise ObjectTypeError('{0} is a {1} but must be a folder'.format(
+        raise ObjectTypeError('{0} is a {1} but must be a {2}'.format(
             obj.path,
             obj.object_type,
+            object_type
         ))
 
 
@@ -143,16 +168,18 @@ def create_dataset(args):
     """
     Attempt to create a new dataset given the following params:
 
-        * full_path (or vault & path)
         * template_id
         * template_file
         * capacity
         * create_vault
+        * [argument] dataset name or full path
 
     NOTE: genome_build has been deprecated and is no longer used.
 
     """
-    full_path = _full_path_from_args(args)
+    # TODO: Support for a parent object path argument?
+    full_path, path_dict = Object.validate_path(
+        args.full_path, vault=args.vault, path=args.path)
 
     # Accept a template_id or a template_file
     if args.template_id:
@@ -214,13 +241,11 @@ def upload(args):
     Given a folder or file, upload all the folders and files contained
     within it, skipping ones that already exist on the remote.
     """
-
-    full_path = _full_path_from_args(args)
-    base_remote_path, path_dict = Object.validate_path(full_path)
-    vault_path = path_dict['domain'] + ':' + path_dict['vault']
+    base_remote_path, path_dict = Object.validate_path(
+        args.full_path, vault=args.vault, path=args.path)
 
     # Assert the vault exists and is accessible
-    vault = Vault.get_by_full_path(vault_path)
+    vault = Vault.get_by_full_path(path_dict['vault_full_path'])
 
     # If not the vault root, validate remote path exists and is a folder
     if path_dict['path'] != '/':
@@ -247,7 +272,9 @@ def import_file(args):
 
         * create_dataset
         * template_id
-        * full_path (or vault & path)
+        * full_path
+        * vault (optional, overrides the vault in full_path)
+        * path (optional, overrides the path in full_path)
         * commit_mode
         * capacity
         * file (list)
@@ -258,7 +285,8 @@ def import_file(args):
     if not solvebio.api_key:
         solvebio.login()
 
-    full_path = _full_path_from_args(args)
+    full_path, path_dict = Object.validate_path(
+        args.full_path, vault=args.vault, path=args.path)
 
     # Ensure the dataset exists. Create if necessary.
     if args.create_dataset:

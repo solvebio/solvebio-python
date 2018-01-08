@@ -8,6 +8,8 @@ from .apiresource import SearchableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
 
+import re
+
 
 class Vault(CreateableAPIResource,
             ListableAPIResource,
@@ -31,6 +33,13 @@ class Vault(CreateableAPIResource,
         ('description', 'Description'),
     )
 
+    # Regex describing Vault full path.
+    # NOTE: Not valid for object full paths.
+    FULL_PATH_RE = re.compile(
+        r'^((?P<domain>[a-zA-Z0-9\-]+):)?'
+        r'((?P<vault>[\w\-]+):?)'
+        r'(?:\/.*)?$')
+
     def __init__(self, vault_id, **kwargs):
         super(Vault, self).__init__(vault_id, **kwargs)
 
@@ -45,34 +54,62 @@ class Vault(CreateableAPIResource,
         return items
 
     @classmethod
-    def validate_path(cls, path, **kwargs):
-        """ Helper method to return a full path
+    def validate_path(cls, full_path, **kwargs):
+        """Helper method to return a full path from a full or partial path.
 
-            If no account_domain, assumes user's account domain
+            If no domain, assumes user's account domain
             If no vault, uses personal vault.
+
+        Valid paths include:
+
+            domain:vault
+            domain:vault:/path
+            domain:vault/path
+            vault:/path
+            vault
+            /path
+            /
+
+        Allows overrides of the following components:
+
+            * domain
+            * vault
+
         """
         _client = kwargs.pop('client', None) or cls._client or client
-        parts = path.split(':')
 
-        if not path or len(parts) > 2:
-            raise Exception(
-                'Vault path "{}" invalid. Must be of the format: '
-                '"account_domain:vault_name".'.format(path)
-            )
-        elif len(parts) == 2:
-            account_domain, vault_name = parts
-        else:
+        full_path = full_path.strip()
+        path_parts = dict(domain=None, vault=None)
+
+        # If it starts with / then assume no domain or vault
+        if full_path[0] != '/':
+            match = cls.FULL_PATH_RE.match(full_path)
+            if not match:
+                raise Exception(
+                    'Vault path "{0}" is invalid. Path must be in the format: '
+                    '"domain:vault:/path" or "vault:/path".'.format(full_path)
+                )
+            path_parts = match.groupdict()
+
+        # Support overrides for domain and vault
+        if kwargs.get('domain'):
+            path_parts['domain'] = kwargs.get('domain')
+
+        if kwargs.get('vault'):
+            path_parts['vault'] = kwargs.get('vault')
+
+        if not path_parts['domain'] or not path_parts['vault']:
+            # Set defaults
             user = _client.get('/v1/user', {})
-            account_domain = user['account']['domain']
-            vault_name = path
+            if not path_parts['domain']:
+                path_parts['domain'] = user['account']['domain']
+            if not path_parts['vault']:
+                path_parts['vault'] = 'user-{0}'.format(user['id'])
 
-        # Strip any paths from the vault_name
-        if '/' in vault_name:
-            vault_name = vault_name.split('/', 1)[0]
-
-        full_path = ':'.join([account_domain, vault_name])
-        return full_path, dict(domain=account_domain,
-                               vault=vault_name)
+        # Rebuild the full path
+        full_path = '{domain}:{vault}'.format(**path_parts)
+        path_parts['full_path'] = full_path
+        return full_path, path_parts
 
     def files(self, **params):
         return self._object_list_helper(object_type='file', **params)

@@ -35,7 +35,7 @@ class CLITests(SolveBioTestCase):
         ObjectAll.side_effect = fake_object_all
         VaultAll.side_effect = fake_vault_all
         args = ['create-dataset', 'solvebio:test_vault:/test-dataset',
-                   '--capacity', 'small']  # noqa
+                '--capacity', 'small']
         ds = main.main(args)
         self.assertEqual(ds.name, 'test-dataset')
         self.assertEqual(ds.path, '/test-dataset')
