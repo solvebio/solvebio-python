@@ -38,7 +38,7 @@ class VaultTests(SolveBioTestCase):
             ['myVault', '{0}:myVault'.format(domain)],
             ['{0}:myVault'.format(domain), '{0}:myVault'.format(domain)],
             ['acme:myVault', 'acme:myVault'],
-            # this assumes user f-ed and forgot the semi-colon for path
+            # The following are the "new" vault/path formats:
             ['acme:myVault/uploads_folder', 'acme:myVault'],
             ['myVault/uploads_folder', '{0}:myVault'.format(domain)],
         ]
