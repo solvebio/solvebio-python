@@ -37,7 +37,7 @@ class Vault(CreateableAPIResource,
     # NOTE: Not valid for object full paths.
     FULL_PATH_RE = re.compile(
         r'^((?P<domain>[a-zA-Z0-9\-]+):)?'
-        r'((?P<vault>[\w\-]+):?)'
+        r'((?P<vault>[^/:]+):?)'
         r'(?:\/.*)?$')
 
     def __init__(self, vault_id, **kwargs):
