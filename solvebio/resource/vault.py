@@ -59,17 +59,23 @@ class Vault(CreateableAPIResource,
         """Helper method to return a full path from a full or partial path.
 
             If no domain, assumes user's account domain
-            If no vault, uses personal vault.
+            If the vault is "~", assumes personal vault.
 
-        Valid paths include:
+        Valid vault paths include:
 
             domain:vault
             domain:vault:/path
             domain:vault/path
             vault:/path
             vault
+            ~/
+
+        Invalid vault paths include:
+
+            /vault/
             /path
             /
+            :/
 
         Does not allow overrides for any vault path components.
         """
@@ -82,17 +88,17 @@ class Vault(CreateableAPIResource,
                 '"domain:vault:/path" or "vault:/path".'.format(full_path)
             )
 
-        if full_path[0] == '/':
-            # Paths starting with a slash assume the user's personal vault.
+        match = cls.VAULT_PATH_RE.match(full_path)
+        if not match:
+            raise Exception(
+                'Vault path "{0}" is invalid. Path must be in the format: '
+                '"domain:vault:/path" or "vault:/path".'.format(full_path)
+            )
+        path_parts = match.groupdict()
+
+        # Handle the special case where "~" means personal vault
+        if path_parts.get('vault') == '~':
             path_parts = dict(domain=None, vault=None)
-        else:
-            match = cls.VAULT_PATH_RE.match(full_path)
-            if not match:
-                raise Exception(
-                    'Vault path "{0}" is invalid. Path must be in the format: '
-                    '"domain:vault:/path" or "vault:/path".'.format(full_path)
-                )
-            path_parts = match.groupdict()
 
         # If any values are None, set defaults from the user.
         if None in path_parts.values():
@@ -106,7 +112,7 @@ class Vault(CreateableAPIResource,
 
         # Rebuild the full path
         full_path = '{domain}:{vault}'.format(**path_parts)
-        path_parts['full_path'] = full_path
+        path_parts['vault_full_path'] = full_path
         return full_path, path_parts
 
     def files(self, **params):

@@ -38,7 +38,6 @@ class VaultTests(SolveBioTestCase):
             self.assertEqual(v, vault.full_path)
 
         test_cases = [
-            ['/', '{0}:{1}'.format(domain, user_vault)],
             ['myVault/', '{0}:myVault'.format(domain, user_vault)],
             ['myVault', '{0}:myVault'.format(domain)],
             ['{0}:myVault'.format(domain), '{0}:myVault'.format(domain)],
@@ -47,6 +46,7 @@ class VaultTests(SolveBioTestCase):
             ['acme:myVault/folder1/folder2: xyz', 'acme:myVault'],
             ['acme:myVault:/folder1/folder2: xyz', 'acme:myVault'],
             # The following are the "new" vault/path formats:
+            ['~/', '{0}:{1}'.format(domain, user_vault)],
             ['acme:myVault/uploads_folder', 'acme:myVault'],
             ['myVault/uploads_folder', '{0}:myVault'.format(domain)],
         ]
@@ -56,6 +56,7 @@ class VaultTests(SolveBioTestCase):
 
         error_test_cases = [
             '',
+            '/',
             ':',
             ':/',
             '::/',

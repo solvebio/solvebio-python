@@ -42,9 +42,8 @@ class Object(CreateableAPIResource,
         ('description', 'Description'),
     )
 
-    # Regex describing a full path, containing a named "path" group
-    # for the object's path.
-    FULL_PATH_RE = re.compile(r'^[^\/]*(?P<path>(\/[^\/]*)+)$')
+    # Regex describing an object path.
+    PATH_RE = re.compile(r'^[^\/]*(?P<path>(\/[^\/]*)+)$')
 
     @classmethod
     def validate_full_path(cls, full_path, **kwargs):
@@ -82,9 +81,9 @@ class Object(CreateableAPIResource,
             domain:vault/path  -> object "path" in the root of "domain:vault"
             vault:/path        -> object "path" in the root of "vault"
             vault/path         -> object "path" in the root of "vault"
-            /path              -> object "path" in the root of personal vault
+            ~/path             -> object "path" in the root of personal vault
             vault/             -> root of "vault"
-            /                  -> root of your personal vault
+            ~/                 -> root of your personal vault
 
         The following two formats are not supported:
 
@@ -101,7 +100,7 @@ class Object(CreateableAPIResource,
             raise Exception(
                 'Invalid path: ',
                 'Full path must be in one of the following formats: '
-                '"vault:/path", "domain:vault:/path", or "/path"')
+                '"vault:/path", "domain:vault:/path", or "~/path"')
 
         # Parse the vault's full_path, using overrides if any
         input_vault = kwargs.get('vault') or full_path
@@ -112,27 +111,28 @@ class Object(CreateableAPIResource,
             raise Exception(
                 'Could not determine vault from "{0}". '
                 'Full path must be in one of the following formats: '
-                '"vault:/path", "domain:vault:/path", or "/path"'
+                '"vault:/path", "domain:vault:/path", or "~/path"'
                 .format(input_vault))
 
-        match = cls.FULL_PATH_RE.match(full_path)
+        if kwargs.get('path'):
+            # Allow override of the object_path.
+            full_path = '{0}:/{1}'.format(vault_full_path, kwargs['path'])
+
+        match = cls.PATH_RE.match(full_path)
         if match:
-            # Allow override of the object_path. If the object path
-            # is overridden, we don't try to validate it or extract
-            # any vault path.
-            object_path = kwargs.get('path') or match.groupdict()['path']
-            # Double slashes are accepted by the regex, so remove them.
-            full_path = re.sub('//+', '/', object_path)
-            if object_path[0] != '/':
-                # Ensure object path starts with a slash
-                # and does not end with one.
-                object_path = '/{0}'.format(object_path).rstrip('/')
+            object_path = match.groupdict()['path']
         else:
             raise Exception(
-                'Cannot find a valid object path in "{0}".. '
+                'Cannot find a valid object path in "{0}". '
                 'Full path must be in one of the following formats: '
-                '"vault:/path", "domain:vault:/path", or "/path"'
+                '"vault:/path", "domain:vault:/path", or "~/path"'
                 .format(full_path))
+
+        # Remove double slashes
+        object_path = re.sub('//+', '/', object_path)
+        if object_path != '/':
+            # Remove trailing slash
+            object_path = object_path.rstrip('/')
 
         path_dict['path'] = object_path
         # TODO: parent_path and filename

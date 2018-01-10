@@ -25,9 +25,9 @@ class ObjectTests(SolveBioTestCase):
             ['myVault/folder1/project: ABCD',
              '{0}:myVault:/folder1/project: ABCD'.format(domain)],
             ['myVault:/uploads_folder', '{0}:myVault:/uploads_folder'.format(domain)],  # noqa
-            ['/uploads_folder', '{0}:/uploads_folder'.format(user_vault)],
-            ['/', '{0}:/'.format(user_vault)],
-            # New full path format without colons
+            # New full path formats
+            ['~/uploads_folder', '{0}:/uploads_folder'.format(user_vault)],
+            ['~/', '{0}:/'.format(user_vault)],
             ['myVault/uploads_folder', '{0}:myVault:/uploads_folder'.format(domain)],  # noqa
             ['acme:myVault/uploads_folder', 'acme:myVault:/uploads_folder'],
         ]
@@ -37,6 +37,7 @@ class ObjectTests(SolveBioTestCase):
 
         error_test_cases = [
             '',
+            '/hello',
             'myVault',
             'oops:myDomain:myVault',
             '{0}:myVault'.format(domain),
@@ -83,7 +84,7 @@ class ObjectTests(SolveBioTestCase):
         expected = 'acme:myVault:/foo/bar/baz'
         self.assertEqual(p, expected)
 
-        case = '/folder'
+        case = '~/folder'
         p, _ = self.client.Object.validate_full_path(case, path='foo/bar/baz')
         expected = '{0}:/foo/bar/baz'.format(user_vault)
         self.assertEqual(p, expected)
