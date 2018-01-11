@@ -1,5 +1,14 @@
 # Change Log
 
+## [v2.4.0](https://github.com/solvebio/solvebio-python/tree/v2.4.0) (2018-01-11)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.3...v2.4.0)
+
+**Merged pull requests:**
+
+- try refactoring path validators with regex [\#218](https://github.com/solvebio/solvebio-python/pull/218) ([davecap](https://github.com/davecap))
+- update import and create-dataset shortcuts to require full path [\#217](https://github.com/solvebio/solvebio-python/pull/217) ([jsh2134](https://github.com/jsh2134))
+- remove invalid tabulate fields for Application resource [\#215](https://github.com/solvebio/solvebio-python/pull/215) ([davecap](https://github.com/davecap))
+
 ## [v2.3.3](https://github.com/solvebio/solvebio-python/tree/v2.3.3) (2017-12-13)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.2...v2.3.3)
 
@@ -443,13 +452,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
-
-## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
 
 ## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+
+## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
