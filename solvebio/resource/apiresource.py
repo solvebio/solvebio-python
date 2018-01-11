@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 import six
 from six.moves import zip
+from six.moves.urllib.parse import unquote
 
 import os
 import requests
@@ -183,8 +184,16 @@ class DownloadableAPIResource(APIResource):
         Returns the absolute path to the file.
         """
         download_url = self.download_url(**kwargs)
-        # Set default filename to the extracted name
-        filename = download_url.split('%3B%20filename%3D')[1]
+        try:
+            # For vault objects, use the object's filename
+            # as the fallback if none is specified.
+            filename = self.filename
+        except AttributeError:
+            # If the object has no filename attribute,
+            # extract one from the download URL.
+            filename = download_url.split('%3B%20filename%3D')[1]
+            # Remove additional URL params from the name and "unquote" it.
+            filename = unquote(filename.split('&')[0])
 
         if path:
             path = os.path.expanduser(path)
