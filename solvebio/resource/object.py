@@ -1,5 +1,6 @@
 """Solvebio Object API resource"""
 import os
+import re
 import base64
 import binascii
 import mimetypes
@@ -40,6 +41,104 @@ class Object(CreateableAPIResource,
         ('filename', 'Filename'),
         ('description', 'Description'),
     )
+
+    # Regex describing an object path.
+    PATH_RE = re.compile(r'^[^\/]*(?P<path>(\/[^\/]*)+)$')
+
+    @classmethod
+    def validate_full_path(cls, full_path, **kwargs):
+        """Helper method to parse a full or partial path and
+        return a full path as well as a dict containing path parts.
+
+        Uses the following rules when processing the path:
+
+            * If no domain, uses the current user's account domain
+            * If no vault, uses the current user's personal vault.
+            * If no path, uses '/' (vault root)
+
+        Returns a tuple containing:
+
+            * The validated full_path
+            * A dictionary with the components:
+                * domain: the domain of the vault
+                * vault: the name of the vault, without domain
+                * vault_full_path: domain:vault
+                * path: the object path within the vault
+                * parent_path: the parent path to the object
+                * filename: the object's filename (if any)
+                * full_path: the validated full path
+
+        The following components may be overridden using kwargs:
+
+            * vault
+            * path
+
+        Object paths (also known as "paths") must begin with a forward slash.
+
+        The following path formats are supported:
+
+            domain:vault:/path -> object "path" in the root of "domain:vault"
+            domain:vault/path  -> object "path" in the root of "domain:vault"
+            vault:/path        -> object "path" in the root of "vault"
+            vault/path         -> object "path" in the root of "vault"
+            ~/path             -> object "path" in the root of personal vault
+            vault/             -> root of "vault"
+            ~/                 -> root of your personal vault
+
+        The following two formats are not supported:
+
+            path               -> invalid/ambiguous path (exception)
+            vault:path         -> invalid/ambiguous path (exception)
+            vault:path/path    -> unsupported, interpreted as domain:vault/path
+
+        """
+        from solvebio.resource.vault import Vault
+
+        _client = kwargs.pop('client', None) or cls._client or client
+
+        if not full_path:
+            raise Exception(
+                'Invalid path: ',
+                'Full path must be in one of the following formats: '
+                '"vault:/path", "domain:vault:/path", or "~/path"')
+
+        # Parse the vault's full_path, using overrides if any
+        input_vault = kwargs.get('vault') or full_path
+        try:
+            vault_full_path, path_dict = \
+                Vault.validate_full_path(input_vault, client=_client)
+        except:
+            raise Exception(
+                'Could not determine vault from "{0}". '
+                'Full path must be in one of the following formats: '
+                '"vault:/path", "domain:vault:/path", or "~/path"'
+                .format(input_vault))
+
+        if kwargs.get('path'):
+            # Allow override of the object_path.
+            full_path = '{0}:/{1}'.format(vault_full_path, kwargs['path'])
+
+        match = cls.PATH_RE.match(full_path)
+        if match:
+            object_path = match.groupdict()['path']
+        else:
+            raise Exception(
+                'Cannot find a valid object path in "{0}". '
+                'Full path must be in one of the following formats: '
+                '"vault:/path", "domain:vault:/path", or "~/path"'
+                .format(full_path))
+
+        # Remove double slashes
+        object_path = re.sub('//+', '/', object_path)
+        if object_path != '/':
+            # Remove trailing slash
+            object_path = object_path.rstrip('/')
+
+        path_dict['path'] = object_path
+        # TODO: parent_path and filename
+        full_path = '{domain}:{vault}:{path}'.format(**path_dict)
+        path_dict['full_path'] = full_path
+        return full_path, path_dict
 
     @classmethod
     def get_by_full_path(cls, full_path, **params):

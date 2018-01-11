@@ -34,14 +34,27 @@ class CLITests(SolveBioTestCase):
         DatasetCreate.side_effect = fake_dataset_create
         ObjectAll.side_effect = fake_object_all
         VaultAll.side_effect = fake_vault_all
-
-        args = ['create-dataset', 'test-dataset',
-                   '--capacity', 'small',
-                   '--vault', 'test',
-                   '--path', '/']  # noqa
+        args = ['create-dataset', 'solvebio:test_vault:/test-dataset',
+                '--capacity', 'small']
         ds = main.main(args)
         self.assertEqual(ds.name, 'test-dataset')
         self.assertEqual(ds.path, '/test-dataset')
+
+    @mock.patch('solvebio.resource.Vault.all')
+    @mock.patch('solvebio.resource.Object.all')
+    @mock.patch('solvebio.resource.Dataset.create')
+    def test_create_dataset_by_filename(self, DatasetCreate, ObjectAll,
+                                        VaultAll):
+        DatasetCreate.side_effect = fake_dataset_create
+        ObjectAll.side_effect = fake_object_all
+        VaultAll.side_effect = fake_vault_all
+        args = ['create-dataset', 'test-dataset-filename',
+                '--vault', 'solvebio:test_vault',
+                '--path', '/',
+                '--capacity', 'small']
+        ds = main.main(args)
+        self.assertEqual(ds.name, 'test-dataset-filename')
+        self.assertEqual(ds.path, '/test-dataset-filename')
 
     def _validate_tmpl_fields(self, fields):
         for f in fields:
@@ -68,11 +81,9 @@ class CLITests(SolveBioTestCase):
 
         template_path = os.path.join(os.path.dirname(__file__),
                                      "data/template.json")
-        args = ['create-dataset', 'test-dataset',
+        args = ['create-dataset', 'solvebio:test_vault:/test-dataset',
                    '--template-file', template_path,
-                   '--capacity', 'medium',
-                   '--vault', 'test',
-                   '--path', '/']  # noqa
+                   '--capacity', 'medium']  # noqa
 
         ds = main.main(args)
         self.assertEqual(ds.description,
@@ -96,11 +107,9 @@ class CLITests(SolveBioTestCase):
             tpl_json = json.load(fp)
 
         tpl = DatasetTemplate.create(**tpl_json)
-        args = ['create-dataset', 'test-dataset',
+        args = ['create-dataset', 'solvebio:test_vault:/test-dataset',
                    '--template-id', str(tpl.id),
-                   '--capacity', 'small',
-                   '--vault', 'test',
-                   '--path', '/']  # noqa
+                   '--capacity', 'small']  # noqa
 
         ds = main.main(args)
         self.assertEqual(ds.description,

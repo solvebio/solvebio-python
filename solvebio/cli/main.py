@@ -56,19 +56,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Create the vault if it doesn\'t exist',
                 },
                 {
-                    'flags': '--vault',
-                    'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset), '
-                            'defaults to your personal vault',
-                },
-                {
-                    'flags': '--path',
-                    'default': '/',
-                    'help': 'The path in the vault where the dataset should '
-                            'be created when creating a new dataset'
-                            '(via --create-dataset), defaults to "/"',
-                },
-                {
                     'flags': '--template-id',
                     'help': 'The template ID used when '
                             'creating a new dataset (via --create-dataset)',
@@ -103,14 +90,27 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'Options are "append" (default) or "overwrite".'
                 },
                 {
-                    'name': 'dataset_name',
-                    'help': 'The name of the dataset'
+                    'flags': '--full-path',
+                    'help': 'The full path to the dataset in the format: '
+                    '"domain:vault:/path/dataset". '
+                    'Overrides --vault and --path'
+                },
+                {
+                    'flags': '--vault',
+                    'help': 'The vault containing the dataset. '
+                    'Defaults to your personal vault. '
+                    'Overrides the vault component of --full-path'
+                },
+                {
+                    'flags': '--path',
+                    'help': 'The path to the dataset (relative to a vault). '
+                    'Overrides the path component of --full-path'
                 },
                 {
                     'name': 'file',
                     'help': 'One or more local files to import',
                     'nargs': '+'
-                }
+                },
             ]
         },
         'create-dataset': {
@@ -123,19 +123,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Create the vault if it doesn\'t exist',
                 },
                 {
-                    'flags': '--vault',
-                    'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset), '
-                            'defaults to your personal vault',
-                },
-                {
-                    'flags': '--path',
-                    'default': '/',
-                    'help': 'The path in the vault where the dataset should '
-                            'be created when creating a new dataset '
-                            '(via --create-dataset), defaults to "/"',
-                },
-                {
                     'flags': '--template-id',
                     'help': 'The template ID used when '
                             'creating a new dataset (via --create-dataset)',
@@ -146,11 +133,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'creating a new dataset (via --create-dataset)',
                 },
                 {
-                    'flags': '--genome-build',
-                    'help': 'If the dataset template is genomic, provide a '
-                            'genome build for your data (i.e. GRCh37)'
-                },
-                {
                     'flags': '--capacity',
                     'default': 'small',
                     'help': 'Specifies the capacity of the dataset: '
@@ -158,9 +140,25 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'medium (<500M), large (>=500M)'
                 },
                 {
-                    'name': 'dataset_name',
-                    'help': 'The name of the dataset'
-                }
+                    'flags': '--vault',
+                    'help':
+                    'The vault containing the dataset. '
+                    'Overrides the vault component of the full path argument'
+                },
+                {
+                    'flags': '--path',
+                    'help': 'The path to the dataset (relative to the vault). '
+                    'Overrides the path component of the full path argument'
+                },
+                {
+                    'name': 'full_path',
+                    'help': 'The full path to the dataset in the format: '
+                    '"domain:vault:/path/dataset". '
+                    'Defaults to your personal vault if no vault is provided. '
+                    'Defaults to the vault root if no path is provided. '
+                    'Override the vault with --vault '
+                    'and/or the path with --path'
+                },
             ]
         },
         'upload': {
@@ -168,16 +166,21 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'help': 'Upload a file or directory to a SolveBio Vault',
             'arguments': [
                 {
+                    'flags': '--full-path',
+                    'help': 'The full path where the files and folders should '
+                    'be created, defaults to the root of your personal vault'
+                },
+                {
                     'flags': '--vault',
-                    'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset), '
-                            'defaults to your personal vault',
+                    'help': 'The vault where the files will be uploaded. '
+                    'Defaults to your personal vault. '
+                    'Overrides the vault component of --full-path'
                 },
                 {
                     'flags': '--path',
-                    'default': '/',
-                    'help': 'The path in the vault where the files and '
-                            'folders should be created, defaults to "/"',
+                    'help': 'The path (relative to a vault) '
+                    'where the files will be uploaded. '
+                    'Overrides the path component of --full-path'
                 },
                 {
                     'name': 'local_path',

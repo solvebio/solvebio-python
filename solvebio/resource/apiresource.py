@@ -245,7 +245,6 @@ class ListableAPIResource(APIResource):
         results = convert_to_solve_object(response, client=_client)
         objects = results.data
         allow_multiple = params.pop('allow_multiple', None)
-
         if len(objects) > 1:
             if allow_multiple:
                 return objects

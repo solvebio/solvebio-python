@@ -1,5 +1,4 @@
 import os
-import re
 import time
 
 from ..client import client
@@ -61,32 +60,8 @@ class Dataset(CreateableAPIResource,
     @classmethod
     def get_by_full_path(cls, full_path, **kwargs):
         from solvebio import Object
-
         _client = kwargs.pop('client', None) or cls._client or client
-        parts = full_path.split(':', 2)
-
-        if len(parts) == 3:
-            account_domain, vault_name, object_path = parts
-        elif len(parts) == 2:
-            vault_name, object_path = parts
-            user = _client.get('/v1/user', {})
-            account_domain = user['account']['domain']
-        else:
-            raise Exception('Full path must be of the format: '
-                            '"vault_name:object_path" or '
-                            '"account_domain:vault_name:object_path"')
-
-        if object_path[0] != '/':
-            raise Exception(
-                'Paths are absolute and must begin with a "/"'
-            )
-
-        # Remove double slashes and strip trailing slash
-        object_path = re.sub('//+', '/', object_path)
-        if object_path != '/':
-            object_path = object_path.rstrip('/')
-
-        test_path = ':'.join([account_domain, vault_name, object_path])
+        test_path, _ = Object.validate_full_path(full_path, client=_client)
         obj = Object.get_by_full_path(test_path, client=_client)
         dataset = Dataset.retrieve(obj['dataset_id'], client=_client, **kwargs)
         return dataset
@@ -100,35 +75,33 @@ class Dataset(CreateableAPIResource,
         create_vault = kwargs.pop('create_vault', False)
         create_folders = kwargs.pop('create_folders', True)
 
+        # Validate path
+
         try:
             return Dataset.get_by_full_path(full_path, client=_client)
         except NotFoundError:
             pass
 
         # Dataset not found, create it step-by-step
-
-        parts = full_path.split(':', 2)
-
-        if len(parts) == 3:
-            account_domain, vault_name, object_path = parts
-        elif len(parts) == 2:
-            vault_name, object_path = parts
-            user = _client.get('/v1/user', {})
-            account_domain = user['account']['domain']
+        full_path, parts = Object.validate_full_path(full_path, client=_client)
 
         if create_vault:
             vault = Vault.get_or_create_by_full_path(
-                '{0}:{1}'.format(account_domain, vault_name),
+                '{0}:{1}'.format(parts['domain'], parts['vault']),
                 client=_client)
         else:
-            vaults = Vault.all(account_domain=account_domain, name=vault_name,
+            vaults = Vault.all(account_domain=parts['domain'],
+                               name=parts['vault'],
                                client=_client)
             if len(vaults.solve_objects()) == 0:
-                raise Exception('Vault does not exist with name {0}'.format(
-                    vault_name))
+                raise Exception(
+                    'Vault does not exist with name {0}:{1}'.format(
+                        parts['domain'], parts['vault'])
+                )
             vault = vaults.solve_objects()[0]
 
         # Create the folders to hold the dataset if they do not already exist.
+        object_path = parts['path']
         curr_path = os.path.dirname(object_path)
         folders_to_create = []
         new_folders = []
