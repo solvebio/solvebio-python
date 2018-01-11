@@ -132,9 +132,17 @@ def create_dataset(args):
     NOTE: genome_build has been deprecated and is no longer used.
 
     """
-    # TODO: Support for a parent object path argument?
-    full_path, path_dict = Object.validate_full_path(
-        args.full_path, vault=args.vault, path=args.path)
+    # For backwards compatibility, the "full_path" argument
+    # can be a dataset filename, but only if vault and path
+    # are set. If vault/path are both provided and there
+    # are no forward-slashes in the "full_path", assume
+    # the user has provided a dataset filename.
+    if '/' not in args.full_path and args.vault and args.path:
+        full_path, path_dict = Object.validate_full_path(
+            '{0}:/{1}/{2}'.format(args.vault, args.path, args.full_path))
+    else:
+        full_path, path_dict = Object.validate_full_path(
+            args.full_path, vault=args.vault, path=args.path)
 
     # Accept a template_id or a template_file
     if args.template_id:
@@ -236,10 +244,6 @@ def import_file(args):
         * follow (default: False)
 
     """
-    # FIXME: Does this need to be here? What about other commands?
-    if not solvebio.api_key:
-        solvebio.login()
-
     full_path, path_dict = Object.validate_full_path(
         args.full_path, vault=args.vault, path=args.path)
 
