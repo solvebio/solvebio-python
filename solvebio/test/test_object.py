@@ -10,7 +10,8 @@ class ObjectTests(SolveBioTestCase):
         vaults = self.client.Vault.all()
         for vault in vaults:
             for file_ in list(vault.ls().solve_objects())[:5]:
-                o_path, _ = self.client.Object.validate_full_path(file_.full_path)
+                o_path, _ = self.client.Object.validate_full_path(
+                    file_.full_path)
                 self.assertEqual(o_path, file_.full_path)
 
     def test_object_path_cases(self):
