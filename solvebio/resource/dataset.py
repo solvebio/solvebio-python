@@ -61,7 +61,7 @@ class Dataset(CreateableAPIResource,
     def get_by_full_path(cls, full_path, **kwargs):
         from solvebio import Object
         _client = kwargs.pop('client', None) or cls._client or client
-        test_path, _ = Object.validate_path(full_path, client=_client)
+        test_path, _ = Object.validate_full_path(full_path, client=_client)
         obj = Object.get_by_full_path(test_path, client=_client)
         dataset = Dataset.retrieve(obj['dataset_id'], client=_client, **kwargs)
         return dataset
@@ -83,7 +83,7 @@ class Dataset(CreateableAPIResource,
             pass
 
         # Dataset not found, create it step-by-step
-        full_path, parts = Object.validate_path(full_path, client=_client)
+        full_path, parts = Object.validate_full_path(full_path, client=_client)
 
         if create_vault:
             vault = Vault.get_or_create_by_full_path(

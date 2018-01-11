@@ -97,15 +97,14 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'flags': '--vault',
-                    'help':
-                    'The vault containing the dataset (use with --path). '
+                    'help': 'The vault containing the dataset. '
                     'Defaults to your personal vault. '
-                    'Overridden by --full-path'
+                    'Overrides the vault component of --full-path'
                 },
                 {
                     'flags': '--path',
-                    'help': 'The path to the dataset (relative to the vault). '
-                    'Used with --vault, overridden by --full-path'
+                    'help': 'The path to the dataset (relative to a vault). '
+                    'Overrides the path component of --full-path'
                 },
                 {
                     'name': 'file',
@@ -141,22 +140,24 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'medium (<500M), large (>=500M)'
                 },
                 {
-                    'flags': '--full-path',
-                    'help': 'The full path to the dataset in the format: '
-                    '"domain:vault:/path/dataset". '
-                    'Overrides --vault and --path'
-                },
-                {
                     'flags': '--vault',
                     'help':
-                    'The vault containing the dataset (use with --path). '
-                    'Defaults to your personal vault. '
-                    'Overridden by --full-path'
+                    'The vault containing the dataset. '
+                    'Overrides the vault component of the full path argument'
                 },
                 {
                     'flags': '--path',
                     'help': 'The path to the dataset (relative to the vault). '
-                    'Used with --vault, overridden by --full-path'
+                    'Overrides the path component of the full path argument'
+                },
+                {
+                    'name': 'full_path',
+                    'help': 'The full path to the dataset in the format: '
+                    '"domain:vault:/path/dataset". '
+                    'Defaults to your personal vault if no vault is provided. '
+                    'Defaults to the vault root if no path is provided. '
+                    'Override the vault with --vault '
+                    'and/or the path with --path'
                 },
             ]
         },
@@ -167,21 +168,19 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'flags': '--full-path',
                     'help': 'The full path where the files and folders should '
-                    'be created, defaults to the root of your personal vault. '
-                    'Overrides --vault and --path'
+                    'be created, defaults to the root of your personal vault'
                 },
                 {
                     'flags': '--vault',
                     'help': 'The vault where the files will be uploaded. '
                     'Defaults to your personal vault. '
-                    'Overridden by --full-path'
+                    'Overrides the vault component of --full-path'
                 },
                 {
                     'flags': '--path',
                     'help': 'The path (relative to a vault) '
                     'where the files will be uploaded. '
-                    'Defaults to the root directory (/). '
-                    'Overridden by --full-path'
+                    'Overrides the path component of --full-path'
                 },
                 {
                     'name': 'local_path',

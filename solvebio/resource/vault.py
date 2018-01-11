@@ -8,6 +8,8 @@ from .apiresource import SearchableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
 
+import re
+
 
 class Vault(CreateableAPIResource,
             ListableAPIResource,
@@ -31,6 +33,14 @@ class Vault(CreateableAPIResource,
         ('description', 'Description'),
     )
 
+    # Regex describing Vault full path.
+    # NOTE: Not valid for object full paths.
+    VAULT_PATH_RE = re.compile(
+        # Non-greedy wildcard match for domain
+        r'^(?:(?P<domain>[a-zA-Z0-9\-]+)\:)??'
+        # Match vault or vault:/ or vault/
+        r'(?P<vault>[^\/:]+)(?:\:?\/.*)?$')
+
     def __init__(self, vault_id, **kwargs):
         super(Vault, self).__init__(vault_id, **kwargs)
 
@@ -45,34 +55,65 @@ class Vault(CreateableAPIResource,
         return items
 
     @classmethod
-    def validate_path(cls, path, **kwargs):
-        """ Helper method to return a full path
+    def validate_full_path(cls, full_path, **kwargs):
+        """Helper method to return a full path from a full or partial path.
 
-            If no account_domain, assumes user's account domain
-            If no vault, uses personal vault.
+            If no domain, assumes user's account domain
+            If the vault is "~", assumes personal vault.
+
+        Valid vault paths include:
+
+            domain:vault
+            domain:vault:/path
+            domain:vault/path
+            vault:/path
+            vault
+            ~/
+
+        Invalid vault paths include:
+
+            /vault/
+            /path
+            /
+            :/
+
+        Does not allow overrides for any vault path components.
         """
         _client = kwargs.pop('client', None) or cls._client or client
-        parts = path.split(':')
 
-        if not path or len(parts) > 2:
+        full_path = full_path.strip()
+        if not full_path:
             raise Exception(
-                'Vault path "{}" invalid. Must be of the format: '
-                '"account_domain:vault_name".'.format(path)
+                'Vault path "{0}" is invalid. Path must be in the format: '
+                '"domain:vault:/path" or "vault:/path".'.format(full_path)
             )
-        elif len(parts) == 2:
-            account_domain, vault_name = parts
-        else:
+
+        match = cls.VAULT_PATH_RE.match(full_path)
+        if not match:
+            raise Exception(
+                'Vault path "{0}" is invalid. Path must be in the format: '
+                '"domain:vault:/path" or "vault:/path".'.format(full_path)
+            )
+        path_parts = match.groupdict()
+
+        # Handle the special case where "~" means personal vault
+        if path_parts.get('vault') == '~':
+            path_parts = dict(domain=None, vault=None)
+
+        # If any values are None, set defaults from the user.
+        if None in path_parts.values():
             user = _client.get('/v1/user', {})
-            account_domain = user['account']['domain']
-            vault_name = path
+            defaults = {
+                'domain': user['account']['domain'],
+                'vault': 'user-{0}'.format(user['id'])
+            }
+            path_parts = dict((k, v or defaults.get(k))
+                              for k, v in path_parts.items())
 
-        # Strip any paths from the vault_name
-        if '/' in vault_name:
-            vault_name = vault_name.split('/', 1)[0]
-
-        full_path = ':'.join([account_domain, vault_name])
-        return full_path, dict(domain=account_domain,
-                               vault=vault_name)
+        # Rebuild the full path
+        full_path = '{domain}:{vault}'.format(**path_parts)
+        path_parts['vault_full_path'] = full_path
+        return full_path, path_parts
 
     def files(self, **params):
         return self._object_list_helper(object_type='file', **params)
@@ -129,7 +170,7 @@ class Vault(CreateableAPIResource,
     @classmethod
     def get_by_full_path(cls, full_path, **kwargs):
         _client = kwargs.pop('client', None) or cls._client or client
-        full_path, parts = cls.validate_path(full_path)
+        full_path, parts = cls.validate_full_path(full_path)
         return Vault._retrieve_helper(
             'vault', 'name', full_path,
             account_domain=parts['domain'],
