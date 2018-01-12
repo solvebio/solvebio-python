@@ -149,15 +149,15 @@ class CLITests(SolveBioTestCase):
 
     def test_import_tilde(self):
 
-        HOME = get_home_dir()
+        home = get_home_dir()
 
         _, file_ = tempfile.mkstemp(suffix='.txt')
         with open(file_, 'w') as fp:
             fp.write('blargh')
 
         for f in [
-                '{0}:/test-dataset'.format(HOME),
-                '{0}/test-dataset'.format(HOME),
+                '{0}:/test-dataset'.format(home),
+                '{0}/test-dataset'.format(home),
         ]:
-            args = ['import', '--follow', f, file_]
+            args = ['import', '--create-dataset', '--follow', f, file_]
             self._test_import_file(args)
