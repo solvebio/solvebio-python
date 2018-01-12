@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import os
 import json
+import tempfile
 
 import mock
 
@@ -15,6 +16,11 @@ from solvebio.test.client_mocks import fake_object_all
 from solvebio.test.client_mocks import fake_dataset_create
 from solvebio.test.client_mocks import fake_dataset_tmpl_create
 from solvebio.test.client_mocks import fake_dataset_tmpl_retrieve
+from solvebio.test.client_mocks import fake_dataset_import_create
+
+
+def upload_path(*args, **kwargs):
+    return '/'
 
 
 class CLITests(SolveBioTestCase):
@@ -114,3 +120,49 @@ class CLITests(SolveBioTestCase):
         ds = main.main(args)
         self.assertEqual(ds.description,
                          'Created with dataset template: {0}'.format(tpl.id))
+
+    @mock.patch('solvebio.resource.Vault.get_or_create_uploads_path')
+    @mock.patch('solvebio.resource.Vault.all')
+    @mock.patch('solvebio.resource.Object.all')
+    @mock.patch('solvebio.resource.Dataset.create')
+    @mock.patch('solvebio.resource.DatasetImport.create')
+    def _test_import_file(self, args, DatasetImportCreate, DatasetCreate,
+                          ObjectAll, VaultAll, UploadPath):
+        DatasetImportCreate.side_effect = fake_dataset_import_create
+        DatasetCreate.side_effect = fake_dataset_create
+        ObjectAll.side_effect = fake_object_all
+        VaultAll.side_effect = fake_vault_all
+        UploadPath.side_effect = upload_path
+
+        main.main(args)
+
+    def test_import_file(self):
+        _, file_ = tempfile.mkstemp(suffix='.txt')
+        with open(file_, 'w') as fp:
+            fp.write('blargh')
+
+        args = ['import', '--create-dataset', '--follow',
+                'solvebio:test_vault:/test-dataset', file_]
+
+        self._test_import_file(args)
+
+    def test_import_tilde(self):
+
+        try:
+            # Python 3.5+
+            from pathlib import Path
+            HOME = str(Path.home())
+        except:
+            from os.path import expanduser
+            HOME = expanduser("~")
+
+        _, file_ = tempfile.mkstemp(suffix='.txt')
+        with open(file_, 'w') as fp:
+            fp.write('blargh')
+
+        for f in [
+                '{0}:/test-dataset'.format(HOME),
+                '{0}/test-dataset'.format(HOME),
+        ]:
+            args = ['import', '--follow', f, file_]
+            self._test_import_file(args)
