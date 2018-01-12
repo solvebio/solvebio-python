@@ -36,7 +36,6 @@ class Object(CreateableAPIResource,
         ('id', 'ID'),
         ('object_type', 'Type'),
         ('full_path', 'Full Path'),
-        ('vault_id', 'Vault ID'),
         ('description', 'Description'),
     )
 

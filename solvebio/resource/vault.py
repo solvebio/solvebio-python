@@ -28,7 +28,7 @@ class Vault(CreateableAPIResource,
     LIST_FIELDS = (
         ('id', 'ID'),
         ('full_path', 'Full Path'),
-        ('is_public', 'Is Public'),
+        ('provider', 'Provider'),
         ('description', 'Description'),
     )
 
