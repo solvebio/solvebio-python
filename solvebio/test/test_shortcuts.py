@@ -126,19 +126,43 @@ class CLITests(SolveBioTestCase):
     @mock.patch('solvebio.resource.Object.all')
     @mock.patch('solvebio.resource.Dataset.create')
     @mock.patch('solvebio.resource.DatasetImport.create')
-    def test_import_file(self, DatasetImportCreate, DatasetCreate,
-                         ObjectAll, VaultAll, UploadPath):
+    def _test_import_file(self, args, DatasetImportCreate, DatasetCreate,
+                          ObjectAll, VaultAll, UploadPath):
         DatasetImportCreate.side_effect = fake_dataset_import_create
         DatasetCreate.side_effect = fake_dataset_create
         ObjectAll.side_effect = fake_object_all
         VaultAll.side_effect = fake_vault_all
         UploadPath.side_effect = upload_path
 
+        main.main(args)
+
+    def test_import_file(self):
         _, file_ = tempfile.mkstemp(suffix='.txt')
         with open(file_, 'w') as fp:
             fp.write('blargh')
 
         args = ['import', '--create-dataset', '--follow',
                 'solvebio:test_vault:/test-dataset', file_]
-        main.main(args)
-        # TODO what to verify?
+
+        self._test_import_file(args)
+
+    def test_import_tilde(self):
+
+        try:
+            # Python 3.5+
+            from pathlib import Path
+            HOME = str(Path.home())
+        except:
+            from os.path import expanduser
+            HOME = expanduser("~")
+
+        _, file_ = tempfile.mkstemp(suffix='.txt')
+        with open(file_, 'w') as fp:
+            fp.write('blargh')
+
+        for f in [
+                '{0}:/test-dataset'.format(HOME),
+                '{0}/test-dataset'.format(HOME),
+        ]:
+            args = ['import', '--follow', f, file_]
+            self._test_import_file(args)

@@ -31,7 +31,7 @@ class TildeFixStoreAction(argparse._StoreAction):
     """
     def __call__(self, parser, namespace, values, option_string=None):
         if values and values.startswith(HOME):
-            values = values.replace(HOME, '~/', 1)
+            values = values.replace(HOME, '~', 1)
         setattr(namespace, self.dest, values)
 
 
