@@ -29,10 +29,9 @@ class Dataset(CreateableAPIResource,
 
     LIST_FIELDS = (
         ('id', 'ID'),
-        ('vault_name', 'Vault Name'),
-        ('vault_object_path', 'Vault Object Path'),
-        ('vault_object_filename', 'Vault Object Filename'),
-        ('created_at', 'Created'),
+        ('vault_name', 'Vault'),
+        ('vault_object_path', 'Path'),
+        ('documents_count', 'Documents'),
         ('description', 'Description'),
     )
 

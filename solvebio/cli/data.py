@@ -276,6 +276,6 @@ def import_file(args):
     if args.follow:
         imp.follow()
     else:
-        mesh_url = 'https://my.solvebio.com/jobs/imports/{0}'.format(imp.id)
+        mesh_url = 'https://my.solvebio.com/activity/'
         print("Your import has been submitted, view details at: {0}"
               .format(mesh_url))
