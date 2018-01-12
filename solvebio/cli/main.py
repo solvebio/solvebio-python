@@ -6,6 +6,14 @@ import sys
 import copy
 import argparse
 
+try:
+    # Python 3.5+
+    from pathlib import Path
+    HOME = str(Path.home())
+except:
+    from os.path import expanduser
+    HOME = expanduser("~")
+
 import solvebio
 
 from . import auth
@@ -14,6 +22,17 @@ from .tutorial import print_tutorial
 from .ipython import launch_ipython_shell
 from ..utils.validators import validate_api_host_url
 from ..client import client
+
+
+class TildeFixStoreAction(argparse._StoreAction):
+    """A special "store" action for argparse that replaces
+    any detected home directory with a tilde.
+    (reverses bash's built-in ~ expansion).
+    """
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values and values.startswith(HOME):
+            values = values.replace(HOME, '~/', 1)
+        setattr(namespace, self.dest, values)
 
 
 class SolveArgumentParser(argparse.ArgumentParser):
@@ -93,7 +112,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--vault',
                     'help': 'The vault containing the dataset. '
                     'Defaults to your personal vault. '
-                    'Overrides the vault component of --full-path'
+                    'Overrides the vault component of --full-path',
+                    'action': TildeFixStoreAction
                 },
                 {
                     'flags': '--path',
@@ -103,7 +123,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'name': 'full_path',
                     'help': 'The full path to the dataset in the format: '
-                    '"domain:vault:/path/dataset". '
+                    '"domain:vault:/path/dataset". ',
+                    'action': TildeFixStoreAction
                 },
                 {
                     'name': 'file',
@@ -142,7 +163,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--vault',
                     'help':
                     'The vault containing the dataset. '
-                    'Overrides the vault component of the full path argument'
+                    'Overrides the vault component of the full path argument',
+                    'action': TildeFixStoreAction
                 },
                 {
                     'flags': '--path',
@@ -156,7 +178,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'Defaults to your personal vault if no vault is provided. '
                     'Defaults to the vault root if no path is provided. '
                     'Override the vault with --vault '
-                    'and/or the path with --path'
+                    'and/or the path with --path',
+                    'action': TildeFixStoreAction
                 },
             ]
         },
@@ -168,13 +191,15 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--full-path',
                     'required': True,
                     'help': 'The full path where the files and folders should '
-                    'be created, defaults to the root of your personal vault'
+                    'be created, defaults to the root of your personal vault',
+                    'action': TildeFixStoreAction
                 },
                 {
                     'flags': '--vault',
                     'help': 'The vault where the files will be uploaded. '
                     'Defaults to your personal vault. '
-                    'Overrides the vault component of --full-path'
+                    'Overrides the vault component of --full-path',
+                    'action': TildeFixStoreAction
                 },
                 {
                     'flags': '--path',
