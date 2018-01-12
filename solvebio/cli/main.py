@@ -167,6 +167,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'arguments': [
                 {
                     'flags': '--full-path',
+                    'required': True,
                     'help': 'The full path where the files and folders should '
                     'be created, defaults to the root of your personal vault'
                 },
