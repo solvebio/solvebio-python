@@ -34,11 +34,8 @@ class Object(CreateableAPIResource,
 
     LIST_FIELDS = (
         ('id', 'ID'),
-        ('vault_id', 'Vault ID'),
-        ('vault_name', 'Vault Name'),
-        ('object_type', 'Object Type'),
-        ('path', 'Path'),
-        ('filename', 'Filename'),
+        ('object_type', 'Type'),
+        ('full_path', 'Full Path'),
         ('description', 'Description'),
     )
 
@@ -142,6 +139,7 @@ class Object(CreateableAPIResource,
 
     @classmethod
     def get_by_full_path(cls, full_path, **params):
+        full_path, _ = cls.validate_full_path(full_path)
         params.update({'full_path': full_path})
         return cls._retrieve_helper('object', 'full_path', full_path,
                                     **params)

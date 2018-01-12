@@ -14,6 +14,12 @@ class ObjectTests(SolveBioTestCase):
                     file_.full_path)
                 self.assertEqual(o_path, file_.full_path)
 
+                # assert path is gettable
+                self.client.Object.get_by_full_path(o_path)
+
+        with self.assertRaises(Exception):
+            self.client.Object.get_by_full_path('what/is/this')
+
     def test_object_path_cases(self):
 
         user = self.client.User.retrieve()
