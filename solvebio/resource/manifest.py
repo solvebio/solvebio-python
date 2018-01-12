@@ -75,12 +75,8 @@ class Manifest(object):
                 for f in glob.glob(path):
                     self.add_file(f)
             else:
-                if not os.path.exists(path):
-                    raise ValueError(
-                        'Path: "{0}" could not be found.'.format(path))
-
                 raise ValueError(
-                    'Manifest path: "{0}" is not valid. '
-                    'Manifest paths must be files, directories, or URLs. '
-                    'The following extensions are supported: '
-                    '.vcf .vcf.gz .json .json.gz'.format(path))
+                    'Path: "{0}" is not a valid format or does not exist. '
+                    'Manifest paths must be files, directories, or URLs.'
+                    .format(path)
+                )
