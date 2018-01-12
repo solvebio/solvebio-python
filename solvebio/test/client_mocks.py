@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from solvebio.resource.solveobject import convert_to_solve_object
 
 
-class Fake201Response():
+class Fake201Response(object):
     status_code = 201
     class_name = None
 
@@ -125,6 +125,34 @@ class FakeDatasetTemplateResponse(Fake201Response):
         self.object.update(data)
 
 
+class FakeDatasetTask(Fake201Response):
+
+    class_name = 'DatasetTask'
+
+    def __init__(self, data):
+        self.object = {
+            'class_name': self.class_name,
+            'vault_id': None,
+            'id': 100,
+            'status': 'completed',
+            'dataset': FakeDatasetResponse(dict(name='fake_dataset')).object,  # noqa
+            'account': {
+                'name': None,
+                'domain': None,
+            },
+        }
+        self.object.update(data)
+
+
+class FakeDatasetImport(FakeDatasetTask):
+
+    class_name = 'DatasetImport'
+
+    def __init__(self, data):
+        super(FakeDatasetImport, self).__init__(data)
+        self.object['dataset_commits'] = []
+
+
 def fake_vault_create(*args, **kwargs):
     return FakeVaultResponse(kwargs).create()
 
@@ -139,6 +167,10 @@ def fake_object_all(*args, **kwargs):
 
 def fake_dataset_create(*args, **kwargs):
     return FakeDatasetResponse(kwargs).create()
+
+
+def fake_dataset_import_create(*args, **kwargs):
+    return FakeDatasetImport(kwargs).create()
 
 
 def fake_dataset_tmpl_create(*args, **kwargs):

@@ -199,8 +199,7 @@ class Vault(CreateableAPIResource,
         # TODO - this will have to change if the format of the personal vaults
         # changes.
         name = 'user-{0}'.format(user['id'])
-        vaults = Vault.all(name=name, vault_type='user', client=_client)
-        return Vault.retrieve(vaults.data[0].id, client=_client)
+        return list(Vault.all(name=name, vault_type='user', client=_client))[0]
 
     @classmethod
     def get_or_create_uploads_path(cls, **kwargs):
