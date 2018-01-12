@@ -6,14 +6,6 @@ import sys
 import copy
 import argparse
 
-try:
-    # Python 3.5+
-    from pathlib import Path
-    HOME = str(Path.home())
-except:
-    from os.path import expanduser
-    HOME = expanduser("~")
-
 import solvebio
 
 from . import auth
@@ -21,6 +13,7 @@ from . import data
 from .tutorial import print_tutorial
 from .ipython import launch_ipython_shell
 from ..utils.validators import validate_api_host_url
+from ..utils.files import get_home_dir
 from ..client import client
 
 
@@ -30,8 +23,9 @@ class TildeFixStoreAction(argparse._StoreAction):
     (reverses bash's built-in ~ expansion).
     """
     def __call__(self, parser, namespace, values, option_string=None):
-        if values and values.startswith(HOME):
-            values = values.replace(HOME, '~', 1)
+        home = get_home_dir()
+        if values and values.startswith(home):
+            values = values.replace(home, '~', 1)
         setattr(namespace, self.dest, values)
 
 

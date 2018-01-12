@@ -11,6 +11,7 @@ from .helper import SolveBioTestCase
 import solvebio
 from solvebio.cli import main
 from solvebio import DatasetTemplate
+from solvebio.utils.files import get_home_dir
 from solvebio.test.client_mocks import fake_vault_all
 from solvebio.test.client_mocks import fake_object_all
 from solvebio.test.client_mocks import fake_dataset_create
@@ -148,13 +149,7 @@ class CLITests(SolveBioTestCase):
 
     def test_import_tilde(self):
 
-        try:
-            # Python 3.5+
-            from pathlib import Path
-            HOME = str(Path.home())
-        except:
-            from os.path import expanduser
-            HOME = expanduser("~")
+        HOME = get_home_dir()
 
         _, file_ = tempfile.mkstemp(suffix='.txt')
         with open(file_, 'w') as fp:
