@@ -90,12 +90,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'Options are "append" (default) or "overwrite".'
                 },
                 {
-                    'flags': '--full-path',
-                    'help': 'The full path to the dataset in the format: '
-                    '"domain:vault:/path/dataset". '
-                    'Overrides --vault and --path'
-                },
-                {
                     'flags': '--vault',
                     'help': 'The vault containing the dataset. '
                     'Defaults to your personal vault. '
@@ -105,6 +99,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--path',
                     'help': 'The path to the dataset (relative to a vault). '
                     'Overrides the path component of --full-path'
+                },
+                {
+                    'name': 'full_path',
+                    'help': 'The full path to the dataset in the format: '
+                    '"domain:vault:/path/dataset". '
                 },
                 {
                     'name': 'file',
