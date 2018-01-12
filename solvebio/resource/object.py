@@ -34,11 +34,9 @@ class Object(CreateableAPIResource,
 
     LIST_FIELDS = (
         ('id', 'ID'),
+        ('object_type', 'Type'),
+        ('full_path', 'Full Path'),
         ('vault_id', 'Vault ID'),
-        ('vault_name', 'Vault Name'),
-        ('object_type', 'Object Type'),
-        ('path', 'Path'),
-        ('filename', 'Filename'),
         ('description', 'Description'),
     )
 
