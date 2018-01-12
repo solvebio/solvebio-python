@@ -75,6 +75,10 @@ class Manifest(object):
                 for f in glob.glob(path):
                     self.add_file(f)
             else:
+                if not os.path.exists(path):
+                    raise ValueError(
+                        'Path: "{0}" could not be found.'.format(path))
+
                 raise ValueError(
                     'Manifest path: "{0}" is not valid. '
                     'Manifest paths must be files, directories, or URLs. '
