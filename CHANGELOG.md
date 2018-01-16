@@ -1,5 +1,26 @@
 # Change Log
 
+## [v2.4.1](https://github.com/solvebio/solvebio-python/tree/v2.4.1) (2018-01-16)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.0...v2.4.1)
+
+**Fixed bugs:**
+
+- "Jobs" URL shown when importing a file is incorrect [\#183](https://github.com/solvebio/solvebio-python/issues/183)
+
+**Closed issues:**
+
+- \[Export\] Filenames contain AWS file parameters [\#208](https://github.com/solvebio/solvebio-python/issues/208)
+- \[Upload\] Shortcut fails when folder name contains space? [\#201](https://github.com/solvebio/solvebio-python/issues/201)
+- Python fix-ups [\#182](https://github.com/solvebio/solvebio-python/issues/182)
+
+**Merged pull requests:**
+
+- better error if invalid path [\#223](https://github.com/solvebio/solvebio-python/pull/223) ([jsh2134](https://github.com/jsh2134))
+- shortcuts properly handle ~ autoexpand [\#222](https://github.com/solvebio/solvebio-python/pull/222) ([jsh2134](https://github.com/jsh2134))
+- minor fixes [\#221](https://github.com/solvebio/solvebio-python/pull/221) ([jsh2134](https://github.com/jsh2134))
+- fix filename issue for downloadable resource [\#220](https://github.com/solvebio/solvebio-python/pull/220) ([davecap](https://github.com/davecap))
+- validate the object's full path before getting it by full path [\#219](https://github.com/solvebio/solvebio-python/pull/219) ([davecap](https://github.com/davecap))
+
 ## [v2.4.0](https://github.com/solvebio/solvebio-python/tree/v2.4.0) (2018-01-11)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.3...v2.4.0)
 
@@ -452,13 +473,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
-
-## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
 
 ## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+
+## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
