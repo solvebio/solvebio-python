@@ -72,7 +72,7 @@ class Manifest(object):
                     self.add_file(f)
             else:
                 raise ValueError(
-                    'Manifest path: "{0}" is not valid. '
-                    'Manifest paths must be files, directories, or URLs. '
-                    'The following extensions are supported: '
-                    '.vcf .vcf.gz .json .json.gz'.format(path))
+                    'Path: "{0}" is not a valid format or does not exist. '
+                    'Manifest paths must be files, directories, or URLs.'
+                    .format(path)
+                )

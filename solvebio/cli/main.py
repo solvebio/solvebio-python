@@ -13,7 +13,20 @@ from . import data
 from .tutorial import print_tutorial
 from .ipython import launch_ipython_shell
 from ..utils.validators import validate_api_host_url
+from ..utils.files import get_home_dir
 from ..client import client
+
+
+class TildeFixStoreAction(argparse._StoreAction):
+    """A special "store" action for argparse that replaces
+    any detected home directory with a tilde.
+    (reverses bash's built-in ~ expansion).
+    """
+    def __call__(self, parser, namespace, values, option_string=None):
+        home = get_home_dir()
+        if values and values.startswith(home):
+            values = values.replace(home, '~', 1)
+        setattr(namespace, self.dest, values)
 
 
 class SolveArgumentParser(argparse.ArgumentParser):
@@ -56,19 +69,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Create the vault if it doesn\'t exist',
                 },
                 {
-                    'flags': '--vault',
-                    'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset), '
-                            'defaults to your personal vault',
-                },
-                {
-                    'flags': '--path',
-                    'default': '/',
-                    'help': 'The path in the vault where the dataset should '
-                            'be created when creating a new dataset'
-                            '(via --create-dataset), defaults to "/"',
-                },
-                {
                     'flags': '--template-id',
                     'help': 'The template ID used when '
                             'creating a new dataset (via --create-dataset)',
@@ -103,14 +103,28 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'Options are "append" (default) or "overwrite".'
                 },
                 {
-                    'name': 'dataset_name',
-                    'help': 'The name of the dataset'
+                    'flags': '--vault',
+                    'help': 'The vault containing the dataset. '
+                    'Defaults to your personal vault. '
+                    'Overrides the vault component of --full-path',
+                    'action': TildeFixStoreAction
+                },
+                {
+                    'flags': '--path',
+                    'help': 'The path to the dataset (relative to a vault). '
+                    'Overrides the path component of --full-path'
+                },
+                {
+                    'name': 'full_path',
+                    'help': 'The full path to the dataset in the format: '
+                    '"domain:vault:/path/dataset". ',
+                    'action': TildeFixStoreAction
                 },
                 {
                     'name': 'file',
                     'help': 'One or more local files to import',
                     'nargs': '+'
-                }
+                },
             ]
         },
         'create-dataset': {
@@ -123,19 +137,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Create the vault if it doesn\'t exist',
                 },
                 {
-                    'flags': '--vault',
-                    'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset), '
-                            'defaults to your personal vault',
-                },
-                {
-                    'flags': '--path',
-                    'default': '/',
-                    'help': 'The path in the vault where the dataset should '
-                            'be created when creating a new dataset '
-                            '(via --create-dataset), defaults to "/"',
-                },
-                {
                     'flags': '--template-id',
                     'help': 'The template ID used when '
                             'creating a new dataset (via --create-dataset)',
@@ -146,11 +147,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'creating a new dataset (via --create-dataset)',
                 },
                 {
-                    'flags': '--genome-build',
-                    'help': 'If the dataset template is genomic, provide a '
-                            'genome build for your data (i.e. GRCh37)'
-                },
-                {
                     'flags': '--capacity',
                     'default': 'small',
                     'help': 'Specifies the capacity of the dataset: '
@@ -158,9 +154,27 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'medium (<500M), large (>=500M)'
                 },
                 {
-                    'name': 'dataset_name',
-                    'help': 'The name of the dataset'
-                }
+                    'flags': '--vault',
+                    'help':
+                    'The vault containing the dataset. '
+                    'Overrides the vault component of the full path argument',
+                    'action': TildeFixStoreAction
+                },
+                {
+                    'flags': '--path',
+                    'help': 'The path to the dataset (relative to the vault). '
+                    'Overrides the path component of the full path argument'
+                },
+                {
+                    'name': 'full_path',
+                    'help': 'The full path to the dataset in the format: '
+                    '"domain:vault:/path/dataset". '
+                    'Defaults to your personal vault if no vault is provided. '
+                    'Defaults to the vault root if no path is provided. '
+                    'Override the vault with --vault '
+                    'and/or the path with --path',
+                    'action': TildeFixStoreAction
+                },
             ]
         },
         'upload': {
@@ -168,16 +182,24 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'help': 'Upload a file or directory to a SolveBio Vault',
             'arguments': [
                 {
+                    'flags': '--full-path',
+                    'required': True,
+                    'help': 'The full path where the files and folders should '
+                    'be created, defaults to the root of your personal vault',
+                    'action': TildeFixStoreAction
+                },
+                {
                     'flags': '--vault',
-                    'help': 'The name of the vault to use when '
-                            'creating a new dataset (via --create-dataset), '
-                            'defaults to your personal vault',
+                    'help': 'The vault where the files will be uploaded. '
+                    'Defaults to your personal vault. '
+                    'Overrides the vault component of --full-path',
+                    'action': TildeFixStoreAction
                 },
                 {
                     'flags': '--path',
-                    'default': '/',
-                    'help': 'The path in the vault where the files and '
-                            'folders should be created, defaults to "/"',
+                    'help': 'The path (relative to a vault) '
+                    'where the files will be uploaded. '
+                    'Overrides the path component of --full-path'
                 },
                 {
                     'name': 'local_path',

@@ -1,5 +1,35 @@
 # Change Log
 
+## [v2.4.1](https://github.com/solvebio/solvebio-python/tree/v2.4.1) (2018-01-16)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.0...v2.4.1)
+
+**Fixed bugs:**
+
+- "Jobs" URL shown when importing a file is incorrect [\#183](https://github.com/solvebio/solvebio-python/issues/183)
+
+**Closed issues:**
+
+- \[Export\] Filenames contain AWS file parameters [\#208](https://github.com/solvebio/solvebio-python/issues/208)
+- \[Upload\] Shortcut fails when folder name contains space? [\#201](https://github.com/solvebio/solvebio-python/issues/201)
+- Python fix-ups [\#182](https://github.com/solvebio/solvebio-python/issues/182)
+
+**Merged pull requests:**
+
+- better error if invalid path [\#223](https://github.com/solvebio/solvebio-python/pull/223) ([jsh2134](https://github.com/jsh2134))
+- shortcuts properly handle ~ autoexpand [\#222](https://github.com/solvebio/solvebio-python/pull/222) ([jsh2134](https://github.com/jsh2134))
+- minor fixes [\#221](https://github.com/solvebio/solvebio-python/pull/221) ([jsh2134](https://github.com/jsh2134))
+- fix filename issue for downloadable resource [\#220](https://github.com/solvebio/solvebio-python/pull/220) ([davecap](https://github.com/davecap))
+- validate the object's full path before getting it by full path [\#219](https://github.com/solvebio/solvebio-python/pull/219) ([davecap](https://github.com/davecap))
+
+## [v2.4.0](https://github.com/solvebio/solvebio-python/tree/v2.4.0) (2018-01-11)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.3...v2.4.0)
+
+**Merged pull requests:**
+
+- try refactoring path validators with regex [\#218](https://github.com/solvebio/solvebio-python/pull/218) ([davecap](https://github.com/davecap))
+- update import and create-dataset shortcuts to require full path [\#217](https://github.com/solvebio/solvebio-python/pull/217) ([jsh2134](https://github.com/jsh2134))
+- remove invalid tabulate fields for Application resource [\#215](https://github.com/solvebio/solvebio-python/pull/215) ([davecap](https://github.com/davecap))
+
 ## [v2.3.3](https://github.com/solvebio/solvebio-python/tree/v2.3.3) (2017-12-13)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.2...v2.3.3)
 

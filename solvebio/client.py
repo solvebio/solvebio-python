@@ -275,4 +275,5 @@ class SolveClient(object):
     def __repr__(self):
         return '<SolveClient {0} {1}>'.format(self._host, self._auth.token)
 
+
 client = SolveClient(include_resources=False)
