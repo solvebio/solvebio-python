@@ -44,8 +44,7 @@ class Manifest(object):
         })
 
     def add_url(self, url, **kwargs):
-        manifest_item = dict(url=url)
-        manifest_item.update(kwargs)
+        manifest_item = dict(url=url, **kwargs)
         self.manifest['files'].append(manifest_item)
 
     def add(self, *args):
