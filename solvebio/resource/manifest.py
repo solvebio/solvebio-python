@@ -24,7 +24,7 @@ class Manifest(object):
     def __init__(self):
         self.manifest = {'files': []}
 
-    def add_file(self, path):
+    def add_file(self, path, **kwargs):
         default_upload_path = solvebio.Vault.get_or_create_uploads_path()
         vault_name = solvebio.Vault.get_personal_vault().name
         print("Uploading file: {0} to {1}".format(path, default_upload_path))
@@ -37,18 +37,15 @@ class Manifest(object):
             'object_id': file_.id,
             'name': file_.filename,
             'md5': file_.md5,
-            'size': file_.size
+            'size': file_.size,
+            'reader_params': kwargs.get('reader_params'),
+            'entity_params': kwargs.get('entity_params'),
+            'validation_params': kwargs.get('validation_params')
         })
 
     def add_url(self, url, **kwargs):
-        self.manifest['files'].append({
-            'url': url,
-            'name': kwargs.get('name'),
-            'format': kwargs.get('format'),
-            'size': kwargs.get('size'),
-            'md5': kwargs.get('md5'),
-            'base64_md5': kwargs.get('base64_md5')
-        })
+        manifest_item = dict(url=url, **kwargs)
+        self.manifest['files'].append(manifest_item)
 
     def add(self, *args):
         """
