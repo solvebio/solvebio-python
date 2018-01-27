@@ -128,9 +128,12 @@ def login(**kwargs):
     No errors are raised if no key is found.
     """
     from .cli.auth import get_credentials
-    global access_token, api_key
+    global access_token, api_key, api_host
+
     # Clear any existing auth keys
     access_token, api_key = None, None
+    # Update the host
+    api_host = kwargs.get('api_host') or api_host
 
     if kwargs.get('access_token'):
         access_token = kwargs.get('access_token')
