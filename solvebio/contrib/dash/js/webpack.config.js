@@ -23,5 +23,15 @@ module.exports = {
         loaders: ["style-loader", "css-loader", "sass-loader"]
       }
     ]
-  }
+  },
+  plugins: [
+    new webpack.ProvidePlugin({
+      // 'Promise': 'es6-promise',
+      // 'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
+      Promise:
+        'imports-loader?this=>global!exports-loader?global.Promise!es6-promise',
+      fetch:
+        'imports-loader?this=>global!exports-loader?global.fetch!whatwg-fetch'
+    })
+  ]
 }
