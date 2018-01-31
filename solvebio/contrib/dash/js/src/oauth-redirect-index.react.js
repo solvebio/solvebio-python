@@ -42,7 +42,6 @@ class OauthRedirect extends Component {
         window.console.warn(window.location.hash || window.location.search);
         window.console.warn({access_token, code});
 
-        // TODO - Polyfill
         fetch(`${requests_pathname_prefix}${LOGIN_PATHNAME}`, {
             method: 'POST',
             headers: {

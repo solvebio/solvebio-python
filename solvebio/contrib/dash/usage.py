@@ -10,7 +10,7 @@ from solvebio.contrib.dash import SolveBioDash
 app = SolveBioDash(
     name=__name__,
     title='Example Dash App',
-    app_url='http://localhost:8050',
+    app_url='http://127.0.0.1:8050',
     client_id='zxpjuufs7k65f26zyq3vq4hqqw2dmu13x77p7qg2',
     solvebio_url='http://my.solvebio.com')
 
