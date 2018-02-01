@@ -223,6 +223,7 @@ class Object(CreateableAPIResource,
             print('Notice: Upload status code for {0} was {1}'.format(
                 local_path, upload_resp.status_code
             ))
+            print(upload_resp.content)
             obj.delete(force=True)
         else:
             print('Notice: Successfully uploaded {0} to {1}'.format(local_path,
