@@ -1,5 +1,18 @@
 # Change Log
 
+## [v2.4.2](https://github.com/solvebio/solvebio-python/tree/v2.4.2) (2018-02-01)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.1...v2.4.2)
+
+**Implemented enhancements:**
+
+- \[Manifest\] Add reader\_params to add\_url [\#214](https://github.com/solvebio/solvebio-python/issues/214)
+
+**Merged pull requests:**
+
+- Fix issue where files were not uploaded in binary mode [\#228](https://github.com/solvebio/solvebio-python/pull/228) ([davecap](https://github.com/davecap))
+- allow login\(api\_host=XYZ\) [\#225](https://github.com/solvebio/solvebio-python/pull/225) ([davecap](https://github.com/davecap))
+- add reader\_params [\#216](https://github.com/solvebio/solvebio-python/pull/216) ([jsh2134](https://github.com/jsh2134))
+
 ## [v2.4.1](https://github.com/solvebio/solvebio-python/tree/v2.4.1) (2018-01-16)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.0...v2.4.1)
 
