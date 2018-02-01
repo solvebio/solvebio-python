@@ -216,14 +216,16 @@ class Object(CreateableAPIResource,
         }
 
         upload_resp = requests.put(upload_url,
-                                   data=open(local_path, 'r'),
+                                   data=open(local_path, 'rb'),
                                    headers=headers)
 
         if upload_resp.status_code != 200:
             print('Notice: Upload status code for {0} was {1}'.format(
                 local_path, upload_resp.status_code
             ))
+            print('See error message below:')
             print(upload_resp.content)
+            # Clean up the failed upload
             obj.delete(force=True)
         else:
             print('Notice: Successfully uploaded {0} to {1}'.format(local_path,
