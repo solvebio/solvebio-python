@@ -3,10 +3,6 @@ import logging
 logger = logging.getLogger('solvebio')
 
 
-class ObjectTypeError(Exception):
-    pass
-
-
 class NotFoundError(Exception):
     pass
 

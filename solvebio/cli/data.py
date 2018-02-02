@@ -13,7 +13,7 @@ import solvebio
 from solvebio import Vault
 from solvebio import Object
 from solvebio.utils.files import check_gzip_path
-from solvebio.errors import ObjectTypeError, NotFoundError
+from solvebio.errors import NotFoundError
 
 
 def _upload_folder(domain, vault, base_remote_path,
