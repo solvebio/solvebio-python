@@ -139,15 +139,29 @@ class Object(CreateableAPIResource,
 
     @classmethod
     def get_by_full_path(cls, full_path, **params):
+        assert_type = params.pop('assert_type', None)
         full_path, _ = cls.validate_full_path(full_path)
         params.update({'full_path': full_path})
-        return cls._retrieve_helper('object', 'full_path', full_path,
-                                    **params)
+        obj = cls._retrieve_helper('object', 'full_path', full_path,
+                                   **params)
+        if obj and assert_type and obj['object_type'] != assert_type:
+            raise SolveError(
+                "Expected a {} but found a {} at {}"
+                .format(assert_type, obj['object_type'], full_path))
+
+        return obj
 
     @classmethod
     def get_by_path(cls, path, **params):
+        assert_type = params.pop('assert_type', None)
         params.update({'path': path})
-        return cls._retrieve_helper('object', 'path', path, **params)
+        obj = cls._retrieve_helper('object', 'path', path, **params)
+        if obj and assert_type and obj['object_type'] != assert_type:
+            raise SolveError(
+                "Expected a {} but found a {} at {}"
+                .format(assert_type, obj['object_type'], path))
+
+        return obj
 
     @classmethod
     def upload_file(cls, local_path, remote_path, vault_name, **kwargs):
@@ -182,7 +196,7 @@ class Object(CreateableAPIResource,
                 account_domain,
                 vault_name,
                 remote_path,
-            ]), client=_client)
+            ]), client=_client, assert_type='folder')
             parent_object_id = parent_obj.id
 
         description = kwargs.get(
