@@ -22,6 +22,9 @@ class SolveBioAuth(OAuthBase):
     DEFAULT_SOLVEBIO_URL = 'https://my.solvebio.com'
     DEFAULT_GRANT_TYPE = 'authorization_code'
 
+    OAUTH2_TOKEN_PATH = '/v1/oauth2/token'
+    OAUTH2_REVOKE_TOKEN_PATH = '/v1/oauth2/revoke_token'
+
     def __init__(self, app, app_url, client_id, **kwargs):
         super(SolveBioAuth, self).__init__(app, app_url, client_id)
 
@@ -40,13 +43,8 @@ class SolveBioAuth(OAuthBase):
         # Handle optional parameters
         self._solvebio_url = \
             kwargs.get('solvebio_url') or self.DEFAULT_SOLVEBIO_URL
+        self._api_host = kwargs.get('api_host') or solvebio.api_host
         self._oauth_client_secret = kwargs.get('client_secret')
-
-        # Set up OAuth2 API URLs with override for the API host
-        api_host = kwargs.get('api_host') or solvebio.api_host
-        self._oauth_token_url = urljoin(api_host, '/v1/oauth2/token')
-        self._oauth_revoke_token_url = urljoin(
-            api_host, '/v1/oauth2/revoke_token')
         self._oauth_grant_type = \
             kwargs.get('grant_type') or self.DEFAULT_GRANT_TYPE
 
@@ -101,7 +99,7 @@ class SolveBioAuth(OAuthBase):
 
             # Request the access token with the auth code
             oauth_data = requests.post(
-                self._oauth_token_url,
+                urljoin(self._api_host, self.OAUTH2_TOKEN_PATH),
                 data={
                     'client_id': self._oauth_client_id,
                     'grant_type': self._oauth_grant_type,
@@ -148,7 +146,7 @@ class SolveBioAuth(OAuthBase):
                 oauth_token = flask.request.cookies[self.TOKEN_COOKIE_NAME]
                 # Revoke the token
                 requests.post(
-                    self._oauth_revoke_token_url,
+                    urljoin(self._api_host, self.OAUTH2_REVOKE_TOKEN_PATH),
                     data={
                         'client_id': self._oauth_client_id,
                         'client_secret': self._oauth_client_secret,
