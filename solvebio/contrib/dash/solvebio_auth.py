@@ -112,7 +112,15 @@ class SolveBioAuth(OAuthBase):
 
         # Implicit flow returns the access_token in the initial redirect.
         # TODO: Support refresh tokens for authorization code flow.
-        oauth_token = oauth_data['access_token']
+        oauth_token = oauth_data.get('access_token')
+        if not oauth_token:
+            # Return the error response to the frontend view
+            return flask.Response(
+                json.dumps(oauth_data),
+                mimetype='application/json',
+                status=500
+            )
+
         client = solvebio.SolveClient(token=oauth_token, token_type='Bearer')
         user = client.User.retrieve()
         response = flask.Response(
