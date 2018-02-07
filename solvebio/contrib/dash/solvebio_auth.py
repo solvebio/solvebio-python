@@ -19,10 +19,6 @@ class SolveBioAuth(OAuthBase):
     AUTH_COOKIE_NAME = 'dash_solvebio_auth'
     TOKEN_COOKIE_NAME = 'solvebio_oauth_token'
 
-    OAUTH2_TOKEN_URL = urljoin(
-        solvebio.api_host, '/v1/oauth2/token')
-    OAUTH2_REVOKE_TOKEN_URL = urljoin(
-        solvebio.api_host, '/v1/oauth2/revoke_token')
     DEFAULT_SOLVEBIO_URL = 'https://my.solvebio.com'
     DEFAULT_GRANT_TYPE = 'authorization_code'
 
@@ -42,11 +38,18 @@ class SolveBioAuth(OAuthBase):
                 self._app.config['requests_pathname_prefix']))
 
         # Handle optional parameters
-        self._oauth_client_secret = kwargs.get('client_secret')
         self._solvebio_url = \
             kwargs.get('solvebio_url') or self.DEFAULT_SOLVEBIO_URL
+        self._oauth_client_secret = kwargs.get('client_secret')
+
+        # Set up OAuth2 API URLs with override for the API host
+        api_host = kwargs.get('api_host') or solvebio.api_host
+        self._oauth_token_url = urljoin(api_host, '/v1/oauth2/token')
+        self._oauth_revoke_token_url = urljoin(
+            api_host, '/v1/oauth2/revoke_token')
         self._oauth_grant_type = \
             kwargs.get('grant_type') or self.DEFAULT_GRANT_TYPE
+
         if self._oauth_grant_type == 'implicit':
             self._oauth_response_type = 'token'
         elif self._oauth_grant_type == 'authorization_code':
@@ -98,7 +101,7 @@ class SolveBioAuth(OAuthBase):
 
             # Request the access token with the auth code
             oauth_data = requests.post(
-                self.OAUTH2_TOKEN_URL,
+                self._oauth_token_url,
                 data={
                     'client_id': self._oauth_client_id,
                     'grant_type': self._oauth_grant_type,
@@ -145,7 +148,7 @@ class SolveBioAuth(OAuthBase):
                 oauth_token = flask.request.cookies[self.TOKEN_COOKIE_NAME]
                 # Revoke the token
                 requests.post(
-                    self.OAUTH2_REVOKE_TOKEN_URL,
+                    self._oauth_revoke_token_url,
                     data={
                         'client_id': self._oauth_client_id,
                         'client_secret': self._oauth_client_secret,
