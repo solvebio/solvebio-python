@@ -59,11 +59,11 @@ class Dataset(CreateableAPIResource,
     @classmethod
     def get_by_full_path(cls, full_path, **kwargs):
         from solvebio import Object
+
         _client = kwargs.pop('client', None) or cls._client or client
-        test_path, _ = Object.validate_full_path(full_path, client=_client)
-        obj = Object.get_by_full_path(test_path, client=_client)
-        dataset = Dataset.retrieve(obj['dataset_id'], client=_client, **kwargs)
-        return dataset
+        obj = Object.get_by_full_path(full_path, assert_type='dataset',
+                                      client=_client)
+        return Dataset.retrieve(obj['dataset_id'], client=_client, **kwargs)
 
     @classmethod
     def get_or_create_by_full_path(cls, full_path, **kwargs):
@@ -74,10 +74,9 @@ class Dataset(CreateableAPIResource,
         create_vault = kwargs.pop('create_vault', False)
         create_folders = kwargs.pop('create_folders', True)
 
-        # Validate path
-
         try:
-            return Dataset.get_by_full_path(full_path, client=_client)
+            return Dataset.get_by_full_path(full_path, assert_type='dataset',
+                                            client=_client)
         except NotFoundError:
             pass
 
@@ -110,15 +109,10 @@ class Dataset(CreateableAPIResource,
             try:
                 obj = Object.get_by_path(curr_path,
                                          vault_id=vault.id,
+                                         assert_type='folder',
                                          client=_client)
-                if obj.object_type != 'folder':
-                    raise Exception(
-                        'Path {0} is a {1} and not a folder'.format(
-                            obj.path, obj.object_type)
-                    )
-                else:
-                    id_map[curr_path] = obj.id
-                    break
+                id_map[curr_path] = obj.id
+                break
             except NotFoundError:
                 if not create_folders:
                     raise Exception('Folder {} does not exist.  Pass '

@@ -139,7 +139,9 @@ class Vault(CreateableAPIResource,
             params['vault_parent_object_id'] = None
         else:
             parent_object = Object.get_by_full_path(
-                ':'.join([self.full_path, path])
+                ':'.join([self.full_path, path]),
+                assert_type='folder',
+                client=self._client
             )
             params['vault_parent_object_id'] = parent_object.id
 
@@ -169,6 +171,7 @@ class Vault(CreateableAPIResource,
     @classmethod
     def get_by_full_path(cls, full_path, **kwargs):
         _client = kwargs.pop('client', None) or cls._client or client
+
         full_path, parts = cls.validate_full_path(full_path)
         return Vault._retrieve_helper(
             'vault', 'name', full_path,
@@ -210,7 +213,8 @@ class Vault(CreateableAPIResource,
         full_path = '{0}:/{1}'.format(v.full_path, default_path)
 
         try:
-            upload_dir = Object.get_by_full_path(full_path, client=_client)
+            upload_dir = Object.get_by_full_path(
+                full_path, assert_type='folder', client=_client)
         except NotFoundError:
             print("Uploads directory not found. Creating {0}"
                   .format(full_path))

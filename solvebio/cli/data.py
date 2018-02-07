@@ -13,16 +13,7 @@ import solvebio
 from solvebio import Vault
 from solvebio import Object
 from solvebio.utils.files import check_gzip_path
-from solvebio.errors import ObjectTypeError, NotFoundError
-
-
-def _assert_object_type(obj, object_type):
-    if obj.object_type != object_type:
-        raise ObjectTypeError('{0} is a {1} but must be a {2}'.format(
-            obj.path,
-            obj.object_type,
-            object_type
-        ))
+from solvebio.errors import NotFoundError
 
 
 def _upload_folder(domain, vault, base_remote_path,
@@ -33,8 +24,7 @@ def _upload_folder(domain, vault, base_remote_path,
         upload_root_path, _ = Object.validate_full_path(
             os.path.join(base_remote_path, local_start)
         )
-        obj = Object.get_by_full_path(upload_root_path)
-        _assert_object_type(obj, 'folder')
+        obj = Object.get_by_full_path(upload_root_path, assert_type='folder')
     except NotFoundError:
         base_remote_path, path_dict = \
             Object.validate_full_path(base_remote_path)
@@ -42,8 +32,8 @@ def _upload_folder(domain, vault, base_remote_path,
         if path_dict['path'] == '/':
             parent_object_id = None
         else:
-            obj = Object.get_by_full_path(base_remote_path)
-            _assert_object_type(obj, 'folder')
+            obj = Object.get_by_full_path(base_remote_path,
+                                          assert_type='folder')
             parent_object_id = obj.id
 
         # Create base folder
@@ -77,8 +67,8 @@ def _upload_folder(domain, vault, base_remote_path,
                     parent_object_id = None
                 else:
                     parent_full_path = os.path.dirname(dirpath)
-                    parent = Object.get_by_full_path(parent_full_path)
-                    _assert_object_type(parent, 'folder')
+                    parent = Object.get_by_full_path(
+                        parent_full_path, assert_type='folder')
                     parent_object_id = parent.id
 
                 # Make the API call
@@ -113,8 +103,8 @@ def _upload_folder(domain, vault, base_remote_path,
                         f,
                     )
                 )
-                parent = Object.get_by_full_path(parent_full_path)
-                _assert_object_type(parent, 'folder')
+                parent = Object.get_by_full_path(
+                    parent_full_path, assert_type='folder')
                 Object.upload_file(os.path.join(root, f), parent.path,
                                    vault.name)
 
@@ -212,8 +202,7 @@ def upload(args):
 
     # If not the vault root, validate remote path exists and is a folder
     if path_dict['path'] != '/':
-        _assert_object_type(Object.get_by_full_path(
-            base_remote_path), 'folder')
+        Object.get_by_full_path(base_remote_path, assert_type='folder')
 
     for local_path in args.local_path:
         local_path = local_path.rstrip('/')
