@@ -19,12 +19,11 @@ class SolveBioAuth(OAuthBase):
     AUTH_COOKIE_NAME = 'dash_solvebio_auth'
     TOKEN_COOKIE_NAME = 'solvebio_oauth_token'
 
-    OAUTH2_TOKEN_URL = urljoin(
-        solvebio.api_host, '/v1/oauth2/token')
-    OAUTH2_REVOKE_TOKEN_URL = urljoin(
-        solvebio.api_host, '/v1/oauth2/revoke_token')
     DEFAULT_SOLVEBIO_URL = 'https://my.solvebio.com'
     DEFAULT_GRANT_TYPE = 'authorization_code'
+
+    OAUTH2_TOKEN_PATH = '/v1/oauth2/token'
+    OAUTH2_REVOKE_TOKEN_PATH = '/v1/oauth2/revoke_token'
 
     def __init__(self, app, app_url, client_id, **kwargs):
         super(SolveBioAuth, self).__init__(app, app_url, client_id)
@@ -42,11 +41,13 @@ class SolveBioAuth(OAuthBase):
                 self._app.config['requests_pathname_prefix']))
 
         # Handle optional parameters
-        self._oauth_client_secret = kwargs.get('client_secret')
         self._solvebio_url = \
             kwargs.get('solvebio_url') or self.DEFAULT_SOLVEBIO_URL
+        self._api_host = kwargs.get('api_host') or solvebio.api_host
+        self._oauth_client_secret = kwargs.get('client_secret')
         self._oauth_grant_type = \
             kwargs.get('grant_type') or self.DEFAULT_GRANT_TYPE
+
         if self._oauth_grant_type == 'implicit':
             self._oauth_response_type = 'token'
         elif self._oauth_grant_type == 'authorization_code':
@@ -98,7 +99,7 @@ class SolveBioAuth(OAuthBase):
 
             # Request the access token with the auth code
             oauth_data = requests.post(
-                self.OAUTH2_TOKEN_URL,
+                urljoin(self._api_host, self.OAUTH2_TOKEN_PATH),
                 data={
                     'client_id': self._oauth_client_id,
                     'grant_type': self._oauth_grant_type,
@@ -112,7 +113,15 @@ class SolveBioAuth(OAuthBase):
 
         # Implicit flow returns the access_token in the initial redirect.
         # TODO: Support refresh tokens for authorization code flow.
-        oauth_token = oauth_data['access_token']
+        oauth_token = oauth_data.get('access_token')
+        if not oauth_token:
+            # Return the error response to the frontend view
+            return flask.Response(
+                json.dumps(oauth_data),
+                mimetype='application/json',
+                status=500
+            )
+
         client = solvebio.SolveClient(token=oauth_token, token_type='Bearer')
         user = client.User.retrieve()
         response = flask.Response(
@@ -137,7 +146,7 @@ class SolveBioAuth(OAuthBase):
                 oauth_token = flask.request.cookies[self.TOKEN_COOKIE_NAME]
                 # Revoke the token
                 requests.post(
-                    self.OAUTH2_REVOKE_TOKEN_URL,
+                    urljoin(self._api_host, self.OAUTH2_REVOKE_TOKEN_PATH),
                     data={
                         'client_id': self._oauth_client_id,
                         'client_secret': self._oauth_client_secret,
