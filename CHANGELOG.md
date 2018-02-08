@@ -1,5 +1,17 @@
 # Change Log
 
+## [v2.4.3](https://github.com/solvebio/solvebio-python/tree/v2.4.3) (2018-02-08)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.2...v2.4.3)
+
+**Closed issues:**
+
+- Confusing error on dataset creation if there is a folder with the same name in that folder path [\#229](https://github.com/solvebio/solvebio-python/issues/229)
+
+**Merged pull requests:**
+
+- include additional oauth error response content in the view [\#231](https://github.com/solvebio/solvebio-python/pull/231) ([davecap](https://github.com/davecap))
+- include optional object type assertion when getting objects [\#230](https://github.com/solvebio/solvebio-python/pull/230) ([davecap](https://github.com/davecap))
+
 ## [v2.4.2](https://github.com/solvebio/solvebio-python/tree/v2.4.2) (2018-02-01)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.1...v2.4.2)
 
