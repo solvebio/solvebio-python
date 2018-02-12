@@ -1,5 +1,16 @@
 # Change Log
 
+## [v2.4.4](https://github.com/solvebio/solvebio-python/tree/v2.4.4) (2018-02-12)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.3...v2.4.4)
+
+**Fixed bugs:**
+
+- Fix error message shown in "validate\_full\_path" when not authenticated [\#232](https://github.com/solvebio/solvebio-python/issues/232)
+
+**Merged pull requests:**
+
+- fix error message and client pass-through for object path validation [\#233](https://github.com/solvebio/solvebio-python/pull/233) ([davecap](https://github.com/davecap))
+
 ## [v2.4.3](https://github.com/solvebio/solvebio-python/tree/v2.4.3) (2018-02-08)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.2...v2.4.3)
 
