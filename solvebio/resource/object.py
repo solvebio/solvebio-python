@@ -104,12 +104,9 @@ class Object(CreateableAPIResource,
         try:
             vault_full_path, path_dict = \
                 Vault.validate_full_path(input_vault, client=_client)
-        except:
-            raise Exception(
-                'Could not determine vault from "{0}". '
-                'Full path must be in one of the following formats: '
-                '"vault:/path", "domain:vault:/path", or "~/path"'
-                .format(input_vault))
+        except Exception as err:
+            raise Exception('Could not determine vault from "{0}": {1}'
+                            .format(input_vault, err))
 
         if kwargs.get('path'):
             # Allow override of the object_path.
@@ -139,8 +136,9 @@ class Object(CreateableAPIResource,
 
     @classmethod
     def get_by_full_path(cls, full_path, **params):
+        _client = params.pop('client', None) or cls._client or client
+        full_path, _ = cls.validate_full_path(full_path, client=_client)
         assert_type = params.pop('assert_type', None)
-        full_path, _ = cls.validate_full_path(full_path)
         params.update({'full_path': full_path})
         obj = cls._retrieve_helper('object', 'full_path', full_path,
                                    **params)
@@ -196,7 +194,7 @@ class Object(CreateableAPIResource,
                 account_domain,
                 vault_name,
                 remote_path,
-            ]), client=_client, assert_type='folder')
+            ]), assert_type='folder', client=_client)
             parent_object_id = parent_obj.id
 
         description = kwargs.get(

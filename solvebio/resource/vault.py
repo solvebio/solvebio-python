@@ -172,7 +172,7 @@ class Vault(CreateableAPIResource,
     def get_by_full_path(cls, full_path, **kwargs):
         _client = kwargs.pop('client', None) or cls._client or client
 
-        full_path, parts = cls.validate_full_path(full_path)
+        full_path, parts = cls.validate_full_path(full_path, client=_client)
         return Vault._retrieve_helper(
             'vault', 'name', full_path,
             account_domain=parts['domain'],
