@@ -136,7 +136,8 @@ class Object(CreateableAPIResource,
 
     @classmethod
     def get_by_full_path(cls, full_path, **params):
-        _client = params.pop('client', None) or cls._client or client
+        # Don't pop client from params since **params is used below
+        _client = params.get('client', None) or cls._client or client
         full_path, _ = cls.validate_full_path(full_path, client=_client)
         assert_type = params.pop('assert_type', None)
         params.update({'full_path': full_path})
