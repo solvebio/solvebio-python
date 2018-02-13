@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2.4.5](https://github.com/solvebio/solvebio-python/tree/v2.4.5) (2018-02-13)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.4...v2.4.5)
+
+**Merged pull requests:**
+
+- fix client-passthrough for object validation [\#234](https://github.com/solvebio/solvebio-python/pull/234) ([davecap](https://github.com/davecap))
+
 ## [v2.4.4](https://github.com/solvebio/solvebio-python/tree/v2.4.4) (2018-02-12)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.3...v2.4.4)
 
@@ -509,13 +516,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
-
-## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
 
 ## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+
+## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
