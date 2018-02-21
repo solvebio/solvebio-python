@@ -30,8 +30,8 @@ def _ask_for_credentials():
     Asks the user for their email and password.
     """
     _print_msg('Please enter your SolveBio credentials')
-    domain = raw_input('Domain (e.g. <domain>.solvebio.com): ')
-    email = raw_input('Email: ')
+    domain = input('Domain (e.g. <domain>.solvebio.com): ')
+    email = input('Email: ')
     password = getpass.getpass('Password (typing will be hidden): ')
     return (domain, email, password)
 
