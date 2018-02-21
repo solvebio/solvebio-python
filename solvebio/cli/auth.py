@@ -12,6 +12,12 @@ from .credentials import (
     save_credentials
 )
 
+try:
+    # Python3 renames raw_input to input
+    input = raw_input
+except NameError:
+    pass
+
 
 def _print_msg(msg):
     if solvebio.api_host != 'https://api.solvebio.com':
