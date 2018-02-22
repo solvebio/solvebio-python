@@ -71,6 +71,7 @@ class FakeVaultResponse(Fake201Response):
             'vault_type': 'general',
             'provider': 'SolveBio',
             'id': 100,
+            'full_path': 'solvebio:test_vault'
         }
         self.object.update(data)
 
@@ -84,6 +85,12 @@ class FakeObjectResponse(Fake201Response):
             'class_name': self.class_name,
             'id': 100,
             'parent_object_id': 99,
+            'path': None,
+            'full_path': None,
+            'upload_url': None,
+            'size': None,
+            'md5': None,
+            'filename': 'file.json.gz'
         }
 
 
@@ -164,6 +171,10 @@ def fake_vault_all(*args, **kwargs):
 
 def fake_object_all(*args, **kwargs):
     return FakeObjectResponse(kwargs).all()
+
+
+def fake_object_create(*args, **kwargs):
+    return FakeObjectResponse(kwargs).create()
 
 
 def fake_dataset_create(*args, **kwargs):
