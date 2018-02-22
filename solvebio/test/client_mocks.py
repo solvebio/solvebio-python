@@ -101,6 +101,7 @@ class FakeDatasetResponse(Fake201Response):
                 'domain': None,
             },
             'path': '/{0}'.format(data['name']),
+            'full_path': None
         }
         self.object.update(data)
 
