@@ -26,10 +26,9 @@ class Manifest(object):
 
     def add_file(self, path, **kwargs):
         default_upload_path = solvebio.Vault.get_or_create_uploads_path()
-        vault_name = solvebio.Vault.get_personal_vault().name
+        vault = solvebio.Vault.get_personal_vault()
         print("Uploading file: {0} to {1}".format(path, default_upload_path))
-        file_ = solvebio.Object.upload_file(
-            path, default_upload_path, vault_name)
+        file_ = solvebio.Object.upload_file(vault, path, default_upload_path)
         print("Successfuly uploaded file {0} (id:{1} size:{2} md5:{3})"
               .format(path, file_.id, file_.size, file_.md5))
 
