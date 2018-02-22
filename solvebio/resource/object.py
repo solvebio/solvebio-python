@@ -175,7 +175,7 @@ class Object(CreateableAPIResource,
             return
 
         # Get vault
-        vault = Vault.get_by_full_path(vault_full_path)
+        vault = Vault.get_by_full_path(vault_full_path, client=_client)
 
         # Get MD5, mimetype, and file size for the object
         md5, _ = md5sum(local_path, multipart_threshold=None)

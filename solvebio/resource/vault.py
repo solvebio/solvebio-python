@@ -160,7 +160,8 @@ class Vault(CreateableAPIResource,
 
     def upload_file(self, local_path, remote_path, **kwargs):
         from solvebio import Object
-        return Object.upload_file(local_path, remote_path, self.full_path, **kwargs)
+        return Object.upload_file(
+            local_path, remote_path, self.full_path, **kwargs)
 
     def search(self, query, **params):
         params.update({
