@@ -13,7 +13,9 @@ from solvebio.cli import main
 from solvebio import DatasetTemplate
 from solvebio.utils.files import get_home_dir
 from solvebio.test.client_mocks import fake_vault_all
+from solvebio.test.client_mocks import fake_vault_create
 from solvebio.test.client_mocks import fake_object_all
+from solvebio.test.client_mocks import fake_object_create
 from solvebio.test.client_mocks import fake_dataset_create
 from solvebio.test.client_mocks import fake_dataset_tmpl_create
 from solvebio.test.client_mocks import fake_dataset_tmpl_retrieve
@@ -123,17 +125,22 @@ class CLITests(SolveBioTestCase):
                          'Created with dataset template: {0}'.format(tpl.id))
 
     @mock.patch('solvebio.resource.Vault.get_or_create_uploads_path')
+    @mock.patch('solvebio.resource.Vault.get_by_full_path')
     @mock.patch('solvebio.resource.Vault.all')
     @mock.patch('solvebio.resource.Object.all')
+    @mock.patch('solvebio.resource.Object.upload_file')
     @mock.patch('solvebio.resource.Dataset.create')
     @mock.patch('solvebio.resource.DatasetImport.create')
     def _test_import_file(self, args, DatasetImportCreate, DatasetCreate,
-                          ObjectAll, VaultAll, UploadPath):
+                          ObjectCreate, ObjectAll, VaultAll, VaultLookup,
+                          UploadPath):
         DatasetImportCreate.side_effect = fake_dataset_import_create
         DatasetCreate.side_effect = fake_dataset_create
         ObjectAll.side_effect = fake_object_all
+        ObjectCreate.side_effect = fake_object_create
         VaultAll.side_effect = fake_vault_all
         UploadPath.side_effect = upload_path
+        VaultLookup.side_effect = fake_vault_create
 
         main.main(args)
 

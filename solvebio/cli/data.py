@@ -105,8 +105,8 @@ def _upload_folder(domain, vault, base_remote_path,
                 )
                 parent = Object.get_by_full_path(
                     parent_full_path, assert_type='folder')
-                Object.upload_file(os.path.join(root, f), parent.path,
-                                   vault.name)
+                Object.upload_file(os.path.join(root, f),
+                                   parent.path, vault.full_path)
 
 
 def create_dataset(args):
@@ -212,8 +212,8 @@ def upload(args):
             _upload_folder(path_dict['domain'], vault,
                            base_remote_path, local_path, local_start)
         else:
-            Object.upload_file(
-                local_path, path_dict['path'], path_dict['vault'])
+            Object.upload_file(local_path, path_dict['path'],
+                               vault.full_path)
 
 
 def import_file(args):

@@ -163,39 +163,32 @@ class Object(CreateableAPIResource,
         return obj
 
     @classmethod
-    def upload_file(cls, local_path, remote_path, vault_name, **kwargs):
-        from solvebio import Object, Vault
+    def upload_file(cls, local_path, remote_path, vault_full_path, **kwargs):
+        from solvebio import Vault
+        from solvebio import Object
 
         _client = kwargs.pop('client', None) or cls._client or client
 
-        try:
-            user = _client.get('/v1/user', {})
-            account_domain = user['account']['domain']
-        except SolveError as e:
-            print("Error obtaining account domain: {0}".format(e))
-            raise
-
         local_path = os.path.expanduser(local_path)
-
         if os.stat(local_path).st_size == 0:
             print('Notice: Cannot upload empty file {0}'.format(local_path))
             return
+
+        # Get vault
+        vault = Vault.get_by_full_path(vault_full_path, client=_client)
 
         # Get MD5, mimetype, and file size for the object
         md5, _ = md5sum(local_path, multipart_threshold=None)
         _, mimetype = mimetypes.guess_type(local_path)
         size = os.path.getsize(local_path)
 
-        vault = Vault.get_by_full_path(vault_name, client=_client)
-
+        # Lookup parent object
         if remote_path == '/':
             parent_object_id = None
         else:
-            parent_obj = Object.get_by_full_path(':'.join([
-                account_domain,
-                vault_name,
-                remote_path,
-            ]), assert_type='folder', client=_client)
+            parent_obj = Object.get_by_full_path(
+                ':'.join([vault.full_path, remote_path]),
+                assert_type='folder', client=_client)
             parent_object_id = parent_obj.id
 
         description = kwargs.get(
