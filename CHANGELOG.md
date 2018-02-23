@@ -1,5 +1,19 @@
 # Change Log
 
+## [v2.4.6](https://github.com/solvebio/solvebio-python/tree/v2.4.6) (2018-02-23)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.5...v2.4.6)
+
+**Closed issues:**
+
+- Unable to upload to cross-account Vault  [\#238](https://github.com/solvebio/solvebio-python/issues/238)
+- Problem logging in using Python 3.6 [\#235](https://github.com/solvebio/solvebio-python/issues/235)
+
+**Merged pull requests:**
+
+- pass vault object through instead of vault name [\#239](https://github.com/solvebio/solvebio-python/pull/239) ([jsh2134](https://github.com/jsh2134))
+- printing incorrect url [\#237](https://github.com/solvebio/solvebio-python/pull/237) ([jsh2134](https://github.com/jsh2134))
+- removed six import, changed input to raw\_input [\#236](https://github.com/solvebio/solvebio-python/pull/236) ([davidhpark](https://github.com/davidhpark))
+
 ## [v2.4.5](https://github.com/solvebio/solvebio-python/tree/v2.4.5) (2018-02-13)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.4...v2.4.5)
 
@@ -516,13 +530,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
-
-## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
 
 ## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+
+## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
