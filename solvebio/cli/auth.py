@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import print_function
+from six.moves import input as raw_input
 
 import getpass
 
@@ -11,12 +12,6 @@ from .credentials import (
     delete_credentials,
     save_credentials
 )
-
-try:
-    # Python3 renames raw_input to input
-    input = raw_input
-except NameError:
-    pass
 
 
 def _print_msg(msg):
@@ -30,8 +25,8 @@ def _ask_for_credentials():
     Asks the user for their email and password.
     """
     _print_msg('Please enter your SolveBio credentials')
-    domain = input('Domain (e.g. <domain>.solvebio.com): ')
-    email = input('Email: ')
+    domain = raw_input('Domain (e.g. <domain>.solvebio.com): ')
+    email = raw_input('Email: ')
     password = getpass.getpass('Password (typing will be hidden): ')
     return (domain, email, password)
 
