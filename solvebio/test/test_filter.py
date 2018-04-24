@@ -4,7 +4,7 @@ from __future__ import print_function
 import unittest
 
 import solvebio
-from solvebio import Filter, GenomicFilter
+from solvebio import Query, Filter, GenomicFilter
 
 
 class FilterTest(unittest.TestCase):
@@ -39,13 +39,95 @@ class FilterTest(unittest.TestCase):
                          "<Filter [{'or': [('omim_id', 144650)," +
                          " ('omim_id', 144600), ('omim_id', 145300)]}]>")
 
+    def test_raw_filters(self):
+        # Simple filter
+        raw_filter = '[["field_a", "value_a"]]'
+        f = Filter(raw_filter)
+        self.assertEqual(
+            f.filters, [[u'field_a', u'value_a']]
+        )
+        f = Query._process_filters([f])
+        self.assertEqual(
+            f, [[u'field_a', u'value_a']]
+        )
+
+        # Compounded filter
+        raw_filter = '[["field_a", "value_a"], {"not": {"or": ["field_x", "value_x"]}}]'  # noqa
+        f = Filter(raw_filter)
+        self.assertEqual(
+            f.filters, [{'and': [[u'field_a', u'value_a'],
+                                 {u'not': {u'or': [u'field_x', u'value_x']}}]}]
+        )
+        f = Query._process_filters([f])
+        self.assertEqual(
+            f, [{'and': [[u'field_a', u'value_a'],
+                         {u'not': {u'or': [u'field_x', u'value_x']}}]}]
+        )
+
+        # Dict-only as list, and not as a list
+        raw_filter = '[{"or": [["field_x", "value_x"]]}]'
+        f = Filter(raw_filter)
+        self.assertEqual(
+            f.filters, [{'or': [[u'field_x', u'value_x']]}]
+        )
+        f = Query._process_filters([f])
+        self.assertEqual(
+            f, [{'or': [[u'field_x', u'value_x']]}]
+        )
+
+        raw_filter = '{"or": [["field_x", "value_x"]]}'
+        f = Filter(raw_filter)
+        self.assertEqual(
+            f.filters, [{'or': [[u'field_x', u'value_x']]}]
+        )
+        f = Query._process_filters([f])
+        self.assertEqual(
+            f, [{'or': [[u'field_x', u'value_x']]}]
+        )
+
+    def test_combined_raw_filters(self):
+        # Combined JSON and regular filter
+        raw_filter = '[["field_a", "value_a"]]'
+        f = Filter(raw_filter, field_x='value_x')
+        self.assertEqual(
+            f.filters, [{'and': [('field_x', 'value_x'),
+                                 [u'field_a', u'value_a']]}]
+        )
+        f = Query._process_filters([f])
+        self.assertEqual(
+            f, [{'and': [('field_x', 'value_x'),
+                         [u'field_a', u'value_a']]}]
+        )
+
+        # Combined, separate raw filters
+        raw_filter = '[["field_a", "value_a"]]'
+        f = Filter(raw_filter) | Filter(raw_filter)
+        self.assertEqual(
+            f.filters, [{'or': [[u'field_a', u'value_a'],
+                                [u'field_a', u'value_a']]}]
+        )
+        f = Query._process_filters([f])
+        self.assertEqual(
+            f, [{'or': [[u'field_a', u'value_a'],
+                        [u'field_a', u'value_a']]}]
+        )
+
+        # Combined list of raw filters
+        raw_filter = '[["field_a", "value_a"]]'
+        f = Filter(raw_filter, raw_filter)
+        self.assertEqual(
+            f.filters, [{'and': [[u'field_a', u'value_a'],
+                                 [u'field_a', u'value_a']]}]
+        )
+        f = Query._process_filters([f])
+        self.assertEqual(
+            f, [{'and': [[u'field_a', u'value_a'],
+                         [u'field_a', u'value_a']]}]
+        )
+
     def test_process_filters(self):
-        # FIXME: add more and put in a loop.
         filters = [('omim_id', None)]
-        expect = filters
-        dataset_name = 'omim/0.0.1-1/omim'
-        x = solvebio.Query(dataset_name)
-        self.assertEqual(repr(x._process_filters(filters)), repr(expect))
+        self.assertEqual(repr(Query._process_filters(filters)), repr(filters))
 
 
 class GenomicFilterTest(unittest.TestCase):

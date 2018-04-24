@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 import six
+import json
 
 from .client import client
 from .utils.printing import pretty_int
@@ -53,11 +54,24 @@ class Filter(object):
                       start__gt=10000,
                       end__lte=20000)
     """
-    def __init__(self, **filters):
+    def __init__(self, *raw_filters, **filters):
         """Creates a Filter"""
         # Set deepcopy to False for faster Filter building
         self.deepcopy = True
+
         filters = list(filters.items())
+        for flt in raw_filters:
+            try:
+                flt = json.loads(flt)
+                # If the result is a dict, wrap in a list.
+                if isinstance(flt, dict):
+                    flt = [flt]
+            except:
+                raise Exception(
+                    'Invalid raw filter, must be a JSON string: {}'
+                    .format(flt))
+
+            filters += flt
 
         if len(filters) > 1:
             self.filters = [{'and': filters}]
@@ -424,7 +438,8 @@ class Query(object):
             self.execute(self._slice.start if self._slice else 0)
         return self._response['results']
 
-    def _process_filters(self, filters):
+    @classmethod
+    def _process_filters(cls, filters):
         """Takes a list of filters and returns JSON
 
         :Parameters:
@@ -432,15 +447,13 @@ class Query(object):
 
         Returns: List of JSON API filters
         """
-        rv = []
+        data = []
 
         # Filters should always be a list
         for f in filters:
             if isinstance(f, Filter):
                 if f.filters:
-                    rv.extend(self._process_filters(f.filters))
-                    continue
-
+                    data.extend(cls._process_filters(f.filters))
             elif isinstance(f, dict):
                 key = list(f.keys())[0]
                 val = f[key]
@@ -448,15 +461,16 @@ class Query(object):
                 if isinstance(val, dict):
                     # pass val (a dict) as list
                     # so that it gets processed properly
-                    filter_filters = self._process_filters([val])
+                    filter_filters = cls._process_filters([val])
                     if len(filter_filters) == 1:
                         filter_filters = filter_filters[0]
-                    rv.append({key: filter_filters})
+                    data.append({key: filter_filters})
                 else:
-                    rv.append({key: self._process_filters(val)})
+                    data.append({key: cls._process_filters(val)})
             else:
-                rv.extend((f,))
-        return rv
+                data.extend((f,))
+
+        return data
 
     def __repr__(self):
         # Check that Query object does not have any previous errors
@@ -605,7 +619,7 @@ class Query(object):
             q['query'] = self._query
 
         if self._filters:
-            filters = self._process_filters(self._filters)
+            filters = Query._process_filters(self._filters)
             if len(filters) > 1:
                 q['filters'] = [{'and': filters}]
             else:
