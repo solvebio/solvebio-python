@@ -1,5 +1,16 @@
 # Change Log
 
+## [v2.5.0](https://github.com/solvebio/solvebio-python/tree/v2.5.0) (2018-04-25)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.6...v2.5.0)
+
+**Implemented enhancements:**
+
+- Ability to load filters from JSON and/or a dict [\#246](https://github.com/solvebio/solvebio-python/issues/246)
+
+**Merged pull requests:**
+
+- add support for loading json filters [\#248](https://github.com/solvebio/solvebio-python/pull/248) ([davecap](https://github.com/davecap))
+
 ## [v2.4.6](https://github.com/solvebio/solvebio-python/tree/v2.4.6) (2018-02-23)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.5...v2.4.6)
 
