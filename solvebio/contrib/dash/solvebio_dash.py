@@ -45,6 +45,7 @@ class SolveBioDash(dash.Dash):
                 self,
                 app_url,
                 client_id,
+                salt=kwargs.get('salt'),
                 client_secret=client_secret,
                 grant_type=grant_type,
                 solvebio_url=solvebio_url)
