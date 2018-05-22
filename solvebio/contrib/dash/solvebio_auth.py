@@ -94,7 +94,12 @@ class SolveBioAuth(OAuthBase):
             # TODO - should set secure in this cookie, not exposed in flask
             # TODO - should set path or domain
             return self.add_access_token_to_response(response)
-        return wrap
+
+        # Support for dash-auth >= 1.0.0
+        if hasattr(self, 'add_access_token_to_response'):
+            return wrap
+        else:
+            return super(SolveBioAuth, self).auth_wrapper(f)
 
     def html(self, script):
         return ('''
