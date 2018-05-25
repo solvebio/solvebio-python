@@ -100,7 +100,7 @@ class Login extends Component {
     render() {
         return (
             <div id="dash-auth--login__container" className="container">
-                <h2>{'Dash'}</h2>
+                <h2>{'Secure Dash App'}</h2>
 
                 <h4>
                     {'Log in to SolveBio to continue'}
@@ -109,6 +109,16 @@ class Login extends Component {
                 <button id="dash-auth--login__button" onClick={this.oauthPopUp}>
                     {'Log in'}
                 </button>
+
+                <div className="caption">
+                  <span>
+                    {'This app requires a SolveBio account.'}
+                  </span>
+                  <br />
+                  <a href={'mailto:support@solvebio.com'}>
+                    {'Contact Support'}
+                  </a>
+                </div>
             </div>
         );
     }

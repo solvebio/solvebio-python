@@ -3,13 +3,14 @@ from __future__ import absolute_import
 import json
 import flask
 import requests
+import os
 
 try:
     from urlparse import urljoin
 except ImportError:
     from urllib.parse import urljoin
 
-from .oauth import OAuthBase
+from dash_auth.oauth import OAuthBase
 
 import solvebio
 
@@ -26,7 +27,13 @@ class SolveBioAuth(OAuthBase):
     OAUTH2_REVOKE_TOKEN_PATH = '/v1/oauth2/revoke_token'
 
     def __init__(self, app, app_url, client_id, **kwargs):
-        super(SolveBioAuth, self).__init__(app, app_url, client_id)
+        secret_key = kwargs.get('secret_key') or app.server.secret_key
+        super(SolveBioAuth, self).__init__(
+            app,
+            app_url,
+            client_id,
+            secret_key=secret_key,
+            salt=kwargs.get('salt'))
 
         # Add logout URL
         app.server.add_url_rule(
@@ -57,6 +64,43 @@ class SolveBioAuth(OAuthBase):
                 'SolveBioAuth Error: Unsupported grant type "{}"'
                 .format(self._oauth_grant_type))
 
+        _current_path = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(_current_path, 'oauth-redirect.js'), 'r') as f:
+            self.oauth_redirect_bundle = f.read()
+
+        with open(os.path.join(_current_path, 'login.js'), 'r') as f:
+            self.login_bundle = f.read()
+
+    def auth_wrapper(self, f):
+        def wrap(*args, **kwargs):
+            if not self.is_authorized():
+                # NOTE: We always show the login view instead of
+                #       returning 403.
+                # TODO - Add a list of valid app paths so we don't
+                #        show the login page on asset URLs and Dash endpoints.
+                return self.login_request()
+
+            try:
+                response = f(*args, **kwargs)
+            except Exception as err:
+                # Clear the cookie if auth fail
+                if getattr(err, 'status_code', None) in [401, 403]:
+                    response = flask.Response(status=403)
+                    self.clear_cookies(response)
+                    return response
+                else:
+                    raise
+
+            # TODO - should set secure in this cookie, not exposed in flask
+            # TODO - should set path or domain
+            return self.add_access_token_to_response(response)
+
+        # Support for dash-auth >= 1.0.0
+        if hasattr(self, 'add_access_token_to_response'):
+            return wrap
+        else:
+            return super(SolveBioAuth, self).auth_wrapper(f)
+
     def html(self, script):
         return ('''
             <!doctype html>
@@ -76,7 +120,6 @@ class SolveBioAuth(OAuthBase):
         '''.format(json.dumps({
             'oauth_client_id': self._oauth_client_id,
             'oauth_response_type': self._oauth_response_type,
-            'oauth_state': self._access_codes['access_granted'],
             'solvebio_url': self._solvebio_url,
             'requests_pathname_prefix':
             self._app.config['requests_pathname_prefix']
