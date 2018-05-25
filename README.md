@@ -14,7 +14,7 @@ Developer documentation is available at [docs.solvebio.com](https://docs.solvebi
 
 
 Dependencies (Ubuntu)
---------------------
+---------------------
 
 When installing SolveBio on Ubuntu (version 14 and up), you may need the
 following dependencies:
