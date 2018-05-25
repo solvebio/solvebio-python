@@ -46,6 +46,7 @@ try:
         version=VERSION,
         description='The SolveBio Python client',
         long_description=long_description,
+        long_description_content_type='text/markdown',
         author='Solve, Inc.',
         author_email='contact@solvebio.com',
         url='https://github.com/solvebio/solvebio-python',
