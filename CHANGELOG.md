@@ -1,5 +1,16 @@
 # Change Log
 
+## [v2.5.1](https://github.com/solvebio/solvebio-python/tree/v2.5.1) (2018-05-25)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.5.0...v2.5.1)
+
+**Implemented enhancements:**
+
+- \[DashAuth\] Upgrade SolvBioDash and SolveBioAuth to use latest dash-auth [\#252](https://github.com/solvebio/solvebio-python/issues/252)
+
+**Merged pull requests:**
+
+- Add support for latest dash-auth [\#253](https://github.com/solvebio/solvebio-python/pull/253) ([davecap](https://github.com/davecap))
+
 ## [v2.5.0](https://github.com/solvebio/solvebio-python/tree/v2.5.0) (2018-04-25)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.6...v2.5.0)
 
