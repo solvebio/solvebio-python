@@ -82,6 +82,7 @@ def launch_ipython_legacy_shell(args):  # pylint: disable=unused-argument
         from IPython.frontend.terminal.embed import InteractiveShellEmbed
 
     path = os.path.dirname(os.path.abspath(__file__))
-    execfile('{}/ipython_init.py'.format(path))
+    init_file = '{}/ipython_init.py'.format(path)
+    exec(compile(open(init_file).read(), init_file, 'exec'), globals, locals)
 
     InteractiveShellEmbed(config=cfg, banner1=banner1, exit_msg=exit_msg)()
