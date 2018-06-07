@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import sys
+import os
 
 
 def _print(msg):
@@ -12,6 +13,43 @@ def _print(msg):
 
 def launch_ipython_shell(args):  # pylint: disable=unused-argument
     """Open the SolveBio shell (IPython wrapper)"""
+    try:
+        import IPython  # noqa
+    except ImportError:
+        _print("The SolveBio Python shell requires IPython.\n"
+               "To install, type: 'pip install ipython'")
+        return False
+
+    if hasattr(IPython, "version_info"):
+        if IPython.version_info > (5, 0, 0, ''):
+            return launch_ipython_5_shell(args)
+
+    _print("WARNING: Please upgrade IPython (you are running version: {})"
+           .format(IPython.__version__))
+    return launch_ipython_legacy_shell(args)
+
+
+def launch_ipython_5_shell(args):
+    """Open the SolveBio shell (IPython wrapper) with IPython 5+"""
+    import IPython  # noqa
+    from traitlets.config import Config
+
+    c = Config()
+    path = os.path.dirname(os.path.abspath(__file__))
+
+    try:
+        # see if we're already inside IPython
+        get_ipython  # pylint: disable=undefined-variable
+        _print("WARNING: Running IPython within IPython.")
+    except NameError:
+        c.InteractiveShell.banner1 = 'SolveBio Python shell started.\n'
+
+    c.InteractiveShellApp.exec_files = ['{}/ipython_5_init.py'.format(path)]
+    IPython.start_ipython(config=c)
+
+
+def launch_ipython_legacy_shell(args):  # pylint: disable=unused-argument
+    """Open the SolveBio shell (IPython wrapper) for older IPython versions"""
     try:
         from IPython.config.loader import Config
     except ImportError:
