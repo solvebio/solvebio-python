@@ -1,11 +1,5 @@
 import sys
 
-# Now create an instance of the embeddable shell. The first
-# argument is a string with options exactly as you would type them
-# if you were starting IPython at the system command line. Any
-# parameters you want to define for configuration can thus be
-# specified here.
-
 # Add common solvebio classes and methods our namespace here so that
 # inside the ipython shell users don't have run imports
 import solvebio  # noqa
