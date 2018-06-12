@@ -74,6 +74,10 @@ class ListObject(SolveObject):
     def create(self, **params):
         return self.request('post', self['url'], data=params)
 
+    def first_page(self, **params):
+        url = getattr(self, '_first_page_url', self['url'])
+        return self.request('get', url, params=params)
+
     def next_page(self, **params):
         if self['links']['next']:
             return self.request('get', self['links']['next'], params=params)
@@ -98,6 +102,12 @@ class ListObject(SolveObject):
 
     def __iter__(self):
         self._i = 0
+
+        # Store the URL of the first page if we haven't yet.
+        self._first_page_url = getattr(self, '_first_page_url', self['url'])
+        if self._first_page_url != self['url']:
+            self.refresh_from(self.first_page())
+
         return self
 
     def __next__(self):
