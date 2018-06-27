@@ -37,7 +37,6 @@ class SolveBioDash(dash.Dash):
 
         super(SolveBioDash, self).__init__(name, *args, **kwargs)
 
-        self.scripts.config.serve_locally = True
         self.config.supress_callback_exceptions = True
 
         if client_id:
