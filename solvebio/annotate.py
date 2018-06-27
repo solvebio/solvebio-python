@@ -17,10 +17,12 @@ class Annotator(object):
     # Allows pre-setting a SolveClient
     _client = None
 
-    def __init__(self, fields, include_errors=False, **kwargs):
+    def __init__(self, fields, include_errors=False,
+                 annotator_params=None, **kwargs):
         self.buffer = []
         self.fields = fields
         self.include_errors = include_errors
+        self.annotator_params = annotator_params
         self._client = kwargs.get('client') or self._client or client
 
     def annotate(self, records, chunk_size=CHUNK_SIZE):
@@ -50,7 +52,8 @@ class Annotator(object):
         data = {
             'records': chunk,
             'fields': self.fields,
-            'include_errors': self.include_errors
+            'include_errors': self.include_errors,
+            'annotator_params': self.annotator_params
         }
 
         for r in self._client.post('/v1/annotate', data)['results']:
