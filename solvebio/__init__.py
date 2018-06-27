@@ -111,6 +111,7 @@ from .resource import (
     Vault,
     VaultSyncTask,
     ObjectCopyTask,
+    SavedQuery,
     Task
 )
 
@@ -173,6 +174,7 @@ __all__ = [
     'Object',
     'ObjectCopyTask',
     'Query',
+    'SavedQuery',
     'SolveClient',
     'SolveError',
     'VaultSyncTask',
