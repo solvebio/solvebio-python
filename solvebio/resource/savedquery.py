@@ -1,3 +1,7 @@
+from ..query import Query
+
+from .dataset import Dataset
+
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import UpdateableAPIResource
@@ -17,3 +21,17 @@ class SavedQuery(CreateableAPIResource, ListableAPIResource,
         ('name', 'Name'),
         ('description', 'Description'),
     )
+
+    def query(self, dataset=None):
+        if 'id' not in self or not self['id']:
+            raise Exception(
+                'No SavedQuery ID was provided. '
+                'Please instantiate the SavedQuery '
+                'object with an ID.')
+
+        if isinstance(dataset, Dataset):
+            dataset_id = dataset.id
+        else:
+            dataset_id = dataset
+
+        return Query(dataset_id, client=self._client, **self.params)
