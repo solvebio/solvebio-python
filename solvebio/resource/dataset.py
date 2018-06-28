@@ -159,7 +159,8 @@ class Dataset(CreateableAPIResource,
 
         saved_queries = SavedQuery.all(
             dataset_id=self['id'],
-            client=self._client)
+            client=self._client,
+            **params)
 
         return saved_queries
 
