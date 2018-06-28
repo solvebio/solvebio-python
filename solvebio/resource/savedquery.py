@@ -28,6 +28,11 @@ class SavedQuery(CreateableAPIResource, ListableAPIResource,
                 'No SavedQuery ID was provided. '
                 'Please instantiate the SavedQuery '
                 'object with an ID.')
+        if not dataset:
+            raise Exception(
+                'No Dataset was specified. '
+                'Please provide either the Dataset object or '
+                'the Dataset ID.')
 
         if isinstance(dataset, Dataset):
             dataset_id = dataset.id
