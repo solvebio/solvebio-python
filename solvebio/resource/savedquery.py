@@ -11,8 +11,10 @@ from .apiresource import DeletableAPIResource
 class SavedQuery(CreateableAPIResource, ListableAPIResource,
                  UpdateableAPIResource, DeletableAPIResource):
     """
-    SavedQuery contain the schema of a Dataset, including some
-    properties and all the fields.
+    A saved query is a set of query parameters that persists,
+    giving users the ability to apply them to compatible datasets
+    with ease. A dataset is said to be compatible with a saved query
+    if it contains all the fields found in said saved query.
     """
     RESOURCE_VERSION = 2
 
