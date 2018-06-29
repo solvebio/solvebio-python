@@ -48,7 +48,7 @@ class Group(CreateableAPIResource, ListableAPIResource,
         from . import Object
         vaults = self._get_vaults(**params)
         objects_url = Object.class_url() + '?object_type=dataset&' + \
-            '&'.join(['vault_id=%s' % v.id for v in vaults])
+            '&'.join(['vault_id={0}'.format(v.id) for v in vaults])
         response = self._client.get(objects_url, params)
         datasets = convert_to_solve_object(response, client=self._client)
         datasets.set_tabulate(
