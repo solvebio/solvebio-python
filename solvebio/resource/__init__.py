@@ -18,6 +18,7 @@ from .task import Task
 from .beacon import Beacon
 from .beaconset import BeaconSet
 from .application import Application
+from .group import Group
 
 
 types = {
@@ -31,6 +32,7 @@ types = {
     'DatasetMigration': DatasetMigration,
     'DatasetTemplate': DatasetTemplate,
     'DatasetField': DatasetField,
+    'Group': Group,
     'Manifest': Manifest,
     'Object': Object,
     'ObjectCopyTask': ObjectCopyTask,
