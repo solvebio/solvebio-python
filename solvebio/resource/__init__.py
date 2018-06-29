@@ -18,6 +18,7 @@ from .task import Task
 from .beacon import Beacon
 from .beaconset import BeaconSet
 from .application import Application
+from .savedquery import SavedQuery
 
 
 types = {
@@ -38,5 +39,6 @@ types = {
     'VaultSyncTask': VaultSyncTask,
     'User': User,
     'Vault': Vault,
-    'list': ListObject
+    'list': ListObject,
+    'SavedQuery': SavedQuery,
 }
