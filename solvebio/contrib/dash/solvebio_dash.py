@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from raven import Client
+from raven.contrib.flask import Sentry
+
 import dash
 import flask
 
@@ -56,6 +59,11 @@ class SolveBioDash(dash.Dash):
             if solvebio.api_key:
                 print("SolveBio API key detected. All users of this app will "
                       "use this API key.")
+
+        # Sentry integration
+        client = Client(name=self.title,
+                        dsn=os.environ.get('SENTRY_DSN'))
+        sentry = Sentry(app=server, client=client)  # noqa
 
         @server.before_request
         def set_solve_client():
