@@ -95,6 +95,9 @@ class ListObject(SolveObject):
         self._tabulate = lambda data:\
             tabulate([[d[i] for i in fields] for d in data], **kwargs)
 
+    def __len__(self):
+        return self['total']
+
     def __str__(self):
         if getattr(self, '_tabulate', None):
             return '\n' + self._tabulate(self['data'])
