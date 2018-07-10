@@ -105,12 +105,14 @@ from .resource import (
     DatasetImport,
     DatasetMigration,
     DatasetTemplate,
+    Group,
     Manifest,
     Object,
     User,
     Vault,
     VaultSyncTask,
     ObjectCopyTask,
+    SavedQuery,
     Task
 )
 
@@ -169,10 +171,12 @@ __all__ = [
     'DatasetTemplate',
     'Filter',
     'GenomicFilter',
+    'Group',
     'Manifest',
     'Object',
     'ObjectCopyTask',
     'Query',
+    'SavedQuery',
     'SolveClient',
     'SolveError',
     'VaultSyncTask',
