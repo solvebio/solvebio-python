@@ -1,5 +1,25 @@
 # Change Log
 
+## [v2.6.0](https://github.com/solvebio/solvebio-python/tree/v2.6.0) (2018-07-10)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.5.1...v2.6.0)
+
+**Fixed bugs:**
+
+- \[Dash\] scripts.config.serve\_locally is set to True by default when it should be False [\#263](https://github.com/solvebio/solvebio-python/issues/263)
+- \[Vaults\] create\_folder ignores path kwarg [\#260](https://github.com/solvebio/solvebio-python/issues/260)
+- SolveBio shell does not see globals when defining functions [\#257](https://github.com/solvebio/solvebio-python/issues/257)
+- SolveBio CLI: solvebio -\> login -\> shell does not properly retain credentials [\#255](https://github.com/solvebio/solvebio-python/issues/255)
+- Iterating through a list of objects retrieved is... strange [\#250](https://github.com/solvebio/solvebio-python/issues/250)
+
+**Merged pull requests:**
+
+- Add Group resource [\#267](https://github.com/solvebio/solvebio-python/pull/267) ([jsh2134](https://github.com/jsh2134))
+- Add saved queries [\#265](https://github.com/solvebio/solvebio-python/pull/265) ([davidhpark](https://github.com/davidhpark))
+- Keep Dash scripts.config.serve\_locally False [\#264](https://github.com/solvebio/solvebio-python/pull/264) ([davidhpark](https://github.com/davidhpark))
+- fix issue where API resource iterators are not reset [\#262](https://github.com/solvebio/solvebio-python/pull/262) ([davecap](https://github.com/davecap))
+- Fix create\_folder shortcut [\#261](https://github.com/solvebio/solvebio-python/pull/261) ([jsh2134](https://github.com/jsh2134))
+- Fix two issues with IPython shell [\#258](https://github.com/solvebio/solvebio-python/pull/258) ([davecap](https://github.com/davecap))
+
 ## [v2.5.1](https://github.com/solvebio/solvebio-python/tree/v2.5.1) (2018-05-25)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.5.0...v2.5.1)
 
