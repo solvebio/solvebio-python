@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2.6.1](https://github.com/solvebio/solvebio-python/tree/v2.6.1) (2018-07-10)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.6.0...v2.6.1)
+
+**Merged pull requests:**
+
+- fix issue with ipython embed + args [\#269](https://github.com/solvebio/solvebio-python/pull/269) ([davecap](https://github.com/davecap))
+
 ## [v2.6.0](https://github.com/solvebio/solvebio-python/tree/v2.6.0) (2018-07-10)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.5.1...v2.6.0)
 
