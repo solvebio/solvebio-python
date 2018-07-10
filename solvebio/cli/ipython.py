@@ -45,7 +45,7 @@ def launch_ipython_5_shell(args):
         c.InteractiveShell.banner1 = 'SolveBio Python shell started.\n'
 
     c.InteractiveShellApp.exec_files = ['{}/ipython_init.py'.format(path)]
-    IPython.start_ipython(config=c)
+    IPython.start_ipython(argv=[], config=c)
 
 
 def launch_ipython_legacy_shell(args):  # pylint: disable=unused-argument
@@ -83,6 +83,7 @@ def launch_ipython_legacy_shell(args):  # pylint: disable=unused-argument
 
     path = os.path.dirname(os.path.abspath(__file__))
     init_file = '{}/ipython_init.py'.format(path)
-    exec(compile(open(init_file).read(), init_file, 'exec'), globals, locals)
+    exec(compile(open(init_file).read(), init_file, 'exec'),
+         globals(), locals())
 
     InteractiveShellEmbed(config=cfg, banner1=banner1, exit_msg=exit_msg)()
