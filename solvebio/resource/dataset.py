@@ -148,6 +148,22 @@ class Dataset(CreateableAPIResource,
                               client=_client,
                               **kwargs)
 
+    def saved_queries(self, **params):
+        from solvebio import SavedQuery
+
+        if 'id' not in self or not self['id']:
+            raise Exception(
+                'No Dataset ID was provided. '
+                'Please instantiate the Dataset '
+                'object with an ID.')
+
+        saved_queries = SavedQuery.all(
+            dataset_id=self['id'],
+            client=self._client,
+            **params)
+
+        return saved_queries
+
     def fields(self, name=None, **params):
         if 'fields_url' not in self:
             raise Exception(
