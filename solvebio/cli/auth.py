@@ -65,7 +65,7 @@ def _send_install_report():
         pass
 
 
-def login(*args, **kwargs):
+def login(*args):
     """
     Prompt user for login information (domain/email/password).
     Domain, email and password are used to get the user's API key.

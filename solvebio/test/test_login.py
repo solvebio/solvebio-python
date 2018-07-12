@@ -40,11 +40,11 @@ class TestLogin(unittest.TestCase):
 
     def test_bad_login(self):
         with nostdout():
-            self.assertEqual(auth.login('foo'), False, 'Invalid login')
+            self.assertEqual(auth.login([]), False, 'Invalid login')
 
             # Test invalid host
             solvebio.api_host = 'https://some.fake.domain.foobar'
-            self.assertEqual(auth.login('foo'), False,
+            self.assertEqual(auth.login([]), False,
                              "Invalid login")
 
     def test_init_login(self):
