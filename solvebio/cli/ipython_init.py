@@ -38,7 +38,7 @@ from solvebio.cli.auth import login, logout, whoami, get_credentials  # noqa
 # Otherwise, look for credentials in the local file,
 # Otherwise, ask the user to log in.
 if solvebio.api_key or get_credentials():
-    _, solvebio.api_key = whoami()
+    domain, email, solvebio.api_key = whoami()
 else:
     login()
 

@@ -33,7 +33,7 @@ class CLITests(SolveBioTestCase):
         solvebio.api_key = os.environ.get('SOLVEBIO_API_KEY', None)
 
     def test_whoami(self):
-        email, token = main.main(['whoami'])
+        domain, email, token = main.main(['whoami'])
         self.assertEqual(token, os.environ.get('SOLVEBIO_API_KEY'))
 
     @mock.patch('solvebio.resource.Vault.all')
