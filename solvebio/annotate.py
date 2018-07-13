@@ -17,15 +17,16 @@ class Annotator(object):
     # Allows pre-setting a SolveClient
     _client = None
 
-    def __init__(self, fields, include_errors=False,
-                 annotator_params=None, **kwargs):
+    def __init__(self, fields, include_errors=False, **kwargs):
+        self._client = kwargs.pop('client', None) or self._client or client
+
         self.buffer = []
         self.fields = fields
         self.include_errors = include_errors
-        self.annotator_params = annotator_params
-        self._client = kwargs.get('client') or self._client or client
+        self.annotator_params = kwargs
+        self.chunk_size = kwargs.get('chunk_size', self.CHUNK_SIZE)
 
-    def annotate(self, records, chunk_size=CHUNK_SIZE):
+    def annotate(self, records, **kwargs):
         """Annotate a set of records with stored fields.
 
         Args:
@@ -35,6 +36,8 @@ class Annotator(object):
         Returns:
             A generator that yields one annotated record at a time.
         """
+        chunk_size = kwargs.get('chunk_size', self.chunk_size)
+
         chunk = []
         for i, record in enumerate(records):
             chunk.append(record)
