@@ -73,6 +73,8 @@ def login(*args):
     delete_credentials()
     save_credentials(email.lower(), response['token'])
     solvebio.api_key = response['token']
+    client.set_host()
+    client.set_token()
     _send_install_report()
     _print_msg('You are now logged-in as {0}'.format(email))
     return True

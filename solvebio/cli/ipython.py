@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import sys
+import os
 
 
 def _print(msg):
@@ -12,6 +13,43 @@ def _print(msg):
 
 def launch_ipython_shell(args):  # pylint: disable=unused-argument
     """Open the SolveBio shell (IPython wrapper)"""
+    try:
+        import IPython  # noqa
+    except ImportError:
+        _print("The SolveBio Python shell requires IPython.\n"
+               "To install, type: 'pip install ipython'")
+        return False
+
+    if hasattr(IPython, "version_info"):
+        if IPython.version_info > (5, 0, 0, ''):
+            return launch_ipython_5_shell(args)
+
+    _print("WARNING: Please upgrade IPython (you are running version: {})"
+           .format(IPython.__version__))
+    return launch_ipython_legacy_shell(args)
+
+
+def launch_ipython_5_shell(args):
+    """Open the SolveBio shell (IPython wrapper) with IPython 5+"""
+    import IPython  # noqa
+    from traitlets.config import Config
+
+    c = Config()
+    path = os.path.dirname(os.path.abspath(__file__))
+
+    try:
+        # see if we're already inside IPython
+        get_ipython  # pylint: disable=undefined-variable
+        _print("WARNING: Running IPython within IPython.")
+    except NameError:
+        c.InteractiveShell.banner1 = 'SolveBio Python shell started.\n'
+
+    c.InteractiveShellApp.exec_files = ['{}/ipython_init.py'.format(path)]
+    IPython.start_ipython(argv=[], config=c)
+
+
+def launch_ipython_legacy_shell(args):  # pylint: disable=unused-argument
+    """Open the SolveBio shell (IPython wrapper) for older IPython versions"""
     try:
         from IPython.config.loader import Config
     except ImportError:
@@ -43,54 +81,9 @@ def launch_ipython_shell(args):  # pylint: disable=unused-argument
         # pylint: disable=import-error,no-name-in-module
         from IPython.frontend.terminal.embed import InteractiveShellEmbed
 
-    # Now create an instance of the embeddable shell. The first
-    # argument is a string with options exactly as you would type them
-    # if you were starting IPython at the system command line. Any
-    # parameters you want to define for configuration can thus be
-    # specified here.
-
-    # Add common solvebio classes and methods our namespace here so that
-    # inside the ipython shell users don't have run imports
-    import solvebio  # noqa
-    from solvebio import Annotator  # noqa
-    from solvebio import Application  # noqa
-    from solvebio import Beacon  # noqa
-    from solvebio import BeaconSet  # noqa
-    from solvebio import BatchQuery  # noqa
-    from solvebio import Dataset  # noqa
-    from solvebio import DatasetCommit  # noqa
-    from solvebio import DatasetExport  # noqa
-    from solvebio import DatasetField  # noqa
-    from solvebio import DatasetImport  # noqa
-    from solvebio import DatasetMigration  # noqa
-    from solvebio import DatasetTemplate  # noqa
-    from solvebio import Expression  # noqa
-    from solvebio import Filter  # noqa
-    from solvebio import GenomicFilter  # noqa
-    from solvebio import Manifest  # noqa
-    from solvebio import Object  # noqa
-    from solvebio import Query  # noqa
-    from solvebio import SolveClient  # noqa
-    from solvebio import SolveError  # noqa
-    from solvebio import User  # noqa
-    from solvebio import Vault  # noqa
-    from solvebio import Task  # noqa
-    from solvebio import VaultSyncTask  # noqa
-    from solvebio import ObjectCopyTask  # noqa
-    from solvebio.utils.printing import pager  # noqa
-
-    # Add some convenience functions to the interactive shell
-    from solvebio.cli.auth import login, logout, whoami, get_credentials  # noqa
-
-    # If an API key is set in solvebio.api_key, use that.
-    # Otherwise, look for credentials in the local file,
-    # Otherwise, ask the user to log in.
-    if solvebio.api_key or get_credentials():
-        _, solvebio.api_key = whoami()
-    else:
-        login()
-
-    if not solvebio.api_key:
-        _print("No authentication credentials found.")
+    path = os.path.dirname(os.path.abspath(__file__))
+    init_file = '{}/ipython_init.py'.format(path)
+    exec(compile(open(init_file).read(), init_file, 'exec'),
+         globals(), locals())
 
     InteractiveShellEmbed(config=cfg, banner1=banner1, exit_msg=exit_msg)()
