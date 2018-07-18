@@ -27,3 +27,15 @@ class Task(ListableAPIResource):
     def follow(self):
         """ Follow the child object but do not loop """
         self.child_object.follow(loop=False)
+
+    def cancel(self):
+        """ Cancel a task """
+        if 'cancel' not in self.available_actions:
+            # It may not be queued/running or another
+            # possible reason.
+            print("Task can not be canceled.")
+            return
+
+        child_ = self.child_object
+        child_.status = 'canceled'
+        child_.save()
