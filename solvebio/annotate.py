@@ -17,14 +17,27 @@ class Annotator(object):
     # Allows pre-setting a SolveClient
     _client = None
 
-    def __init__(self, fields, include_errors=False, **kwargs):
+    def __init__(self, fields, **kwargs):
         self._client = kwargs.pop('client', None) or self._client or client
 
         self.buffer = []
         self.fields = fields
-        self.include_errors = include_errors
-        self.annotator_params = kwargs
-        self.chunk_size = kwargs.get('chunk_size', self.CHUNK_SIZE)
+
+        # Pop annotator_params from kwargs
+        annotator_param_keys = [
+            'annotator',
+            'debug',
+            'include_errors',
+        ]
+        self.annotator_params = {}
+        for key in annotator_param_keys:
+            if key in kwargs:
+                self.annotator_params[key] = kwargs.pop(key)
+
+        self.data = kwargs
+
+        # Unify annotator chunk_size and request chunk_size
+        # self.chunk_size = annotator_params.get('chunk_size', self.CHUNK_SIZE)
 
     def annotate(self, records, **kwargs):
         """Annotate a set of records with stored fields.
@@ -36,7 +49,9 @@ class Annotator(object):
         Returns:
             A generator that yields one annotated record at a time.
         """
-        chunk_size = kwargs.get('chunk_size', self.chunk_size)
+        # Update annotator_params with any kwargs
+        self.annotator_params.update(**kwargs)
+        chunk_size = self.annotator_params.get('chunk_size', self.CHUNK_SIZE)
 
         chunk = []
         for i, record in enumerate(records):
@@ -55,8 +70,8 @@ class Annotator(object):
         data = {
             'records': chunk,
             'fields': self.fields,
-            'include_errors': self.include_errors,
-            'annotator_params': self.annotator_params
+            'annotator_params': self.annotator_params,
+            'data': self.data
         }
 
         for r in self._client.post('/v1/annotate', data)['results']:
