@@ -1,8 +1,9 @@
 """Solvebio Task API Resource"""
 from .apiresource import ListableAPIResource
+from .apiresource import UpdateableAPIResource
 
 
-class Task(ListableAPIResource):
+class Task(ListableAPIResource, UpdateableAPIResource):
     """
     Tasks are operations on datasets or vaults.
     """
@@ -30,12 +31,5 @@ class Task(ListableAPIResource):
 
     def cancel(self):
         """ Cancel a task """
-        if 'cancel' not in self.available_actions:
-            # It may not be queued/running or another
-            # possible reason.
-            print("Task can not be canceled.")
-            return
-
-        child_ = self.child_object
-        child_.status = 'canceled'
-        child_.save()
+        self.status = "canceled"
+        self.save()
