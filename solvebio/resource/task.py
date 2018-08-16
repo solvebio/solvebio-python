@@ -31,5 +31,12 @@ class Task(ListableAPIResource, UpdateableAPIResource):
 
     def cancel(self):
         """ Cancel a task """
+        _status = self.status
         self.status = "canceled"
-        self.save()
+        try:
+            self.save()
+        except:
+            # Reset status to what it was before
+            # status update failure
+            self.status = _status
+            raise
