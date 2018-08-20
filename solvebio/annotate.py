@@ -34,10 +34,7 @@ class Annotator(object):
             if key in kwargs:
                 self.annotator_params[key] = kwargs.pop(key)
 
-        self.data = kwargs
-
-        # Unify annotator chunk_size and request chunk_size
-        # self.chunk_size = annotator_params.get('chunk_size', self.CHUNK_SIZE)
+        self.data = kwargs.get('data')
 
     def annotate(self, records, **kwargs):
         """Annotate a set of records with stored fields.
