@@ -1,8 +1,9 @@
 """Solvebio Task API Resource"""
 from .apiresource import ListableAPIResource
+from .apiresource import UpdateableAPIResource
 
 
-class Task(ListableAPIResource):
+class Task(ListableAPIResource, UpdateableAPIResource):
     """
     Tasks are operations on datasets or vaults.
     """
@@ -27,3 +28,15 @@ class Task(ListableAPIResource):
     def follow(self):
         """ Follow the child object but do not loop """
         self.child_object.follow(loop=False)
+
+    def cancel(self):
+        """ Cancel a task """
+        _status = self.status
+        self.status = "canceled"
+        try:
+            self.save()
+        except:
+            # Reset status to what it was before
+            # status update failure
+            self.status = _status
+            raise

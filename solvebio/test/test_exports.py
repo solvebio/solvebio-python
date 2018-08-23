@@ -1,10 +1,10 @@
 from __future__ import absolute_import
-import hashlib
+# import hashlib
 from solvebio import Filter
 
 from .helper import SolveBioTestCase
 
-from os import path, remove
+# from os import path, remove
 
 
 class ExportsTests(SolveBioTestCase):
@@ -19,7 +19,12 @@ class ExportsTests(SolveBioTestCase):
         self.query = self.dataset.query(filters=filters, fields=['rgd_id'],
                                         genome_build='GRCh37', limit=10)
 
+    """
+    # Removing this test
+    # since it generates an export each time.
+    # TODO mock this in the future
     def test_csv_exporter(self):
+
         # CSV exports are compressed
         test_file = '/tmp/test_export.csv'
         reference_file = 'solvebio/test/data/test_export.csv'
@@ -33,3 +38,4 @@ class ExportsTests(SolveBioTestCase):
             hashlib.sha1(open(reference_file, 'rb').read()).hexdigest()
         )
         remove(test_file)
+    """
