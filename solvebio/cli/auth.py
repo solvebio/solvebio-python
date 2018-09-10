@@ -69,8 +69,10 @@ def login(*args, **kwargs):
         print_user(user)
         save_credentials(user['email'].lower(), solvebio.api_key)
         _print_msg('Updated local credentials.')
+        return True
     else:
         _print_msg('Invalid credentials. You may not be logged-in.')
+        return False
 
 
 def interactive_login():
