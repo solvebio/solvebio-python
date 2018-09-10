@@ -10,8 +10,7 @@ import solvebio
 from ..client import client, SolveError
 from .credentials import (
     get_credentials,
-    delete_credentials,
-    save_credentials
+    delete_credentials, save_credentials
 )
 
 
@@ -65,11 +64,15 @@ def _send_install_report():
         pass
 
 
-def login(*args):
+def login(*args, **kwargs):
     """
     Prompt user for login information (domain/email/password).
     Domain, email and password are used to get the user's API key.
     """
+    if kwargs:
+        # Run the non-interactive login if kwargs are provided
+        return solvebio.login(**kwargs)
+
     if args and args[0].api_key:
         solvebio.api_key = args[0].api_key
         domain, email, api_key = whoami(silent=True)

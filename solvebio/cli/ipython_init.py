@@ -32,11 +32,10 @@ from solvebio import SavedQuery  # noqa
 from solvebio.utils.printing import pager  # noqa
 
 # Add some convenience functions to the interactive shell
-from solvebio.cli.auth import login as interactive_login
+from solvebio.cli.auth import login  # noqa
 from solvebio.cli.auth import logout  # noqa
 from solvebio.cli.auth import whoami  # noqa
 from solvebio.cli.auth import get_credentials  # noqa
-from solvebio import login  # noqa
 
 # If an API key is set in solvebio.api_key, use that.
 # Otherwise, look for credentials in the local file,
@@ -44,7 +43,7 @@ from solvebio import login  # noqa
 if solvebio.api_key or get_credentials():
     domain, email, solvebio.api_key = whoami()
 else:
-    interactive_login()
+    login()
 
 if not solvebio.api_key:
     sys.stdout.write("No authentication credentials found.\n")
