@@ -4,3 +4,10 @@ nose
 requests[security]
 six
 flask
+percy
+selenium
+dash
+dash_auth
+dash_core_components
+dash_html_components
+dash_renderer
