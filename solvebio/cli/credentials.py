@@ -81,7 +81,6 @@ def get_credentials():
     Returns the user's stored API key if a valid credentials file is found.
     Raises CredentialsError if no valid credentials file is found.
     """
-    print('GETTING CREDENTIALS')
     try:
         netrc_path = netrc.path()
         auths = netrc(netrc_path).authenticators(
