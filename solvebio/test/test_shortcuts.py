@@ -32,10 +32,6 @@ class CLITests(SolveBioTestCase):
         # Set the global key for CLI tests only
         solvebio.api_key = os.environ.get('SOLVEBIO_API_KEY', None)
 
-    def test_whoami(self):
-        domain, email, token = main.main(['whoami'])
-        self.assertEqual(token, os.environ.get('SOLVEBIO_API_KEY'))
-
     @mock.patch('solvebio.resource.Vault.all')
     @mock.patch('solvebio.resource.Object.all')
     @mock.patch('solvebio.resource.Dataset.create')

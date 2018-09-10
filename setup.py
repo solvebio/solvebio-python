@@ -52,7 +52,7 @@ try:
         url='https://github.com/solvebio/solvebio-python',
         packages=find_packages(),
         package_dir={'solvebio': 'solvebio'},
-        test_suite='solvebio.test.all',
+        test_suite='nose.collector',
         include_package_data=True,
         install_requires=install_requires,
         platforms='any',
