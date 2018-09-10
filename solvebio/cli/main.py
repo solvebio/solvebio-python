@@ -298,7 +298,7 @@ def main(argv=sys.argv[1:]):
         # look in local credentials
         try:
             from .credentials import get_credentials
-            _, solvebio.api_key = get_credentials()
+            solvebio.api_key = get_credentials()
         except:
             pass
 

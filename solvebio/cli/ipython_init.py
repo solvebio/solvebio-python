@@ -1,5 +1,3 @@
-import sys
-
 # Add common solvebio classes and methods our namespace here so that
 # inside the ipython shell users don't have run imports
 import solvebio  # noqa
@@ -37,13 +35,8 @@ from solvebio.cli.auth import logout  # noqa
 from solvebio.cli.auth import whoami  # noqa
 from solvebio.cli.auth import get_credentials  # noqa
 
-# If an API key is set in solvebio.api_key, use that.
-# Otherwise, look for credentials in the local file,
-# Otherwise, ask the user to log in.
-if solvebio.api_key or get_credentials():
-    domain, email, solvebio.api_key = whoami()
+# Always try to log the user in when launching the shell
+if solvebio.api_key:
+    login(api_key=solvebio.api_key)
 else:
     login()
-
-if not solvebio.api_key:
-    sys.stdout.write("No authentication credentials found.\n")

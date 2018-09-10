@@ -142,9 +142,7 @@ def login(**kwargs):
     elif kwargs.get('api_key'):
         api_key = kwargs.get('api_key')
     else:
-        creds = get_credentials()
-        if creds:
-            _, api_key = creds
+        api_key = get_credentials()
 
     if not (api_key or access_token):
         print('No credentials found. Requests to SolveBio may fail.')
