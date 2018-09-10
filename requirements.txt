@@ -3,3 +3,4 @@ mock
 nose
 requests[security]
 six
+flask
