@@ -72,7 +72,7 @@ def login(*args):
     """
     if args and args[0].api_key:
         solvebio.api_key = args[0].api_key
-        domain, email, api_key = whoami()
+        domain, email, api_key = whoami(silent=True)
         if not all([domain, email, api_key]):
             return False
     else:
@@ -115,7 +115,7 @@ def logout(*args):
     return False
 
 
-def whoami(*args):
+def whoami(*args, **kwargs):
     """
     Retrieves the email for the logged-in user.
     Uses local credentials or api_key if found.
@@ -141,11 +141,12 @@ def whoami(*args):
         api_key = None
         _print_msg("Error: {0}".format(e))
 
-    if email:
-        _print_msg('You are logged-in to the "{0}" domain '
-                   'as {1} with role {2}.'
-                   .format(domain, email, role))
-    else:
-        _print_msg('Invalid credentials. You may not be logged-in.')
+    if not kwargs.get('silent'):
+        if email:
+            _print_msg('You are logged-in to the "{0}" domain '
+                       'as {1} with role {2}.'
+                       .format(domain, email, role))
+        else:
+            _print_msg('Invalid credentials. You may not be logged-in.')
 
     return domain, email, api_key
