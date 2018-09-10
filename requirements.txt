@@ -1,3 +1,15 @@
-ipython
-nose
+flake8
+flask
 mock
+nose
+percy
+requests[security]
+selenium
+six
+tox
+tox-pyenv
+dash>=0.18.3
+dash_auth
+dash_core_components
+dash_html_components
+dash_renderer
