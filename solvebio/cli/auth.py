@@ -85,19 +85,22 @@ def login(*args, **kwargs):
             return False
 
         try:
+            # Reset the client's credentials
+            solvebio.api_key = None
+            solvebio.access_token = None
+            client.set_token()
             response = client.post('/v1/auth/token', {
                 'domain': domain.replace('.solvebio.com', ''),
                 'email': email,
                 'password': password
             })
-            api_key = response['token']
+            solvebio.api_key = response['token']
         except SolveError as e:
             print('Login failed: {0}'.format(e))
             return False
 
     delete_credentials()
     save_credentials(email.lower(), api_key)
-    solvebio.api_key = api_key
     client.set_host()
     client.set_token()
     _send_install_report()
