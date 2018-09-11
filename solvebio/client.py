@@ -139,16 +139,9 @@ class SolveClient(object):
 
     def whoami(self):
         try:
-            user = self.get('/v1/user', {})
+            return self.get('/v1/user', {})
         except:
-            print('Not logged-in.')
-        else:
-            email = user['email']
-            domain = user['account']['domain']
-            role = user['role']
-            print('You are logged-in to the "{0}" domain '
-                  'as {1} with role {2}.'
-                  .format(domain, email, role))
+            return None
 
     def get(self, url, params, **kwargs):
         """Issues an HTTP GET across the wire via the Python requests

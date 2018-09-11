@@ -79,4 +79,4 @@ class TestCredentials(unittest.TestCase):
                         'Should get newly set credentials for '
                         'host {0}'.format(solvebio.api_host))
 
-        self.assertEqual(auths, pair, 'Should get back creds we saved')
+        self.assertEqual(auths, pair[1], 'Should get back creds we saved')

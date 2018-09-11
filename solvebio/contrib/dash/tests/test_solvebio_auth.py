@@ -60,7 +60,9 @@ def create_apps(client_id):
         (k, SolveBioAuth(
             apps[k],
             'http://localhost:5000',
-            client_id
+            client_id,
+            secret_key='test-secret-key',
+            salt='test-salt'
         )) for k in app_permissions
     )
     apps['unregistered'] = dash.Dash('unregistered')
@@ -160,12 +162,14 @@ class ProtectedViewsTest(unittest.TestCase):
         auth = SolveBioAuth(
             app,
             'https://localhost:5000',
-            self._oauth_client_id
+            self._oauth_client_id,
+            secret_key='test-secret-key',
+            salt='test-salt'
         )
         app.layout = html.Div()
 
         creator = self._oauth_token
-        f = 'dash_solvebio_auth.solvebio_auth.SolveBioAuth.check_view_access'
+        f = 'solvebio.contrib.dash.solvebio_auth.SolveBioAuth.check_view_access' # noqa
         with mock.patch(f, wraps=auth.check_view_access) as wrapped:
             self.check_endpoints(auth, app, creator)
             res = self.check_endpoints(auth, app, creator)
