@@ -1,5 +1,18 @@
 # Change Log
 
+## [v2.7.0](https://github.com/solvebio/solvebio-python/tree/v2.7.0) (2018-09-11)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.6.1...v2.7.0)
+
+**Implemented enhancements:**
+
+- Add data \(context\) to Annotator kwargs [\#271](https://github.com/solvebio/solvebio-python/issues/271)
+
+**Merged pull requests:**
+
+- Update Task objects and add shortcut to cancel tasks [\#273](https://github.com/solvebio/solvebio-python/pull/273) ([jsh2134](https://github.com/jsh2134))
+- add annotator\_params to annotate endpoint [\#272](https://github.com/solvebio/solvebio-python/pull/272) ([jsh2134](https://github.com/jsh2134))
+- add support for saving credentials with your api key [\#270](https://github.com/solvebio/solvebio-python/pull/270) ([davecap](https://github.com/davecap))
+
 ## [v2.6.1](https://github.com/solvebio/solvebio-python/tree/v2.6.1) (2018-07-10)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.6.0...v2.6.1)
 
