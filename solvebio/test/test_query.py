@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from solvebio.resource import Dataset
+
 from solvebio.query import Filter
 
 from .helper import SolveBioTestCase
@@ -11,7 +11,8 @@ class BaseQueryTest(SolveBioTestCase):
     """Test Paging Queries"""
     def setUp(self):
         super(BaseQueryTest, self).setUp()
-        self.dataset = Dataset.retrieve(self.TEST_DATASET_NAME)
+        self.dataset = self.client.Dataset.get_by_full_path(
+            self.TEST_DATASET_FULL_PATH)
 
     def test_basic(self):
         results = self.dataset.query().filter(
@@ -212,6 +213,16 @@ class BaseQueryTest(SolveBioTestCase):
         r1 = self.dataset.query(limit=limit)[limit - 1:][0]
         self.assertEqual(r0['hgnc_id'], r1['hgnc_id'])
 
+    def test_slice_offsets(self):
+        zero_two = self.dataset.query()[0:2]
+        one_three = self.dataset.query()[1:3]
+
+        # Ensure that the repr for [0:1] != [1:2]
+        self.assertNotEqual(repr(zero_two), repr(one_three))
+
+        # Ensure that the second repr for [0:2] == [1:3]
+        self.assertEqual(repr(zero_two[1]), repr(one_three[0]))
+
     def test_slice_ranges_with_small_limit(self):
         # Test slices larger than 'limit'
         limit = 1
@@ -272,3 +283,21 @@ class BaseQueryTest(SolveBioTestCase):
         # backwards
         for (i, idx) in reversed(list(enumerate(idxs))):
             self.assertEqual(cached[i], q[idx])
+
+    def test_field_filters(self):
+        limit = 1
+        results = self.dataset.query(limit=limit)
+        self.assertEqual(len(results[0].keys()), 41)
+
+        results = self.dataset.query(limit=limit, fields=['hgnc_id'])
+        self.assertEqual(len(results[0].keys()), 1)
+
+        results = self.dataset.query(
+            limit=limit, exclude_fields=['hgnc_id'])
+        self.assertEqual(len(results[0].keys()), 40)
+        self.assertTrue('hgnc_id' not in results[0].keys())
+
+    def test_entity_filters(self):
+        entities = [('gene', 'BRCA2')]
+        query = self.dataset.query(entities=entities)
+        self.assertEqual(query.count(), 1)

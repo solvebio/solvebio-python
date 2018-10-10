@@ -23,12 +23,12 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from __future__ import print_function
-from __future__ import unicode_literals
 from __future__ import absolute_import
-import six
+
 from six.moves import map
 from six.moves import range
 from six.moves import zip
+from six import string_types
 
 from collections import namedtuple
 from platform import python_version_tuple
@@ -40,7 +40,7 @@ if python_version_tuple()[0] < "3":
     _none_type = type(None)
     _int_type = int
     _float_type = float
-    _text_type = six.text_type
+    _text_type = str
     _binary_type = str
 else:
     from itertools import zip_longest as izip_longest
@@ -166,7 +166,7 @@ def _isint(string):
     """
     return type(string) is int or \
         (isinstance(string, _binary_type) or
-         isinstance(string, _text_type)) and \
+         isinstance(string, string_types)) and \
         _isconvertible(int, string)
 
 
@@ -180,7 +180,7 @@ def _type(string, has_invisible=True):
     True
     >>> _type("1") is type(1)
     True
-    >>> _type(u'\x1b[31m42\x1b[0m') is type(42)
+    >>> _type('\x1b[31m42\x1b[0m') is type(42)
     True
     >>> _type('\x1b[31m42\x1b[0m') is type(42)
     True
@@ -194,7 +194,7 @@ def _type(string, has_invisible=True):
     if string is None:
         return _none_type
     elif _isint(string):
-        return int
+        return _int_type
     elif _isnumber(string):
         return float
     elif isinstance(string, _binary_type):
@@ -235,14 +235,14 @@ def _padleft(width, s, has_invisible=True):
     """
     Flush right.
 
-    >>> _padleft(6, u'\u044f\u0439\u0446\u0430') \
-        == u'  \u044f\u0439\u0446\u0430'
+    >>> _padleft(6, '\u044f\u0439\u0446\u0430') \
+        == '  \u044f\u0439\u0446\u0430'
     True
 
     """
     iwidth = width + len(s) - len(_strip_invisible(s)) \
         if has_invisible else width
-    fmt = u"{0:>%ds}" % iwidth
+    fmt = "{0:>%ds}" % iwidth
     return fmt.format(s)
 
 
@@ -250,14 +250,14 @@ def _padright(width, s, has_invisible=True):
     """
     Flush left.
 
-    >>> _padright(6, u'\u044f\u0439\u0446\u0430') \
-        == u'\u044f\u0439\u0446\u0430  '
+    >>> _padright(6, '\u044f\u0439\u0446\u0430') \
+        == '\u044f\u0439\u0446\u0430  '
     True
 
     """
     iwidth = width + len(s) - len(_strip_invisible(s)) \
         if has_invisible else width
-    fmt = u"{0:<%ds}" % iwidth
+    fmt = "{0:<%ds}" % iwidth
     return fmt.format(s)
 
 
@@ -265,14 +265,14 @@ def _padboth(width, s, has_invisible=True):
     """
     Center string.
 
-    >>> _padboth(6, u'\u044f\u0439\u0446\u0430') \
-        == u' \u044f\u0439\u0446\u0430 '
+    >>> _padboth(6, '\u044f\u0439\u0446\u0430') \
+        == ' \u044f\u0439\u0446\u0430 '
     True
 
     """
     iwidth = width + len(s) - len(_strip_invisible(s)) \
         if has_invisible else width
-    fmt = u"{0:^%ds}" % iwidth
+    fmt = "{0:^%ds}" % iwidth
     return fmt.format(s)
 
 
@@ -349,7 +349,7 @@ def _column_type(strings, has_invisible=True):
     True
     >>> _column_type(["1", "2.3", "four"]) is _text_type
     True
-    >>> _column_type(["four", u'\u043f\u044f\u0442\u044c']) is _text_type
+    >>> _column_type(["four", '\u043f\u044f\u0442\u044c']) is _text_type
     True
     >>> _column_type([None, "brux"]) is _text_type
     True
@@ -361,16 +361,16 @@ def _column_type(strings, has_invisible=True):
     return reduce(_more_generic, types, int)
 
 
-def _format(val, valtype, floatfmt, missingval=u""):
+def _format(val, valtype, floatfmt, missingval=""):
     """
     Format a value accoding to its type.
 
     Unicode is supported:
 
-    >>> hrow = [u'\u0431\u0443\u043a\u0432\u0430', \
-                u'\u0446\u0438\u0444\u0440\u0430'] ; \
-        tbl = [[u'\u0430\u0437', 2], [u'\u0431\u0443\u043a\u0438', 4]] ; \
-        good_result = u'\\u0431\\u0443\\u043a\\u0432\\u0430      \
+    >>> hrow = ['\u0431\u0443\u043a\u0432\u0430', \
+                '\u0446\u0438\u0444\u0440\u0430'] ; \
+        tbl = [['\u0430\u0437', 2], ['\u0431\u0443\u043a\u0438', 4]] ; \
+        good_result = '\\u0431\\u0443\\u043a\\u0432\\u0430      \
                         \\u0446\\u0438\\u0444\\u0440\\u0430\\n-------\
                           -------\\n\\u0430\\u0437             \
                           2\\n\\u0431\\u0443\\u043a\\u0438           4' ; \
@@ -382,11 +382,11 @@ def _format(val, valtype, floatfmt, missingval=u""):
         return missingval
 
     if valtype in [int, _binary_type, _text_type]:
-        return u"{0}".format(val)
+        return "{0}".format(val)
     elif valtype is float:
         return format(float(val), floatfmt)
     else:
-        return u"{0}".format(val)
+        return "{0}".format(val)
 
 
 def _align_header(header, alignment, width):
@@ -462,7 +462,7 @@ def _normalize_tabular_data(tabular_data, headers, sort=True):
         nhs = len(headers)
         ncols = len(rows[0])
         if nhs < ncols:
-            headers = [u""] * (ncols - nhs) + headers
+            headers = [""] * (ncols - nhs) + headers
 
     return rows, headers
 
@@ -470,7 +470,7 @@ def _normalize_tabular_data(tabular_data, headers, sort=True):
 def _build_row(cells, padding, begin, sep, end):
     "Return a string which represents a row of data cells."
 
-    pad = u" " * padding
+    pad = " " * padding
     padded_cells = [pad + cell + pad for cell in cells]
 
     # SolveBio: we're only displaying Key-Value tuples (dimension of 2).
@@ -561,15 +561,15 @@ def _format_table(fmt, headers, rows, colwidths, colaligns):
 
 
 def tabulate(tabular_data, headers=[], tablefmt="orgmode",
-             floatfmt="g", aligns=[], missingval=u"", sort=True):
+             floatfmt="g", aligns=[], missingval="", sort=True):
     list_of_lists, headers = _normalize_tabular_data(tabular_data, headers,
                                                      sort=sort)
 
     # optimization: look for ANSI control codes once,
     # enable smart width functions only if a control code is found
-    plain_text = u'\n'.join(
+    plain_text = '\n'.join(
         ['\t'.join(map(_text_type, headers))] +
-        [u'\t'.join(map(_text_type, row)) for row in list_of_lists])
+        ['\t'.join(map(_text_type, row)) for row in list_of_lists])
 
     has_invisible = re.search(_invisible_codes, plain_text)
     if has_invisible:
@@ -612,6 +612,7 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
     rows = [[str(c).replace('\n', '').replace('\t', '').replace('\r', '')
             for c in r] for r in rows]
     return _format_table(tablefmt, headers, rows, minwidths, aligns)
+
 
 if __name__ == "__main__":
     data = [

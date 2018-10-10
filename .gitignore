@@ -17,3 +17,5 @@ tests/.coverage
 *.DS_Store
 .idea
 .tox
+.eggs/
+venv*

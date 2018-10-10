@@ -1,0 +1,18 @@
+dist: trusty
+language: python
+python:
+- '2.7'
+- '3.5'
+- '3.6'
+  # - 'pypy'
+install:
+- pip install -r requirements-dev.txt
+- pip install PyVCF==0.6.8 XlsxWriter===0.9.3
+script:
+- stty cols 80
+- nosetests -e test_solvebio_auth
+- flake8 solvebio
+notifications:
+  email: false
+  slack:
+    secure: fWjOk/qAmx3mSkks6FZ5CwY7JpnYAD18te2N681z/t1Ji3IEEIFawd7sm3pLijbOXZTBVyhopa4HfvyUOQ/ftzTEutTl8Ow9Cc5cJG3cTXNrqv8/GVEVInR2T0NJRZ8TOc93BAPp7HQ5Qfgk/4x05TBglhOdOYgrRRyWGpdeOB0=

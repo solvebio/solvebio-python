@@ -17,7 +17,7 @@ class TestTabulate(unittest.TestCase):
         self.assertEqual(t._isint('123.45'), False)
 
         self.assertEqual(t._type(None), t._none_type)
-        self.assertEqual(t._type(u'foo'), t._text_type)
+        self.assertEqual(t._type('foo'), t._text_type)
         self.assertEqual(t._type('1'), t._int_type)
         self.assertEqual(t._type(1), t._int_type)
         self.assertEqual(t._type('\x1b[31m42\x1b[0m'), t._int_type)
@@ -29,8 +29,8 @@ class TestTabulate(unittest.TestCase):
         self.assertEqual(t._afterpoint('eggs'), -1)
         self.assertEqual(t._afterpoint('123e45'), 2)
 
-        self.assertEqual(t._padleft(6, u'abcd'), u'  abcd')
-        self.assertEqual(t._padright(6, u"abcd"), u"abcd  ")
+        self.assertEqual(t._padleft(6, 'abcd'), '  abcd')
+        self.assertEqual(t._padright(6, "abcd"), "abcd  ")
 
         self.assertEqual(t._padboth(6, "abcd"), " abcd ")
 
@@ -51,7 +51,7 @@ class TestTabulate(unittest.TestCase):
         self.assertEqual(t._column_type(["1", "2"]), t._int_type)
         self.assertEqual(t._column_type(["1", "2.3"]), t._float_type)
         self.assertEqual(t._column_type(["1", "2.3", "four"]), t._text_type)
-        self.assertEqual(t._column_type(["four", u'\u043f\u044f\u0442\u044c']),
+        self.assertEqual(t._column_type(["four", '\u043f\u044f\u0442\u044c']),
                          t._text_type)
 
         self.assertEqual(t._column_type([None, "brux"]), t._text_type)
@@ -76,8 +76,8 @@ spam\t23
 | XY     |       2 |
 | lmno   |       4 |
 """
-        hrow = [u'abcd', u'12345']
-        tbl = [[u"XY", 2], ["lmno", 4]]
+        hrow = ['abcd', '12345']
+        tbl = [["XY", 2], ["lmno", 4]]
 
         # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(t.tabulate(tbl, hrow), expected[1:-1],
@@ -104,7 +104,7 @@ spam\t23
 
         # [-1:1] below to remove leading and trailing "\n"s above
         self.assertEqual(got, expected[1:-1],
-                         'mixed data with arrays; close to actual' +
+                         'mixed data with arrays; close to actual ' +
                          'query output')
 
         expected = """
@@ -120,6 +120,7 @@ spam\t23
                          aligns=('right', 'left'), sort=False)
         self.assertEqual(got, expected[1:-1],
                          'mixed data with arrays; unsorted')
+
 
 if __name__ == "__main__":
     unittest.main()

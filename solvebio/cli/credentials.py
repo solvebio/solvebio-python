@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from __future__ import absolute_import
 import six
 
@@ -19,11 +20,21 @@ class netrc(_netrc):
     """
     @staticmethod
     def path():
+        if os.name == 'nt':
+            # Windows
+            path = '~\\_solvebio\\credentials'
+        else:
+            # *nix
+            path = '~/.solvebio/credentials'
 
         try:
-            path = os.path.join(os.environ['HOME'], '.solvebio', 'credentials')
+            path = os.path.expanduser(path)
         except KeyError:
-            raise IOError("Could not find credentials file: $HOME is not set")
+            # os.path.expanduser can fail when $HOME is undefined and
+            # getpwuid fails. See http://bugs.python.org/issue20164
+            raise IOError(
+                "Could not find any home directory for '{0}'"
+                .format(path))
 
         if not os.path.isdir(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
@@ -39,7 +50,7 @@ class netrc(_netrc):
 
     def save(self, path):
         """Dump the class data in the format of a .netrc file."""
-        rep = u""
+        rep = ""
         for host in self.hosts.keys():
             attrs = self.hosts[host]
             rep = rep + "machine " + host + "\n\tlogin " \
@@ -67,7 +78,7 @@ class CredentialsError(BaseException):
 
 def get_credentials():
     """
-    Returns the tuple user / password given a path for the credentials file.
+    Returns the user's stored API key if a valid credentials file is found.
     Raises CredentialsError if no valid credentials file is found.
     """
     try:
@@ -79,7 +90,8 @@ def get_credentials():
             'Could not open credentials file: ' + str(e))
 
     if auths:
-        return (auths[0], auths[2])
+        # auths = (login, account, password)
+        return auths[2]
     else:
         return None
 

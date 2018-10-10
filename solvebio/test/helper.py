@@ -14,16 +14,18 @@ import solvebio
 
 
 class SolveBioTestCase(unittest.TestCase):
-    TEST_DATASET_NAME = 'HGNC/1.0.0-1/HGNC'
+    TEST_DATASET_FULL_PATH = 'solvebio:public:/HGNC/1.0.0-1/HGNC'
 
     def setUp(self):
         super(SolveBioTestCase, self).setUp()
-        solvebio.api_key = os.environ.get('SOLVEBIO_API_KEY', None)
+        api_key = os.environ.get('SOLVEBIO_API_KEY', None)
+        api_host = os.environ.get('SOLVEBIO_API_HOST', None)
+        self.client = solvebio.SolveClient(host=api_host, token=api_key)
 
     def check_response(self, response, expect, msg):
         subset = [(key, response[key]) for
                   key in [x[0] for x in expect]]
-        self.assertEqual(subset, expect, msg)
+        self.assertEqual(subset, expect)
 
     # Python < 2.7 compatibility
     def assertRaisesRegexp(self, exception, regexp, callable, *args, **kwargs):

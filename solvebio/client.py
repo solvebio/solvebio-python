@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+
 import json
 import time
+import inspect
+
 import solvebio
 
 from .version import VERSION
@@ -12,7 +15,12 @@ import platform
 import requests
 import textwrap
 import logging
+
+from requests import Session
+from requests import codes
 from requests.auth import AuthBase
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 try:
     from urlparse import urljoin
@@ -45,7 +53,7 @@ def _handle_request_error(e):
         msg = ("Unexpected error communicating with SolveBio.\n"
                "It looks like there's probably a configuration "
                "issue locally.\nIf this problem persists, let us "
-               "know at contact@solvebio.com.")
+               "know at support@solvebio.com.")
         err = "A %s was raised" % (type(e).__name__,)
         if str(e):
             err += " with error message %s" % (str(e),)
@@ -78,16 +86,16 @@ class SolveTokenAuth(AuthBase):
         return r
 
     def __repr__(self):
-        return u'<SolveTokenAuth {0} {1}>'.format(self.token_type, self.token)
+        return '<SolveTokenAuth {0} {1}>'.format(self.token_type, self.token)
 
 
 class SolveClient(object):
     """A requests-based HTTP client for SolveBio API resources"""
 
-    def __init__(self, api_host=None, token=None, token_type='Token'):
-        self._api_host = api_host
-        self._token = token
-        self._token_type = token_type
+    def __init__(self, host=None, token=None, token_type='Token',
+                 include_resources=True):
+        self.set_host(host)
+        self.set_token(token, token_type)
         self._headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -98,6 +106,42 @@ class SolveClient(object):
                 platform.python_version()
             )
         }
+
+        # Use a session with a retry policy to handle
+        # intermittent connection errors.
+        retries = Retry(
+            total=5,
+            backoff_factor=0.1,
+            status_forcelist=[
+                codes.bad_gateway,
+                codes.service_unavailable,
+                codes.gateway_timeout
+            ])
+        adapter = HTTPAdapter(max_retries=retries)
+        self._session = Session()
+        self._session.mount(self._host, adapter)
+
+        # Import all resources into the client
+        if include_resources:
+            skip = ('SolveError', 'SolveClient',)
+            for name, class_ in inspect.getmembers(solvebio, inspect.isclass):
+                if name in skip:
+                    continue
+                subclass = type(name, (class_,), {'_client': self})
+                setattr(self, name, subclass)
+
+    def set_host(self, host=None):
+        self._host = host or solvebio.api_host
+        validate_api_host_url(self._host)
+
+    def set_token(self, token=None, token_type='Token'):
+        self._auth = SolveTokenAuth(token, token_type)
+
+    def whoami(self):
+        try:
+            return self.get('/v1/user', {})
+        except:
+            return None
 
     def get(self, url, params, **kwargs):
         """Issues an HTTP GET across the wire via the Python requests
@@ -136,10 +180,6 @@ class SolveClient(object):
         allow_redirects: bool, optional
            set *False* we won't follow any redirects
 
-        auth: function, optional
-           Function to call to get an Authorization key.
-           If not given we'll use self._token.
-
         headers: dict, optional
 
           Custom headers can be provided here; generally though this
@@ -169,7 +209,7 @@ class SolveClient(object):
 
         opts = {
             'allow_redirects': True,
-            'auth': SolveTokenAuth(self._token, self._token_type),
+            'auth': self._auth,
             'data': {},
             'files': None,
             'headers': dict(self._headers),
@@ -189,14 +229,8 @@ class SolveClient(object):
         else:
             opts['data'] = json.dumps(opts['data'])
 
-        # Expand URL with API host if none was given
-        api_host = self._api_host or solvebio.api_host
-
-        # validate API host
-        validate_api_host_url(api_host)
-
-        if not url.startswith(api_host):
-            url = urljoin(api_host, url)
+        if not url.startswith(self._host):
+            url = urljoin(self._host, url)
 
         logger.debug('API %s Request: %s' % (method, url))
 
@@ -204,7 +238,7 @@ class SolveClient(object):
             self._log_raw_request(method, url, **opts)
 
         try:
-            response = requests.request(method, url, **opts)
+            response = self._session.request(method, url, **opts)
         except Exception as e:
             _handle_request_error(e)
 
@@ -231,5 +265,8 @@ class SolveClient(object):
         logger.debug(prepped.headers)
         logger.debug(prepped.body)
 
+    def __repr__(self):
+        return '<SolveClient {0} {1}>'.format(self._host, self._auth.token)
 
-client = SolveClient()
+
+client = SolveClient(include_resources=False)

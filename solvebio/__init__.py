@@ -57,8 +57,17 @@ def _init_logging():
 
     if logfile:
         logfile_path = _os.path.expanduser(logfile)
-        if not _os.path.isdir(_os.path.dirname(logfile_path)):
-            _os.makedirs(_os.path.dirname(logfile_path))
+        logdir = _os.path.dirname(logfile_path)
+
+        if not _os.path.isdir(logdir):
+            # Handle a race condition here when running
+            # multiple services that import this package.
+            try:
+                _os.makedirs(logdir)
+            except OSError as err:
+                # Re-raise anything other than 'File exists'.
+                if err[1] != 'File exists':
+                    raise err
 
         file_handler = _logging.FileHandler(logfile_path)
         file_handler.setLevel(loglevel_file)
@@ -77,14 +86,34 @@ def _init_logging():
 
         base_logger.addHandler(NullHandler())
 
+
 _init_logging()
 
 from .version import VERSION  # noqa
 from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
+from .annotate import Annotator, Expression
+from .client import SolveClient
 from .resource import (
-    Depository, DepositoryVersion, Annotation, Sample,
-    User, Dataset, DatasetField
+    Application,
+    Beacon,
+    BeaconSet,
+    Dataset,
+    DatasetCommit,
+    DatasetExport,
+    DatasetField,
+    DatasetImport,
+    DatasetMigration,
+    DatasetTemplate,
+    Group,
+    Manifest,
+    Object,
+    User,
+    Vault,
+    VaultSyncTask,
+    ObjectCopyTask,
+    SavedQuery,
+    Task
 )
 
 
@@ -101,34 +130,56 @@ def login(**kwargs):
     No errors are raised if no key is found.
     """
     from .cli.auth import get_credentials
-    global access_token, api_key
+    global access_token, api_key, api_host
+
     # Clear any existing auth keys
     access_token, api_key = None, None
+    # Update the host
+    api_host = kwargs.get('api_host') or api_host
 
     if kwargs.get('access_token'):
         access_token = kwargs.get('access_token')
     elif kwargs.get('api_key'):
         api_key = kwargs.get('api_key')
     else:
-        creds = get_credentials()
-        if creds:
-            _, api_key = creds
+        api_key = get_credentials()
 
     if not (api_key or access_token):
         print('No credentials found. Requests to SolveBio may fail.')
+    else:
+        from solvebio.client import client
+        # Update the client host and token
+        client.set_host()
+        client.set_token()
 
 
 __all__ = [
-    'Annotation',
+    'Annotator',
+    'Application',
+    'Expression',
     'BatchQuery',
+    'Beacon',
+    'BeaconSet',
     'Dataset',
+    'DatasetCommit',
     'DatasetField',
-    'Depository',
-    'DepositoryVersion',
+    'DatasetExport',
+    'DatasetImport',
+    'DatasetMigration',
+    'DatasetTemplate',
     'Filter',
-    'Query',
     'GenomicFilter',
+    'Group',
+    'Manifest',
+    'Object',
+    'ObjectCopyTask',
+    'Query',
+    'SavedQuery',
+    'SolveClient',
     'SolveError',
-    'Sample',
-    'User'
+    'VaultSyncTask',
+    'Task',
+    'Vault',
+    'User',
+    'VERSION'
 ]

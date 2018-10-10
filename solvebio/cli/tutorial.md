@@ -19,29 +19,66 @@ View this tutorial online: https://www.solvebio.com/docs/python-tutorial
 
 ## Navigate the Library
 
-List all available depositories:
 
-    Depository.all()
+To list all available vaults, run:
+
+    Vault.all()
 
 
-Depositories are versioned containers of datasets. There are many versions of each depository, and each version may have one or more datasets.
+Vaults are like filesystems on a computer.  They can contain files,
+folders, and a special SolveBio-specific object called a Dataset.
 
-To list all datasets from all depositories:
+To list all datasets from all vaults, run:
 
     Dataset.all()
 
+To retrieve a dataset by its full path, send your account domain, the vault
+name, and the dataset path, all separated by a colon:
 
-Pass "latest=True" to get all the latest versions of each dataset:
+    Dataset.get_by_full_path('acme:test-vault:/path/to/my/dataset')
 
-    Dataset.all(latest=True)
+Similarly, to retrieve a publicly available dataset, use the `solvebio`
+account domain, the `public` vault, and the appropriate dataset path:
+
+    Dataset.get_by_full_path('solvebio:public:/ICGC/3.0.0-23/Donor')
+
+SolveBio maintains a list of publicly available datasets.  To list them,
+run:
+
+    vault = Vault.get_by_full_path('solvebio:public')
+    vault.datasets()
+
+You can browse any Vault from the client simply by calling the appropriate
+methods on a Vault object:
+
+    vault = Vault.get_by_full_path('solvebio:public')
+    vault.files()
+    vault.folders()
+    vault.datasets()
+    vault.ls()  # Includes files, folders, and datatsets
 
 
-To retrieve a dataset by its full name ("ClinVar/3.0.0-2014-12-05/Variants"):
+Every user has a dedicated, non-shareable, personal vault which is private
+to them.  This vault can be obtained by running:
 
-    Dataset.retrieve('ClinVar/3.0.0-2014-12-05/Variants')
+    vault = Vault.get_personal_vault()
+    vault.name
+    > 'user-3000'  # This is automatically generated based on your User ID
+                   # and cannot be changed.
 
-By leaving out the version (for example: "ClinVar/Variants"), you get a quick shortcut to the latest version of any dataset.
-**Be careful here: you should always specify an exact version in your production code**.
+
+The objects contained in a vault (files, folders, and datasets) can be
+retrieved directly using the Object class, or via the `objects` property of a
+Vault instance:
+
+    Object.retrieve(488353213969592764)
+    Object.all(path='/1000G')
+    Object.all(path='/1000G', vault_id=7205)
+    Object.all(path='/1000G', vault_name='public')
+
+    vault = Vault.get_personal_vault()
+    vault.objects.all(path='/1000G')
+    vault.objects.all(query='GRC')
 
 
 ## Query a Dataset
@@ -50,7 +87,7 @@ Every dataset in SolveBio can be queried the same way. You can build queries man
 
 In this example, we will query the latest Variants dataset from ClinVar.
 
-    dataset = Dataset.retrieve('ClinVar/Variants')
+    dataset = Dataset.get_by_full_path('solvebio:public:/ClinVar/3.7.4-2017-01-04/Variants-GRCh38')
     dataset.query()
 
 
@@ -86,24 +123,16 @@ Use the "Filter" class to do more advanced filtering. For example, combine a few
 
 ## Genomic Datasets
 
-Some SolveBio datasets allow querying by genome build. We call these "genomic datasets". To find out if a dataset is genomic, and what genome builds are supported:
-
-    dataset.is_genomic
-    > True
-    dataset.genome_builds
-    > ['GRCh38', 'GRCh37']
-
-
-By default, build 'GRCh37' will be selected if it is available. If not, the most recent build will be selected by default. To manually select a genome build when querying, specify the build as a query parameter:
-
-    dataset.query(genome_build='GRCh38')
-
+Some SolveBio datasets are suffixed with a genome build (GRCh37, GRCh38,
+NCBI36) to indicate they are genomic datasets.  Please ensure that you
+are using the dataset whose genomic build is compatible with your other
+tools and procedures.
 
 On genomic datasets, you may query by position (single nucleotide) or by range:
 
-    dataset.query(genome_build='GRCh37').position('chr1', 976629)
+    dataset.query().position('chr1', 976629)
     > ...
-    dataset.query(genome_build='GRCh37').range('chr1', 976629, 1000000)
+    dataset.query().range('chr1', 976629, 1000000)
     > ...
 
 
@@ -111,15 +140,12 @@ Position and range queries return all results that overlap with the specified co
 Add the parameter `exact=True` to request exact matches.
 
 
-    dataset.query(genome_build='GRCh37').position('chr1', 883516, exact=True)
+    dataset.query().position('chr1', 883516, exact=True)
     > ...
-    dataset.query(genome_build='GRCh37').range('chr9', 136289550, 136289579, exact=True)
+    dataset.query().range('chr9', 136289550, 136289579, exact=True)
     > ...
 
 
 ## Next Steps
 
-To learn more about a dataset and its fields, use `dataset.help()`.
-For more information on queries and filters, see the API reference: https://www.solvebio.com/docs/api?python
-
-
+For more information on queries and filters, see the API reference: https://docs.solvebio.com/guides/quickstarts/python/

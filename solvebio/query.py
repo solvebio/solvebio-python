@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+
 import six
+import json
 
 from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
+from .errors import SolveError
 
 import copy
 import logging
@@ -51,11 +54,24 @@ class Filter(object):
                       start__gt=10000,
                       end__lte=20000)
     """
-    def __init__(self, **filters):
+    def __init__(self, *raw_filters, **filters):
         """Creates a Filter"""
         # Set deepcopy to False for faster Filter building
         self.deepcopy = True
+
         filters = list(filters.items())
+        for flt in raw_filters:
+            try:
+                flt = json.loads(flt)
+                # If the result is a dict, wrap in a list.
+                if isinstance(flt, dict):
+                    flt = [flt]
+            except:
+                raise Exception(
+                    'Invalid raw filter, must be a JSON string: {}'
+                    .format(flt))
+
+            filters += flt
 
         if len(filters) > 1:
             self.filters = [{'and': filters}]
@@ -211,6 +227,9 @@ class Query(object):
     # that iterating over a query can cause more fetches.
     DEFAULT_PAGE_SIZE = 100
 
+    # Special case for Query class to pre-set SolveClient
+    _client = None
+
     def __init__(
             self,
             dataset_id,
@@ -218,10 +237,15 @@ class Query(object):
             genome_build=None,
             filters=None,
             fields=None,
+            exclude_fields=None,
+            entities=None,
+            ordering=None,
             limit=float('inf'),
             page_size=DEFAULT_PAGE_SIZE,
             result_class=dict,
-            debug=False):
+            debug=False,
+            error=None,
+            **kwargs):
         """
         Creates a new Query object.
 
@@ -231,19 +255,25 @@ class Query(object):
           - `genome_build`: The genome build to use for the query.
           - `result_class` (optional): Class of object returned by query.
           - `fields` (optional): List of specific fields to retrieve.
+          - `exclude_fields` (optional): List of specific fields to exclude.
+          - `entities` (optional): List of entity tuples to filter on.
+          - `ordering` (optional): List of fields to order the results by.
           - `filters` (optional): Filter or List of filter objects.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
           - `debug` (optional): Sends debug information to the API.
         """
         self._dataset_id = dataset_id
-        self._data_url = u'/v1/datasets/{0}/data'.format(dataset_id)
+        self._data_url = '/v2/datasets/{0}/data'.format(dataset_id)
         self._query = query
         self._genome_build = genome_build
         self._result_class = result_class
         self._fields = fields
+        self._exclude_fields = exclude_fields
+        self._entities = entities
+        self._ordering = ordering
         self._debug = debug
-
+        self._error = error
         if filters:
             if isinstance(filters, Filter):
                 filters = [filters]
@@ -273,21 +303,39 @@ class Query(object):
         if self._page_size <= 0:
             raise Exception('\'page_size\' parameter must be > 0')
 
-    def _clone(self, filters=None):
+        # Set up the SolveClient
+        # (kwargs overrides pre-set, which overrides global)
+        self._client = kwargs.get('client') or self._client or client
+
+    def _clone(self, filters=None, limit=None):
         new = self.__class__(self._dataset_id,
                              query=self._query,
                              genome_build=self._genome_build,
                              limit=self._limit,
                              fields=self._fields,
+                             exclude_fields=self._exclude_fields,
+                             entities=self._entities,
+                             ordering=self._ordering,
                              page_size=self._page_size,
                              result_class=self._result_class,
-                             debug=self._debug)
+                             debug=self._debug,
+                             client=self._client)
         new._filters += self._filters
 
         if filters:
             new._filters += filters
 
+        if limit:
+            new._limit = limit
+
         return new
+
+    def limit(self, limit):
+        """
+        Returns a new Query instance with the new
+        limit values.
+        """
+        return self._clone(limit=limit)
 
     def filter(self, *filters, **kwargs):
         """
@@ -332,7 +380,7 @@ class Query(object):
         Returns the total number of results returned by a query.
         The count is dependent on the filters, but independent of any limit.
         It is like SQL:
-           SELECT COUNT(*) FROM <depository> [WHERE condition].
+           SELECT COUNT(*) FROM <table> [WHERE condition].
         See also __len__ for a function that is dependent on limit.
         """
         # self.total will warm up the response if it needs to
@@ -387,10 +435,11 @@ class Query(object):
     def _buffer(self):
         if self._response is None:
             logger.debug('warmup (buffer)')
-            self.execute()
+            self.execute(self._slice.start if self._slice else 0)
         return self._response['results']
 
-    def _process_filters(self, filters):
+    @classmethod
+    def _process_filters(cls, filters):
         """Takes a list of filters and returns JSON
 
         :Parameters:
@@ -398,33 +447,41 @@ class Query(object):
 
         Returns: List of JSON API filters
         """
-        rv = []
+        data = []
+
+        # Filters should always be a list
         for f in filters:
             if isinstance(f, Filter):
                 if f.filters:
-                    rv.extend(self._process_filters(f.filters))
-                    continue
-
+                    data.extend(cls._process_filters(f.filters))
             elif isinstance(f, dict):
                 key = list(f.keys())[0]
                 val = f[key]
 
                 if isinstance(val, dict):
-                    filter_filters = self._process_filters(val)
+                    # pass val (a dict) as list
+                    # so that it gets processed properly
+                    filter_filters = cls._process_filters([val])
                     if len(filter_filters) == 1:
                         filter_filters = filter_filters[0]
-                    rv.append({key: filter_filters})
+                    data.append({key: filter_filters})
                 else:
-                    rv.append({key: self._process_filters(val)})
+                    data.append({key: cls._process_filters(val)})
             else:
-                rv.extend((f,))
-        return rv
+                data.extend((f,))
+
+        return data
 
     def __repr__(self):
-        if len(self) == 0:
-            return u'Query returned 0 results.'
+        # Check that Query object does not have any previous errors
+        # otherwise, raise the error.
+        if self._error:
+            raise self._error
 
-        return u'\n%s\n\n... %s more results.' % (
+        if len(self) == 0:
+            return 'Query returned 0 results.'
+
+        return '\n%s\n\n... %s more results.' % (
             tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
                      aligns=['right', 'left'], sort=True),
             pretty_int(len(self) - 1))
@@ -432,7 +489,13 @@ class Query(object):
     def __getattr__(self, key):
         if self._response is None:
             logger.debug('warmup (__getattr__: %s)' % key)
-            self.execute()
+            self.execute(self._slice.start if self._slice else 0)
+
+        # Check that Query object does not have any previous errors
+        # otherwise, raise the error.
+        # execute() sets the error, so the check is placed after it.
+        if self._error:
+            raise self._error
 
         if key in self._response:
             return self._response[key]
@@ -512,10 +575,7 @@ class Query(object):
     def __iter__(self):
         # e.g. [r for r in results] will NOT call __getitem__ and
         # requires that we start iteration from the 0th element
-        if self._slice:
-            self.execute(self._slice.start)
-        else:
-            self.execute(0)
+        self.execute(self._slice.start if self._slice else 0)
 
         # Reset the cursor
         self._cursor = 0  # Count the number of results returned
@@ -559,7 +619,7 @@ class Query(object):
             q['query'] = self._query
 
         if self._filters:
-            filters = self._process_filters(self._filters)
+            filters = Query._process_filters(self._filters)
             if len(filters) > 1:
                 q['filters'] = [{'and': filters}]
             else:
@@ -567,6 +627,15 @@ class Query(object):
 
         if self._fields is not None:
             q['fields'] = self._fields
+
+        if self._exclude_fields is not None:
+            q['exclude_fields'] = self._exclude_fields
+
+        if self._entities is not None:
+            q['entities'] = self._entities
+
+        if self._ordering is not None:
+            q['ordering'] = self._ordering
 
         if self._genome_build is not None:
             q['genome_build'] = self._genome_build
@@ -597,18 +666,103 @@ class Query(object):
 
         logger.debug('executing query. from/limit: %6d/%d' %
                      (_params['offset'], _params['limit']))
-        self._response = client.post(self._data_url, _params)
+
+        # If the request results in a SolveError (ie bad filter) set the error.
+        try:
+            self._response = self._client.post(self._data_url, _params)
+        except SolveError as e:
+            self._error = e
+            raise
+
         logger.debug('query response took: %(took)d ms, total: %(total)d'
                      % self._response)
         return _params, self._response
+
+    def export(self, format='json', follow=True, limit=None):
+        from solvebio import DatasetExport
+
+        params = self._build_query()
+        params.pop('offset', None)
+        params.pop('ordering', None)
+
+        # if limit is not set use max limit
+        if not limit and self._limit < float('inf'):
+            limit = self._limit
+
+        if limit:
+            params['limit'] = limit
+
+        export = DatasetExport.create(
+            dataset_id=self._dataset_id,
+            format=format,
+            params=params,
+            client=self._client
+        )
+
+        if follow:
+            export.follow()
+
+        return export
+
+    def migrate(self, target, follow=True, **kwargs):
+        """
+        Migrate the data from the Query to a target dataset.
+
+        Valid optional kwargs include:
+
+        * target_fields
+        * include_errors
+        * validation_params
+        * metadata
+        * commit_mode
+
+        """
+        from solvebio import Dataset
+        from solvebio import DatasetMigration
+
+        # Target can be provided as a Dataset, or as an ID.
+        if isinstance(target, Dataset):
+            target_id = target.id
+        else:
+            target_id = target
+
+        # If a limit is set in the Query and not overridden here, use it.
+        limit = kwargs.pop('limit', None)
+        if not limit and self._limit < float('inf'):
+            limit = self._limit
+
+        # Build the source_params
+        params = self._build_query(limit=limit)
+        params.pop('offset', None)
+        params.pop('ordering', None)
+
+        migration = DatasetMigration.create(
+            source_id=self._dataset_id,
+            target_id=target_id,
+            source_params=params,
+            client=self._client,
+            **kwargs)
+
+        if follow:
+            migration.follow()
+
+        return migration
+
+    def annotate(self, fields, **kwargs):
+        from solvebio.annotate import Annotator
+
+        return Annotator(fields, client=self._client, **kwargs).annotate(self)
 
 
 class BatchQuery(object):
     """
     BatchQuery accepts a list of Query objects and executes them
-    in a single request to /v1/batch_query.
+    in a single request to /v2/batch_query.
     """
-    def __init__(self, queries):
+    # Allows pre-setting a SolveClient
+    _client = None
+
+    def __init__(self, queries, **kwargs):
         """
         Expects a list of Query objects.
         """
@@ -616,6 +770,7 @@ class BatchQuery(object):
             queries = [queries]
 
         self._queries = queries
+        self._client = kwargs.get('client') or self._client or client
 
     def _build_query(self):
         query = {'queries': []}
@@ -636,5 +791,5 @@ class BatchQuery(object):
     def execute(self, **params):
         _params = self._build_query()
         _params.update(**params)
-        response = client.post('/v1/batch_query', _params)
+        response = self._client.post('/v2/batch_query', _params)
         return response

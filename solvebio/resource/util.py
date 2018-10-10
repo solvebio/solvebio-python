@@ -17,11 +17,10 @@ def camelcase_to_underscore(name):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
-def pluralize(name):
-    if name.endswith('y'):
-        name = name[:-1] + 'ie'
-    return name + "s"
+def class_to_api_name(name, pluralize=True):
+    if pluralize:
+        if name.endswith('y'):
+            name = name[:-1] + 'ie'
+        name = name + "s"
 
-
-def class_to_api_name(name):
-    return pluralize(camelcase_to_underscore(name))
+    return camelcase_to_underscore(name)
