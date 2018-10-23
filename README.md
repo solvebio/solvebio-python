@@ -13,19 +13,6 @@ only (released on July 28th, 2017).
 Developer documentation is available at [docs.solvebio.com](https://docs.solvebio.com). For more information about SolveBio visit [www.solvebio.com](https://www.solvebio.com).
 
 
-Dependencies (Ubuntu)
----------------------
-
-When installing SolveBio on Ubuntu (version 14 and up), you may need the
-following dependencies:
-
-* libgnutls-dev
-* libcurl4-gnutls-dev
-
-To install them, run:
-
-    sudo apt-get install libcurl4-gnutls-dev libgnutls-dev
-
 
 Installation & Setup
 --------------------
