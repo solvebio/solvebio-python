@@ -1,5 +1,16 @@
 # Change Log
 
+## [v2.8.0](https://github.com/solvebio/solvebio-python/tree/v2.8.0) (2018-10-29)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.7.0...v2.8.0)
+
+**Implemented enhancements:**
+
+- Remove deprecated exporters and pycurl dependency [\#281](https://github.com/solvebio/solvebio-python/issues/281)
+
+**Merged pull requests:**
+
+- Remove deprecated/unused exporters and remove curl dependency [\#282](https://github.com/solvebio/solvebio-python/pull/282) ([davecap](https://github.com/davecap))
+
 ## [v2.7.0](https://github.com/solvebio/solvebio-python/tree/v2.7.0) (2018-09-11)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.6.1...v2.7.0)
 
