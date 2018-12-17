@@ -409,9 +409,7 @@ class Query(object):
             if not isinstance(f, six.string_types):
                 raise AttributeError('Facet field arguments must be strings')
 
-        q = self._clone()
-        q._limit = 0
-        q.execute(offset=0, facets=facets)
+        q = self.limit(0).execute(offset=0, facets=facets)
         return q._response.get('facets')
 
     def __len__(self):
@@ -600,7 +598,11 @@ class Query(object):
 
         Returns: The next result.
         """
-        # This will yield a max of min(limit, count()) results
+        if not hasattr(self, '_cursor'):
+            # Iterator not initialized yet`
+            self.__iter__()
+
+        # len(self) returns `min(limit, total)` results
         if self._cursor == len(self):
             raise StopIteration()
 
