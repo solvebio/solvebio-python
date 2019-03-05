@@ -86,7 +86,10 @@ class SolveTokenAuth(AuthBase):
         return r
 
     def __repr__(self):
-        return '<SolveTokenAuth {0} {1}>'.format(self.token_type, self.token)
+        if self.token:
+            return self.token_type
+        else:
+            return 'Anonymous'
 
 
 class SolveClient(object):
@@ -266,7 +269,7 @@ class SolveClient(object):
         logger.debug(prepped.body)
 
     def __repr__(self):
-        return '<SolveClient {0} {1}>'.format(self._host, self._auth.token)
+        return '<SolveClient {0} {1}>'.format(self._host, self._auth)
 
 
 client = SolveClient(include_resources=False)

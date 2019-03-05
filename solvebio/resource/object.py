@@ -221,9 +221,12 @@ class Object(CreateableAPIResource,
             'Content-Length': str(size),
         }
 
-        upload_resp = requests.put(upload_url,
-                                   data=open(local_path, 'rb'),
-                                   headers=headers)
+        # Use a session with a retry policy to handle connection errors.
+        session = requests.Session()
+        session.mount('https://', requests.adapters.HTTPAdapter(max_retries=5))
+        upload_resp = session.put(upload_url,
+                                  data=open(local_path, 'rb'),
+                                  headers=headers)
 
         if upload_resp.status_code != 200:
             print('Notice: Upload status code for {0} was {1}'.format(
