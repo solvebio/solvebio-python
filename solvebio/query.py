@@ -599,7 +599,7 @@ class Query(object):
         Returns: The next result.
         """
         if not hasattr(self, '_cursor'):
-            # Iterator not initialized yet`
+            # Iterator not initialized yet
             self.__iter__()
 
         # len(self) returns `min(limit, total)` results
