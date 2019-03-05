@@ -1,5 +1,25 @@
 # Change Log
 
+## [v2.8.1](https://github.com/solvebio/solvebio-python/tree/v2.8.1) (2019-03-05)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.0...v2.8.1)
+
+**Implemented enhancements:**
+
+- Retry failed S3 uploads when the connection is reset by a proxy [\#291](https://github.com/solvebio/solvebio-python/issues/291)
+- \[Dash\] Add error handler in callback decorator [\#266](https://github.com/solvebio/solvebio-python/issues/266)
+
+**Fixed bugs:**
+
+- Calling `next` on a new Query instance breaks it [\#286](https://github.com/solvebio/solvebio-python/issues/286)
+- Remove token from SolveClient repr [\#283](https://github.com/solvebio/solvebio-python/issues/283)
+- \[Install\] SolveBio install fails with pycurl error re: SSL backend [\#277](https://github.com/solvebio/solvebio-python/issues/277)
+
+**Merged pull requests:**
+
+- Retry uploads up to 5 times [\#292](https://github.com/solvebio/solvebio-python/pull/292) ([davecap](https://github.com/davecap))
+- Handle case where Query iterator has not been initialized \(closes \#286\) [\#288](https://github.com/solvebio/solvebio-python/pull/288) ([davecap](https://github.com/davecap))
+- Dont expose the token in \_\_repr\_\_ [\#284](https://github.com/solvebio/solvebio-python/pull/284) ([davecap](https://github.com/davecap))
+
 ## [v2.8.0](https://github.com/solvebio/solvebio-python/tree/v2.8.0) (2018-10-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.7.0...v2.8.0)
 
