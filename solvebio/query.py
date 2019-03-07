@@ -409,7 +409,9 @@ class Query(object):
             if not isinstance(f, six.string_types):
                 raise AttributeError('Facet field arguments must be strings')
 
-        q = self.limit(0).execute(offset=0, facets=facets)
+        q = self._clone()
+        q._limit = 0
+        q.execute(offset=0, facets=facets)
         return q._response.get('facets')
 
     def __len__(self):
