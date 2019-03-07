@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2.8.2](https://github.com/solvebio/solvebio-python/tree/v2.8.2) (2019-03-07)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.1...v2.8.2)
+
+**Merged pull requests:**
+
+- Revert change to Query.facets\(\) [\#293](https://github.com/solvebio/solvebio-python/pull/293) ([davecap](https://github.com/davecap))
+
 ## [v2.8.1](https://github.com/solvebio/solvebio-python/tree/v2.8.1) (2019-03-05)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.0...v2.8.1)
 
@@ -623,13 +630,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
-
-## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
 
 ## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+
+## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
