@@ -20,6 +20,7 @@ class SolveBioAuth(OAuthBase):
     AUTH_COOKIE_NAME = 'dash_solvebio_auth'
     TOKEN_COOKIE_NAME = 'solvebio_oauth_token'
 
+    DEFAULT_TOKEN_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
     DEFAULT_SOLVEBIO_URL = 'https://my.solvebio.com'
     DEFAULT_GRANT_TYPE = 'authorization_code'
 
@@ -54,6 +55,8 @@ class SolveBioAuth(OAuthBase):
         self._oauth_client_secret = kwargs.get('client_secret')
         self._oauth_grant_type = \
             kwargs.get('grant_type') or self.DEFAULT_GRANT_TYPE
+        self.token_cookie_max_age = kwargs.get(
+            'max_age', self.DEFAULT_TOKEN_COOKIE_MAX_AGE)
 
         if self._oauth_grant_type == 'implicit':
             self._oauth_response_type = 'token'
@@ -177,7 +180,7 @@ class SolveBioAuth(OAuthBase):
             response=response,
             name=self.TOKEN_COOKIE_NAME,
             value=oauth_token,
-            max_age=None
+            max_age=self.token_cookie_max_age
         )
 
         return response
