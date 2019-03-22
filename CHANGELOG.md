@@ -1,5 +1,16 @@
 # Change Log
 
+## [v2.8.3](https://github.com/solvebio/solvebio-python/tree/v2.8.3) (2019-03-22)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.2...v2.8.3)
+
+**Fixed bugs:**
+
+- \[DashAuth\] Specify cookie `max\_age` to prevent immediate expiry [\#296](https://github.com/solvebio/solvebio-python/issues/296)
+
+**Merged pull requests:**
+
+- Prevent cookie from expiring immediately [\#298](https://github.com/solvebio/solvebio-python/pull/298) ([davidhpark](https://github.com/davidhpark))
+
 ## [v2.8.2](https://github.com/solvebio/solvebio-python/tree/v2.8.2) (2019-03-07)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.1...v2.8.2)
 
