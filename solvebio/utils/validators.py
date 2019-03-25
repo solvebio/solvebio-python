@@ -1,9 +1,6 @@
 from __future__ import absolute_import
 
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
+from six.moves.urllib.parse import urlparse
 
 from ..errors import SolveError
 

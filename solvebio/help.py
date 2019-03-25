@@ -1,10 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-try:
-    from urlparse import urljoin
-except ImportError:
-    from urllib.parse import urljoin
+from six.moves.urllib.parse import urljoin
 
 try:
     import webbrowser
