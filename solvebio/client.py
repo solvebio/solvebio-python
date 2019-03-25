@@ -22,10 +22,7 @@ from requests.auth import AuthBase
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-try:
-    from urlparse import urljoin
-except ImportError:
-    from urllib.parse import urljoin
+from six.moves.urllib.parse import urljoin
 
 # Try using pyopenssl if available.
 # Requires: pip install pyopenssl ndg-httpsclient pyasn1

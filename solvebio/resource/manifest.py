@@ -5,10 +5,7 @@ from __future__ import print_function
 import os
 import glob
 
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
+from six.moves.urllib.parse import urlparse
 
 import solvebio
 

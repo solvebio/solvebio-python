@@ -5,10 +5,7 @@ import flask
 import requests
 import os
 
-try:
-    from urlparse import urljoin
-except ImportError:
-    from urllib.parse import urljoin
+from six.moves.urllib.parse import urljoin
 
 from dash_auth.oauth import OAuthBase
 
