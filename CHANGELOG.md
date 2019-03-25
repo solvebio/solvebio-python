@@ -1,5 +1,16 @@
 # Change Log
 
+## [v2.8.4](https://github.com/solvebio/solvebio-python/tree/v2.8.4) (2019-03-25)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.3...v2.8.4)
+
+**Fixed bugs:**
+
+- Installing from pypi breaks interactive shell \(urllib.parse import\)  [\#299](https://github.com/solvebio/solvebio-python/issues/299)
+
+**Merged pull requests:**
+
+- Use six.moves to eliminate 2to3 issues \(closes \#299\) [\#300](https://github.com/solvebio/solvebio-python/pull/300) ([davecap](https://github.com/davecap))
+
 ## [v2.8.3](https://github.com/solvebio/solvebio-python/tree/v2.8.3) (2019-03-22)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.2...v2.8.3)
 
