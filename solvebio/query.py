@@ -678,8 +678,11 @@ class Query(object):
                      % self._response)
         return _params, self._response
 
-    def export(self, format='json', follow=True, limit=None):
+    def export(self, format='json', follow=True, limit=None, **kwargs):
         from solvebio import DatasetExport
+
+        # Discard params if passed into kwargs
+        kwargs.pop('params', None)
 
         params = self._build_query()
         params.pop('offset', None)
@@ -696,7 +699,8 @@ class Query(object):
             dataset_id=self._dataset_id,
             format=format,
             params=params,
-            client=self._client
+            client=self._client,
+            **kwargs
         )
 
         if follow:
