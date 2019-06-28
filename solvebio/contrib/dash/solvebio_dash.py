@@ -30,6 +30,7 @@ class SolveBioDash(dash.Dash):
         client_secret = kwargs.pop('client_secret',
                                    os.environ.get('CLIENT_SECRET'))
         grant_type = kwargs.pop('grant_type', None)
+        salt = kwargs.pop('salt', None) or name
 
         server = flask.Flask(name)
         server.secret_key = kwargs.pop('secret_key', self.SECRET_KEY)
@@ -37,14 +38,12 @@ class SolveBioDash(dash.Dash):
 
         super(SolveBioDash, self).__init__(name, *args, **kwargs)
 
-        self.config.supress_callback_exceptions = True
-
         if client_id:
             self.auth = SolveBioAuth(
                 self,
                 app_url,
                 client_id,
-                salt=kwargs.get('salt'),
+                salt=salt,
                 client_secret=client_secret,
                 grant_type=grant_type,
                 solvebio_url=solvebio_url)
