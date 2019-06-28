@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2.8.5](https://github.com/solvebio/solvebio-python/tree/v2.8.5) (2019-06-28)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.4...v2.8.5)
+
+**Merged pull requests:**
+
+- Fix typo and pop salt before passing to SolveBioAuth [\#302](https://github.com/solvebio/solvebio-python/pull/302) ([davidhpark](https://github.com/davidhpark))
+
 ## [v2.8.4](https://github.com/solvebio/solvebio-python/tree/v2.8.4) (2019-03-25)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.3...v2.8.4)
 
