@@ -54,10 +54,42 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
 
     @property
     def parent_object(self):
-        """ Get the commit objects parent Import or Migration """
+        """ Get the commit objects parent Import, Migration or Commit """
         from . import types
         parent_klass = types.get(self.parent_job_model.split('.')[1])
         return parent_klass.retrieve(self.parent_job_id, client=self._client)
+
+    def _rollback_url(self):
+        return self.instance_url() + '/rollback'
+
+    def _can_rollback(self):
+        """Check if this commit can be reverted"""
+        resp = self._client.get(self._beacon_url(), {})
+        return resp['is_blocked'], resp['detail'], \
+            [convert_to_solve_object(dc) for dc in resp['blocking_commits']]
+
+    def can_rollback(self):
+        rollback_status = self._can_rollback()
+        is_blocked, reason, blocking_commits = rollback_status
+        if is_blocked:
+            print("Could not revert commit: {}".format(reason))
+            if blocking_commits:
+                print('The following commits are blocking and '
+                      'must be reverted first: {}'.format(
+                          ', '.join([bc.id for bc in blocking_commits]))
+                      )
+        return is_blocked
+
+    def rollback(self):
+        """Reverts this commit by creating a rollback"""
+        rollback_status = self._can_rollback()
+        is_blocked, reason, blocking_commits = rollback_status
+        if not is_blocked:
+            resp = self._client.post(self._beacon_url(), {})
+            return convert_to_solve_object(resp)
+
+        # TODO what do return in this scenario
+        raise Exception("Unable to rollback")
 
     def follow(self, loop=True, sleep_seconds=Task.SLEEP_WAIT_DEFAULT):
         # Follow unfinished commits
