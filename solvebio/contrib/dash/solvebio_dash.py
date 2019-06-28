@@ -30,7 +30,7 @@ class SolveBioDash(dash.Dash):
         client_secret = kwargs.pop('client_secret',
                                    os.environ.get('CLIENT_SECRET'))
         grant_type = kwargs.pop('grant_type', None)
-        salt = kwargs.pop('salt', None)
+        salt = kwargs.pop('salt', None) or name
 
         server = flask.Flask(name)
         server.secret_key = kwargs.pop('secret_key', self.SECRET_KEY)
