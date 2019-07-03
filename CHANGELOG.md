@@ -1,5 +1,16 @@
 # Change Log
 
+## [v2.8.6](https://github.com/solvebio/solvebio-python/tree/v2.8.6) (2019-07-03)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.5...v2.8.6)
+
+**Implemented enhancements:**
+
+- Add support for dash v1.0+ [\#278](https://github.com/solvebio/solvebio-python/issues/278)
+
+**Merged pull requests:**
+
+- Set cookie with SameSite=Lax to allow link-outs to Dash apps [\#304](https://github.com/solvebio/solvebio-python/pull/304) ([davecap](https://github.com/davecap))
+
 ## [v2.8.5](https://github.com/solvebio/solvebio-python/tree/v2.8.5) (2019-06-28)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.4...v2.8.5)
 
