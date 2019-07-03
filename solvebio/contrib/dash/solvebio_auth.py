@@ -177,7 +177,8 @@ class SolveBioAuth(OAuthBase):
             response=response,
             name=self.TOKEN_COOKIE_NAME,
             value=oauth_token,
-            max_age=self.token_cookie_max_age
+            max_age=self.token_cookie_max_age,
+            samesite='Lax'
         )
 
         return response
