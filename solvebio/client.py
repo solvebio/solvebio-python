@@ -99,13 +99,9 @@ class SolveClient(object):
         self._headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Accept-Encoding': 'gzip,deflate',
-            'User-Agent': 'SolveBio Python Client %s [Python %s/%s]' % (
-                VERSION,
-                platform.python_implementation(),
-                platform.python_version()
-            )
+            'Accept-Encoding': 'gzip,deflate'
         }
+        self.set_user_agent()
 
         # Use a session with a retry policy to handle
         # intermittent connection errors.
@@ -136,6 +132,24 @@ class SolveClient(object):
 
     def set_token(self, token=None, token_type='Token'):
         self._auth = SolveTokenAuth(token, token_type)
+
+    def set_user_agent(self, name=None, version=None):
+        ua = 'solvebio-python-client/{} python-requests/{} {}/{}'.format(
+            VERSION,
+            requests.__version__,
+            platform.python_implementation(),
+            platform.python_version()
+        )
+
+        # Prefix the name of the app or script before the
+        # default user-agent.
+        if name:
+            if version:
+                ua = '{}/{} {}'.format(name, version, ua)
+            else:
+                ua = '{} {}'.format(name, ua)
+
+        self._headers['User-Agent'] = ua
 
     def whoami(self):
         try:
