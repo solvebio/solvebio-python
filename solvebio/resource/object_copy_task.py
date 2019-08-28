@@ -3,6 +3,7 @@ import time
 from .apiresource import ListableAPIResource
 from .apiresource import CreateableAPIResource
 from .apiresource import UpdateableAPIResource
+from .task import Task
 
 
 class ObjectCopyTask(CreateableAPIResource,
@@ -20,7 +21,7 @@ class ObjectCopyTask(CreateableAPIResource,
         ('created_at', 'Created'),
     )
 
-    def follow(self, loop=True):
+    def follow(self, loop=True, wait_for_secs=Task.SLEEP_WAIT_DEFAULT):
         if self.status == 'queued':
             print("Waiting for Object Copy task (id = {0}) to start..."
                   .format(self.id))
@@ -39,7 +40,7 @@ class ObjectCopyTask(CreateableAPIResource,
             if not loop:
                 return
 
-            time.sleep(3)
+            time.sleep(wait_for_secs)
             self.refresh()
 
         if self.status == 'completed':

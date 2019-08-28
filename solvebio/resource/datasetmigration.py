@@ -2,6 +2,8 @@ from .apiresource import ListableAPIResource
 from .apiresource import DeletableAPIResource
 from .apiresource import CreateableAPIResource
 from .solveobject import convert_to_solve_object
+from .task import Task
+from .datasetcommit import follow_commits
 
 import time
 
@@ -37,7 +39,7 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
         response = self._client.get(self['target']['url'], {})
         return convert_to_solve_object(response, client=self._client)
 
-    def follow(self, loop=True):
+    def follow(self, loop=True, wait_for_secs=Task.SLEEP_WAIT_DEFAULT):
         _status = self.status
         if self.status == 'queued':
             print("Waiting for migration (id = {0}) to start..."
@@ -53,7 +55,7 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
                 processed_records = self.metadata\
                     .get('progress', {})\
                     .get('processed_records', 0)
-                print("Migration '{0}' is running: {2}/{3} records completed"
+                print("Migration '{0}' is running: {2}/{3} records migrated"
                       .format(self.id,
                               self.status,
                               processed_records,
@@ -62,12 +64,24 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
             if not loop:
                 return
 
-            time.sleep(3)
+            time.sleep(wait_for_secs)
             self.refresh()
 
-        if self.status == 'completed':
-            print("Migration is complete, view the result: "
-                  "https://my.solvebio.com/data/{0}"
-                  .format(self['target']['id']))
+        if self.status == 'failed':
+            print("Migration failed.")
+            print("Reason: {}".format(self.error_message))
+            return
 
-        # TODO: Follow commits
+        if self.status == 'canceled':
+            print("Migration was canceled")
+            print("Reason: {}".format(self.error_message))
+            return
+
+        print("Migration completed. Beginning indexing of commits.")
+
+        # Follow unfinished commits
+        follow_commits(self, wait_for_secs)
+
+        print("View your migrated data: "
+              "https://my.solvebio.com/data/{0}"
+              .format(self['target']['id']))

@@ -333,27 +333,40 @@ class Dataset(CreateableAPIResource,
 
         return migration
 
-    def activity(self, follow=False):
-        statuses = ['running', 'queued', 'pending']
-        activity = list(Task.all(target_object_id=self.id,
-                                 status=','.join(statuses),
-                                 client=self._client))
+    def activity(self, follow=False, limit=1,
+                 wait_for_secs=Task.SLEEP_WAIT_DEFAULT):
+        """Get a list of active Tasks that have a target object of
+        the dataset. Active tasks are in the running, queued or pending state.
 
-        print("Found {0} active task(s)".format(len(activity)))
+        Defaults to limit=1 for performance. Increase this value in order
+        to return more tasks as output.
+        """
+        statuses = ['running', 'queued', 'pending']
+
+        # NOTE: source_object_id is not being queried here
+        # and therefore active DatasetExports will not appear
+        # in activity
+        activity = Task.all(target_object_id=self.id,
+                            status=','.join(statuses),
+                            limit=limit,
+                            ordering='-updated_at',
+                            client=self._client)
+
+        print("Found {0} active task(s)".format(activity.total))
         if not follow:
-            return activity
+            return list(activity)
 
         while True:
             if not activity:
                 break
 
             for task in activity:
-                task.follow()
+                task.follow(wait_for_secs=wait_for_secs)
 
-            time.sleep(5.0)
-            activity = self.activity()
+            time.sleep(wait_for_secs)
+            activity = self.activity(limit=limit)
 
-        return activity
+        return list(activity)
 
     #
     # Vault properties

@@ -3,6 +3,8 @@ from .apiresource import DeletableAPIResource
 from .apiresource import CreateableAPIResource
 from .apiresource import UpdateableAPIResource
 from .solveobject import convert_to_solve_object
+from .task import Task
+from .datasetcommit import follow_commits
 
 import time
 
@@ -32,7 +34,7 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
     def dataset(self):
         return convert_to_solve_object(self['dataset'], client=self._client)
 
-    def follow(self, loop=True):
+    def follow(self, loop=True, wait_for_secs=Task.SLEEP_WAIT_DEFAULT):
 
         if self.status == 'queued':
             print("Waiting for import (id = {0}) to start..."
@@ -40,8 +42,7 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
 
         import_status = self.status
         while self.status in ['queued', 'running']:
-            time.sleep(3)
-            self.refresh()
+
             if self.status != import_status:
                 print("Import is now {0} (was {1})"
                       .format(self.status, import_status))
@@ -51,11 +52,20 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
                 if self.status == 'running':
                     print("Processing and validating file(s), "
                           "this may take a few minutes...")
+            else:
+                if self.status == 'running':
+                    records_count = self.metadata.get("progress", {}) \
+                        .get("processed_records", 0)
+                    print("Import {0} is {1}: {2} records processed".format(
+                        self.id, self.status, records_count))
+                else:
+                    print("Import {0} is {1}".format(self.id, self.status))
 
             if not loop:
-                print("Import {0} is {1}"
-                      .format(self.id, self.status))
                 return
+
+            time.sleep(wait_for_secs)
+            self.refresh()
 
         if self.status == 'failed':
             print("Import processing and validation failed.")
@@ -68,33 +78,7 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
             return
 
         print("Validation completed. Beginning indexing of commits.")
-
-        # Follow unfinished commits
-        while True:
-            unfinished_commits = [
-                c for c in self.dataset_commits
-                if c.status in ['queued', 'running']
-            ]
-
-            if not unfinished_commits:
-                print("All commits have finished processing")
-                break
-
-            if len(unfinished_commits) > 1:
-                print("{0}/{1} commits have finished processing"
-                      .format(len(unfinished_commits),
-                              len(self.dataset_commits)))
-
-            # prints a status for each one
-            for commit in unfinished_commits:
-                commit.follow(loop=False)
-
-            # sleep
-            time.sleep(10)
-
-            # refresh status
-            for commit in unfinished_commits:
-                commit.refresh()
+        follow_commits(self, wait_for_secs)
 
         print("View your imported data: "
               "https://my.solvebio.com/data/{0}"

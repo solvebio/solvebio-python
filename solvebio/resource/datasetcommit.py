@@ -4,6 +4,33 @@ from .apiresource import ListableAPIResource
 from .apiresource import CreateableAPIResource
 from .apiresource import UpdateableAPIResource
 from .solveobject import convert_to_solve_object
+from .task import Task
+
+
+def follow_commits(task, wait_for_secs):
+    """Utility used to wait for commits"""
+    while True:
+        unfinished_commits = [
+            c for c in task.dataset_commits
+            if c.status in ['queued', 'running']
+        ]
+
+        if not unfinished_commits:
+            print("All commits have finished processing")
+            break
+
+        print("{0}/{1} commits have finished processing"
+              .format(len(unfinished_commits),
+                      len(task.dataset_commits)))
+
+        # Prints a status for each one
+        for commit in unfinished_commits:
+            commit.follow(loop=False, wait_for_secs=wait_for_secs)
+
+        time.sleep(wait_for_secs)
+
+        # refresh Task to get fresh dataset commits
+        task.refresh()
 
 
 class DatasetCommit(CreateableAPIResource, ListableAPIResource,
@@ -32,7 +59,7 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
         parent_klass = types.get(self.parent_job_model.split('.')[1])
         return parent_klass.retrieve(self.parent_job_id, client=self._client)
 
-    def follow(self, loop=True):
+    def follow(self, loop=True, wait_for_secs=Task.SLEEP_WAIT_DEFAULT):
         # Follow unfinished commits
         while self.status in ['queued', 'running']:
             if self.status == 'running':
@@ -55,7 +82,7 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
                 break
 
             # sleep
-            time.sleep(10)
+            time.sleep(wait_for_secs)
 
             # refresh status
             self.refresh()
