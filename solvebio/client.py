@@ -144,6 +144,7 @@ class SolveClient(object):
         # Prefix the name of the app or script before the
         # default user-agent.
         if name:
+            name = name.replace(' ', '-')
             if version:
                 ua = '{}/{} {}'.format(name, version, ua)
             else:
