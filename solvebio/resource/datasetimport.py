@@ -52,14 +52,13 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
                 if self.status == 'running':
                     print("Processing and validating file(s), "
                           "this may take a few minutes...")
-            else:
-                if self.status == 'running':
+            elif self.status == 'running':
                     records_count = self.metadata.get("progress", {}) \
                         .get("processed_records", 0)
                     print("Import {0} is {1}: {2} records processed".format(
                         self.id, self.status, records_count))
-                else:
-                    print("Import {0} is {1}".format(self.id, self.status))
+            else:
+                print("Import {0} is {1}".format(self.id, self.status))
 
             if not loop:
                 return

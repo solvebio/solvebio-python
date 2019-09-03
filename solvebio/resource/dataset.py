@@ -343,28 +343,25 @@ class Dataset(CreateableAPIResource,
         """
         statuses = ['running', 'queued', 'pending']
 
-        # NOTE: source_object_id is not being queried here
-        # and therefore active DatasetExports will not appear
-        # in activity
-        activity = Task.all(target_object_id=self.id,
-                            status=','.join(statuses),
-                            limit=limit,
-                            ordering='-updated_at',
-                            client=self._client)
-
-        print("Found {0} active task(s)".format(activity.total))
-        if not follow:
-            return list(activity)
-
         while True:
-            if not activity:
+
+            # NOTE: source_object_id is not being queried here
+            # and therefore active DatasetExports will not appear
+            # in activity
+            activity = Task.all(target_object_id=self.id,
+                                status=','.join(statuses),
+                                limit=limit,
+                                ordering='-updated_at',
+                                client=self._client)
+
+            print("Found {0} active task(s)".format(activity.total))
+            if not activity or not follow:
                 break
 
             for task in activity:
                 task.follow(wait_for_secs=wait_for_secs)
 
             time.sleep(wait_for_secs)
-            activity = self.activity(limit=limit)
 
         return list(activity)
 
