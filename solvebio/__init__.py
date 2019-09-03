@@ -152,6 +152,9 @@ def login(**kwargs):
         client.set_host()
         client.set_token()
 
+    client.set_user_agent(name=kwargs.get('name'),
+                          version=kwargs.get('version'))
+
 
 __all__ = [
     'Annotator',
