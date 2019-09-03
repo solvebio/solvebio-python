@@ -334,7 +334,7 @@ class Dataset(CreateableAPIResource,
         return migration
 
     def activity(self, follow=False, limit=1,
-                 wait_for_secs=Task.SLEEP_WAIT_DEFAULT):
+                 sleep_seconds=Task.SLEEP_WAIT_DEFAULT):
         """Get a list of active Tasks that have a target object of
         the dataset. Active tasks are in the running, queued or pending state.
 
@@ -359,9 +359,9 @@ class Dataset(CreateableAPIResource,
                 break
 
             for task in activity:
-                task.follow(wait_for_secs=wait_for_secs)
+                task.follow(sleep_seconds=sleep_seconds)
 
-            time.sleep(wait_for_secs)
+            time.sleep(sleep_seconds)
 
         return list(activity)
 

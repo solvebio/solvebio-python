@@ -27,9 +27,9 @@ class Task(ListableAPIResource, UpdateableAPIResource):
         child_klass = types.get(self.task_type.split('.')[1])
         return child_klass.retrieve(self.task_id, client=self._client)
 
-    def follow(self, wait_for_secs=SLEEP_WAIT_DEFAULT):
+    def follow(self, sleep_seconds=SLEEP_WAIT_DEFAULT):
         """ Follow the child object but do not loop """
-        self.child_object.follow(loop=False, wait_for_secs=wait_for_secs)
+        self.child_object.follow(loop=False, sleep_seconds=sleep_seconds)
 
     def cancel(self):
         """ Cancel a task """

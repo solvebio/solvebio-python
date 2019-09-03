@@ -39,7 +39,7 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
         response = self._client.get(self['target']['url'], {})
         return convert_to_solve_object(response, client=self._client)
 
-    def follow(self, loop=True, wait_for_secs=Task.SLEEP_WAIT_DEFAULT):
+    def follow(self, loop=True, sleep_seconds=Task.SLEEP_WAIT_DEFAULT):
         _status = self.status
         if self.status == 'queued':
             print("Waiting for migration (id = {0}) to start..."
@@ -64,7 +64,7 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
             if not loop:
                 return
 
-            time.sleep(wait_for_secs)
+            time.sleep(sleep_seconds)
             self.refresh()
 
         if self.status == 'failed':
@@ -80,7 +80,7 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
         print("Migration completed. Beginning indexing of commits.")
 
         # Follow unfinished commits
-        follow_commits(self, wait_for_secs)
+        follow_commits(self, sleep_seconds)
 
         print("View your migrated data: "
               "https://my.solvebio.com/data/{0}"

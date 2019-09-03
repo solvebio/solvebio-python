@@ -34,7 +34,7 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
     def dataset(self):
         return convert_to_solve_object(self['dataset'], client=self._client)
 
-    def follow(self, loop=True, wait_for_secs=Task.SLEEP_WAIT_DEFAULT):
+    def follow(self, loop=True, sleep_seconds=Task.SLEEP_WAIT_DEFAULT):
 
         if self.status == 'queued':
             print("Waiting for import (id = {0}) to start..."
@@ -53,17 +53,17 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
                     print("Processing and validating file(s), "
                           "this may take a few minutes...")
             elif self.status == 'running':
-                    records_count = self.metadata.get("progress", {}) \
-                        .get("processed_records", 0)
-                    print("Import {0} is {1}: {2} records processed".format(
-                        self.id, self.status, records_count))
+                records_count = self.metadata.get("progress", {}) \
+                    .get("processed_records", 0)
+                print("Import {0} is {1}: {2} records processed".format(
+                    self.id, self.status, records_count))
             else:
                 print("Import {0} is {1}".format(self.id, self.status))
 
             if not loop:
                 return
 
-            time.sleep(wait_for_secs)
+            time.sleep(sleep_seconds)
             self.refresh()
 
         if self.status == 'failed':
@@ -77,7 +77,7 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
             return
 
         print("Validation completed. Beginning indexing of commits.")
-        follow_commits(self, wait_for_secs)
+        follow_commits(self, sleep_seconds)
 
         print("View your imported data: "
               "https://my.solvebio.com/data/{0}"

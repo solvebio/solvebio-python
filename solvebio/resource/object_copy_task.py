@@ -21,7 +21,7 @@ class ObjectCopyTask(CreateableAPIResource,
         ('created_at', 'Created'),
     )
 
-    def follow(self, loop=True, wait_for_secs=Task.SLEEP_WAIT_DEFAULT):
+    def follow(self, loop=True, sleep_seconds=Task.SLEEP_WAIT_DEFAULT):
         if self.status == 'queued':
             print("Waiting for Object Copy task (id = {0}) to start..."
                   .format(self.id))
@@ -40,7 +40,7 @@ class ObjectCopyTask(CreateableAPIResource,
             if not loop:
                 return
 
-            time.sleep(wait_for_secs)
+            time.sleep(sleep_seconds)
             self.refresh()
 
         if self.status == 'completed':

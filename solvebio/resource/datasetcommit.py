@@ -7,7 +7,7 @@ from .solveobject import convert_to_solve_object
 from .task import Task
 
 
-def follow_commits(task, wait_for_secs):
+def follow_commits(task, sleep_seconds):
     """Utility used to wait for commits"""
     while True:
         unfinished_commits = [
@@ -25,9 +25,9 @@ def follow_commits(task, wait_for_secs):
 
         # Prints a status for each one
         for commit in unfinished_commits:
-            commit.follow(loop=False, wait_for_secs=wait_for_secs)
+            commit.follow(loop=False, sleep_seconds=sleep_seconds)
 
-        time.sleep(wait_for_secs)
+        time.sleep(sleep_seconds)
 
         # refresh Task to get fresh dataset commits
         task.refresh()
@@ -59,7 +59,7 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
         parent_klass = types.get(self.parent_job_model.split('.')[1])
         return parent_klass.retrieve(self.parent_job_id, client=self._client)
 
-    def follow(self, loop=True, wait_for_secs=Task.SLEEP_WAIT_DEFAULT):
+    def follow(self, loop=True, sleep_seconds=Task.SLEEP_WAIT_DEFAULT):
         # Follow unfinished commits
         while self.status in ['queued', 'running']:
             if self.status == 'running':
@@ -82,7 +82,7 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
                 break
 
             # sleep
-            time.sleep(wait_for_secs)
+            time.sleep(sleep_seconds)
 
             # refresh status
             self.refresh()
