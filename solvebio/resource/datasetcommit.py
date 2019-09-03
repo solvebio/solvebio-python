@@ -63,17 +63,11 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
         # Follow unfinished commits
         while self.status in ['queued', 'running']:
             if self.status == 'running':
-                print("Commit '{0}' ({4}) is {1}: {2}/{3} records indexed"
-                      .format(self.title,
-                              self.status,
-                              self.records_modified,
-                              self.records_total,
-                              self.id))
+                print("Commit {3} is {0}: {1}/{2} records indexed"
+                      .format(self.status, self.records_modified,
+                              self.records_total, self.id))
             else:
-                print("Commit '{0}' ({1}) is {2}"
-                      .format(self.title,
-                              self.id,
-                              self.status))
+                print("Commit {0} is {1}".format(self.id, self.status))
 
             # When following a parent DatasetImport we do not want to
             # loop for status updates. It will handle its own looping
