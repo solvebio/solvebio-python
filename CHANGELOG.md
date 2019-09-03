@@ -1,5 +1,21 @@
 # Change Log
 
+## [v2.8.7](https://github.com/solvebio/solvebio-python/tree/v2.8.7) (2019-09-03)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.6...v2.8.7)
+
+**Fixed bugs:**
+
+- Dash Auth defaults cookies as SameSite=Strict which blocks links to apps [\#303](https://github.com/solvebio/solvebio-python/issues/303)
+
+**Closed issues:**
+
+- \[Activity\] Simplify and cleanup follow\(\) function \(allow sleep time to be configured\) [\#285](https://github.com/solvebio/solvebio-python/issues/285)
+
+**Merged pull requests:**
+
+- Task Activity improvements [\#306](https://github.com/solvebio/solvebio-python/pull/306) ([jsh2134](https://github.com/jsh2134))
+- Add ability for scripts to customize the user-agent [\#305](https://github.com/solvebio/solvebio-python/pull/305) ([davecap](https://github.com/davecap))
+
 ## [v2.8.6](https://github.com/solvebio/solvebio-python/tree/v2.8.6) (2019-07-03)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.5...v2.8.6)
 
