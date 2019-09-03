@@ -76,7 +76,7 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
             print("Reason: {}".format(self.error_message))
             return
 
-        print("Validation completed. Beginning indexing of commits.")
+        # Follow commits until complete
         follow_commits(self, sleep_seconds)
 
         print("View your imported data: "

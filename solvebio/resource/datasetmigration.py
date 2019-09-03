@@ -77,9 +77,7 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
             print("Reason: {}".format(self.error_message))
             return
 
-        print("Migration completed. Beginning indexing of commits.")
-
-        # Follow unfinished commits
+        # Follow commits until complete
         follow_commits(self, sleep_seconds)
 
         print("View your migrated data: "
