@@ -4,6 +4,33 @@ from .apiresource import ListableAPIResource
 from .apiresource import CreateableAPIResource
 from .apiresource import UpdateableAPIResource
 from .solveobject import convert_to_solve_object
+from .task import Task
+
+
+def follow_commits(task, sleep_seconds):
+    """Utility used to wait for commits"""
+    while True:
+        unfinished_commits = [
+            c for c in task.dataset_commits
+            if c.status in ['queued', 'running']
+        ]
+
+        if not unfinished_commits:
+            print("All commits have finished processing")
+            break
+
+        print("{0}/{1} commits have finished processing"
+              .format(len(unfinished_commits),
+                      len(task.dataset_commits)))
+
+        # Prints a status for each one
+        for commit in unfinished_commits:
+            commit.follow(loop=False, sleep_seconds=sleep_seconds)
+
+        time.sleep(sleep_seconds)
+
+        # refresh Task to get fresh dataset commits
+        task.refresh()
 
 
 class DatasetCommit(CreateableAPIResource, ListableAPIResource,
@@ -32,21 +59,15 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
         parent_klass = types.get(self.parent_job_model.split('.')[1])
         return parent_klass.retrieve(self.parent_job_id, client=self._client)
 
-    def follow(self, loop=True):
+    def follow(self, loop=True, sleep_seconds=Task.SLEEP_WAIT_DEFAULT):
         # Follow unfinished commits
         while self.status in ['queued', 'running']:
             if self.status == 'running':
-                print("Commit '{0}' ({4}) is {1}: {2}/{3} records indexed"
-                      .format(self.title,
-                              self.status,
-                              self.records_modified,
-                              self.records_total,
-                              self.id))
+                print("Commit {3} is {0}: {1}/{2} records indexed"
+                      .format(self.status, self.records_modified,
+                              self.records_total, self.id))
             else:
-                print("Commit '{0}' ({1}) is {2}"
-                      .format(self.title,
-                              self.id,
-                              self.status))
+                print("Commit {0} is {1}".format(self.id, self.status))
 
             # When following a parent DatasetImport we do not want to
             # loop for status updates. It will handle its own looping
@@ -55,7 +76,7 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
                 break
 
             # sleep
-            time.sleep(10)
+            time.sleep(sleep_seconds)
 
             # refresh status
             self.refresh()
