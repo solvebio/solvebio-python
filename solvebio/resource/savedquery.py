@@ -21,6 +21,7 @@ class SavedQuery(CreateableAPIResource, ListableAPIResource,
     LIST_FIELDS = (
         ('id', 'ID'),
         ('name', 'Name'),
+        ('is_shared', 'Is Shared'),
         ('description', 'Description'),
     )
 
