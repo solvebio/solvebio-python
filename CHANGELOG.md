@@ -1,5 +1,13 @@
 # Change Log
 
+## [v2.8.8](https://github.com/solvebio/solvebio-python/tree/v2.8.8) (2019-09-12)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.7...v2.8.8)
+
+**Merged pull requests:**
+
+- add is\_shared column to saved query output [\#309](https://github.com/solvebio/solvebio-python/pull/309) ([jsh2134](https://github.com/jsh2134))
+- hotfix for login when no credentials found [\#308](https://github.com/solvebio/solvebio-python/pull/308) ([jsh2134](https://github.com/jsh2134))
+
 ## [v2.8.7](https://github.com/solvebio/solvebio-python/tree/v2.8.7) (2019-09-03)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.6...v2.8.7)
 
