@@ -151,9 +151,8 @@ def login(**kwargs):
         # Update the client host and token
         client.set_host()
         client.set_token()
-
-    client.set_user_agent(name=kwargs.get('name'),
-                          version=kwargs.get('version'))
+        client.set_user_agent(name=kwargs.get('name'),
+                              version=kwargs.get('version'))
 
 
 __all__ = [
