@@ -1,5 +1,13 @@
 # Change Log
 
+## [v2.8.9](https://github.com/solvebio/solvebio-python/tree/v2.8.9) (2019-09-19)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.8...v2.8.9)
+
+**Merged pull requests:**
+
+- Fix issue with activity pagination [\#311](https://github.com/solvebio/solvebio-python/pull/311) ([davecap](https://github.com/davecap))
+- add target\_full\_path kwarg to export shortcut [\#310](https://github.com/solvebio/solvebio-python/pull/310) ([jsh2134](https://github.com/jsh2134))
+
 ## [v2.8.8](https://github.com/solvebio/solvebio-python/tree/v2.8.8) (2019-09-12)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.7...v2.8.8)
 
@@ -694,13 +702,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
-
-## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
 
 ## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+
+## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
