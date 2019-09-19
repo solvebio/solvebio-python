@@ -358,7 +358,7 @@ class Dataset(CreateableAPIResource,
             if not activity or not follow:
                 break
 
-            for task in activity:
+            for task in activity.solve_objects()[0:limit]:
                 task.follow(sleep_seconds=sleep_seconds)
 
             time.sleep(sleep_seconds)
