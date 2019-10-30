@@ -11,15 +11,21 @@ from .helper import SolveBioTestCase
 import solvebio
 from solvebio.cli import main
 from solvebio import DatasetTemplate
+from solvebio.errors import NotFoundError
 from solvebio.utils.files import get_home_dir
 from solvebio.test.client_mocks import fake_vault_all
 from solvebio.test.client_mocks import fake_vault_create
 from solvebio.test.client_mocks import fake_object_all
 from solvebio.test.client_mocks import fake_object_create
+from solvebio.test.client_mocks import fake_object_retrieve
 from solvebio.test.client_mocks import fake_dataset_create
 from solvebio.test.client_mocks import fake_dataset_tmpl_create
 from solvebio.test.client_mocks import fake_dataset_tmpl_retrieve
 from solvebio.test.client_mocks import fake_dataset_import_create
+
+
+def raise_not_found(*args, **kwargs):
+    raise NotFoundError
 
 
 def upload_path(*args, **kwargs):
@@ -164,3 +170,59 @@ class CLITests(SolveBioTestCase):
         ]:
             args = ['import', '--create-dataset', '--follow', f, file_]
             self._test_import_file(args)
+
+    @mock.patch(
+        'solvebio.resource.apiresource.ListableAPIResource._retrieve_helper')
+    @mock.patch('solvebio.resource.Vault.get_by_full_path')
+    @mock.patch('solvebio.resource.Vault.all')
+    @mock.patch('solvebio.resource.Object.all')
+    @mock.patch('solvebio.resource.Object.create')
+    @mock.patch('solvebio.resource.Object.upload_file')
+    def _test_upload_command(self, args, ObjectUpload, ObjectCreate,
+                             ObjectAll, VaultAll, VaultLookup, RetrieveHelper,
+                             **kwargs):
+
+        ObjectUpload.side_effect = fake_object_create
+        ObjectAll.side_effect = fake_object_all
+        ObjectCreate.side_effect = fake_object_create
+        VaultAll.side_effect = fake_vault_all
+        VaultLookup.side_effect = fake_vault_create
+
+        if 'fail_lookup' in kwargs:
+            RetrieveHelper.side_effect = raise_not_found
+        else:
+            RetrieveHelper.side_effect = fake_object_retrieve
+
+        main.main(args)
+
+    def test_upload_file(self):
+        _, file_ = tempfile.mkstemp(suffix='.txt')
+        with open(file_, 'w') as fp:
+            fp.write('blargh')
+
+        args = ['upload', '--full-path',
+                'solvebio:test_vault:/test-folder', file_]
+        with self.assertRaises(NotFoundError):
+            self._test_upload_command(args, fail_lookup=True)
+
+        # pass -p to create destination
+        args = ['upload', '--full-path',
+                'solvebio:test_vault:/test-folder', '-p', file_]
+        self._test_upload_command(args)
+
+    def test_upload_directories(self):
+        folder_ = tempfile.mkdtemp(suffix='.txt')
+        inner_folder_ = tempfile.mkdtemp(suffix='.txt', dir=folder_)
+        _, file_ = tempfile.mkstemp(suffix='.txt', dir=inner_folder_)
+        with open(file_, 'w') as fp:
+            fp.write('blargh')
+
+        args = ['upload', '--full-path',
+                'solvebio:test_vault:/test-folder-upload', folder_]
+        with self.assertRaises(NotFoundError):
+            self._test_upload_command(args, fail_lookup=True)
+
+        # pass -p to create destination
+        args = ['upload', '--full-path',
+                'solvebio:test_vault:/test-folder-upload', '-p', folder_]
+        self._test_upload_command(args)

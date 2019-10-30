@@ -11,7 +11,7 @@ class Fake201Response(object):
     def __init__(self, data):
         self.object = {
             'id': 100,
-            'class_name': self.class_name,
+            'class_name': self.class_name
         }
 
     def json(self):
@@ -23,6 +23,14 @@ class Fake201Response(object):
     def retrieve(self, r_id, *args, **kwargs):
         obj = self.create()
         obj.id = r_id
+        return obj
+
+    def _retrieve_helper(self, model_name, field_name, error_value,
+                         *args, **kwargs):
+        obj = self.create()
+        for k, v in kwargs.iteritems():
+            obj[k] = v
+
         return obj
 
     def all(self, *args, **kwargs):
@@ -90,7 +98,8 @@ class FakeObjectResponse(Fake201Response):
             'upload_url': None,
             'size': None,
             'md5': None,
-            'filename': 'file.json.gz'
+            'filename': 'file.json.gz',
+            'object_type': 'folder'
         }
 
 
@@ -175,6 +184,11 @@ def fake_object_all(*args, **kwargs):
 
 def fake_object_create(*args, **kwargs):
     return FakeObjectResponse(kwargs).create()
+
+
+def fake_object_retrieve(*args, **kwargs):
+    return FakeObjectResponse(kwargs)._retrieve_helper(
+        'LogicalObject', *args, **kwargs)
 
 
 def fake_dataset_create(*args, **kwargs):

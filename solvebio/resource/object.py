@@ -206,6 +206,7 @@ class Object(CreateableAPIResource,
             mimetype=mimetype,
             size=size,
             description=description,
+            tags=kwargs.get('tags', []) or [],
             client=_client
         )
 

@@ -183,23 +183,22 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'arguments': [
                 {
                     'flags': '--full-path',
-                    'required': True,
                     'help': 'The full path where the files and folders should '
                     'be created, defaults to the root of your personal vault',
-                    'action': TildeFixStoreAction
+                    'action': TildeFixStoreAction,
+                    'default': '~/'
                 },
                 {
-                    'flags': '--vault',
-                    'help': 'The vault where the files will be uploaded. '
-                    'Defaults to your personal vault. '
-                    'Overrides the vault component of --full-path',
-                    'action': TildeFixStoreAction
+                    'flags': '--tags',
+                    'help': 'A list of tags to be added to all objects. '
+                    'Example: " --tags grch38 tissue dnaseq "',
+                    'nargs': '+'
                 },
                 {
-                    'flags': '--path',
-                    'help': 'The path (relative to a vault) '
-                    'where the files will be uploaded. '
-                    'Overrides the path component of --full-path'
+                    'flags': '-p',
+                    'help': 'Creates --full-path location if it does '
+                    'not exist. NOTE: This will not create new vaults.',
+                    'action': 'store_true',
                 },
                 {
                     'name': 'local_path',

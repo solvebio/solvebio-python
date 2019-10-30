@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-# from solvebio.resource import Vault
 
 from .helper import SolveBioTestCase
 
