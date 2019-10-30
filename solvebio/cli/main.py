@@ -195,6 +195,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'nargs': '+'
                 },
                 {
+                    'flags': '--exclude',
+                    'help': 'File or folder paths to be excluded from upload.',
+                    'nargs': '+'
+                },
+                {
                     'flags': '-p',
                     'help': 'Creates --full-path location if it does '
                     'not exist. NOTE: This will not create new vaults.',
