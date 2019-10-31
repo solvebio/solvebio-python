@@ -189,7 +189,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'default': '~/'
                 },
                 {
-                    'flags': '-p',
+                    'flags': '--create-full-path',
                     'help': 'Creates --full-path location if it does '
                     'not exist. NOTE: This will not create new vaults.',
                     'action': 'store_true',

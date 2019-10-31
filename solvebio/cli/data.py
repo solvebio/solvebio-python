@@ -65,11 +65,7 @@ def should_exclude(path, exclude_paths):
 
 
 def _upload_folder(domain, vault, base_remote_path, base_local_path,
-                   local_start, tags, exclude_paths=None,
-                   tag_folders_only=False, tag_files_only=False):
-
-    folder_tags = tags if not tag_files_only else []
-    file_tags = tags if not tag_folders_only else []
+                   local_start, exclude_paths=None):
 
     # Create the upload root folder if it does not exist on the remote
     try:
@@ -81,7 +77,7 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
         base_remote_path, path_dict = \
             Object.validate_full_path(base_remote_path)
         base_folder_path = os.path.join(base_remote_path, local_start)
-        _create_folder(vault, base_folder_path, tags=folder_tags)
+        _create_folder(vault, base_folder_path)
 
     # Create folders and upload files
     for abs_local_parent_path, folders, files in os.walk(base_local_path):
@@ -105,7 +101,7 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
                 continue
 
             remote_path = os.path.join(remote_folder_full_path, folder)
-            _create_folder(vault, remote_path, tags=folder_tags)
+            _create_folder(vault, remote_path)
 
         # Upload the files that do not yet exist on the remote
         for f in files:
@@ -120,7 +116,7 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
                 remote_parent = Object.get_by_full_path(
                     remote_folder_full_path, assert_type='folder')
                 Object.upload_file(local_file_path, remote_parent.path,
-                                   vault.full_path, tags=file_tags)
+                                   vault.full_path)
 
 
 def create_dataset(args):
@@ -219,8 +215,7 @@ def upload(args):
         try:
             Object.get_by_full_path(base_remote_path, assert_type='folder')
         except:
-            if not args.p:
-                # Passing `-p` will create the location if it does not exist
+            if not args.create_full_path:
                 raise
 
             # Create the destination path (including subfolders) if not found
@@ -231,24 +226,24 @@ def upload(args):
                 parent_folder = _create_folder(vault, folder_full_path)
                 parent_folder_path = parent_folder.full_path
 
-    tags = args.tags or []
     exclude = args.exclude or []
     for local_path in args.local_path:
         local_path = local_path.rstrip('/')
-        local_start = os.path.basename(local_path)
+        local_name = os.path.basename(local_path)
 
         if os.path.isdir(local_path):
             _upload_folder(path_dict['domain'], vault,
                            base_remote_path, local_path,
-                           local_start, tags, exclude_paths=exclude,
-                           tag_folders_only=args.tag_folders_only,
-                           tag_files_only=args.tag_files_only)
+                           local_name, exclude_paths=exclude)
         else:
-            if args.tag_folders_only:
-                tags = []
-
-            Object.upload_file(local_path, path_dict['path'],
-                               vault.full_path, tags=tags)
+            # Upload if file does not exist
+            try:
+                full_path = os.path.join(path_dict['full_path'], local_name)
+                Object.get_by_full_path(full_path)
+                print("Notice: Object already exists: {}".format(full_path))
+            except NotFoundError:
+                Object.upload_file(local_path, path_dict['path'],
+                                   vault.full_path)
 
 
 def import_file(args):
