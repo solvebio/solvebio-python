@@ -16,7 +16,10 @@ class BaseQueryTest(SolveBioTestCase):
 
     def test_basic(self):
         results = self.dataset.query().filter(
-            omim_id__in=[123631, 123670, 123690, 306250])
+            omim_id__in=['OMIM:123631',
+                         'OMIM:123670',
+                         'OMIM:123690',
+                         'OMIM:306250'])
         self.assertEqual(results.total, 4)
         self.assertEqual(len(results), results.total)
 
@@ -40,11 +43,11 @@ class BaseQueryTest(SolveBioTestCase):
         self.assertGreater(total, 0)
 
         # with a filter
-        q = self.dataset.query().filter(omim_id=123631)
+        q = self.dataset.query().filter(omim_id='OMIM:123631')
         self.assertEqual(q.count(), 1)
 
         # with a bogus filter
-        q = self.dataset.query().filter(omim_id=999999)
+        q = self.dataset.query().filter(omim_id='OMIM:99999')
         self.assertEqual(q.count(), 0)
 
     def test_count_with_limit(self):
@@ -54,11 +57,11 @@ class BaseQueryTest(SolveBioTestCase):
 
         for limit in [0, 10, 1000]:
             # with a filter
-            q = self.dataset.query(limit=limit).filter(omim_id=123631)
+            q = self.dataset.query(limit=limit).filter(omim_id='OMIM:123631')
             self.assertEqual(q.count(), 1)
 
             # with a bogus filter
-            q = self.dataset.query(limit=limit).filter(omim_id=999999)
+            q = self.dataset.query(limit=limit).filter(omim_id='OMIM:99999')
             self.assertEqual(q.count(), 0)
 
     def test_len(self):
@@ -68,11 +71,11 @@ class BaseQueryTest(SolveBioTestCase):
         self.assertEqual(len(q), total)
 
         # with a filter
-        q = self.dataset.query().filter(omim_id=123631)
+        q = self.dataset.query().filter(omim_id='OMIM:123631')
         self.assertEqual(len(q), 1)
 
         # with a bogus filter
-        q = self.dataset.query().filter(omim_id=999999)
+        q = self.dataset.query().filter(omim_id='OMIM:999999')
         self.assertEqual(len(q), 0)
 
     def test_len_with_limit(self):
@@ -83,11 +86,11 @@ class BaseQueryTest(SolveBioTestCase):
 
         for limit in [0, 10, 1000]:
             # with a filter
-            q = self.dataset.query(limit=limit).filter(omim_id=123631)
+            q = self.dataset.query(limit=limit).filter(omim_id='OMIM:123631')
             self.assertEqual(len(q), 1 if limit > 0 else 0)
 
             # with a bogus filter
-            q = self.dataset.query(limit=limit).filter(omim_id=999999)
+            q = self.dataset.query(limit=limit).filter(omim_id='OMIM:999999')
             self.assertEqual(len(q), 0)
 
     def test_empty(self):
@@ -96,7 +99,7 @@ class BaseQueryTest(SolveBioTestCase):
         results.
         """
         # bogus filter
-        results = self.dataset.query().filter(omim_id=999999)
+        results = self.dataset.query().filter(omim_id='OMIM:99999')
         self.assertEqual(len(results), 0)
         self.assertEqual(results[:]._buffer, [])
         self.assertRaises(IndexError, lambda: results[0])
@@ -109,7 +112,7 @@ class BaseQueryTest(SolveBioTestCase):
         limit = 100
         # bogus filter
         results = self.dataset.query(limit=limit) \
-            .filter(omim_id=999999)
+            .filter(omim_id='OMIM:99999')
         self.assertEqual(len(results), 0)
         self.assertEqual(results[:]._buffer, [])
         self.assertRaises(IndexError, lambda: results[0])
@@ -121,10 +124,10 @@ class BaseQueryTest(SolveBioTestCase):
         """
         num_filters = 4
         filters = \
-            Filter(omim_id=123631) | \
-            Filter(omim_id=123670) | \
-            Filter(omim_id=123690) | \
-            Filter(omim_id=306250)
+            Filter(omim_id='OMIM:123631') | \
+            Filter(omim_id='OMIM:123670') | \
+            Filter(omim_id='OMIM:123690') | \
+            Filter(omim_id='OMIM:306250')
         results = self.dataset.query(filters=filters)
         self.assertEqual(len(results), num_filters)
         self.assertRaises(IndexError, lambda: results[num_filters])
@@ -137,10 +140,10 @@ class BaseQueryTest(SolveBioTestCase):
         limit = 10
         num_filters = 4
         filters = \
-            Filter(omim_id=123631) | \
-            Filter(omim_id=123670) | \
-            Filter(omim_id=123690) | \
-            Filter(omim_id=306250)
+            Filter(omim_id='OMIM:123631') | \
+            Filter(omim_id='OMIM:123670') | \
+            Filter(omim_id='OMIM:123690') | \
+            Filter(omim_id='OMIM:306250')
         results = self.dataset.query(
             limit=limit, filters=filters)
         self.assertEqual(len(results), num_filters)
@@ -295,7 +298,7 @@ class BaseQueryTest(SolveBioTestCase):
 
         results = self.dataset.query(
             limit=limit, exclude_fields=['entrez_id'])
-        self.assertEqual(len(results[0].keys()), 40)
+        self.assertEqual(len(results[0].keys()), 53)
         self.assertTrue('entrez_id' not in results[0].keys())
 
     def test_entity_filters(self):
