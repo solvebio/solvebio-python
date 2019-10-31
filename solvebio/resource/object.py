@@ -129,9 +129,16 @@ class Object(CreateableAPIResource,
             object_path = object_path.rstrip('/')
 
         path_dict['path'] = object_path
-        # TODO: parent_path and filename
-        full_path = '{domain}:{vault}:{path}'.format(**path_dict)
-        path_dict['full_path'] = full_path
+        path_dict['full_path'] = '{domain}:{vault}:{path}'.format(**path_dict)
+
+        # Assumes no trailing slash, will be '' if is a vault root
+        path_dict['filename'] = os.path.basename(object_path)
+
+        # Will be / if parent is vault root
+        path_dict['parent_path'] = os.path.dirname(object_path)
+        path_dict['parent_full_path'] = '{vault_full_path}:{parent_path}' \
+            .format(**path_dict)
+
         return full_path, path_dict
 
     @classmethod
@@ -191,10 +198,7 @@ class Object(CreateableAPIResource,
                 assert_type='folder', client=_client)
             parent_object_id = parent_obj.id
 
-        description = kwargs.get(
-            'description',
-            'File uploaded via python client'
-        )
+        description = kwargs.get('description')
 
         # Create the file, and upload it to the Upload URL
         obj = Object.create(
