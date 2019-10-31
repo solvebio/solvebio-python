@@ -225,6 +225,48 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 }
             ]
         },
+        'tag': {
+            'func': data.tag,
+            'help': 'Apply tags to objects in SolveBio',
+            'arguments': [
+                {
+                    'name': 'tag',
+                    'help': 'A tag to be added to an objects. '
+                    'Files, folders, datasets and Vaults can be tagged. '
+                    'Tags are case insensitive strings. Example tags: '
+                    'GRCh38 Tissue "Foundation Medicine" new-tag',
+                    'nargs': '+'
+                },
+                {
+                    'flags': '--exclude',
+                    'help': 'File or folder paths to be excluded from upload.',
+                    'nargs': '+'
+                },
+                {
+                    'flags': '--recursive',
+                    'help': 'Will recursively tag all objects within the '
+                    'Vault or folder specified.',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--dry-run',
+                    'help': 'Dry run mode will not save tags.',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--tag-folders-only',
+                    'help': 'Will only apply tags to folders (tags files '
+                    'and folders by default). ',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--tag-files-only',
+                    'help': 'Will only apply tags to files (tags files '
+                    'and folders by default). ',
+                    'action': 'store_true'
+                }
+            ]
+        },
     }
 
     def __init__(self, *args, **kwargs):

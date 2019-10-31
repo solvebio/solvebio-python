@@ -248,6 +248,50 @@ class Object(CreateableAPIResource,
 
         return obj
 
+    def _object_list_helper(self, **params):
+        """Helper method to get objects within"""
+
+        if self.object_type != 'folder':
+            raise SolveError(
+                "Only folders contain child objects. This is a {}"
+                .format(self.object_type))
+
+        params.update({
+            'vault_id': self.vault_id,
+            'parent_object_id': self.id
+        })
+
+        items = self.all(client=self._client, **params)
+        return items
+
+    def files(self, **params):
+        return self._object_list_helper(object_type='file', **params)
+
+    def folders(self, **params):
+        return self._object_list_helper(object_type='folder', **params)
+
+    def datasets(self, **params):
+        return self._object_list_helper(object_type='dataset', **params)
+
+    def objects(self, **params):
+        return self._object_list_helper(**params)
+
+    def ls(self, **params):
+        return self.objects(**params)
+
+    def query(self, query=None, **params):
+        """Shortcut to query the underlying Dataset object"""
+        from solvebio import Dataset
+
+        if self.object_type != 'dataset':
+            raise SolveError(
+                "The query method can only be used by a dataset. Found a {}"
+                .format(self.object_type))
+
+        # TODO cache _dataset object?
+        _dataset = Dataset.retrieve(id=self.dataset_id)
+        return _dataset.query(query=query, **params)
+
     @property
     def parent(self):
         """ Returns the parent object """

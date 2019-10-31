@@ -28,7 +28,7 @@ class Fake201Response(object):
     def _retrieve_helper(self, model_name, field_name, error_value,
                          *args, **kwargs):
         obj = self.create()
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             obj[k] = v
 
         return obj
