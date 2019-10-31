@@ -5,18 +5,18 @@ from .helper import SolveBioTestCase
 
 class BeaconTests(SolveBioTestCase):
 
+    TEST_DATASET_FULL_PATH = 'solvebio:public:/ClinVar/3.7.4-2017-01-30/Variants-GRCh37'  # noqa
+
     def test_beacon_request(self):
         """
         Check that current Clinvar/Variants returns correct
         fields for beacon
         """
         dataset = self.client.Dataset.get_by_full_path(
-            'solvebio:public:/ClinVar/3.7.0-2015-12-06/Variants-GRCh37')
-
+            self.TEST_DATASET_FULL_PATH)
         beacon = dataset.beacon(chromosome='6',
-                                # coordinate=50432798,  # prod
-                                coordinate=51612854,  # staging
-                                allele='G')
+                                     coordinate=51612854,  # staging
+                                     allele='G')
 
         check_fields = ['query', 'exist', 'total']
 
@@ -27,8 +27,7 @@ class BeaconTests(SolveBioTestCase):
         # returns true for specific case
 
         dataset = self.client.Dataset.get_by_full_path(
-            'solvebio:public:/ClinVar/3.7.0-2015-12-06/Variants-GRCh37')
-
+            self.TEST_DATASET_FULL_PATH)
         beacontwo = dataset.beacon(chromosome='13',
                                    coordinate=113803460,
                                    allele='T')
