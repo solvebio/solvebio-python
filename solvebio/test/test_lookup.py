@@ -6,7 +6,7 @@ from .helper import SolveBioTestCase
 class LookupTests(SolveBioTestCase):
     # Using new version of HGNC for testing lookup
     # because original test dataset did not contain sbids.
-    TEST_DATASET_FULL_PATH = 'solvebio:public:/HGNC/2.1.2-2016-01-11/HGNC'
+    # TEST_DATASET_FULL_PATH = 'solvebio:public:/HGNC/2.1.2-2016-01-11/HGNC'
 
     final_lookup_one = [{
         '_id': '37133',
