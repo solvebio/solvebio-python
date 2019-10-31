@@ -62,6 +62,7 @@ class Object(CreateableAPIResource,
                 * vault_full_path: domain:vault
                 * path: the object path within the vault
                 * parent_path: the parent path to the object
+                * parent_full_path: the parent full path to the object
                 * filename: the object's filename (if any)
                 * full_path: the validated full path
 
@@ -139,7 +140,7 @@ class Object(CreateableAPIResource,
         path_dict['parent_full_path'] = '{vault_full_path}:{parent_path}' \
             .format(**path_dict)
 
-        return full_path, path_dict
+        return path_dict['full_path'], path_dict
 
     @classmethod
     def get_by_full_path(cls, full_path, **params):
