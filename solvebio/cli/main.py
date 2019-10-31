@@ -189,10 +189,10 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'default': '~/'
                 },
                 {
-                    'flags': '--tags',
-                    'help': 'A list of tags to be added to all objects. '
-                    'Example: " --tags grch38 tissue dnaseq "',
-                    'nargs': '+'
+                    'flags': '-p',
+                    'help': 'Creates --full-path location if it does '
+                    'not exist. NOTE: This will not create new vaults.',
+                    'action': 'store_true',
                 },
                 {
                     'flags': '--exclude',
@@ -200,10 +200,22 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'nargs': '+'
                 },
                 {
-                    'flags': '-p',
-                    'help': 'Creates --full-path location if it does '
-                    'not exist. NOTE: This will not create new vaults.',
-                    'action': 'store_true',
+                    'flags': '--tags',
+                    'help': 'A list of tags to be added to all objects. '
+                    'Example: " --tags grch38 tissue dnaseq "',
+                    'nargs': '+'
+                },
+                {
+                    'flags': '--tag-folders-only',
+                    'help': 'Will only apply tags to folders (tags files '
+                    'and folders by default). ',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--tag-files-only',
+                    'help': 'Will only apply tags to files (tags files '
+                    'and folders by default). ',
+                    'action': 'store_true'
                 },
                 {
                     'name': 'local_path',
