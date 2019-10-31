@@ -207,7 +207,8 @@ class CLITests(SolveBioTestCase):
 
         # pass -p to create destination
         args = ['upload', '--full-path',
-                'solvebio:test_vault:/test-folder', '-p', file_]
+                'solvebio:test_vault:/test-folder',
+                '--create-full-path', file_]
         self._test_upload_command(args)
 
     def test_upload_directories(self):
@@ -224,5 +225,6 @@ class CLITests(SolveBioTestCase):
 
         # pass -p to create destination
         args = ['upload', '--full-path',
-                'solvebio:test_vault:/test-folder-upload', '-p', folder_]
+                'solvebio:test_vault:/test-folder-upload',
+                '--create-full-path', folder_]
         self._test_upload_command(args)
