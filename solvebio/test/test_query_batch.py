@@ -23,7 +23,7 @@ class BatchQueryTest(SolveBioTestCase):
     def test_batch_query(self):
         queries = [
             self.dataset.query(limit=1),
-            self.dataset.query(limit=10).filter(hgnc_id__gt=100),
+            self.dataset.query(limit=10).filter(mamit_trnadb__gt=1),
             self.dataset.query(limit=100),
         ]
         results = self.client.BatchQuery(queries).execute()
