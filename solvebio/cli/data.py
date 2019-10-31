@@ -13,6 +13,7 @@ import solvebio
 from solvebio import Vault
 from solvebio import Object
 from solvebio.utils.files import check_gzip_path
+from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 
 
@@ -23,7 +24,10 @@ def _create_folder(vault, full_path, tags=None):
     folder_name = path_dict['filename']
 
     try:
-        new_obj = Object.get_by_full_path(full_path, object_type='folder')
+        new_obj = Object.get_by_full_path(full_path)
+        if not new_obj.is_folder:
+            raise SolveError('Object type {} already exists at location: {}'
+                             .format(new_obj.object_type, full_path))
     except NotFoundError:
         # Create the folder
         if path_dict['path'] == '/':
@@ -53,12 +57,12 @@ def should_exclude(path, exclude_paths):
         return False
 
     if path in exclude_paths:
-        print("WARNING: Excluding path {}".format(path))
+        print("WARNING: Excluding path {} (via --exclude)".format(path))
         return True
 
     for exclude_path in exclude_paths:
         if path.startswith(exclude_path):
-            print("WARNING: Excluding path {}".format(path))
+            print("WARNING: Excluding path {} (via --exclude)".format(path))
             return True
 
     return False
@@ -298,3 +302,69 @@ def import_file(args):
         mesh_url = 'https://my.solvebio.com/activity/'
         print("Your import has been submitted, view details at: {0}"
               .format(mesh_url))
+
+
+def apply_tags(object_, tags, dry_run=False):
+
+    def lowercase(x):
+        return x.lower()
+
+    existing_tags = map(lowercase, object_.tags)
+    new_tags = [tag for tag in tags if lowercase(tag) not in existing_tags]
+
+    if not new_tags:
+        print('Notice: Object {} already contains these tags'
+              .format(object_.full_path))
+        return
+
+    print('Notice: Adding tags: {} to object: {}'
+          .format(', '.join(new_tags), object_.full_path))
+    if not dry_run:
+        object_tags = object_.tags + new_tags
+        object_.tags = object_tags
+        object_.save()
+
+
+def tag(args):
+    """Tags a list of paths with provided tags"""
+
+    # First validate all paths
+    validated_objects = [
+        Object.get_by_full_path(full_path)
+        for full_path in args.full_path
+    ]
+
+    # Validate exclusion paths
+    exclusions = [
+        Object.validate_full_path(exclude_path)[0]
+        for exclude_path in args.exclude or []
+    ]
+
+    for object_ in validated_objects:
+
+        if should_exclude(object_.full_path, exclusions):
+            continue
+
+        should_tag = True
+        if args.tag_folders_only and not object_.is_folder:
+            should_tag = False
+
+        if args.tag_files_only and not object_.is_file:
+            should_tag = False
+
+        if args.tag_datasets_only and not object_.is_dataset:
+            should_tag = False
+
+        if should_tag:
+            apply_tags(object_, args.tag, dry_run=args.dry_run)
+        else:
+            print("WARNING: Excluding {} {} by object_type".format(
+                object_.object_type, object_.full_path))
+
+        if args.recursive and object_.is_folder:
+            children = [obj.full_path for obj in object_.ls()]
+            if children:
+                call_args = args
+                call_args.full_path = children
+                # Recursively tag objects within
+                tag(call_args)

@@ -251,7 +251,7 @@ class Object(CreateableAPIResource,
     def _object_list_helper(self, **params):
         """Helper method to get objects within"""
 
-        if self.object_type != 'folder':
+        if not self.is_folder:
             raise SolveError(
                 "Only folders contain child objects. This is a {}"
                 .format(self.object_type))
@@ -283,7 +283,7 @@ class Object(CreateableAPIResource,
         """Shortcut to query the underlying Dataset object"""
         from solvebio import Dataset
 
-        if self.object_type != 'dataset':
+        if not self.is_dataset:
             raise SolveError(
                 "The query method can only be used by a dataset. Found a {}"
                 .format(self.object_type))
@@ -305,3 +305,15 @@ class Object(CreateableAPIResource,
         """ Returns the vault object """
         from . import Vault
         return Vault.retrieve(self['vault_id'], client=self._client)
+
+    @property
+    def is_dataset(self):
+        return self.object_type == 'dataset'
+
+    @property
+    def is_folder(self):
+        return self.object_type == 'folder'
+
+    @property
+    def is_file(self):
+        return self.object_type == 'file'

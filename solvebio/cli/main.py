@@ -200,24 +200,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'nargs': '+'
                 },
                 {
-                    'flags': '--tags',
-                    'help': 'A list of tags to be added to all objects. '
-                    'Example: " --tags grch38 tissue dnaseq "',
-                    'nargs': '+'
-                },
-                {
-                    'flags': '--tag-folders-only',
-                    'help': 'Will only apply tags to folders (tags files '
-                    'and folders by default). ',
-                    'action': 'store_true'
-                },
-                {
-                    'flags': '--tag-files-only',
-                    'help': 'Will only apply tags to files (tags files '
-                    'and folders by default). ',
-                    'action': 'store_true'
-                },
-                {
                     'name': 'local_path',
                     'help': 'The path to the local file or directory '
                             'to upload',
@@ -230,12 +212,19 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'help': 'Apply tags to objects in SolveBio',
             'arguments': [
                 {
-                    'name': 'tag',
+                    'flags': 'full_path',
+                    'help': 'The full path of the files, '
+                    'folders or datasets to apply the tags.',
+                    'nargs': '+'
+                },
+                {
+                    'name': '--tag',
                     'help': 'A tag to be added to an objects. '
-                    'Files, folders, datasets and Vaults can be tagged. '
+                    'Files, folders and datasets can be tagged. '
                     'Tags are case insensitive strings. Example tags: '
                     'GRCh38 Tissue "Foundation Medicine" new-tag',
-                    'nargs': '+'
+                    'nargs': '+',
+                    'required': True
                 },
                 {
                     'flags': '--exclude',
@@ -245,7 +234,25 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'flags': '--recursive',
                     'help': 'Will recursively tag all objects within the '
-                    'Vault or folder specified.',
+                    'folders specified.',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--tag-folders-only',
+                    'help': 'Will only apply tags to folders (tags '
+                    'all objects by default). ',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--tag-files-only',
+                    'help': 'Will only apply tags to files (tags '
+                    'all objects by default). ',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--tag-datasets-only',
+                    'help': 'Will only apply tags to datasets (tags '
+                    'all objects by default). ',
                     'action': 'store_true'
                 },
                 {
@@ -253,18 +260,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Dry run mode will not save tags.',
                     'action': 'store_true'
                 },
-                {
-                    'flags': '--tag-folders-only',
-                    'help': 'Will only apply tags to folders (tags files '
-                    'and folders by default). ',
-                    'action': 'store_true'
-                },
-                {
-                    'flags': '--tag-files-only',
-                    'help': 'Will only apply tags to files (tags files '
-                    'and folders by default). ',
-                    'action': 'store_true'
-                }
             ]
         },
     }
