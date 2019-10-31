@@ -6,8 +6,10 @@ import binascii
 import mimetypes
 
 import requests
+from requests.packages.urllib3.util.retry import Retry
 
-from solvebio import SolveError
+from solvebio.errors import SolveError
+from solvebio.errors import FileUploadError
 from solvebio.utils.md5sum import md5sum
 
 from ..client import client
@@ -223,19 +225,27 @@ class Object(CreateableAPIResource,
 
         # Use a session with a retry policy to handle connection errors.
         session = requests.Session()
-        session.mount('https://', requests.adapters.HTTPAdapter(max_retries=5))
+        max_retries = 5
+        retry = Retry(
+            total=max_retries,
+            read=max_retries,
+            connect=max_retries,
+            backoff_factor=0.3,
+            status_forcelist=(500, 502, 504, 400),
+        )
+        session.mount(
+            'https://', requests.adapters.HTTPAdapter(max_retries=retry))
         upload_resp = session.put(upload_url,
                                   data=open(local_path, 'rb'),
                                   headers=headers)
 
         if upload_resp.status_code != 200:
-            print('Notice: Upload status code for {0} was {1}'.format(
+            print('WARNING: Upload status code for {0} was {1}'.format(
                 local_path, upload_resp.status_code
             ))
-            print('See error message below:')
-            print(upload_resp.content)
             # Clean up the failed upload
             obj.delete(force=True)
+            raise FileUploadError(upload_resp.content)
         else:
             print('Notice: Successfully uploaded {0} to {1}'.format(local_path,
                                                                     obj.path))
