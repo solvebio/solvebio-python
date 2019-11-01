@@ -11,8 +11,11 @@ from .helper import SolveBioTestCase
 import solvebio
 from solvebio.cli import main
 from solvebio import DatasetTemplate
+from solvebio import Vault
 from solvebio.errors import NotFoundError
 from solvebio.utils.files import get_home_dir
+from solvebio.cli.data import _create_folder
+from solvebio.cli.data import should_exclude
 from solvebio.test.client_mocks import fake_vault_all
 from solvebio.test.client_mocks import fake_vault_create
 from solvebio.test.client_mocks import fake_object_all
@@ -228,3 +231,84 @@ class CLITests(SolveBioTestCase):
                 'solvebio:test_vault:/test-folder-upload',
                 '--create-full-path', folder_]
         self._test_upload_command(args)
+
+    @mock.patch(
+        'solvebio.resource.apiresource.ListableAPIResource._retrieve_helper')
+    @mock.patch('solvebio.resource.Object.all')
+    @mock.patch('solvebio.resource.Object.create')
+    @mock.patch('solvebio.resource.Vault.create')
+    def test_create_folder(self, VaultCreate, ObjectCreate, ObjectAll,
+                           RetrieveHelper):
+
+        VaultCreate.side_effect = fake_vault_create
+        ObjectAll.side_effect = fake_object_all
+        ObjectCreate.side_effect = fake_object_create
+
+        vault = Vault.create('my-vault')
+
+        # create folder
+
+        RetrieveHelper.side_effect = fake_object_retrieve
+        full_path = vault.full_path + ':/new_folder'
+        f = _create_folder(vault, full_path)
+        self.assertEqual(f.full_path, full_path)
+
+    def test_should_exclude(self):
+        exclude = ['~/test', '~/test2']
+        self.assertFalse(should_exclude('~/test3/file.txt', exclude))
+
+        exclude = ['~/test*']
+        self.assertTrue(should_exclude('~/test3/file.txt', exclude))
+
+        exclude = ['*file.txt']
+        self.assertTrue(should_exclude('~/test3/file.txt', exclude))
+
+        exclude = ['*file.json']
+        self.assertFalse(should_exclude('~/test3/file.txt', exclude))
+
+        # TODO
+        # Should pasing a directory disqualify all
+        exclude = ['~/']
+        self.assertFalse(should_exclude('~/test3/file.txt', exclude))
+
+        exclude = ['~/test3/']
+        self.assertFalse(should_exclude('~/test3/file.txt', exclude))
+
+        exclude = ['~/test3']
+        self.assertFalse(should_exclude('~/test3/file.txt', exclude))
+
+        exclude = ['~/*']
+        self.assertTrue(should_exclude('~/test3/file.txt', exclude))
+
+        exclude = ['~/test3/*']
+        self.assertTrue(should_exclude('~/test3/file.txt', exclude))
+
+        # Not a full path match
+        exclude = ['file.txt']
+        self.assertFalse(should_exclude('~/test3/file.txt', exclude))
+
+        exclude = ['~/test3/file.txt']
+        self.assertTrue(should_exclude('~/test3/file.txt', exclude))
+
+        exclude = ['*file.txt']
+        self.assertTrue(should_exclude('~/test3/file.txt', exclude))
+
+        exclude = ['*/folder/*/file.txt']
+        self.assertTrue(should_exclude('~/folder/2019-01-01/file.txt',
+                                       exclude))
+
+        exclude = ['*/folder/*/new/file.txt']
+        self.assertFalse(should_exclude('~/folder/2019-01-01/file.txt',
+                                        exclude))
+
+        exclude = ['folder']
+        self.assertFalse(should_exclude('~/folder/2019-01-01/file.txt',
+                                        exclude))
+
+        exclude = ['*folder']
+        self.assertFalse(should_exclude('~/folder/2019-01-01/file.txt',
+                                        exclude))
+
+        exclude = ['*folder*']
+        self.assertTrue(should_exclude('~/folder/2019-01-01/file.txt',
+                                        exclude))

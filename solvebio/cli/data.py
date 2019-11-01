@@ -7,6 +7,7 @@ import re
 import sys
 import gzip
 import json
+import fnmatch
 
 import solvebio
 
@@ -56,12 +57,9 @@ def should_exclude(path, exclude_paths):
     if not exclude_paths:
         return False
 
-    if path in exclude_paths:
-        print("WARNING: Excluding path {} (via --exclude)".format(path))
-        return True
-
     for exclude_path in exclude_paths:
-        if path.startswith(exclude_path):
+        print(path, exclude_path)
+        if fnmatch.fnmatch(path, exclude_path):
             print("WARNING: Excluding path {} (via --exclude)".format(path))
             return True
 
