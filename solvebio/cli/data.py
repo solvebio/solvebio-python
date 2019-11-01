@@ -114,8 +114,14 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
                 continue
 
             try:
-                Object.get_by_full_path(
-                    os.path.join(remote_folder_full_path, f))
+                full_path = os.path.join(remote_folder_full_path, f)
+                obj = Object.get_by_full_path(full_path)
+                if obj.is_file:
+                    print('Notice: File already exists at {}'
+                          .format(full_path))
+                else:
+                    print('WARNING: A {} currently exists at {}'
+                          .format(obj.object_type, full_path))
             except NotFoundError:
                 remote_parent = Object.get_by_full_path(
                     remote_folder_full_path, assert_type='folder')
