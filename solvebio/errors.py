@@ -7,6 +7,10 @@ class NotFoundError(Exception):
     pass
 
 
+class FileUploadError(Exception):
+    pass
+
+
 class SolveError(Exception):
     """Exceptions tailored to the kinds of errors from a SolveBio API
     request"""
