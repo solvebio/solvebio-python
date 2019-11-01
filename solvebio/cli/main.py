@@ -196,7 +196,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'flags': '--exclude',
-                    'help': 'File or folder paths to be excluded from upload.',
+                    'help': 'Paths to files or folder to be excluded from '
+                    'upload. Unix shell-style wildcards are supported.',
                     'nargs': '+'
                 },
                 {
@@ -228,7 +229,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'flags': '--exclude',
-                    'help': 'File or folder paths to be excluded from upload.',
+                    'help': 'Paths to files or folder to be excluded from '
+                    'tagging. Unix shell-style wildcards are supported.',
                     'nargs': '+'
                 },
                 {
