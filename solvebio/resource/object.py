@@ -288,9 +288,7 @@ class Object(CreateableAPIResource,
                 "The query method can only be used by a dataset. Found a {}"
                 .format(self.object_type))
 
-        # TODO cache _dataset object?
-        _dataset = Dataset.retrieve(id=self.dataset_id)
-        return _dataset.query(query=query, **params)
+        return Dataset(self.dataset_id).query(query=query, **params)
 
     @property
     def parent(self):
