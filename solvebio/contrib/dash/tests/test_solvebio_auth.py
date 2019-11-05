@@ -169,7 +169,7 @@ class ProtectedViewsTest(unittest.TestCase):
         app.layout = html.Div()
 
         creator = self._oauth_token
-        f = 'solvebio.contrib.dash.solvebio_auth.SolveBioAuth.check_view_access' # noqa
+        f = 'solvebio.contrib.dash.solvebio_auth.SolveBioAuth.check_view_access'  # noqa
         with mock.patch(f, wraps=auth.check_view_access) as wrapped:
             self.check_endpoints(auth, app, creator)
             res = self.check_endpoints(auth, app, creator)
