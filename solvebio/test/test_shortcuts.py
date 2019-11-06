@@ -266,16 +266,14 @@ class CLITests(SolveBioTestCase):
         exclude = ['*file.json']
         self.assertFalse(should_exclude('~/test3/file.txt', exclude))
 
-        # TODO
-        # Should pasing a directory disqualify all
         exclude = ['~/']
-        self.assertFalse(should_exclude('~/test3/file.txt', exclude))
+        self.assertTrue(should_exclude('~/test3/file.txt', exclude))
 
         exclude = ['~/test3/']
-        self.assertFalse(should_exclude('~/test3/file.txt', exclude))
+        self.assertTrue(should_exclude('~/test3/file.txt', exclude))
 
         exclude = ['~/test3']
-        self.assertFalse(should_exclude('~/test3/file.txt', exclude))
+        self.assertTrue(should_exclude('~/test3/file.txt', exclude))
 
         exclude = ['~/*']
         self.assertTrue(should_exclude('~/test3/file.txt', exclude))
@@ -283,7 +281,6 @@ class CLITests(SolveBioTestCase):
         exclude = ['~/test3/*']
         self.assertTrue(should_exclude('~/test3/file.txt', exclude))
 
-        # Not a full path match
         exclude = ['file.txt']
         self.assertFalse(should_exclude('~/test3/file.txt', exclude))
 
@@ -306,7 +303,7 @@ class CLITests(SolveBioTestCase):
                                         exclude))
 
         exclude = ['*folder']
-        self.assertFalse(should_exclude('~/folder/2019-01-01/file.txt',
+        self.assertTrue(should_exclude('~/folder/2019-01-01/file.txt',
                                         exclude))
 
         exclude = ['*folder*']
