@@ -216,17 +216,19 @@ class SolveArgumentParser(argparse.ArgumentParser):
         },
         'tag': {
             'func': data.tag,
-            'help': 'Apply tags to objects in SolveBio',
+            'help': 'Apply tags or remove tags on objects',
             'arguments': [
                 {
                     'flags': 'full_path',
                     'help': 'The full path of the files, '
-                    'folders or datasets to apply the tags.',
+                    'folders or datasets to apply the tag updates.'
+                    'The value will be evaluated as regex if --regex '
+                    'flag enabled.',
                     'nargs': '+'
                 },
                 {
                     'name': '--tag',
-                    'help': 'A tag to be added to an objects. '
+                    'help': 'A tag to be added/removed. '
                     'Files, folders and datasets can be tagged. '
                     'Tags are case insensitive strings. Example tags: '
                     '--tag GRCh38 --tag Tissue --tag "Foundation Medicine"',
@@ -241,13 +243,14 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'flags': '--regex',
-                    'help': 'Interprets full_paths as regular expressions',
+                    'help': 'Interprets full_path values as regular '
+                    'expressions',
                     'action': 'store_true'
                 },
                 {
                     'flags': '--recursive',
-                    'help': 'Will recursively tag all objects within the '
-                    'folders specified.',
+                    'help': 'Will recursively apply tag updates to all '
+                    'objects within the folders specified.',
                     'action': 'store_true'
                 },
                 {
@@ -280,7 +283,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'flags': '--no-input',
-                    'help': 'Runs the command without user input.',
+                    'help': 'Automatically accept changes (overrides '
+                    'user prompt)',
                     'action': 'store_true'
                 },
             ]
