@@ -31,7 +31,7 @@ def _create_folder(vault, full_path, tags=None):
                              .format(new_obj.object_type, full_path))
     except NotFoundError:
         # Create the folder
-        if path_dict['path'] == '/':
+        if path_dict['parent_path'] == '/':
             parent_object_id = None
         else:
             parent = Object.get_by_full_path(path_dict['parent_full_path'],
@@ -53,30 +53,31 @@ def _create_folder(vault, full_path, tags=None):
     return new_obj
 
 
-def should_exclude(path, exclude_paths):
+def should_exclude(path, exclude_paths, dry_run=False):
     if not exclude_paths:
         return False
 
     for exclude_path in exclude_paths:
 
         if fnmatch(path, exclude_path):
-            print("WARNING: Excluding path {} (via --exclude {})"
-                  .format(path, exclude_path))
+            print("{}WARNING: Excluding path {} (via --exclude {})"
+                  .format('[Dry Run] ' if dry_run else '', path, exclude_path))
             return True
 
         # An exclude path may be a directory, strip trailing slash and add /*
         # if not already there.
         if not exclude_path.endswith('/*') and \
                 fnmatch(path, exclude_path.rstrip('/') + '/*'):
-            print("WARNING: Excluding path {} (via --exclude {})"
-                  .format(path, exclude_path.rstrip('/') + '/*'))
+            print("{}WARNING: Excluding path {} (via --exclude {})"
+                  .format('[Dry Run] ' if dry_run else '',
+                          path, exclude_path.rstrip('/') + '/*'))
             return True
 
     return False
 
 
 def _upload_folder(domain, vault, base_remote_path, base_local_path,
-                   local_start, exclude_paths=None):
+                   local_start, exclude_paths=None, dry_run=False):
 
     # Create the upload root folder if it does not exist on the remote
     try:
@@ -88,7 +89,10 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
         base_remote_path, path_dict = \
             Object.validate_full_path(base_remote_path)
         base_folder_path = os.path.join(base_remote_path, local_start)
-        _create_folder(vault, base_folder_path)
+        if dry_run:
+            print('[Dry Run] Creating folder {}'.format(base_folder_path))
+        else:
+            _create_folder(vault, base_folder_path)
 
     # Create folders and upload files
     for abs_local_parent_path, folders, files in os.walk(base_local_path):
@@ -99,7 +103,8 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
             '^' + os.path.dirname(base_local_path), '', abs_local_parent_path
         ).lstrip('/')
 
-        if should_exclude(abs_local_parent_path, exclude_paths):
+        if should_exclude(abs_local_parent_path, exclude_paths,
+                          dry_run=dry_run):
             continue
 
         remote_folder_full_path = \
@@ -108,16 +113,21 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
         # Create folders
         for folder in folders:
             new_folder_path = os.path.join(abs_local_parent_path, folder)
-            if should_exclude(new_folder_path, exclude_paths):
+            if should_exclude(new_folder_path, exclude_paths,
+                              dry_run=dry_run):
                 continue
 
             remote_path = os.path.join(remote_folder_full_path, folder)
-            _create_folder(vault, remote_path)
+            if dry_run:
+                print('[Dry Run] Creating folder {}'.format(remote_path))
+            else:
+                _create_folder(vault, remote_path)
 
         # Upload the files that do not yet exist on the remote
         for f in files:
             local_file_path = os.path.join(abs_local_parent_path, f)
-            if should_exclude(local_file_path, exclude_paths):
+            if should_exclude(local_file_path, exclude_paths,
+                              dry_run=dry_run):
                 continue
 
             try:
@@ -130,10 +140,14 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
                     print('WARNING: A {} currently exists at {}'
                           .format(obj.object_type, full_path))
             except NotFoundError:
-                remote_parent = Object.get_by_full_path(
-                    remote_folder_full_path, assert_type='folder')
-                Object.upload_file(local_file_path, remote_parent.path,
-                                   vault.full_path)
+                if dry_run:
+                    print('[Dry Run] Uploading {} to {}'
+                          .format(local_file_path, remote_folder_full_path))
+                else:
+                    remote_parent = Object.get_by_full_path(
+                        remote_folder_full_path, assert_type='folder')
+                    Object.upload_file(local_file_path, remote_parent.path,
+                                       vault.full_path)
 
 
 def create_dataset(args):
@@ -235,13 +249,17 @@ def upload(args):
             if not args.create_full_path:
                 raise
 
-            # Create the destination path (including subfolders) if not found
-            parent_folder_path = vault.full_path + ':'
-            folders = path_dict['path'].lstrip('/').split('/')
-            for folder in folders:
-                folder_full_path = os.path.join(parent_folder_path, folder)
-                parent_folder = _create_folder(vault, folder_full_path)
-                parent_folder_path = parent_folder.full_path
+            if args.dry_run:
+                print('[Dry Run] Creating {}'.format(base_remote_path))
+            else:
+                # Create the destination path (including subfolders)
+                # if not found
+                parent_folder_path = vault.full_path + ':'
+                folders = path_dict['path'].lstrip('/').split('/')
+                for folder in folders:
+                    folder_full_path = os.path.join(parent_folder_path, folder)
+                    parent_folder = _create_folder(vault, folder_full_path)
+                    parent_folder_path = parent_folder.full_path
 
     exclude = args.exclude or []
     for local_path in args.local_path:
@@ -251,7 +269,8 @@ def upload(args):
         if os.path.isdir(local_path):
             _upload_folder(path_dict['domain'], vault,
                            base_remote_path, local_path,
-                           local_name, exclude_paths=exclude)
+                           local_name, exclude_paths=exclude,
+                           dry_run=args.dry_run)
         else:
             # Upload if file does not exist
             try:
@@ -259,8 +278,12 @@ def upload(args):
                 Object.get_by_full_path(full_path)
                 print("Notice: Object already exists: {}".format(full_path))
             except NotFoundError:
-                Object.upload_file(local_path, path_dict['path'],
-                                   vault.full_path)
+                if args.dry_run:
+                    print('[Dry Run] Uploading {} to {}'
+                          .format(local_path, path_dict['path']))
+                else:
+                    Object.upload_file(local_path, path_dict['path'],
+                                       vault.full_path)
 
 
 def import_file(args):
@@ -355,7 +378,8 @@ def tag(args):
 
     for object_ in validated_objects:
 
-        if should_exclude(object_.full_path, exclusions):
+        if should_exclude(object_.full_path, exclusions,
+                          dry_run=args.dry_run):
             continue
 
         should_tag = True

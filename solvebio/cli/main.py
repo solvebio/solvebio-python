@@ -201,6 +201,12 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'nargs': '+'
                 },
                 {
+                    'flags': '--dry-run',
+                    'help': 'Dry run mode will not upload any files or '
+                    'create any folders.',
+                    'action': 'store_true'
+                },
+                {
                     'name': 'local_path',
                     'help': 'The path to the local file or directory '
                             'to upload',
