@@ -377,11 +377,7 @@ def tag(args):
     ]
 
     # Validate exclusion paths
-    exclusions = [
-        Object.validate_full_path(exclude_path)[0]
-        for exclude_path in args.exclude or []
-    ]
-
+    exclusions = args.exclude or []
     for object_ in validated_objects:
 
         if should_exclude(object_.full_path, exclusions,
