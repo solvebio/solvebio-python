@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import print_function
+from six.moves import input as raw_input
 
 import os
 import re
@@ -356,7 +357,7 @@ def apply_tags(object_, tags, remove=False, dry_run=False):
             print('{}Notice: Object {} does not contain any of the following '
                   'tags: {}'.format('[Dry Run] ' if dry_run else '',
                                     object_.full_path, ', '.join(tags)))
-            return
+            return False
 
         print('{}Notice: Removing tags: {} from object: {}'
               .format('[Dry Run] ' if dry_run else '',
@@ -371,7 +372,7 @@ def apply_tags(object_, tags, remove=False, dry_run=False):
             print('{}Notice: Object {} already contains these tags: {}'
                   .format('[Dry Run] ' if dry_run else '',
                           object_.full_path, ', '.join(tags)))
-            return
+            return False
 
         print('{}Notice: Adding tags: {} to object: {}'
               .format('[Dry Run] ' if dry_run else '',
@@ -383,13 +384,25 @@ def apply_tags(object_, tags, remove=False, dry_run=False):
     if not dry_run:
         object_.save()
 
+    return True
+
 
 def tag(args):
     """Tags a list of paths with provided tags"""
 
+    # If dry run mode or no-input, no prompt needed
+    # Otherwise we need a prompt for confirmation, so we
+    # first run in dry run mode, present prompt and then
+    # run again upon confirmatory input
+    dry_run = args.dry_run
+    if dry_run or args.no_input:
+        prompt_for_confirmation = False
+    else:
+        prompt_for_confirmation = True
+        dry_run = True
+
     objects_ = []
     if not args.regex:
-        # Validate all paths
         objects_ = [
             Object.get_by_full_path(full_path)
             for full_path in args.full_path
@@ -401,18 +414,26 @@ def tag(args):
                 _regex = path_dict['path']
                 vault_id = Vault.get_by_full_path(
                     path_dict['vault_full_path']).id
-            except:
+            except NotFoundError as e:
+                print(e)
+                print('Unable to parse full path from {}. Applying regex '
+                      'globally.'.format(_regex))
                 # can't parse out full path so assume regex is global
                 vault_id = None
 
             for obj in Object.all(regex=_regex, vault_id=vault_id, limit=1000):
                 objects_.append(obj)
 
+    if not objects_:
+        print("WARNING: No matching objects found.")
+        return
+
+    tag_updates_available = False
     exclusions = args.exclude or []
     for object_ in objects_:
 
         if should_exclude(object_.full_path, exclusions,
-                          dry_run=args.dry_run):
+                          dry_run=dry_run):
             continue
 
         should_tag = True
@@ -426,11 +447,14 @@ def tag(args):
             should_tag = False
 
         if should_tag:
-            apply_tags(object_, args.tag, remove=args.remove,
-                       dry_run=args.dry_run)
+            success = apply_tags(object_, args.tag, remove=args.remove,
+                                 dry_run=dry_run)
+
+            # Keep track of whether tags can be applied or were applied
+            tag_updates_available = tag_updates_available or success
         else:
             print("{}WARNING: Excluding {} {} by object_type".format(
-                '[Dry Run] ' if args.dry_run else '',
+                '[Dry Run] ' if dry_run else '',
                 object_.object_type, object_.full_path))
 
         if args.recursive and object_.is_folder:
@@ -440,3 +464,17 @@ def tag(args):
                 call_args.full_path = children
                 # Recursively tag objects within
                 tag(call_args)
+
+    # Prompt for confirmation of possible tag updates exist
+    if prompt_for_confirmation and tag_updates_available:
+        print('')
+        res = raw_input('Are you sure you want to apply the above changes? '
+                        '[y/N] ')
+        print('')
+        if res.strip().lower() != 'y':
+            print('Cancel received. Not applying changes.')
+            return
+
+        call_args = args
+        call_args.no_input = True
+        tag(args)
