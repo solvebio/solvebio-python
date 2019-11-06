@@ -126,28 +126,17 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
         # Upload the files that do not yet exist on the remote
         for f in files:
             local_file_path = os.path.join(abs_local_parent_path, f)
-            if should_exclude(local_file_path, exclude_paths,
-                              dry_run=dry_run):
+            if should_exclude(local_file_path, exclude_paths, dry_run=dry_run):
                 continue
 
-            try:
-                full_path = os.path.join(remote_folder_full_path, f)
-                obj = Object.get_by_full_path(full_path)
-                if obj.is_file:
-                    print('Notice: File already exists at {}'
-                          .format(full_path))
-                else:
-                    print('WARNING: A {} currently exists at {}'
-                          .format(obj.object_type, full_path))
-            except NotFoundError:
-                if dry_run:
-                    print('[Dry Run] Uploading {} to {}'
-                          .format(local_file_path, remote_folder_full_path))
-                else:
-                    remote_parent = Object.get_by_full_path(
-                        remote_folder_full_path, assert_type='folder')
-                    Object.upload_file(local_file_path, remote_parent.path,
-                                       vault.full_path)
+            if dry_run:
+                print('[Dry Run] Uploading {} to {}'
+                      .format(local_file_path, remote_folder_full_path))
+            else:
+                remote_parent = Object.get_by_full_path(
+                    remote_folder_full_path, assert_type='folder')
+                Object.upload_file(local_file_path, remote_parent.path,
+                                   vault.full_path)
 
 
 def create_dataset(args):
@@ -293,18 +282,12 @@ def upload(args):
                            local_name, exclude_paths=exclude_paths,
                            dry_run=args.dry_run)
         else:
-            # Upload if file does not exist
-            try:
-                full_path = os.path.join(path_dict['full_path'], local_name)
-                Object.get_by_full_path(full_path)
-                print("Notice: Object already exists: {}".format(full_path))
-            except NotFoundError:
-                if args.dry_run:
-                    print('[Dry Run] Uploading {} to {}'
-                          .format(local_path, path_dict['path']))
-                else:
-                    Object.upload_file(local_path, path_dict['path'],
-                                       vault.full_path)
+            if args.dry_run:
+                print('[Dry Run] Uploading {} to {}'
+                      .format(local_path, path_dict['path']))
+            else:
+                Object.upload_file(local_path, path_dict['path'],
+                                   vault.full_path)
 
 
 def import_file(args):

@@ -9,6 +9,7 @@ import requests
 from requests.packages.urllib3.util.retry import Retry
 
 from solvebio.errors import SolveError
+from solvebio.errors import NotFoundError
 from solvebio.errors import FileUploadError
 from solvebio.utils.md5sum import md5sum
 
@@ -188,17 +189,41 @@ class Object(CreateableAPIResource,
         vault = Vault.get_by_full_path(vault_full_path, client=_client)
 
         # Get MD5, mimetype, and file size for the object
-        md5, _ = md5sum(local_path, multipart_threshold=None)
+        local_md5, _ = md5sum(local_path, multipart_threshold=None)
         _, mimetype = mimetypes.guess_type(local_path)
         size = os.path.getsize(local_path)
 
+        # Check if object exists already and compare md5sums
+        full_path, path_dict = Object.validate_full_path(
+            os.path.join('{}:{}'.format(vault.full_path, remote_path),
+                         os.path.basename(local_path)))
+        try:
+            obj = cls.get_by_full_path(full_path)
+            if not obj.is_file:
+                print('WARNING: A {} currently exists at {}'
+                      .format(obj.object_type, full_path))
+            else:
+                # Check against md5sum of remote file
+                if obj.md5 == local_md5:
+                    print('WARNING: File {} (md5sum {}) already exists, '
+                          'not uploading'.format(full_path, local_md5))
+                    return obj
+                else:
+                    print('WARNING: File {} exists on SolveBio with different '
+                          'md5sum (local: {} vs remote: {}) Uploading anyway, '
+                          'but not overwriting.'
+                          .format(full_path, local_md5, obj.md5))
+        except NotFoundError:
+            pass
+
         # Lookup parent object
-        if remote_path == '/':
+        if path_dict['parent_path'] == '/':
             parent_object_id = None
         else:
             parent_obj = Object.get_by_full_path(
-                ':'.join([vault.full_path, remote_path]),
-                assert_type='folder', client=_client)
+                path_dict['parent_full_path'], assert_type='folder',
+                client=_client
+            )
             parent_object_id = parent_obj.id
 
         description = kwargs.get('description')
@@ -209,7 +234,7 @@ class Object(CreateableAPIResource,
             parent_object_id=parent_object_id,
             object_type='file',
             filename=os.path.basename(local_path),
-            md5=md5,
+            md5=local_md5,
             mimetype=mimetype,
             size=size,
             description=description,
@@ -224,7 +249,7 @@ class Object(CreateableAPIResource,
         upload_url = obj.upload_url
 
         headers = {
-            'Content-MD5': base64.b64encode(binascii.unhexlify(md5)),
+            'Content-MD5': base64.b64encode(binascii.unhexlify(local_md5)),
             'Content-Type': mimetype,
             'Content-Length': str(size),
         }
