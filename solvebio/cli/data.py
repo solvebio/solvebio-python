@@ -261,7 +261,20 @@ def upload(args):
                     parent_folder = _create_folder(vault, folder_full_path)
                     parent_folder_path = parent_folder.full_path
 
+    # Exit if there are multiple local paths and the
+    # exclude paths are not absolute
     base_exclude_paths = args.exclude or []
+    if base_exclude_paths and len(args.local_path) > 1:
+        rel_exclude_paths = [p for p in base_exclude_paths
+                             if not os.path.isabs(p)]
+        local_path_parents = set([os.path.dirname(os.path.abspath(p))
+                                  for p in args.local_path])
+        if rel_exclude_paths and len(local_path_parents) > 1:
+            sys.exit('Exiting. Cannot apply the --exclude relative paths when '
+                     'multiple upload paths with different parent directories '
+                     'are specified. Make --exclude paths absolute or run '
+                     'upload paths one at a time.')
+
     for local_path in args.local_path:
 
         # Expand local path and strip trailing slash
