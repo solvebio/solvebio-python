@@ -198,7 +198,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--exclude',
                     'help': 'Paths to files or folder to be excluded from '
                     'upload. Unix shell-style wildcards are supported.',
-                    'nargs': '+'
+                    'action': 'append'
                 },
                 {
                     'flags': '--dry-run',
@@ -229,15 +229,15 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'A tag to be added to an objects. '
                     'Files, folders and datasets can be tagged. '
                     'Tags are case insensitive strings. Example tags: '
-                    'GRCh38 Tissue "Foundation Medicine" new-tag',
-                    'nargs': '+',
+                    '--tag GRCh38 --tag Tissue --tag "Foundation Medicine"',
+                    'action': 'append',
                     'required': True
                 },
                 {
                     'flags': '--exclude',
                     'help': 'Paths to files or folder to be excluded from '
                     'tagging. Unix shell-style wildcards are supported.',
-                    'nargs': '+'
+                    'action': 'append'
                 },
                 {
                     'flags': '--recursive',

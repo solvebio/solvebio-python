@@ -107,12 +107,14 @@ class CLITests(SolveBioTestCase):
     @mock.patch('solvebio.resource.Object.all')
     @mock.patch('solvebio.resource.Dataset.create')
     @mock.patch('solvebio.resource.DatasetTemplate.retrieve')
-    def test_create_dataset_template_id(self, TmplRetrieve, DatasetCreate,
-                                        ObjectAll, VaultAll):
+    @mock.patch('solvebio.resource.DatasetTemplate.create')
+    def test_create_dataset_template_id(self, TmplCreate, TmplRetrieve,
+                                        DatasetCreate, ObjectAll, VaultAll):
         VaultAll.side_effect = fake_vault_all
         ObjectAll.side_effect = fake_object_all
         DatasetCreate.side_effect = fake_dataset_create
         TmplRetrieve.side_effect = fake_dataset_tmpl_retrieve
+        TmplCreate.side_effect = fake_dataset_tmpl_create
 
         # create template
         template_path = os.path.join(os.path.dirname(__file__),

@@ -261,15 +261,23 @@ def upload(args):
                     parent_folder = _create_folder(vault, folder_full_path)
                     parent_folder_path = parent_folder.full_path
 
-    exclude = args.exclude or []
+    base_exclude_paths = args.exclude or []
     for local_path in args.local_path:
-        local_path = local_path.rstrip('/')
+
+        # Expand local path and strip trailing slash
+        local_path = os.path.abspath(local_path).rstrip('/')
         local_name = os.path.basename(local_path)
+
+        # add basepath to excludes
+        exclude_paths = [
+            os.path.join(local_path, os.path.normpath(exclude_path))
+            for exclude_path in base_exclude_paths
+        ]
 
         if os.path.isdir(local_path):
             _upload_folder(path_dict['domain'], vault,
                            base_remote_path, local_path,
-                           local_name, exclude_paths=exclude,
+                           local_name, exclude_paths=exclude_paths,
                            dry_run=args.dry_run)
         else:
             # Upload if file does not exist
@@ -349,12 +357,14 @@ def apply_tags(object_, tags, dry_run=False):
     new_tags = [tag for tag in tags if lowercase(tag) not in existing_tags]
 
     if not new_tags:
-        print('Notice: Object {} already contains these tags'
-              .format(object_.full_path))
+        print('{}Notice: Object {} already contains these tags'
+              .format('[Dry Run] ' if dry_run else '', object_.full_path))
         return
 
-    print('Notice: Adding tags: {} to object: {}'
-          .format(', '.join(new_tags), object_.full_path))
+    print('{}Notice: Adding tags: {} to object: {}'
+          .format('[Dry Run] ' if dry_run else '',
+                  ', '.join(new_tags), object_.full_path))
+
     if not dry_run:
         object_tags = object_.tags + new_tags
         object_.tags = object_tags
@@ -395,7 +405,8 @@ def tag(args):
         if should_tag:
             apply_tags(object_, args.tag, dry_run=args.dry_run)
         else:
-            print("WARNING: Excluding {} {} by object_type".format(
+            print("{}WARNING: Excluding {} {} by object_type".format(
+                '[Dry Run] ' if args.dry_run else '',
                 object_.object_type, object_.full_path))
 
         if args.recursive and object_.is_folder:
