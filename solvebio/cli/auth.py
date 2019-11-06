@@ -63,16 +63,16 @@ def login(*args, **kwargs):
         interactive_login()
 
     # Print information about the current user
-    user = client.whoami()
-
-    if user:
+    try:
+        user = client.whoami()
+    except Exception as e:
+        _print_msg(e.message)
+        return False
+    else:
         print_user(user)
         save_credentials(user['email'].lower(), solvebio.api_key)
         _print_msg('Updated local credentials.')
         return True
-    else:
-        _print_msg('Invalid credentials. You may not be logged-in.')
-        return False
 
 
 def interactive_login():
@@ -118,12 +118,12 @@ def whoami(*args, **kwargs):
     Prints information about the current user.
     Assumes the user is already logged-in.
     """
-    user = client.whoami()
-
-    if user:
-        print_user(user)
+    try:
+        user = client.whoami()
+    except Exception as e:
+        print(e.message)
     else:
-        print('You are not logged-in.')
+        print_user(user)
 
 
 def print_user(user):
