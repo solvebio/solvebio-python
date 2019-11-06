@@ -240,6 +240,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'action': 'append'
                 },
                 {
+                    'flags': '--regex',
+                    'help': 'Interprets full_paths as regular expressions',
+                    'action': 'store_true'
+                },
+                {
                     'flags': '--recursive',
                     'help': 'Will recursively tag all objects within the '
                     'folders specified.',

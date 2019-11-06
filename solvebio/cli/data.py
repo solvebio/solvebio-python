@@ -370,15 +370,29 @@ def apply_tags(object_, tags, dry_run=False):
 def tag(args):
     """Tags a list of paths with provided tags"""
 
-    # First validate all paths
-    validated_objects = [
-        Object.get_by_full_path(full_path)
-        for full_path in args.full_path
-    ]
+    objects_ = []
+    if not args.regex:
+        # Validate all paths
+        objects_ = [
+            Object.get_by_full_path(full_path)
+            for full_path in args.full_path
+        ]
+    else:
+        for _regex in args.full_path:
+            try:
+                _, path_dict = Object.validate_full_path(_regex)
+                _regex = path_dict['path']
+                vault_id = Vault.get_by_full_path(
+                    path_dict['vault_full_path']).id
+            except:
+                # can't parse out full path so assume regex is global
+                vault_id = None
 
-    # Validate exclusion paths
+            for obj in Object.all(regex=_regex, vault_id=vault_id, limit=1000):
+                objects_.append(obj)
+
     exclusions = args.exclude or []
-    for object_ in validated_objects:
+    for object_ in objects_:
 
         if should_exclude(object_.full_path, exclusions,
                           dry_run=args.dry_run):
