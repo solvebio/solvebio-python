@@ -251,6 +251,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'action': 'store_true'
                 },
                 {
+                    'flags': '--remove',
+                    'help': 'Will remove tags instead of adding them.',
+                    'action': 'store_true'
+                },
+                {
                     'flags': '--tag-folders-only',
                     'help': 'Will only apply tags to folders (tags '
                     'all objects by default). ',
@@ -271,6 +276,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'flags': '--dry-run',
                     'help': 'Dry run mode will not save tags.',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--no-input',
+                    'help': 'Runs the command without user input.',
                     'action': 'store_true'
                 },
             ]

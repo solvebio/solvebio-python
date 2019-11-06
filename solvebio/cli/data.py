@@ -344,26 +344,43 @@ def import_file(args):
               .format(mesh_url))
 
 
-def apply_tags(object_, tags, dry_run=False):
+def apply_tags(object_, tags, remove=False, dry_run=False):
 
     def lowercase(x):
         return x.lower()
 
     existing_tags = map(lowercase, object_.tags)
-    new_tags = [tag for tag in tags if lowercase(tag) not in existing_tags]
+    if remove:
+        removal_tags = [tag for tag in tags if lowercase(tag) in existing_tags]
+        if not removal_tags:
+            print('{}Notice: Object {} does not contain any of the following '
+                  'tags: {}'.format('[Dry Run] ' if dry_run else '',
+                                    object_.full_path, ', '.join(tags)))
+            return
 
-    if not new_tags:
-        print('{}Notice: Object {} already contains these tags'
-              .format('[Dry Run] ' if dry_run else '', object_.full_path))
-        return
+        print('{}Notice: Removing tags: {} from object: {}'
+              .format('[Dry Run] ' if dry_run else '',
+                      ', '.join(removal_tags), object_.full_path))
 
-    print('{}Notice: Adding tags: {} to object: {}'
-          .format('[Dry Run] ' if dry_run else '',
-                  ', '.join(new_tags), object_.full_path))
+        object_tags = [tag for tag in existing_tags if tag not in removal_tags]
+        object_.tags = object_tags
 
-    if not dry_run:
+    else:
+        new_tags = [tag for tag in tags if lowercase(tag) not in existing_tags]
+        if not new_tags:
+            print('{}Notice: Object {} already contains these tags: {}'
+                  .format('[Dry Run] ' if dry_run else '',
+                          object_.full_path, ', '.join(tags)))
+            return
+
+        print('{}Notice: Adding tags: {} to object: {}'
+              .format('[Dry Run] ' if dry_run else '',
+                      ', '.join(new_tags), object_.full_path))
+
         object_tags = object_.tags + new_tags
         object_.tags = object_tags
+
+    if not dry_run:
         object_.save()
 
 
@@ -409,7 +426,8 @@ def tag(args):
             should_tag = False
 
         if should_tag:
-            apply_tags(object_, args.tag, dry_run=args.dry_run)
+            apply_tags(object_, args.tag, remove=args.remove,
+                       dry_run=args.dry_run)
         else:
             print("{}WARNING: Excluding {} {} by object_type".format(
                 '[Dry Run] ' if args.dry_run else '',
