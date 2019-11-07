@@ -370,23 +370,10 @@ def tag(args):
 
     objects = []
     for full_path in args.full_path:
-        vault_full_path = None
-        if not args.recursive:
-            # API will determine depth based
-            # on number of "/" in the glob
-            glob = full_path
-        else:
-            # Search recursively. Assumes global
-            # search if no vault found
-            parts = full_path.split('/', 1)
-            if len(parts) > 1:
-                vault_full_path, glob = parts
-            else:
-                glob = parts[0]
-
+        # API will determine depth based on number of "/" in the glob
+        # Add */** to match in any vault (recursive)
         objects.extend(list(Object.all(
-            glob=glob, vault_full_path=vault_full_path,
-            permission='write', limit=1000)))
+            glob=full_path, permission='write', limit=1000)))
 
     seen_vaults = {}
     taggable_objects = []

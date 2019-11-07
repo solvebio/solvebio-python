@@ -222,7 +222,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': 'full_path',
                     'help': 'The full path of the files, '
                     'folders or datasets to apply the tag updates. '
-                    'Unix shell-style wildcards are supported.',
+                    'Unix shell-style wildcards are supported. '
                     'nargs': '+'
                 },
                 {
@@ -244,12 +244,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Paths to files or folder to be excluded from '
                     'tagging. Unix shell-style wildcards are supported.',
                     'action': 'append'
-                },
-                {
-                    'flags': '--recursive',
-                    'help': 'Will recursively apply tag updates to all '
-                    'objects within the folders specified.',
-                    'action': 'store_true'
                 },
                 {
                     'flags': '--tag-folders-only',
