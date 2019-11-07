@@ -363,7 +363,7 @@ class Object(CreateableAPIResource,
     def is_file(self):
         return self.object_type == 'file'
 
-    def apply_tags(self, tags, remove=False, dry_run=False, apply_save=False):
+    def tag(self, tags, remove=False, dry_run=False, apply_save=False):
         """Add or remove tags on an object"""
 
         def lowercase(x):

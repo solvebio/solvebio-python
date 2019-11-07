@@ -415,7 +415,7 @@ def tag(args):
     # If args.no_input, changes will be applied immediately.
     # Otherwise, prints objects and if tags will be applied or not
     for item in all_items:
-        item.apply_tags(
+        item.tag(
             args.tag, remove=args.remove,
             dry_run=args.dry_run, apply_save=args.no_input)
 
@@ -431,6 +431,6 @@ def tag(args):
             print('Cancel received. Not applying changes.')
             return
 
-        object_.apply_tags(
+        object_.tag(
             args.tag, remove=args.remove,
             dry_run=args.dry_run, apply_save=True)
