@@ -381,7 +381,7 @@ def tag(args):
                 _regex = path_dict['path']
                 vault_id = Vault.get_by_full_path(
                     path_dict['vault_full_path']).id
-            except NotFoundError as e:
+            except Exception as e:
                 print(e)
                 print('Unable to parse full path from {}. Applying regex '
                       'globally.'.format(_regex))
@@ -418,6 +418,8 @@ def tag(args):
         item.tag(
             args.tag, remove=args.remove,
             dry_run=args.dry_run, apply_save=args.no_input)
+
+    print("Found {} objects".format(len(all_items)))
 
     # Prompts for confirmation and then runs through
     # again with save=True

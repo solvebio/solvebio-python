@@ -291,24 +291,13 @@ class Object(CreateableAPIResource,
                 "Only folders contain child objects. This is a {}"
                 .format(self.object_type))
 
-        params.update({
-            'vault_id': self.vault_id,
-            'parent_object_id': self.id
-        })
+        params['vault_id'] = self.vault_id
+        if 'recursive' in params:
+            params['ancestor_id'] = self.id
+        else:
+            params['parent_object_id'] = self.id
 
         items = self.all(client=self._client, **params)
-        # NOTE: recursive mode will paginate
-        # through everything and evaluate all ListObject
-        if 'recursive' in params:
-            item_children = []
-            for item in items:
-                if item.is_folder:
-                    params['parent_object_id'] = item.id
-                    children = list(self.all(client=self._client, **params))
-                    item_children.extend(children)
-
-            list(items).extend(item_children)
-
         return items
 
     def files(self, **params):
