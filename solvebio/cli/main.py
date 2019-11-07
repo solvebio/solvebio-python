@@ -222,7 +222,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': 'full_path',
                     'help': 'The full path of the files, '
                     'folders or datasets to apply the tag updates. '
-                    'Unix shell-style wildcards are supported. '
+                    'Unix shell-style wildcards are supported. ',
                     'nargs': '+'
                 },
                 {
