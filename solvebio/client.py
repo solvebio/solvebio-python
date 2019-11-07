@@ -153,10 +153,7 @@ class SolveClient(object):
         self._headers['User-Agent'] = ua
 
     def whoami(self):
-        try:
-            return self.get('/v1/user', {})
-        except:
-            return None
+        return self.get('/v1/user', {})
 
     def get(self, url, params, **kwargs):
         """Issues an HTTP GET across the wire via the Python requests
