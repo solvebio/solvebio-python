@@ -1,5 +1,25 @@
 # Change Log
 
+## [v2.9.0](https://github.com/solvebio/solvebio-python/tree/v2.9.0) (2019-11-07)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.9...v2.9.0)
+
+**Implemented enhancements:**
+
+- Helper shortcuts for navigating in a given folder [\#249](https://github.com/solvebio/solvebio-python/issues/249)
+
+**Closed issues:**
+
+- \[CLI\] Add ability to the upload shortcut to create folders if they don't exist [\#241](https://github.com/solvebio/solvebio-python/issues/241)
+- \[CLI\] Make upload shortcut --full-path arg optional? [\#224](https://github.com/solvebio/solvebio-python/issues/224)
+
+**Merged pull requests:**
+
+- clean up `solvebio tag` code [\#317](https://github.com/solvebio/solvebio-python/pull/317) ([jsh2134](https://github.com/jsh2134))
+- Fix error message when IP whitelisted [\#316](https://github.com/solvebio/solvebio-python/pull/316) ([davidhpark](https://github.com/davidhpark))
+- Upload CLI changes, Tag CLI, vault object shortcuts [\#315](https://github.com/solvebio/solvebio-python/pull/315) ([jsh2134](https://github.com/jsh2134))
+- retry on more status codes, raise error when upload unsuccessful [\#314](https://github.com/solvebio/solvebio-python/pull/314) ([jsh2134](https://github.com/jsh2134))
+- Update tests reliant on deleted source data [\#313](https://github.com/solvebio/solvebio-python/pull/313) ([jsh2134](https://github.com/jsh2134))
+
 ## [v2.8.9](https://github.com/solvebio/solvebio-python/tree/v2.8.9) (2019-09-19)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.8...v2.8.9)
 
