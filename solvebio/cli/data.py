@@ -345,136 +345,91 @@ def import_file(args):
               .format(mesh_url))
 
 
-def apply_tags(object_, tags, remove=False, dry_run=False):
+def should_tag_by_object_type(args, object_):
+    """Returns True if object matches object type requirements"""
+    valid = True
+    if args.tag_folders_only and not object_.is_folder:
+        valid = False
 
-    def lowercase(x):
-        return x.lower()
+    if args.tag_files_only and not object_.is_file:
+        valid = False
 
-    existing_tags = map(lowercase, object_.tags)
-    if remove:
-        removal_tags = [tag for tag in tags if lowercase(tag) in existing_tags]
-        if not removal_tags:
-            print('{}Notice: Object {} does not contain any of the following '
-                  'tags: {}'.format('[Dry Run] ' if dry_run else '',
-                                    object_.full_path, ', '.join(tags)))
-            return False
+    if args.tag_datasets_only and not object_.is_dataset:
+        valid = False
 
-        print('{}Notice: Removing tags: {} from object: {}'
-              .format('[Dry Run] ' if dry_run else '',
-                      ', '.join(removal_tags), object_.full_path))
+    if not valid:
+        print("{}WARNING: Excluding {} {} by object_type".format(
+            '[Dry Run] ' if args.dry_run else '',
+            object_.object_type, object_.full_path))
 
-        object_tags = [tag for tag in existing_tags if tag not in removal_tags]
-        object_.tags = object_tags
-
-    else:
-        new_tags = [tag for tag in tags if lowercase(tag) not in existing_tags]
-        if not new_tags:
-            print('{}Notice: Object {} already contains these tags: {}'
-                  .format('[Dry Run] ' if dry_run else '',
-                          object_.full_path, ', '.join(tags)))
-            return False
-
-        print('{}Notice: Adding tags: {} to object: {}'
-              .format('[Dry Run] ' if dry_run else '',
-                      ', '.join(new_tags), object_.full_path))
-
-        object_tags = object_.tags + new_tags
-        object_.tags = object_tags
-
-    if not dry_run:
-        object_.save()
-
-    return True
+    return valid
 
 
 def tag(args):
     """Tags a list of paths with provided tags"""
 
-    # If dry run mode or no-input, no prompt needed
-    # Otherwise we need a prompt for confirmation, so we
-    # first run in dry run mode, present prompt and then
-    # run again upon confirmatory input
-    dry_run = args.dry_run
-    if dry_run or args.no_input:
-        prompt_for_confirmation = False
-    else:
-        prompt_for_confirmation = True
-        dry_run = True
+    objects = []
+    for full_path in args.full_path:
+        vault_full_path = None
+        if not args.recursive:
+            # API will determine depth based
+            # on number of "/" in the glob
+            glob = full_path
+        else:
+            # Search recursively. Assumes global
+            # search if no vault found
+            parts = full_path.split('/', 1)
+            if len(parts) > 1:
+                vault_full_path, glob = parts
+            else:
+                glob = parts[0]
 
-    objects_ = []
-    if not args.regex:
-        objects_ = [
-            Object.get_by_full_path(full_path)
-            for full_path in args.full_path
-        ]
-    else:
-        for _regex in args.full_path:
-            try:
-                _, path_dict = Object.validate_full_path(_regex)
-                _regex = path_dict['path']
-                vault_id = Vault.get_by_full_path(
-                    path_dict['vault_full_path']).id
-            except NotFoundError as e:
-                print(e)
-                print('Unable to parse full path from {}. Applying regex '
-                      'globally.'.format(_regex))
-                # can't parse out full path so assume regex is global
-                vault_id = None
+        objects.extend(list(Object.all(
+            glob=glob, vault_full_path=vault_full_path,
+            permission='write', limit=1000)))
 
-            for obj in Object.all(regex=_regex, vault_id=vault_id, limit=1000):
-                objects_.append(obj)
-
-    if not objects_:
-        print("WARNING: No matching objects found.")
-        return
-
-    tag_updates_available = False
+    seen_vaults = {}
+    taggable_objects = []
     exclusions = args.exclude or []
-    for object_ in objects_:
+
+    # Runs through all objects to get tagging candidates
+    # taking exclusions and object_type filters into account.
+    for object_ in objects:
 
         if should_exclude(object_.full_path, exclusions,
-                          dry_run=dry_run):
+                          dry_run=args.dry_run):
             continue
 
-        should_tag = True
-        if args.tag_folders_only and not object_.is_folder:
-            should_tag = False
+        if should_tag_by_object_type(args, object_):
+            taggable_objects.append(object_)
+            seen_vaults[object_.vault_id] = 1
 
-        if args.tag_files_only and not object_.is_file:
-            should_tag = False
+    if not taggable_objects:
+        print('No taggable objects found at provided locations.')
+        return
 
-        if args.tag_datasets_only and not object_.is_dataset:
-            should_tag = False
+    # If args.no_input, changes will be applied immediately.
+    # Otherwise, prints the objects and if tags will be applied or not
+    for object_ in taggable_objects:
+        object_.tag(
+            args.tag, remove=args.remove,
+            dry_run=args.dry_run, apply_save=args.no_input)
 
-        if should_tag:
-            success = apply_tags(object_, args.tag, remove=args.remove,
-                                 dry_run=dry_run)
+    # Prompts for confirmation and then runs with apply_save=True
+    if not args.no_input:
 
-            # Keep track of whether tags can be applied or were applied
-            tag_updates_available = tag_updates_available or success
-        else:
-            print("{}WARNING: Excluding {} {} by object_type".format(
-                '[Dry Run] ' if dry_run else '',
-                object_.object_type, object_.full_path))
-
-        if args.recursive and object_.is_folder:
-            children = [obj.full_path for obj in object_.ls()]
-            if children:
-                call_args = args
-                call_args.full_path = children
-                # Recursively tag objects within
-                tag(call_args)
-
-    # Prompt for confirmation of possible tag updates exist
-    if prompt_for_confirmation and tag_updates_available:
         print('')
-        res = raw_input('Are you sure you want to apply the above changes? '
-                        '[y/N] ')
+        res = raw_input(
+            'Are you sure you want to apply the above changes to '
+            '{} object(s) in {} vault(s)? [y/N] '
+            .format(len(taggable_objects), len(seen_vaults.keys()))
+        )
         print('')
         if res.strip().lower() != 'y':
-            print('Cancel received. Not applying changes.')
+            print('Not applying changes.')
             return
 
-        call_args = args
-        call_args.no_input = True
-        tag(args)
+        for object_ in taggable_objects:
+            object_.tag(
+                args.tag, remove=args.remove,
+                dry_run=args.dry_run, apply_save=True)

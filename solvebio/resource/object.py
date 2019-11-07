@@ -291,10 +291,12 @@ class Object(CreateableAPIResource,
                 "Only folders contain child objects. This is a {}"
                 .format(self.object_type))
 
-        params.update({
-            'vault_id': self.vault_id,
-            'parent_object_id': self.id
-        })
+        params['vault_id'] = self.vault_id
+        if 'recursive' in params:
+            params['ancestor_id'] = self.id
+            params['limit'] = 1000
+        else:
+            params['parent_object_id'] = self.id
 
         items = self.all(client=self._client, **params)
         return items
@@ -350,3 +352,47 @@ class Object(CreateableAPIResource,
     @property
     def is_file(self):
         return self.object_type == 'file'
+
+    def tag(self, tags, remove=False, dry_run=False, apply_save=False):
+        """Add or remove tags on an object"""
+
+        def lowercase(x):
+            return x.lower()
+
+        existing_tags = map(lowercase, self.tags)
+
+        if remove:
+            removal_tags = [tag for tag in tags
+                            if lowercase(tag) in existing_tags]
+            if removal_tags:
+                print('{}Notice: Removing tags: {} from object: {}'
+                      .format('[Dry Run] ' if dry_run else '',
+                              ', '.join(removal_tags), self.full_path))
+
+                updated_tags = [tag for tag in existing_tags
+                                if tag not in removal_tags]
+            else:
+                print('{}Notice: Object {} does not contain any of the '
+                      'following tags: {}'.format(
+                          '[Dry Run] ' if dry_run else '',
+                          self.full_path, ', '.join(tags)))
+                return False
+        else:
+            new_tags = [tag for tag in tags
+                        if lowercase(tag) not in existing_tags]
+            if new_tags:
+                print('{}Notice: Adding tags: {} to object: {}'
+                      .format('[Dry Run] ' if dry_run else '',
+                              ', '.join(new_tags), self.full_path))
+                updated_tags = self.tags + new_tags
+            else:
+                print('{}Notice: Object {} already contains these tags: {}'
+                      .format('[Dry Run] ' if dry_run else '',
+                              self.full_path, ', '.join(tags)))
+                return False
+
+        if not dry_run and apply_save:
+            self.tags = updated_tags
+            self.save()
+
+        return True
