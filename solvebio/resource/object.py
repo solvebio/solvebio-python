@@ -297,14 +297,17 @@ class Object(CreateableAPIResource,
         })
 
         items = self.all(client=self._client, **params)
+        # NOTE: recursive mode will paginate
+        # through everything and evaluate all ListObject
         if 'recursive' in params:
-            items = list(items)
+            item_children = []
             for item in items:
                 if item.is_folder:
                     params['parent_object_id'] = item.id
                     children = list(self.all(client=self._client, **params))
-                    if children:
-                        items.extend(children)
+                    item_children.extend(children)
+
+            list(items).extend(item_children)
 
         return items
 

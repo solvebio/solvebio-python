@@ -397,9 +397,9 @@ def tag(args):
 
     all_items = []
     exclusions = args.exclude or []
-    # Runs through all objects and get tagging candidates
+    # Runs through all objects to get tagging candidates
     # taking exclusions and object_type filters into account.
-    # Also reursively walks the file tree if --recursive is True
+    # Also recursively walks the file tree if --recursive is True
     for object_ in objects:
 
         if should_exclude(object_.full_path, exclusions,
@@ -410,17 +410,17 @@ def tag(args):
             all_items.append(object_)
 
         if args.recursive and object_.is_folder:
-            children = [obj.full_path for obj in object_.ls(recursive=True)]
-            all_items.extend(children)
+            all_items.extend(list(object_.ls(recursive=True)))
 
-    # Prints out if tags will be applied or not
+    # If args.no_input, changes will be applied immediately.
+    # Otherwise, prints objects and if tags will be applied or not
     for item in all_items:
-        object_.apply_tags(
+        item.apply_tags(
             args.tag, remove=args.remove,
             dry_run=args.dry_run, apply_save=args.no_input)
 
-    # Prompt for confirmation if no_input
-    # And then runs through again with save=True
+    # Prompts for confirmation and then runs through
+    # again with save=True
     if not args.no_input:
 
         print('')
