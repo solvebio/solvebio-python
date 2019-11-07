@@ -246,6 +246,12 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'action': 'append'
                 },
                 {
+                    'flags': '--recursive',
+                    'help': 'Will recursively apply tag updates to all '
+                    'objects within the folders specified.',
+                    'action': 'store_true'
+                },
+                {
                     'flags': '--tag-folders-only',
                     'help': 'Will only apply tags to folders (tags '
                     'all objects by default). ',

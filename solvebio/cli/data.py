@@ -370,8 +370,25 @@ def tag(args):
 
     objects = []
     for full_path in args.full_path:
-        objects.extend(list(Object.all(glob=full_path)))
+        vault_full_path = None
+        if not args.recursive:
+            # API will determine depth based
+            # on number of "/" in the glob
+            glob = full_path
+        else:
+            # Search recursively. Assumes global
+            # search if no vault found
+            parts = full_path.split('/', 1)
+            if len(parts) > 1:
+                vault_full_path, glob = parts
+            else:
+                glob = parts[0]
 
+        objects.extend(list(Object.all(
+            glob=glob, vault_full_path=vault_full_path,
+            permission='write', limit=1000)))
+
+    seen_vaults = {}
     taggable_objects = []
     exclusions = args.exclude or []
 
@@ -385,6 +402,7 @@ def tag(args):
 
         if should_tag_by_object_type(args, object_):
             taggable_objects.append(object_)
+            seen_vaults[object_.vault_id] = 1
 
     if not taggable_objects:
         print('No taggable objects found at provided locations.')
@@ -401,11 +419,14 @@ def tag(args):
     if not args.no_input:
 
         print('')
-        res = raw_input('Are you sure you want to apply the above changes? '
-                        '[y/N] ')
+        res = raw_input(
+            'Are you sure you want to apply the above changes to '
+            '{} object(s) in {} vault(s)? [y/N] '
+            .format(len(taggable_objects), len(seen_vaults.keys()))
+        )
         print('')
         if res.strip().lower() != 'y':
-            print('Cancel received. Not applying changes.')
+            print('Not applying changes.')
             return
 
         for object_ in taggable_objects:
