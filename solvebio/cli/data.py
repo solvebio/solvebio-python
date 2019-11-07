@@ -362,44 +362,21 @@ def should_tag_by_object_type(args, object_):
             '[Dry Run] ' if args.dry_run else '',
             object_.object_type, object_.full_path))
 
-    return True
+    return valid
 
 
 def tag(args):
     """Tags a list of paths with provided tags"""
 
     objects = []
-    if not args.regex:
-        objects = [
-            Object.get_by_full_path(full_path)
-            for full_path in args.full_path
-        ]
-    else:
-        for _regex in args.full_path:
-            try:
-                _, path_dict = Object.validate_full_path(_regex)
-                _regex = path_dict['path']
-                vault_id = Vault.get_by_full_path(
-                    path_dict['vault_full_path']).id
-            except Exception as e:
-                print(e)
-                print('Unable to parse full path from {}. Applying regex '
-                      'globally.'.format(_regex))
-                # can't parse out full path so assume regex is global
-                vault_id = None
+    for full_path in args.full_path:
+        objects.extend(list(Object.all(glob=full_path)))
 
-            for obj in Object.all(regex=_regex, vault_id=vault_id, limit=1000):
-                objects.append(obj)
-
-    if not objects:
-        print("WARNING: No matching objects found.")
-        return
-
-    all_items = []
+    taggable_objects = []
     exclusions = args.exclude or []
+
     # Runs through all objects to get tagging candidates
     # taking exclusions and object_type filters into account.
-    # Also recursively walks the file tree if --recursive is True
     for object_ in objects:
 
         if should_exclude(object_.full_path, exclusions,
@@ -407,22 +384,20 @@ def tag(args):
             continue
 
         if should_tag_by_object_type(args, object_):
-            all_items.append(object_)
+            taggable_objects.append(object_)
 
-        if args.recursive and object_.is_folder:
-            all_items.extend(list(object_.ls(recursive=True)))
+    if not taggable_objects:
+        print('No taggable objects found at provided locations.')
+        return
 
     # If args.no_input, changes will be applied immediately.
-    # Otherwise, prints objects and if tags will be applied or not
-    for item in all_items:
-        item.tag(
+    # Otherwise, prints the objects and if tags will be applied or not
+    for object_ in taggable_objects:
+        object_.tag(
             args.tag, remove=args.remove,
             dry_run=args.dry_run, apply_save=args.no_input)
 
-    print("Found {} objects".format(len(all_items)))
-
-    # Prompts for confirmation and then runs through
-    # again with save=True
+    # Prompts for confirmation and then runs with apply_save=True
     if not args.no_input:
 
         print('')
@@ -433,6 +408,7 @@ def tag(args):
             print('Cancel received. Not applying changes.')
             return
 
-        object_.tag(
-            args.tag, remove=args.remove,
-            dry_run=args.dry_run, apply_save=True)
+        for object_ in taggable_objects:
+            object_.tag(
+                args.tag, remove=args.remove,
+                dry_run=args.dry_run, apply_save=True)

@@ -294,6 +294,7 @@ class Object(CreateableAPIResource,
         params['vault_id'] = self.vault_id
         if 'recursive' in params:
             params['ancestor_id'] = self.id
+            params['limit'] = 1000
         else:
             params['parent_object_id'] = self.id
 
