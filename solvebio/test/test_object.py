@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-# from solvebio.resource import Vault
 
 from .helper import SolveBioTestCase
 
@@ -19,6 +18,22 @@ class ObjectTests(SolveBioTestCase):
 
         with self.assertRaises(Exception):
             self.client.Object.get_by_full_path('what/is/this')
+
+    def test_object_output(self):
+
+        case = 'acme:myVault/uploads_folder'
+        expected = 'acme:myVault:/uploads_folder'
+        p, path_dict = self.client.Object.validate_full_path(case)
+
+        self.assertEqual(p, expected)
+        self.assertEqual(path_dict['full_path'], expected)
+        self.assertEqual(path_dict['path'], '/uploads_folder')
+        self.assertEqual(path_dict['parent_path'], '/')
+        self.assertEqual(path_dict['parent_full_path'], 'acme:myVault:/')
+        self.assertEqual(path_dict['filename'], 'uploads_folder')
+        self.assertEqual(path_dict['domain'], 'acme')
+        self.assertEqual(path_dict['vault'], 'myVault')
+        self.assertEqual(path_dict['vault_full_path'], 'acme:myVault')
 
     def test_object_path_cases(self):
 

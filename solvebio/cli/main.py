@@ -183,23 +183,28 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'arguments': [
                 {
                     'flags': '--full-path',
-                    'required': True,
                     'help': 'The full path where the files and folders should '
                     'be created, defaults to the root of your personal vault',
-                    'action': TildeFixStoreAction
+                    'action': TildeFixStoreAction,
+                    'default': '~/'
                 },
                 {
-                    'flags': '--vault',
-                    'help': 'The vault where the files will be uploaded. '
-                    'Defaults to your personal vault. '
-                    'Overrides the vault component of --full-path',
-                    'action': TildeFixStoreAction
+                    'flags': '--create-full-path',
+                    'help': 'Creates --full-path location if it does '
+                    'not exist. NOTE: This will not create new vaults.',
+                    'action': 'store_true',
                 },
                 {
-                    'flags': '--path',
-                    'help': 'The path (relative to a vault) '
-                    'where the files will be uploaded. '
-                    'Overrides the path component of --full-path'
+                    'flags': '--exclude',
+                    'help': 'Paths to files or folder to be excluded from '
+                    'upload. Unix shell-style wildcards are supported.',
+                    'action': 'append'
+                },
+                {
+                    'flags': '--dry-run',
+                    'help': 'Dry run mode will not upload any files or '
+                    'create any folders.',
+                    'action': 'store_true'
                 },
                 {
                     'name': 'local_path',
@@ -207,6 +212,68 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'to upload',
                     'nargs': '+'
                 }
+            ]
+        },
+        'tag': {
+            'func': data.tag,
+            'help': 'Apply tags or remove tags on objects',
+            'arguments': [
+                {
+                    'flags': 'full_path',
+                    'help': 'The full path of the files, '
+                    'folders or datasets to apply the tag updates. '
+                    'Unix shell-style wildcards are supported. ',
+                    'nargs': '+'
+                },
+                {
+                    'name': '--tag',
+                    'help': 'A tag to be added/removed. '
+                    'Files, folders and datasets can be tagged. '
+                    'Tags are case insensitive strings. Example tags: '
+                    '--tag GRCh38 --tag Tissue --tag "Foundation Medicine"',
+                    'action': 'append',
+                    'required': True
+                },
+                {
+                    'flags': '--remove',
+                    'help': 'Will remove tags instead of adding them.',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--exclude',
+                    'help': 'Paths to files or folder to be excluded from '
+                    'tagging. Unix shell-style wildcards are supported.',
+                    'action': 'append'
+                },
+                {
+                    'flags': '--tag-folders-only',
+                    'help': 'Will only apply tags to folders (tags '
+                    'all objects by default). ',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--tag-files-only',
+                    'help': 'Will only apply tags to files (tags '
+                    'all objects by default). ',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--tag-datasets-only',
+                    'help': 'Will only apply tags to datasets (tags '
+                    'all objects by default). ',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--dry-run',
+                    'help': 'Dry run mode will not save tags.',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--no-input',
+                    'help': 'Automatically accept changes (overrides '
+                    'user prompt)',
+                    'action': 'store_true'
+                },
             ]
         },
     }

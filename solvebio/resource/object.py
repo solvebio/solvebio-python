@@ -9,6 +9,7 @@ import requests
 from requests.packages.urllib3.util.retry import Retry
 
 from solvebio.errors import SolveError
+from solvebio.errors import NotFoundError
 from solvebio.errors import FileUploadError
 from solvebio.utils.md5sum import md5sum
 
@@ -64,6 +65,7 @@ class Object(CreateableAPIResource,
                 * vault_full_path: domain:vault
                 * path: the object path within the vault
                 * parent_path: the parent path to the object
+                * parent_full_path: the parent full path to the object
                 * filename: the object's filename (if any)
                 * full_path: the validated full path
 
@@ -131,10 +133,17 @@ class Object(CreateableAPIResource,
             object_path = object_path.rstrip('/')
 
         path_dict['path'] = object_path
-        # TODO: parent_path and filename
-        full_path = '{domain}:{vault}:{path}'.format(**path_dict)
-        path_dict['full_path'] = full_path
-        return full_path, path_dict
+        path_dict['full_path'] = '{domain}:{vault}:{path}'.format(**path_dict)
+
+        # Assumes no trailing slash, will be '' if is a vault root
+        path_dict['filename'] = os.path.basename(object_path)
+
+        # Will be / if parent is vault root
+        path_dict['parent_path'] = os.path.dirname(object_path)
+        path_dict['parent_full_path'] = '{vault_full_path}:{parent_path}' \
+            .format(**path_dict)
+
+        return path_dict['full_path'], path_dict
 
     @classmethod
     def get_by_full_path(cls, full_path, **params):
@@ -180,23 +189,44 @@ class Object(CreateableAPIResource,
         vault = Vault.get_by_full_path(vault_full_path, client=_client)
 
         # Get MD5, mimetype, and file size for the object
-        md5, _ = md5sum(local_path, multipart_threshold=None)
+        local_md5, _ = md5sum(local_path, multipart_threshold=None)
         _, mimetype = mimetypes.guess_type(local_path)
         size = os.path.getsize(local_path)
 
+        # Check if object exists already and compare md5sums
+        full_path, path_dict = Object.validate_full_path(
+            os.path.join('{}:{}'.format(vault.full_path, remote_path),
+                         os.path.basename(local_path)))
+        try:
+            obj = cls.get_by_full_path(full_path)
+            if not obj.is_file:
+                print('WARNING: A {} currently exists at {}'
+                      .format(obj.object_type, full_path))
+            else:
+                # Check against md5sum of remote file
+                if obj.md5 == local_md5:
+                    print('WARNING: File {} (md5sum {}) already exists, '
+                          'not uploading'.format(full_path, local_md5))
+                    return obj
+                else:
+                    print('WARNING: File {} exists on SolveBio with different '
+                          'md5sum (local: {} vs remote: {}) Uploading anyway, '
+                          'but not overwriting.'
+                          .format(full_path, local_md5, obj.md5))
+        except NotFoundError:
+            pass
+
         # Lookup parent object
-        if remote_path == '/':
+        if path_dict['parent_path'] == '/':
             parent_object_id = None
         else:
             parent_obj = Object.get_by_full_path(
-                ':'.join([vault.full_path, remote_path]),
-                assert_type='folder', client=_client)
+                path_dict['parent_full_path'], assert_type='folder',
+                client=_client
+            )
             parent_object_id = parent_obj.id
 
-        description = kwargs.get(
-            'description',
-            'File uploaded via python client'
-        )
+        description = kwargs.get('description')
 
         # Create the file, and upload it to the Upload URL
         obj = Object.create(
@@ -204,10 +234,11 @@ class Object(CreateableAPIResource,
             parent_object_id=parent_object_id,
             object_type='file',
             filename=os.path.basename(local_path),
-            md5=md5,
+            md5=local_md5,
             mimetype=mimetype,
             size=size,
             description=description,
+            tags=kwargs.get('tags', []) or [],
             client=_client
         )
 
@@ -218,7 +249,7 @@ class Object(CreateableAPIResource,
         upload_url = obj.upload_url
 
         headers = {
-            'Content-MD5': base64.b64encode(binascii.unhexlify(md5)),
+            'Content-MD5': base64.b64encode(binascii.unhexlify(local_md5)),
             'Content-Type': mimetype,
             'Content-Length': str(size),
         }
@@ -252,6 +283,50 @@ class Object(CreateableAPIResource,
 
         return obj
 
+    def _object_list_helper(self, **params):
+        """Helper method to get objects within"""
+
+        if not self.is_folder:
+            raise SolveError(
+                "Only folders contain child objects. This is a {}"
+                .format(self.object_type))
+
+        params['vault_id'] = self.vault_id
+        if 'recursive' in params:
+            params['ancestor_id'] = self.id
+            params['limit'] = 1000
+        else:
+            params['parent_object_id'] = self.id
+
+        items = self.all(client=self._client, **params)
+        return items
+
+    def files(self, **params):
+        return self._object_list_helper(object_type='file', **params)
+
+    def folders(self, **params):
+        return self._object_list_helper(object_type='folder', **params)
+
+    def datasets(self, **params):
+        return self._object_list_helper(object_type='dataset', **params)
+
+    def objects(self, **params):
+        return self._object_list_helper(**params)
+
+    def ls(self, **params):
+        return self.objects(**params)
+
+    def query(self, query=None, **params):
+        """Shortcut to query the underlying Dataset object"""
+        from solvebio import Dataset
+
+        if not self.is_dataset:
+            raise SolveError(
+                "The query method can only be used by a dataset. Found a {}"
+                .format(self.object_type))
+
+        return Dataset(self.dataset_id).query(query=query, **params)
+
     @property
     def parent(self):
         """ Returns the parent object """
@@ -265,3 +340,59 @@ class Object(CreateableAPIResource,
         """ Returns the vault object """
         from . import Vault
         return Vault.retrieve(self['vault_id'], client=self._client)
+
+    @property
+    def is_dataset(self):
+        return self.object_type == 'dataset'
+
+    @property
+    def is_folder(self):
+        return self.object_type == 'folder'
+
+    @property
+    def is_file(self):
+        return self.object_type == 'file'
+
+    def tag(self, tags, remove=False, dry_run=False, apply_save=False):
+        """Add or remove tags on an object"""
+
+        def lowercase(x):
+            return x.lower()
+
+        existing_tags = map(lowercase, self.tags)
+
+        if remove:
+            removal_tags = [tag for tag in tags
+                            if lowercase(tag) in existing_tags]
+            if removal_tags:
+                print('{}Notice: Removing tags: {} from object: {}'
+                      .format('[Dry Run] ' if dry_run else '',
+                              ', '.join(removal_tags), self.full_path))
+
+                updated_tags = [tag for tag in existing_tags
+                                if tag not in removal_tags]
+            else:
+                print('{}Notice: Object {} does not contain any of the '
+                      'following tags: {}'.format(
+                          '[Dry Run] ' if dry_run else '',
+                          self.full_path, ', '.join(tags)))
+                return False
+        else:
+            new_tags = [tag for tag in tags
+                        if lowercase(tag) not in existing_tags]
+            if new_tags:
+                print('{}Notice: Adding tags: {} to object: {}'
+                      .format('[Dry Run] ' if dry_run else '',
+                              ', '.join(new_tags), self.full_path))
+                updated_tags = self.tags + new_tags
+            else:
+                print('{}Notice: Object {} already contains these tags: {}'
+                      .format('[Dry Run] ' if dry_run else '',
+                              self.full_path, ', '.join(tags)))
+                return False
+
+        if not dry_run and apply_save:
+            self.tags = updated_tags
+            self.save()
+
+        return True
