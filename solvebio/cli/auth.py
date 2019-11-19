@@ -45,16 +45,30 @@ def _ask_for_credentials():
         sys.exit(1)
 
 
+def login_and_save(*args, **kwargs):
+    """
+    Attempt to "log the user in" with provided credentials.
+    Update local credentials if successful.
+    """
+    user = login(*args, **kwargs)
+    if user:
+        token = '{}:{}'.format(client._auth.token_type, client._auth.token)
+        save_credentials(user['email'].lower(), token)
+        _print_msg('Updated local credentials file.')
+
+
 def login(*args, **kwargs):
     """
     Prompt user for login information (domain/email/password).
     Domain, email and password are used to get the user's API key.
-
-    Always updates the stored credentials file.
     """
+
     if args and args[0].api_key:
         # Handle command-line arguments if provided.
         solvebio.login(api_key=args[0].api_key)
+    elif args and args[0].access_token:
+        # Handle command-line arguments if provided.
+        solvebio.login(access_token=args[0].access_token)
     elif kwargs:
         # Run the global login() if kwargs are provided
         # or local credentials are found.
@@ -65,14 +79,11 @@ def login(*args, **kwargs):
     # Print information about the current user
     try:
         user = client.whoami()
+        print_user(user)
+        return user
     except Exception as e:
         _print_msg(e.message)
-        return False
-    else:
-        print_user(user)
-        save_credentials(user['email'].lower(), solvebio.api_key)
-        _print_msg('Updated local credentials.')
-        return True
+        return None
 
 
 def interactive_login():

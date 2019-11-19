@@ -35,7 +35,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
     """
     subcommands = {
         'login': {
-            'func': auth.login,
+            'func': auth.login_and_save,
             'help': 'Login and save credentials'
         },
         'logout': {
@@ -293,8 +293,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
             '--api-key',
             help='Manually provide a SolveBio API key')
         self.add_argument(
-            '--api-token',
-            help='Manually provide a SolveBio OAuth API token')
+            '--access-token',
+            help='Manually provide a SolveBio OAuth2 access token')
 
     def _add_subcommands(self):
         """
@@ -360,12 +360,21 @@ def main(argv=sys.argv[1:]):
     if args.api_key:
         solvebio.api_key = args.api_key
 
-    if not solvebio.api_key:
+    if args.access_token:
+        solvebio.access_token = args.access_token
+
+    if not solvebio.api_key and not solvebio.access_token:
         # If nothing is set (via command line or environment)
         # look in local credentials
         try:
             from .credentials import get_credentials
-            solvebio.api_key = get_credentials()
+            token = get_credentials().split(':')
+            if token[0] == 'Bearer':
+                solvebio.access_token = token[1]
+            elif token[0] == 'Token':
+                solvebio.api_key = token[1]
+            else:
+                solvebio.api_key = token[0]
         except:
             pass
 

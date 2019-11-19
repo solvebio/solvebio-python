@@ -38,5 +38,8 @@ from solvebio.cli.auth import get_credentials  # noqa
 # Always try to log the user in when launching the shell
 if solvebio.api_key:
     login(api_key=solvebio.api_key)
+elif solvebio.access_token:
+    login(access_token=solvebio.access_token)
 else:
+    # May run interactive login
     login()
