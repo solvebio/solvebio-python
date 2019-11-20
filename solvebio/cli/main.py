@@ -354,33 +354,10 @@ def main(argv=sys.argv[1:]):
     parser = SolveArgumentParser()
     args = parser.parse_solvebio_args(argv)
 
-    if args.api_host:
-        solvebio.api_host = args.api_host
-
-    if args.api_key:
-        solvebio.api_key = args.api_key
-
-    if args.access_token:
-        solvebio.access_token = args.access_token
-
-    if not solvebio.api_key and not solvebio.access_token:
-        # If nothing is set (via command line or environment)
-        # look in local credentials
-        try:
-            from .credentials import get_credentials
-            token = get_credentials().split(':')
-            if token[0] == 'Bearer':
-                solvebio.access_token = token[1]
-            elif token[0] == 'Token':
-                solvebio.api_key = token[1]
-            else:
-                solvebio.api_key = token[0]
-        except:
-            pass
-
-    # Update the client host and token
-    client.set_host()
-    client.set_token()
+    solvebio.login(
+        api_host=args.api_host,
+        api_key=args.api_key,
+        access_token=args.access_token)
 
     return args.func(args)
 

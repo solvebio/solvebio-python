@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from six.moves import input as raw_input
 
-import sys
 import getpass
 
 import solvebio
@@ -13,17 +12,11 @@ from .credentials import save_credentials
 from .credentials import delete_credentials
 
 
-def _print_msg(msg):
-    if solvebio.api_host != 'https://api.solvebio.com':
-        msg += ' ({0})'.format(solvebio.api_host)
-    print(msg)
-
-
 def _ask_for_credentials():
     """
     Asks the user for their email and password.
     """
-    _print_msg('Please enter your SolveBio credentials')
+    print('Please enter your SolveBio credentials')
     domain = raw_input('Domain (e.g. <domain>.solvebio.com): ')
     # Check to see if this domain supports password authentication
     try:
@@ -38,11 +31,11 @@ def _ask_for_credentials():
         password = getpass.getpass('Password (typing will be hidden): ')
         return (domain, email, password)
     else:
-        _print_msg(
+        print(
             'Your domain uses Single Sign-On (SSO). '
             'Please visit https://{}.solvebio.com/settings/security '
             'for instructions on how to log in.'.format(domain))
-        sys.exit(1)
+        return None
 
 
 def login_and_save(*args, **kwargs):
@@ -52,9 +45,10 @@ def login_and_save(*args, **kwargs):
     """
     user = login(*args, **kwargs)
     if user:
-        token = '{}:{}'.format(client._auth.token_type, client._auth.token)
-        save_credentials(user['email'].lower(), token)
-        _print_msg('Updated local credentials file.')
+        save_credentials(
+            solvebio.api_host, user['email'].lower(),
+            client._auth.token_type, client._auth.token)
+        print('Updated local credentials file.')
 
 
 def login(*args, **kwargs):
@@ -65,25 +59,22 @@ def login(*args, **kwargs):
 
     if args and args[0].api_key:
         # Handle command-line arguments if provided.
-        solvebio.login(api_key=args[0].api_key)
+        logged_in = solvebio.login(api_key=args[0].api_key)
     elif args and args[0].access_token:
         # Handle command-line arguments if provided.
-        solvebio.login(access_token=args[0].access_token)
-    elif kwargs:
-        # Run the global login() if kwargs are provided
-        # or local credentials are found.
-        solvebio.login(**kwargs)
+        logged_in = solvebio.login(access_token=args[0].access_token)
+    elif solvebio.login(**kwargs):
+        logged_in = True
     else:
-        interactive_login()
+        logged_in = interactive_login()
 
-    # Print information about the current user
-    try:
+    if logged_in:
+        # Print information about the current user
         user = client.whoami()
         print_user(user)
         return user
-    except Exception as e:
-        _print_msg(e.message)
-        return None
+    else:
+        print('Not logged-in. Requests to SolveBio will fail.')
 
 
 def interactive_login():
@@ -95,12 +86,15 @@ def interactive_login():
     solvebio.api_key = None
     client.set_token()
 
-    domain, email, password = _ask_for_credentials()
-    if not all([domain, email, password]):
+    creds = _ask_for_credentials()
+    if not creds:
+        return False
+    elif not all(creds):
         print("Domain, email, and password are all required.")
-        return
+        return False
 
     try:
+        domain, email, password = creds
         response = client.post('/v1/auth/token', {
             'domain': domain.replace('.solvebio.com', ''),
             'email': email,
@@ -108,9 +102,11 @@ def interactive_login():
         })
     except SolveError as e:
         print('Login failed: {0}'.format(e))
+        return False
     else:
         solvebio.api_key = response['token']
         client.set_token()
+        return True
 
 
 def logout(*args):
@@ -119,9 +115,9 @@ def logout(*args):
     """
     if get_credentials():
         delete_credentials()
-        _print_msg('You have been logged out.')
-
-    _print_msg('You are not logged-in.')
+        print('You have been logged out.')
+    else:
+        print('You are not logged-in.')
 
 
 def whoami(*args, **kwargs):
@@ -143,7 +139,5 @@ def print_user(user):
     """
     email = user['email']
     domain = user['account']['domain']
-    role = user['role']
-    print('You are logged-in to the "{0}" domain '
-          'as {1} with role {2}.'
-          .format(domain, email, role))
+    print('You are logged-in to the "{}" domain as {} (server: {}).'
+          .format(domain, email, solvebio.api_host))
