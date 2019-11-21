@@ -14,7 +14,6 @@ from .tutorial import print_tutorial
 from .ipython import launch_ipython_shell
 from ..utils.validators import validate_api_host_url
 from ..utils.files import get_home_dir
-from ..client import client
 
 
 class TildeFixStoreAction(argparse._StoreAction):
