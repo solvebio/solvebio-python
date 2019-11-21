@@ -196,7 +196,7 @@ class Object(CreateableAPIResource,
         # Check if object exists already and compare md5sums
         full_path, path_dict = Object.validate_full_path(
             os.path.join('{}:{}'.format(vault.full_path, remote_path),
-                         os.path.basename(local_path)))
+                         os.path.basename(local_path)), client=_client)
         try:
             obj = cls.get_by_full_path(full_path)
             if not obj.is_file:
@@ -325,7 +325,8 @@ class Object(CreateableAPIResource,
                 "The query method can only be used by a dataset. Found a {}"
                 .format(self.object_type))
 
-        return Dataset(self.dataset_id).query(query=query, **params)
+        return Dataset(self.dataset_id, client=self._client).query(
+            query=query, **params)
 
     @property
     def parent(self):
