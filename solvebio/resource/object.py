@@ -198,7 +198,7 @@ class Object(CreateableAPIResource,
             os.path.join('{}:{}'.format(vault.full_path, remote_path),
                          os.path.basename(local_path)), client=_client)
         try:
-            obj = cls.get_by_full_path(full_path)
+            obj = cls.get_by_full_path(full_path, client=_client)
             if not obj.is_file:
                 print('WARNING: A {} currently exists at {}'
                       .format(obj.object_type, full_path))
