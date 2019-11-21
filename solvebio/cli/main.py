@@ -355,9 +355,9 @@ def main(argv=sys.argv[1:]):
     args = parser.parse_solvebio_args(argv)
 
     solvebio.login(
-        api_host=args.api_host,
-        api_key=args.api_key,
-        access_token=args.access_token)
+        api_host=args.api_host or solvebio.api_host,
+        api_key=args.api_key or solvebio.api_key,
+        access_token=args.access_token or solvebio.access_token)
 
     return args.func(args)
 
