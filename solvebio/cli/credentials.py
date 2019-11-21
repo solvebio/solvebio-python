@@ -126,7 +126,9 @@ def delete_credentials():
         rc.save(netrc_path)
 
 
-def save_credentials(api_host, email, token_type, token):
+def save_credentials(email, token, token_type='Token', api_host=None):
+    api_host = api_host or solvebio.api_host
+
     try:
         netrc_path = netrc.path()
         rc = netrc(netrc_path)

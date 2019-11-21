@@ -46,8 +46,8 @@ def login_and_save(*args, **kwargs):
     user = login(*args, **kwargs)
     if user:
         save_credentials(
-            solvebio.api_host, user['email'].lower(),
-            client._auth.token_type, client._auth.token)
+            user['email'].lower(), client._auth.token,
+            client._auth.token_type, solvebio.api_host)
         print('Updated local credentials file.')
 
 
@@ -75,6 +75,7 @@ def login(*args, **kwargs):
         return user
     else:
         print('Not logged-in. Requests to SolveBio will fail.')
+        return False
 
 
 def interactive_login():
