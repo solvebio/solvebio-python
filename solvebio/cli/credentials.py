@@ -104,11 +104,11 @@ def get_credentials():
     # Otherwise use the first available.
     for h in netrc_obj.hosts:
         if h.endswith('.api.solvebio.com'):
-            return (h,) + netrc_obj.authenticators(h)
+            return ('https://' + h,) + netrc_obj.authenticators(h)
 
     # Return the first available
     host = netrc_obj.hosts.keys()[0]
-    return (host,) + netrc_obj.authenticators(host)
+    return ('https://' + host,) + netrc_obj.authenticators(host)
 
 
 def delete_credentials():
