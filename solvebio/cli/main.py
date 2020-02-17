@@ -103,18 +103,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'Options are "append" (default) or "overwrite".'
                 },
                 {
-                    'flags': '--vault',
-                    'help': 'The vault containing the dataset. '
-                    'Defaults to your personal vault. '
-                    'Overrides the vault component of --full-path',
-                    'action': TildeFixStoreAction
-                },
-                {
-                    'flags': '--path',
-                    'help': 'The path to the dataset (relative to a vault). '
-                    'Overrides the path component of --full-path'
-                },
-                {
                     'name': 'full_path',
                     'help': 'The full path to the dataset in the format: '
                     '"domain:vault:/path/dataset". ',
@@ -154,25 +142,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'medium (<500M), large (>=500M)'
                 },
                 {
-                    'flags': '--vault',
-                    'help':
-                    'The vault containing the dataset. '
-                    'Overrides the vault component of the full path argument',
-                    'action': TildeFixStoreAction
-                },
-                {
-                    'flags': '--path',
-                    'help': 'The path to the dataset (relative to the vault). '
-                    'Overrides the path component of the full path argument'
-                },
-                {
                     'name': 'full_path',
                     'help': 'The full path to the dataset in the format: '
                     '"domain:vault:/path/dataset". '
                     'Defaults to your personal vault if no vault is provided. '
-                    'Defaults to the vault root if no path is provided. '
-                    'Override the vault with --vault '
-                    'and/or the path with --path',
+                    'Defaults to the vault root if no path is provided.',
                     'action': TildeFixStoreAction
                 },
             ]

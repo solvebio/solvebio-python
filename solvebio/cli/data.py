@@ -153,17 +153,7 @@ def create_dataset(args):
     NOTE: genome_build has been deprecated and is no longer used.
 
     """
-    # For backwards compatibility, the "full_path" argument
-    # can be a dataset filename, but only if vault and path
-    # are set. If vault/path are both provided and there
-    # are no forward-slashes in the "full_path", assume
-    # the user has provided a dataset filename.
-    if '/' not in args.full_path and args.vault and args.path:
-        full_path, path_dict = Object.validate_full_path(
-            '{0}:/{1}/{2}'.format(args.vault, args.path, args.full_path))
-    else:
-        full_path, path_dict = Object.validate_full_path(
-            args.full_path, vault=args.vault, path=args.path)
+    full_path, path_dict = Object.validate_full_path(args.full_path)
 
     # Accept a template_id or a template_file
     if args.template_id:
@@ -300,16 +290,13 @@ def import_file(args):
         * create_dataset
         * template_id
         * full_path
-        * vault (optional, overrides the vault in full_path)
-        * path (optional, overrides the path in full_path)
         * commit_mode
         * capacity
         * file (list)
         * follow (default: False)
 
     """
-    full_path, path_dict = Object.validate_full_path(
-        args.full_path, vault=args.vault, path=args.path)
+    full_path, path_dict = Object.validate_full_path(args.full_path)
 
     # Ensure the dataset exists. Create if necessary.
     if args.create_dataset:
