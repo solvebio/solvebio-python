@@ -149,9 +149,17 @@ def create_dataset(args):
         * capacity
         * tag
         * create_vault
-        * full path
+        * full_path
     """
     full_path, path_dict = Object.validate_full_path(args.full_path)
+
+    try:
+        # Fail if a dataset already exists.
+        solvebio.Dataset.get_by_full_path(full_path)
+        print('A dataset already exists at path: {0}'.format(full_path))
+        sys.exit(1)
+    except NotFoundError:
+        pass
 
     # Accept a template_id or a template_file
     if args.template_id:
@@ -183,8 +191,6 @@ def create_dataset(args):
         tpl = solvebio.DatasetTemplate.create(**tpl_json)
         print("A new dataset template was created with id: {0}".format(tpl.id))
     else:
-        print("Creating a new dataset {0} without a template."
-              .format(full_path))
         tpl = None
         fields = []
         entity_type = None
@@ -198,7 +204,26 @@ def create_dataset(args):
         # include template used to create
         description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
-    # TODO should we fail here if dataset exists already?
+    # Create dataset metadata
+    # Looks at --metadata_json_file first and will update
+    # that with any other key/value pairs passed in to --metadata
+    metadata = {}
+    if args.metadata and args.metadata_json_file:
+        print('WARNING: Received --metadata and --metadata-json-file. '
+              'Will update the JSON file values with the --metadata values')
+
+    if args.metadata_json_file:
+        with open(args.metadata_json_file, 'r') as fp:
+            try:
+                metadata = json.load(fp)
+            except:
+                print('Metadata JSON file {0} could not be loaded. Please '
+                      'pass valid JSON'.format(args.metadata_json_file))
+                sys.exit(1)
+
+    if args.metadata:
+        metadata.update(args.metadata)
+
     return solvebio.Dataset.get_or_create_by_full_path(
         full_path,
         capacity=args.capacity,
@@ -206,7 +231,7 @@ def create_dataset(args):
         fields=fields,
         description=description,
         tags=args.tag or [],
-        # metadata=args.metadata or None,
+        metadata=metadata,
         create_vault=args.create_vault,
     )
 

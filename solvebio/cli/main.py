@@ -29,6 +29,26 @@ class TildeFixStoreAction(argparse._StoreAction):
         setattr(namespace, self.dest, values)
 
 
+# KEY=VALUE argparser
+# https://stackoverflow.com/a/56521375/305633
+class KeyValueDictAppendAction(argparse.Action):
+    """
+    argparse action to split an argument into KEY=VALUE form
+    on the first = and append to a dictionary.
+    """
+    def __call__(self, parser, args, values, option_string=None):
+        assert(len(values) == 1)
+        try:
+            (k, v) = values[0].split("=", 2)
+        except ValueError:
+            raise argparse.ArgumentError(
+                self, "could not parse argument '{}' as k=v format"
+                .format(values[0]))
+        d = getattr(args, self.dest) or {}
+        d[k] = v
+        setattr(args, self.dest, d)
+
+
 class SolveArgumentParser(argparse.ArgumentParser):
     """
     Main parser for the SolveBio command line client.
@@ -59,16 +79,14 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'help': 'Import a local file into a SolveBio dataset',
             'arguments': [
                 {
+                    'flags': '--create-vault',
+                    'action': 'store_true',
+                    'help': 'Create the vault if it doesn\'t exist',
+                },
+                {
                     'flags': '--create-dataset',
                     'action': 'store_true',
                     'help': 'Create the dataset if it doesn\'t exist',
-                },
-                {
-                    'name': '--tag',
-                    'help': 'A tag to be added. '
-                    'Tags are case insensitive strings. Example tags: '
-                    '--tag GRCh38 --tag Tissue --tag "Foundation Medicine"',
-                    'action': 'append',
                 },
                 {
                     'flags': '--capacity',
@@ -78,9 +96,22 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'medium (<500M), large (>=500M)'
                 },
                 {
-                    'flags': '--create-vault',
-                    'action': 'store_true',
-                    'help': 'Create the vault if it doesn\'t exist',
+                    'name': '--tag',
+                    'help': 'A tag to be added. '
+                    'Tags are case insensitive strings. Example tags: '
+                    '--tag GRCh38 --tag Tissue --tag "Foundation Medicine"',
+                    'action': 'append',
+                },
+                {
+                    'name': '--metadata',
+                    'help': 'Dataset metadata in the format KEY=VALUE ',
+                    'nargs': 1,
+                    'metavar': 'KEY=VALUE',
+                    'action': KeyValueDictAppendAction
+                },
+                {
+                    'name': '--metadata-json-file',
+                    'help': 'Metadata key value pairs in JSON format'
                 },
                 {
                     'flags': '--template-id',
@@ -102,7 +133,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--commit-mode',
                     'default': 'append',
                     'help': 'Commit mode to use when importing data. '
-                            'Options are "append" (default) or "overwrite".'
+                            'Options are "append" (default), "overwrite",'
+                            '"upsert", or "delete"'
                 },
                 {
                     'name': 'full_path',
@@ -150,11 +182,17 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     '--tag GRCh38 --tag Tissue --tag "Foundation Medicine"',
                     'action': 'append',
                 },
-                # {
-                #     'name': '--metadata',
-                #     'help': 'Dataset metadata to be added. '
-                #     'Metadata should be ....'
-                # },
+                {
+                    'name': '--metadata',
+                    'help': 'Dataset metadata in the format KEY=VALUE ',
+                    'nargs': 1,
+                    'metavar': 'KEY=VALUE',
+                    'action': KeyValueDictAppendAction
+                },
+                {
+                    'name': '--metadata-json-file',
+                    'help': 'Metadata key value pairs in JSON format'
+                },
                 {
                     'name': 'full_path',
                     'help': 'The full path to the dataset in the format: '
