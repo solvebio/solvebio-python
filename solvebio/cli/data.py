@@ -147,11 +147,9 @@ def create_dataset(args):
         * template_id
         * template_file
         * capacity
+        * tag
         * create_vault
-        * [argument] dataset name or full path
-
-    NOTE: genome_build has been deprecated and is no longer used.
-
+        * full path
     """
     full_path, path_dict = Object.validate_full_path(args.full_path)
 
@@ -200,12 +198,15 @@ def create_dataset(args):
         # include template used to create
         description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
+    # TODO should we fail here if dataset exists already?
     return solvebio.Dataset.get_or_create_by_full_path(
         full_path,
         capacity=args.capacity,
         entity_type=entity_type,
         fields=fields,
         description=description,
+        tags=args.tag or [],
+        # metadata=args.metadata or None,
         create_vault=args.create_vault,
     )
 

@@ -79,11 +79,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'creating a new dataset (via --create-dataset)',
                 },
                 {
-                    'flags': '--genome-build',
-                    'help': 'If the dataset template is genomic, provide a '
-                            'genome build for your data (i.e. GRCh37)'
-                },
-                {
                     'flags': '--capacity',
                     'default': 'small',
                     'help': 'Specifies the capacity of the created dataset: '
@@ -141,6 +136,18 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'small (default, <100M records), '
                             'medium (<500M), large (>=500M)'
                 },
+                {
+                    'name': '--tag',
+                    'help': 'A tag to be added. '
+                    'Tags are case insensitive strings. Example tags: '
+                    '--tag GRCh38 --tag Tissue --tag "Foundation Medicine"',
+                    'action': 'append',
+                },
+                # {
+                #     'name': '--metadata',
+                #     'help': 'Dataset metadata to be added. '
+                #     'Metadata should be ....'
+                # },
                 {
                     'name': 'full_path',
                     'help': 'The full path to the dataset in the format: '
