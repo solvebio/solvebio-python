@@ -62,13 +62,15 @@ class CLITests(SolveBioTestCase):
         DatasetCreate.side_effect = fake_dataset_create
         ObjectAll.side_effect = fake_object_all
         VaultAll.side_effect = fake_vault_all
-        args = ['create-dataset', 'test-dataset-filename',
-                '--vault', 'solvebio:test_vault',
-                '--path', '/',
-                '--capacity', 'small']
+        args = [
+            'create-dataset',
+            'solvebio:test_vault:/test-dataset-filename',
+            '--capacity', 'small'
+        ]
         ds = main.main(args)
         self.assertEqual(ds.name, 'test-dataset-filename')
         self.assertEqual(ds.path, '/test-dataset-filename')
+        self.assertEqual(ds.capacity, 'small')
 
     def _validate_tmpl_fields(self, fields):
         for f in fields:
