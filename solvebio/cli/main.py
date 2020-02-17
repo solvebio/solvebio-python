@@ -64,6 +64,20 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Create the dataset if it doesn\'t exist',
                 },
                 {
+                    'name': '--tag',
+                    'help': 'A tag to be added. '
+                    'Tags are case insensitive strings. Example tags: '
+                    '--tag GRCh38 --tag Tissue --tag "Foundation Medicine"',
+                    'action': 'append',
+                },
+                {
+                    'flags': '--capacity',
+                    'default': 'small',
+                    'help': 'Specifies the capacity of the created dataset: '
+                            'small (default, <100M records), '
+                            'medium (<500M), large (>=500M)'
+                },
+                {
                     'flags': '--create-vault',
                     'action': 'store_true',
                     'help': 'Create the vault if it doesn\'t exist',
@@ -77,13 +91,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--template-file',
                     'help': 'A local template file to be used when '
                             'creating a new dataset (via --create-dataset)',
-                },
-                {
-                    'flags': '--capacity',
-                    'default': 'small',
-                    'help': 'Specifies the capacity of the created dataset: '
-                            'small (default, <100M records), '
-                            'medium (<500M), large (>=500M)'
                 },
                 {
                     'flags': '--follow',
