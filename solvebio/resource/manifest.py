@@ -52,13 +52,13 @@ class Manifest(object):
         All files are uploaded to SolveBio. The Upload
         object is used to fill the manifest.
         """
-        def _is_url(path):
+        def _is_supported_url(path):
             p = urlparse(path)
-            return bool(p.scheme)
+            return bool(p.scheme) and p.scheme in ['https', 'http']
 
         for path in args:
             path = os.path.expanduser(path)
-            if _is_url(path):
+            if _is_supported_url(path):
                 self.add_url(path)
             elif os.path.isfile(path):
                 self.add_file(path)
@@ -71,6 +71,7 @@ class Manifest(object):
             else:
                 raise ValueError(
                     'Path: "{0}" is not a valid format or does not exist. '
-                    'Manifest paths must be files, directories, or URLs.'
+                    'Manifest paths must be local files, directories, blobs '
+                    'or URLs with http:// or https://.'
                     .format(path)
                 )

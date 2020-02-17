@@ -137,6 +137,13 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             '"upsert", or "delete"'
                 },
                 {
+                    'flags': '--remote-source',
+                    'action': 'store_true',
+                    'default': False,
+                    'help': 'Flag is file upload paths are remote full '
+                    'paths on SolveBio'
+                },
+                {
                     'name': 'full_path',
                     'help': 'The full path to the dataset in the format: '
                     '"domain:vault:/path/dataset". ',
@@ -144,7 +151,10 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'name': 'file',
-                    'help': 'One or more local files to import',
+                    'help': 'One or more files to import. Can be local files, '
+                    'folders, globs or remote URLs. Pass --remote-source in '
+                    'order to list remote full_paths or path globs on the '
+                    'SolveBio file system.',
                     'nargs': '+'
                 },
             ]

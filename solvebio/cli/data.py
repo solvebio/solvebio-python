@@ -148,6 +148,8 @@ def create_dataset(args):
         * template_file
         * capacity
         * tag
+        * metadata
+        * metadata_json_file
         * create_vault
         * full_path
     """
@@ -313,16 +315,47 @@ def import_file(args):
 
     Command arguments (args):
 
-        * create_dataset
-        * template_id
+        * create_dataset and it's args
+            * capacity
+            * template_id
+            * template_file
+            * capacity
+            * tag
+            * metadata
+            * metadata_json_file
+            * create_vault
         * full_path
         * commit_mode
-        * capacity
+        * remote_source
         * file (list)
         * follow (default: False)
 
     """
     full_path, path_dict = Object.validate_full_path(args.full_path)
+
+    files_list = []
+    if args.remote_source:
+        # Validate files
+        for file_fp in args.file:
+            files_ = list(Object.all(glob=file_fp, limit=1000))
+            if not files_:
+                print("Did not find any files at path {}".format(file_fp))
+            else:
+                for file_ in files_:
+                    print("Found file: {}".format(file_.full_path))
+                    files_list.append(file_.id)
+
+    else:
+        # Local files
+        # Note: if these are globs or folders, then this will
+        # create a multi-file manifest which is deprecated
+        # and should be updated to one file per import.
+        files_list = [fp for fp in args.file]
+
+    if not files_list:
+        print("No files were found at the following paths: {}"
+              .format(', '.join(args.file)))
+        sys.exit(1)
 
     # Ensure the dataset exists. Create if necessary.
     if args.create_dataset:
@@ -340,18 +373,23 @@ def import_file(args):
             sys.exit(1)
 
     # Generate a manifest from the local files
-    manifest = solvebio.Manifest()
-    manifest.add(*args.file)
+    for file_ in files_list:
+        if args.remote_source:
+            kwargs = dict(object_id=file_)
+        else:
+            manifest = solvebio.Manifest()
+            manifest.add(file_)
+            kwargs = dict(manifest=manifest.manifest)
 
-    # Create the manifest-based import
-    imp = solvebio.DatasetImport.create(
-        dataset_id=dataset.id,
-        manifest=manifest.manifest,
-        commit_mode=args.commit_mode
-    )
+        # Create the import
+        solvebio.DatasetImport.create(
+            dataset_id=dataset.id,
+            commit_mode=args.commit_mode,
+            **kwargs
+        )
 
     if args.follow:
-        imp.follow()
+        dataset.activity(follow=True)
     else:
         mesh_url = 'https://my.solvebio.com/activity/'
         print("Your import has been submitted, view details at: {0}"
