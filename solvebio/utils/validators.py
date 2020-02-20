@@ -15,14 +15,17 @@ def validate_api_host_url(url):
     if not url:
         raise SolveError('No SolveBio API host is set')
 
+    # Default to https if no scheme is set
+    if '://' not in url:
+        url = 'https://' + url
+
     parsed = urlparse(url)
     if parsed.scheme not in ['http', 'https']:
         raise SolveError(
             'Invalid API host: %s. '
             'Missing url scheme (HTTP or HTTPS).' % url
         )
-
     elif not parsed.netloc:
         raise SolveError('Invalid API host: %s.' % url)
 
-    return True
+    return parsed.geturl()

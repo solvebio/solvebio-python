@@ -8,7 +8,9 @@ import solvebio
 from netrc import netrc as _netrc, NetrcParseError
 import os
 
-from six.moves.urllib.parse import urlparse
+
+def as_netrc_machine(api_host):
+    return api_host.replace("https://", "").replace("http://", "")
 
 
 class netrc(_netrc):
@@ -78,19 +80,35 @@ def get_credentials():
     Returns the user's stored API key if a valid credentials file is found.
     Raises CredentialsError if no valid credentials file is found.
     """
+
     try:
-        netrc_path = netrc.path()
-        auths = netrc(netrc_path).authenticators(
-            urlparse(solvebio.api_host).netloc)
+        netrc_obj = netrc(netrc.path())
+        if not netrc_obj.hosts:
+            return None
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError(
             'Could not open credentials file: ' + str(e))
 
-    if auths:
-        # auths = (login, account, password)
-        return auths[2]
-    else:
+    host = as_netrc_machine(solvebio.api_host)
+    if host in netrc_obj.hosts:
+        return ('https://' + host,) + netrc_obj.authenticators(host)
+
+    # If the preferred host is not the global default, don't try
+    # to select any other.
+    if host != 'api.solvebio.com':
         return None
+
+    # If there are no stored credentials for the default host,
+    # but there are other stored credentials, use the first
+    # available option that ends with '.api.solvebio.com',
+    # Otherwise use the first available.
+    for h in netrc_obj.hosts:
+        if h.endswith('.api.solvebio.com'):
+            return ('https://' + h,) + netrc_obj.authenticators(h)
+
+    # Return the first available
+    host = netrc_obj.hosts.keys()[0]
+    return ('https://' + host,) + netrc_obj.authenticators(host)
 
 
 def delete_credentials():
@@ -101,14 +119,16 @@ def delete_credentials():
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
     try:
-        del rc.hosts[urlparse(solvebio.api_host).netloc]
+        del rc.hosts[as_netrc_machine(solvebio.api_host)]
     except KeyError:
         pass
     else:
         rc.save(netrc_path)
 
 
-def save_credentials(email, api_key):
+def save_credentials(email, token, token_type='Token', api_host=None):
+    api_host = api_host or solvebio.api_host
+
     try:
         netrc_path = netrc.path()
         rc = netrc(netrc_path)
@@ -116,5 +136,5 @@ def save_credentials(email, api_key):
         raise CredentialsError('Could not open netrc file: ' + str(e))
 
     # Overwrites any existing credentials
-    rc.hosts[urlparse(solvebio.api_host).netloc] = (email, None, api_key)
+    rc.hosts[as_netrc_machine(api_host)] = (email, token_type, token)
     rc.save(netrc_path)

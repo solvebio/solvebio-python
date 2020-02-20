@@ -142,10 +142,17 @@ def login(**kwargs):
     elif kwargs.get('api_key'):
         api_key = kwargs.get('api_key')
     else:
-        api_key = get_credentials()
+        creds = get_credentials()
+        # creds = (host, email, token_type, token)
+        if creds:
+            api_host = creds[0]
+            if creds[2] == 'Bearer':
+                access_token = creds[3]
+            elif creds[2] in [None, 'Token']:
+                api_key = creds[3]
 
     if not (api_key or access_token):
-        print('No credentials found. Requests to SolveBio may fail.')
+        return False
     else:
         from solvebio.client import client
         # Update the client host and token
@@ -153,6 +160,7 @@ def login(**kwargs):
         client.set_token()
         client.set_user_agent(name=kwargs.get('name'),
                               version=kwargs.get('version'))
+        return True
 
 
 __all__ = [

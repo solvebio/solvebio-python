@@ -127,8 +127,7 @@ class SolveClient(object):
                 setattr(self, name, subclass)
 
     def set_host(self, host=None):
-        self._host = host or solvebio.api_host
-        validate_api_host_url(self._host)
+        self._host = validate_api_host_url(host or solvebio.api_host)
 
     def set_token(self, token=None, token_type='Token'):
         self._auth = SolveTokenAuth(token, token_type)
@@ -267,7 +266,11 @@ class SolveClient(object):
         if raw or response.status_code in [204, 301, 302]:
             return response
 
-        return response.json()
+        try:
+            return response.json()
+        except Exception:
+            raise SolveError("Could not parse JSON response: {}"
+                             .format(response.content))
 
     def _log_raw_request(self, method, url, **kwargs):
         from requests import Request, Session

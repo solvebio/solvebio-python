@@ -40,6 +40,7 @@ class CLITests(SolveBioTestCase):
         super(CLITests, self).setUp()
         # Set the global key for CLI tests only
         solvebio.api_key = os.environ.get('SOLVEBIO_API_KEY', None)
+        solvebio.api_host = os.environ.get('SOLVEBIO_API_HOST', None)
 
     @mock.patch('solvebio.resource.Vault.all')
     @mock.patch('solvebio.resource.Object.all')
