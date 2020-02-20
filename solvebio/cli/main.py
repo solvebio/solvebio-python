@@ -140,8 +140,14 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--remote-source',
                     'action': 'store_true',
                     'default': False,
-                    'help': 'Flag is file upload paths are remote full '
-                    'paths on SolveBio'
+                    'help': 'File paths are remote globs or full paths on '
+                    'the SolveBio file system.'
+                },
+                {
+                    'flags': '--dry-run',
+                    'help': 'Dry run mode will not create any datasets or '
+                    'import any files.',
+                    'action': 'store_true'
                 },
                 {
                     'name': 'full_path',
@@ -202,6 +208,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'name': '--metadata-json-file',
                     'help': 'Metadata key value pairs in JSON format'
+                },
+                {
+                    'flags': '--dry-run',
+                    'help': 'Dry run mode will not create the dataset',
+                    'action': 'store_true'
                 },
                 {
                     'name': 'full_path',

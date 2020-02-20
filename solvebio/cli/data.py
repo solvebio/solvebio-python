@@ -152,7 +152,11 @@ def create_dataset(args):
         * metadata_json_file
         * create_vault
         * full_path
+        * dry_run
     """
+    if args.dry_run:
+        print("NOTE: Running create_dataset command in dry run mode")
+
     full_path, path_dict = Object.validate_full_path(args.full_path)
 
     try:
@@ -190,21 +194,18 @@ def create_dataset(args):
                       'pass valid JSON'.format(args.template_file))
                 sys.exit(1)
 
-        tpl = solvebio.DatasetTemplate.create(**tpl_json)
-        print("A new dataset template was created with id: {0}".format(tpl.id))
+        if args.dry_run:
+            tpl = solvebio.DatasetTemplate(**tpl_json)
+            print("A new dataset template will be created from: {0}"
+                  .format(args.template_file))
+        else:
+            tpl = solvebio.DatasetTemplate.create(**tpl_json)
+            print("A new dataset template was created with id: {0}"
+                  .format(tpl.id))
     else:
         tpl = None
         fields = []
-        entity_type = None
         description = None
-
-    if tpl:
-        print("Creating new dataset {0} using the template '{1}'."
-              .format(full_path, tpl.name))
-        fields = tpl.fields
-        entity_type = tpl.entity_type
-        # include template used to create
-        description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
     # Create dataset metadata
     # Looks at --metadata_json_file first and will update
@@ -226,10 +227,29 @@ def create_dataset(args):
     if args.metadata:
         metadata.update(args.metadata)
 
+    if args.dry_run:
+        print("Creating new '{}' capacity dataset at {}"
+              .format(args.capacity, full_path))
+        if description:
+            print("Description: {}".format(description))
+        if fields:
+            print("Fields: {}".format(fields))
+        if args.tag:
+            print("Tags: {}".format(args.tag))
+        if metadata:
+            print("Metadata: {}".format(metadata))
+        return
+
+    if tpl:
+        print("Creating new dataset {0} using the template '{1}'."
+              .format(full_path, tpl.name))
+        fields = tpl.fields
+        # include template used to create
+        description = 'Created with dataset template: {0}'.format(str(tpl.id))
+
     return solvebio.Dataset.get_or_create_by_full_path(
         full_path,
         capacity=args.capacity,
-        entity_type=entity_type,
         fields=fields,
         description=description,
         tags=args.tag or [],
@@ -327,10 +347,14 @@ def import_file(args):
         * full_path
         * commit_mode
         * remote_source
+        * dry_run
+        * follow
         * file (list)
-        * follow (default: False)
 
     """
+    if args.dry_run:
+        print("NOTE: Running import command in dry run mode")
+
     full_path, path_dict = Object.validate_full_path(args.full_path)
 
     files_list = []
@@ -371,6 +395,13 @@ def import_file(args):
             print("Tip: use the --create-dataset flag "
                   "to create one from a template")
             sys.exit(1)
+
+    if args.dry_run:
+        print("Importing the following files/paths into dataset: {}"
+              .format(full_path))
+        for file_ in files_list:
+            print(file_)
+        return
 
     # Generate a manifest from the local files
     for file_ in files_list:
