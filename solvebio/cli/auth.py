@@ -58,7 +58,7 @@ def whoami(*args, **kwargs):
     try:
         user = client.whoami()
     except Exception as e:
-        print(e.message)
+        print(u'{} (code: {})'.format(e.message, e.status_code))
     else:
         print_user(user)
 
