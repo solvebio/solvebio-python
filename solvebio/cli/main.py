@@ -14,7 +14,6 @@ from .tutorial import print_tutorial
 from .ipython import launch_ipython_shell
 from ..utils.validators import validate_api_host_url
 from ..utils.files import get_home_dir
-from ..client import client
 
 
 class TildeFixStoreAction(argparse._StoreAction):
@@ -55,7 +54,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
     """
     subcommands = {
         'login': {
-            'func': auth.login,
+            'func': auth.login_and_save,
             'help': 'Login and save credentials'
         },
         'logout': {
@@ -340,8 +339,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
             '--api-key',
             help='Manually provide a SolveBio API key')
         self.add_argument(
-            '--api-token',
-            help='Manually provide a SolveBio OAuth API token')
+            '--access-token',
+            help='Manually provide a SolveBio OAuth2 access token')
 
     def _add_subcommands(self):
         """
@@ -401,24 +400,10 @@ def main(argv=sys.argv[1:]):
     parser = SolveArgumentParser()
     args = parser.parse_solvebio_args(argv)
 
-    if args.api_host:
-        solvebio.api_host = args.api_host
-
-    if args.api_key:
-        solvebio.api_key = args.api_key
-
-    if not solvebio.api_key:
-        # If nothing is set (via command line or environment)
-        # look in local credentials
-        try:
-            from .credentials import get_credentials
-            solvebio.api_key = get_credentials()
-        except:
-            pass
-
-    # Update the client host and token
-    client.set_host()
-    client.set_token()
+    solvebio.login(
+        api_host=args.api_host or solvebio.api_host,
+        api_key=args.api_key or solvebio.api_key,
+        access_token=args.access_token or solvebio.access_token)
 
     return args.func(args)
 

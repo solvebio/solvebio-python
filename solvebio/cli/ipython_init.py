@@ -36,7 +36,6 @@ from solvebio.cli.auth import whoami  # noqa
 from solvebio.cli.auth import get_credentials  # noqa
 
 # Always try to log the user in when launching the shell
-if solvebio.api_key:
-    login(api_key=solvebio.api_key)
-else:
-    login()
+login(api_host=solvebio.api_host,
+      api_key=solvebio.api_key,
+      access_token=solvebio.access_token)
