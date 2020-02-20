@@ -34,7 +34,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
     """
     subcommands = {
         'login': {
-            'func': auth.login_and_save,
+            'func': auth.login_and_save_credentials,
             'help': 'Login and save credentials'
         },
         'logout': {

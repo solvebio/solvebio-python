@@ -1,6 +1,7 @@
 # Add common solvebio classes and methods our namespace here so that
 # inside the ipython shell users don't have run imports
 import solvebio  # noqa
+from solvebio import login  # noqa
 from solvebio import Annotator  # noqa
 from solvebio import Application  # noqa
 from solvebio import Beacon  # noqa
@@ -30,12 +31,8 @@ from solvebio import SavedQuery  # noqa
 from solvebio.utils.printing import pager  # noqa
 
 # Add some convenience functions to the interactive shell
-from solvebio.cli.auth import login  # noqa
 from solvebio.cli.auth import logout  # noqa
 from solvebio.cli.auth import whoami  # noqa
 from solvebio.cli.auth import get_credentials  # noqa
 
-# Always try to log the user in when launching the shell
-login(api_host=solvebio.api_host,
-      api_key=solvebio.api_key,
-      access_token=solvebio.access_token)
+whoami()

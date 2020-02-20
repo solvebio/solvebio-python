@@ -38,76 +38,34 @@ def _ask_for_credentials():
         return None
 
 
-def login_and_save(*args, **kwargs):
+def login_and_save_credentials(*args, **kwargs):
     """
-    Attempt to "log the user in" with provided credentials.
-    Update local credentials if successful.
-    """
-    user = login(*args, **kwargs)
-    if user:
-        save_credentials(
-            user['email'].lower(), client._auth.token,
-            client._auth.token_type, solvebio.api_host)
-        print('Updated local credentials file.')
-
-
-def login(*args, **kwargs):
-    """
-    Prompt user for login information (domain/email/password).
     Domain, email and password are used to get the user's API key.
     """
-
     if args and args[0].api_key:
         # Handle command-line arguments if provided.
-        logged_in = solvebio.login(api_key=args[0].api_key)
+        logged_in = solvebio.login(api_key=args[0].api_key,
+                                   api_host=solvebio.api_host)
     elif args and args[0].access_token:
         # Handle command-line arguments if provided.
-        logged_in = solvebio.login(access_token=args[0].access_token)
+        logged_in = solvebio.login(access_token=args[0].access_token,
+                                   api_host=solvebio.api_host)
     elif solvebio.login(**kwargs):
         logged_in = True
     else:
-        logged_in = interactive_login()
+        logged_in = False
 
     if logged_in:
         # Print information about the current user
         user = client.whoami()
         print_user(user)
-        return user
+        save_credentials(
+            user['email'].lower(), client._auth.token,
+            client._auth.token_type, solvebio.api_host)
+        print('Updated local credentials file.')
     else:
-        print('Not logged-in. Requests to SolveBio will fail.')
-        return False
-
-
-def interactive_login():
-    """
-    Force an interactive login via the command line.
-    Sets the global API key and updates the client auth.
-    """
-    solvebio.access_token = None
-    solvebio.api_key = None
-    client.set_token()
-
-    creds = _ask_for_credentials()
-    if not creds:
-        return False
-    elif not all(creds):
-        print("Domain, email, and password are all required.")
-        return False
-
-    try:
-        domain, email, password = creds
-        response = client.post('/v1/auth/token', {
-            'domain': domain.replace('.solvebio.com', ''),
-            'email': email,
-            'password': password
-        })
-    except SolveError as e:
-        print('Login failed: {0}'.format(e))
-        return False
-    else:
-        solvebio.api_key = response['token']
-        client.set_token()
-        return True
+        print('You are not logged-in. Visit '
+              'https://docs.solvebio.com/#authentication to get started.')
 
 
 def logout(*args):
