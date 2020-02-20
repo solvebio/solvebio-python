@@ -363,11 +363,12 @@ def import_file(args):
         for file_fp in args.file:
             files_ = list(Object.all(glob=file_fp, limit=1000))
             if not files_:
-                print("Did not find any files at path {}".format(file_fp))
+                print("Did not find any {}files at path {}".format(
+                    'remote ' if args.remote_source else '', file_fp))
             else:
                 for file_ in files_:
                     print("Found file: {}".format(file_.full_path))
-                    files_list.append(file_.id)
+                    files_list.append(file_)
 
     else:
         # Local files
@@ -377,8 +378,9 @@ def import_file(args):
         files_list = [fp for fp in args.file]
 
     if not files_list:
-        print("No files were found at the following paths: {}"
-              .format(', '.join(args.file)))
+        print("Exiting. No files were found at the following {}paths: {}"
+              .format('remote ' if args.remote_source else '',
+                      ', '.join(args.file)))
         sys.exit(1)
 
     # Ensure the dataset exists. Create if necessary.
@@ -387,10 +389,7 @@ def import_file(args):
     else:
         try:
             dataset = solvebio.Dataset.get_by_full_path(full_path)
-        except solvebio.SolveError as e:
-            if e.status_code != 404:
-                raise e
-
+        except solvebio.errors.NotFoundError:
             print("Dataset not found: {0}".format(full_path))
             print("Tip: use the --create-dataset flag "
                   "to create one from a template")
@@ -400,13 +399,16 @@ def import_file(args):
         print("Importing the following files/paths into dataset: {}"
               .format(full_path))
         for file_ in files_list:
-            print(file_)
+            if args.remote_source:
+                print(file_.full_path)
+            else:
+                print(file_)
         return
 
     # Generate a manifest from the local files
     for file_ in files_list:
         if args.remote_source:
-            kwargs = dict(object_id=file_)
+            kwargs = dict(object_id=file_.id)
         else:
             manifest = solvebio.Manifest()
             manifest.add(file_)
