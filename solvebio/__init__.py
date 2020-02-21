@@ -151,15 +151,17 @@ def login(**kwargs):
             elif creds[2] in [None, 'Token']:
                 api_key = creds[3]
 
+    # Always update the client host, version and agent
+    from solvebio.client import client
+    client.set_host()
+    client.set_user_agent(name=kwargs.get('name'),
+                          version=kwargs.get('version'))
+
     if not (api_key or access_token):
         return False
     else:
-        from solvebio.client import client
-        # Update the client host and token
-        client.set_host()
+        # Update the client token
         client.set_token()
-        client.set_user_agent(name=kwargs.get('name'),
-                              version=kwargs.get('version'))
         return True
 
 
