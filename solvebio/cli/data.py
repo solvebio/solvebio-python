@@ -155,7 +155,7 @@ def create_dataset(args):
         * dry_run
     """
     if args.dry_run:
-        print("NOTE: Running create_dataset command in dry run mode")
+        print("NOTE: Running create-dataset command in dry run mode")
 
     full_path, path_dict = Object.validate_full_path(args.full_path)
 
