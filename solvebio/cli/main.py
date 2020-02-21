@@ -28,6 +28,26 @@ class TildeFixStoreAction(argparse._StoreAction):
         setattr(namespace, self.dest, values)
 
 
+# KEY=VALUE argparser
+# https://stackoverflow.com/a/56521375/305633
+class KeyValueDictAppendAction(argparse.Action):
+    """
+    argparse action to split an argument into KEY=VALUE form
+    on the first = and append to a dictionary.
+    """
+    def __call__(self, parser, args, values, option_string=None):
+        assert(len(values) == 1)
+        try:
+            (k, v) = values[0].split("=", 2)
+        except ValueError:
+            raise argparse.ArgumentError(
+                self, "could not parse argument '{}' as k=v format"
+                .format(values[0]))
+        d = getattr(args, self.dest) or {}
+        d[k] = v
+        setattr(args, self.dest, d)
+
+
 class SolveArgumentParser(argparse.ArgumentParser):
     """
     Main parser for the SolveBio command line client.
@@ -58,14 +78,39 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'help': 'Import a local file into a SolveBio dataset',
             'arguments': [
                 {
+                    'flags': '--create-vault',
+                    'action': 'store_true',
+                    'help': 'Create the vault if it doesn\'t exist',
+                },
+                {
                     'flags': '--create-dataset',
                     'action': 'store_true',
                     'help': 'Create the dataset if it doesn\'t exist',
                 },
                 {
-                    'flags': '--create-vault',
-                    'action': 'store_true',
-                    'help': 'Create the vault if it doesn\'t exist',
+                    'flags': '--capacity',
+                    'default': 'small',
+                    'help': 'Specifies the capacity of the created dataset: '
+                            'small (default, <100M records), '
+                            'medium (<500M), large (>=500M)'
+                },
+                {
+                    'name': '--tag',
+                    'help': 'A tag to be added. '
+                    'Tags are case insensitive strings. Example tags: '
+                    '--tag GRCh38 --tag Tissue --tag "Foundation Medicine"',
+                    'action': 'append',
+                },
+                {
+                    'name': '--metadata',
+                    'help': 'Dataset metadata in the format KEY=VALUE ',
+                    'nargs': 1,
+                    'metavar': 'KEY=VALUE',
+                    'action': KeyValueDictAppendAction
+                },
+                {
+                    'name': '--metadata-json-file',
+                    'help': 'Metadata key value pairs in JSON format'
                 },
                 {
                     'flags': '--template-id',
@@ -78,18 +123,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'creating a new dataset (via --create-dataset)',
                 },
                 {
-                    'flags': '--genome-build',
-                    'help': 'If the dataset template is genomic, provide a '
-                            'genome build for your data (i.e. GRCh37)'
-                },
-                {
-                    'flags': '--capacity',
-                    'default': 'small',
-                    'help': 'Specifies the capacity of the created dataset: '
-                            'small (default, <100M records), '
-                            'medium (<500M), large (>=500M)'
-                },
-                {
                     'flags': '--follow',
                     'action': 'store_true',
                     'default': False,
@@ -99,19 +132,21 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--commit-mode',
                     'default': 'append',
                     'help': 'Commit mode to use when importing data. '
-                            'Options are "append" (default) or "overwrite".'
+                            'Options are "append" (default), "overwrite",'
+                            '"upsert", or "delete"'
                 },
                 {
-                    'flags': '--vault',
-                    'help': 'The vault containing the dataset. '
-                    'Defaults to your personal vault. '
-                    'Overrides the vault component of --full-path',
-                    'action': TildeFixStoreAction
+                    'flags': '--remote-source',
+                    'action': 'store_true',
+                    'default': False,
+                    'help': 'File paths are remote globs or full paths on '
+                    'the SolveBio file system.'
                 },
                 {
-                    'flags': '--path',
-                    'help': 'The path to the dataset (relative to a vault). '
-                    'Overrides the path component of --full-path'
+                    'flags': '--dry-run',
+                    'help': 'Dry run mode will not create any datasets or '
+                    'import any files.',
+                    'action': 'store_true'
                 },
                 {
                     'name': 'full_path',
@@ -121,7 +156,10 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'name': 'file',
-                    'help': 'One or more local files to import',
+                    'help': 'One or more files to import. Can be local files, '
+                    'folders, globs or remote URLs. Pass --remote-source in '
+                    'order to list remote full_paths or path globs on the '
+                    'SolveBio file system.',
                     'nargs': '+'
                 },
             ]
@@ -153,25 +191,34 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             'medium (<500M), large (>=500M)'
                 },
                 {
-                    'flags': '--vault',
-                    'help':
-                    'The vault containing the dataset. '
-                    'Overrides the vault component of the full path argument',
-                    'action': TildeFixStoreAction
+                    'name': '--tag',
+                    'help': 'A tag to be added. '
+                    'Tags are case insensitive strings. Example tags: '
+                    '--tag GRCh38 --tag Tissue --tag "Foundation Medicine"',
+                    'action': 'append',
                 },
                 {
-                    'flags': '--path',
-                    'help': 'The path to the dataset (relative to the vault). '
-                    'Overrides the path component of the full path argument'
+                    'name': '--metadata',
+                    'help': 'Dataset metadata in the format KEY=VALUE ',
+                    'nargs': 1,
+                    'metavar': 'KEY=VALUE',
+                    'action': KeyValueDictAppendAction
+                },
+                {
+                    'name': '--metadata-json-file',
+                    'help': 'Metadata key value pairs in JSON format'
+                },
+                {
+                    'flags': '--dry-run',
+                    'help': 'Dry run mode will not create the dataset',
+                    'action': 'store_true'
                 },
                 {
                     'name': 'full_path',
                     'help': 'The full path to the dataset in the format: '
                     '"domain:vault:/path/dataset". '
                     'Defaults to your personal vault if no vault is provided. '
-                    'Defaults to the vault root if no path is provided. '
-                    'Override the vault with --vault '
-                    'and/or the path with --path',
+                    'Defaults to the vault root if no path is provided.',
                     'action': TildeFixStoreAction
                 },
             ]

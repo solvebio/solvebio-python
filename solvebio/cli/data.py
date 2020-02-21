@@ -147,23 +147,25 @@ def create_dataset(args):
         * template_id
         * template_file
         * capacity
+        * tag
+        * metadata
+        * metadata_json_file
         * create_vault
-        * [argument] dataset name or full path
-
-    NOTE: genome_build has been deprecated and is no longer used.
-
+        * full_path
+        * dry_run
     """
-    # For backwards compatibility, the "full_path" argument
-    # can be a dataset filename, but only if vault and path
-    # are set. If vault/path are both provided and there
-    # are no forward-slashes in the "full_path", assume
-    # the user has provided a dataset filename.
-    if '/' not in args.full_path and args.vault and args.path:
-        full_path, path_dict = Object.validate_full_path(
-            '{0}:/{1}/{2}'.format(args.vault, args.path, args.full_path))
-    else:
-        full_path, path_dict = Object.validate_full_path(
-            args.full_path, vault=args.vault, path=args.path)
+    if args.dry_run:
+        print("NOTE: Running create-dataset command in dry run mode")
+
+    full_path, path_dict = Object.validate_full_path(args.full_path)
+
+    try:
+        # Fail if a dataset already exists.
+        solvebio.Dataset.get_by_full_path(full_path)
+        print('A dataset already exists at path: {0}'.format(full_path))
+        sys.exit(1)
+    except NotFoundError:
+        pass
 
     # Accept a template_id or a template_file
     if args.template_id:
@@ -192,30 +194,66 @@ def create_dataset(args):
                       'pass valid JSON'.format(args.template_file))
                 sys.exit(1)
 
-        tpl = solvebio.DatasetTemplate.create(**tpl_json)
-        print("A new dataset template was created with id: {0}".format(tpl.id))
+        if args.dry_run:
+            tpl = solvebio.DatasetTemplate(**tpl_json)
+            print("A new dataset template will be created from: {0}"
+                  .format(args.template_file))
+        else:
+            tpl = solvebio.DatasetTemplate.create(**tpl_json)
+            print("A new dataset template was created with id: {0}"
+                  .format(tpl.id))
     else:
-        print("Creating a new dataset {0} without a template."
-              .format(full_path))
         tpl = None
         fields = []
-        entity_type = None
         description = None
+
+    # Create dataset metadata
+    # Looks at --metadata_json_file first and will update
+    # that with any other key/value pairs passed in to --metadata
+    metadata = {}
+    if args.metadata and args.metadata_json_file:
+        print('WARNING: Received --metadata and --metadata-json-file. '
+              'Will update the JSON file values with the --metadata values')
+
+    if args.metadata_json_file:
+        with open(args.metadata_json_file, 'r') as fp:
+            try:
+                metadata = json.load(fp)
+            except:
+                print('Metadata JSON file {0} could not be loaded. Please '
+                      'pass valid JSON'.format(args.metadata_json_file))
+                sys.exit(1)
+
+    if args.metadata:
+        metadata.update(args.metadata)
+
+    if args.dry_run:
+        print("Creating new '{}' capacity dataset at {}"
+              .format(args.capacity, full_path))
+        if description:
+            print("Description: {}".format(description))
+        if fields:
+            print("Fields: {}".format(fields))
+        if args.tag:
+            print("Tags: {}".format(args.tag))
+        if metadata:
+            print("Metadata: {}".format(metadata))
+        return
 
     if tpl:
         print("Creating new dataset {0} using the template '{1}'."
               .format(full_path, tpl.name))
         fields = tpl.fields
-        entity_type = tpl.entity_type
         # include template used to create
         description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
     return solvebio.Dataset.get_or_create_by_full_path(
         full_path,
         capacity=args.capacity,
-        entity_type=entity_type,
         fields=fields,
         description=description,
+        tags=args.tag or [],
+        metadata=metadata,
         create_vault=args.create_vault,
     )
 
@@ -297,19 +335,53 @@ def import_file(args):
 
     Command arguments (args):
 
-        * create_dataset
-        * template_id
+        * create_dataset and it's args
+            * capacity
+            * template_id
+            * template_file
+            * capacity
+            * tag
+            * metadata
+            * metadata_json_file
+            * create_vault
         * full_path
-        * vault (optional, overrides the vault in full_path)
-        * path (optional, overrides the path in full_path)
         * commit_mode
-        * capacity
+        * remote_source
+        * dry_run
+        * follow
         * file (list)
-        * follow (default: False)
 
     """
-    full_path, path_dict = Object.validate_full_path(
-        args.full_path, vault=args.vault, path=args.path)
+    if args.dry_run:
+        print("NOTE: Running import command in dry run mode")
+
+    full_path, path_dict = Object.validate_full_path(args.full_path)
+
+    files_list = []
+    if args.remote_source:
+        # Validate files
+        for file_fp in args.file:
+            files_ = list(Object.all(glob=file_fp, limit=1000))
+            if not files_:
+                print("Did not find any {}files at path {}".format(
+                    'remote ' if args.remote_source else '', file_fp))
+            else:
+                for file_ in files_:
+                    print("Found file: {}".format(file_.full_path))
+                    files_list.append(file_)
+
+    else:
+        # Local files
+        # Note: if these are globs or folders, then this will
+        # create a multi-file manifest which is deprecated
+        # and should be updated to one file per import.
+        files_list = [fp for fp in args.file]
+
+    if not files_list:
+        print("Exiting. No files were found at the following {}paths: {}"
+              .format('remote ' if args.remote_source else '',
+                      ', '.join(args.file)))
+        sys.exit(1)
 
     # Ensure the dataset exists. Create if necessary.
     if args.create_dataset:
@@ -317,32 +389,46 @@ def import_file(args):
     else:
         try:
             dataset = solvebio.Dataset.get_by_full_path(full_path)
-        except solvebio.SolveError as e:
-            if e.status_code != 404:
-                raise e
-
+        except solvebio.errors.NotFoundError:
             print("Dataset not found: {0}".format(full_path))
             print("Tip: use the --create-dataset flag "
                   "to create one from a template")
             sys.exit(1)
 
-    # Generate a manifest from the local files
-    manifest = solvebio.Manifest()
-    manifest.add(*args.file)
+    if args.dry_run:
+        print("Importing the following files/paths into dataset: {}"
+              .format(full_path))
+        for file_ in files_list:
+            if args.remote_source:
+                print(file_.full_path)
+            else:
+                print(file_)
+        return
 
-    # Create the manifest-based import
-    imp = solvebio.DatasetImport.create(
-        dataset_id=dataset.id,
-        manifest=manifest.manifest,
-        commit_mode=args.commit_mode
-    )
+    # Generate a manifest from the local files
+    for file_ in files_list:
+        if args.remote_source:
+            kwargs = dict(object_id=file_.id)
+        else:
+            manifest = solvebio.Manifest()
+            manifest.add(file_)
+            kwargs = dict(manifest=manifest.manifest)
+
+        # Create the import
+        solvebio.DatasetImport.create(
+            dataset_id=dataset.id,
+            commit_mode=args.commit_mode,
+            **kwargs
+        )
 
     if args.follow:
-        imp.follow()
+        dataset.activity(follow=True)
     else:
         mesh_url = 'https://my.solvebio.com/activity/'
         print("Your import has been submitted, view details at: {0}"
               .format(mesh_url))
+
+    return dataset
 
 
 def should_tag_by_object_type(args, object_):

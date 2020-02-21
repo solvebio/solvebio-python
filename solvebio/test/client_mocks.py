@@ -40,6 +40,21 @@ class Fake201Response(object):
 
         return ExtendedList([self.create()])
 
+    def update_paths(self):
+        """Sets vault_name, path and full_path"""
+        if not self.object['vault_name']:
+            self.object['vault_name'] = 'mock_vault'
+
+        if not self.object['path']:
+            self.object['path'] = '/{0}'.format(
+                self.object.get(
+                    'filename', self.object.get('vault_object_filename'))
+            )
+
+        if not self.object['full_path']:
+            self.object['full_path'] = 'solvebio:{0}:{1}'.format(
+                self.object['vault_name'], self.object['path'])
+
 
 class FakeMigrationResponse(Fake201Response):
 
@@ -99,8 +114,14 @@ class FakeObjectResponse(Fake201Response):
             'size': None,
             'md5': None,
             'filename': 'file.json.gz',
+            'path': None,
+            'full_path': None,
+            'vault_name': None,
+            'vault_id': None,
             'object_type': 'folder'
         }
+        self.object.update(data)
+        self.update_paths()
 
 
 class FakeDatasetResponse(Fake201Response):
@@ -111,15 +132,18 @@ class FakeDatasetResponse(Fake201Response):
         self.object = {
             'class_name': self.class_name,
             'vault_id': None,
+            'vault_name': None,
             'id': 100,
             'account': {
                 'name': None,
                 'domain': None,
             },
             'path': '/{0}'.format(data['name']),
-            'full_path': None
+            'full_path': None,
+            'vault_object_name': data['name'],
         }
         self.object.update(data)
+        self.update_paths()
 
 
 class FakeDatasetTemplateResponse(Fake201Response):

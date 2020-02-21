@@ -13,7 +13,6 @@ from solvebio.cli import main
 from solvebio import DatasetTemplate
 from solvebio import Vault
 from solvebio.errors import NotFoundError
-from solvebio.utils.files import get_home_dir
 from solvebio.cli.data import _create_folder
 from solvebio.cli.data import should_exclude
 from solvebio.test.client_mocks import fake_vault_all
@@ -63,13 +62,20 @@ class CLITests(SolveBioTestCase):
         DatasetCreate.side_effect = fake_dataset_create
         ObjectAll.side_effect = fake_object_all
         VaultAll.side_effect = fake_vault_all
-        args = ['create-dataset', 'test-dataset-filename',
-                '--vault', 'solvebio:test_vault',
-                '--path', '/',
-                '--capacity', 'small']
+        args = [
+            'create-dataset',
+            'solvebio:test_vault:/test-dataset-filename',
+            '--capacity', 'small',
+            '--tag', 'tag_test',
+            '--metadata', 'TEST=tag',
+            '--metadata', 'TEST2=tag2',
+        ]
         ds = main.main(args)
         self.assertEqual(ds.name, 'test-dataset-filename')
         self.assertEqual(ds.path, '/test-dataset-filename')
+        self.assertEqual(ds.capacity, 'small')
+        self.assertEqual(ds.tags, ['tag_test'])
+        self.assertEqual(ds.metadata, dict(TEST='tag', TEST2='tag2'))
 
     def _validate_tmpl_fields(self, fields):
         for f in fields:
@@ -150,32 +156,49 @@ class CLITests(SolveBioTestCase):
         UploadPath.side_effect = upload_path
         VaultLookup.side_effect = fake_vault_create
 
-        main.main(args)
+        return main.main(args)
 
     def test_import_file(self):
         _, file_ = tempfile.mkstemp(suffix='.txt')
         with open(file_, 'w') as fp:
             fp.write('blargh')
 
-        args = ['import', '--create-dataset', '--follow',
-                'solvebio:test_vault:/test-dataset', file_]
+        args = ['import', '--create-dataset', '--tag', 'hello', '--follow',
+                'solvebio:mock_vault:/test-dataset', file_]
 
-        self._test_import_file(args)
+        ds = self._test_import_file(args)
+        self.assertEqual(ds.full_path, 'solvebio:mock_vault:/test-dataset')
+        self.assertEqual(ds.tags, ['hello'])
+
+        # Non-existent file
+        args = ['import', '--create-dataset', '--tag', 'hello', '--follow',
+                'solvebio:mock_vault:/test-dataset',
+                'not/a/real/path/file.txt']
+
+        with self.assertRaises(ValueError):
+            self._test_import_file(args)
 
     def test_import_tilde(self):
-
-        home = get_home_dir()
-
         _, file_ = tempfile.mkstemp(suffix='.txt')
         with open(file_, 'w') as fp:
             fp.write('blargh')
 
-        for f in [
-                '{0}:/test-dataset'.format(home),
-                '{0}/test-dataset'.format(home),
+        for dataset_path in [
+                '~/test-dataset',
+                '~:/test-dataset',
         ]:
-            args = ['import', '--create-dataset', '--follow', f, file_]
-            self._test_import_file(args)
+            args = ['import', '--create-dataset', dataset_path, file_]
+            ds = self._test_import_file(args)
+            self.assertEqual(ds.name, 'test-dataset')
+
+    def test_import_remote_file(self):
+        args = ['import', '--create-dataset', '--tag', 'hello',
+                '--remote-source', 'solvebio:mock_vault:/test-dataset',
+                '/this/is/a/remote/file', '/this/remote/*/path']
+
+        ds = self._test_import_file(args)
+        self.assertEqual(ds.full_path, 'solvebio:mock_vault:/test-dataset')
+        self.assertEqual(ds.tags, ['hello'])
 
     @mock.patch(
         'solvebio.resource.apiresource.ListableAPIResource._retrieve_helper')
