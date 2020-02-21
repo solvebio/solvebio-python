@@ -138,6 +138,8 @@ class CLITests(SolveBioTestCase):
         self.assertEqual(ds.description,
                          'Created with dataset template: {0}'.format(tpl.id))
 
+    @mock.patch('solvebio.resource.DatasetTemplate.retrieve')
+    @mock.patch('solvebio.resource.DatasetTemplate.create')
     @mock.patch('solvebio.resource.Vault.get_or_create_uploads_path')
     @mock.patch('solvebio.resource.Vault.get_by_full_path')
     @mock.patch('solvebio.resource.Vault.all')
@@ -147,7 +149,7 @@ class CLITests(SolveBioTestCase):
     @mock.patch('solvebio.resource.DatasetImport.create')
     def _test_import_file(self, args, DatasetImportCreate, DatasetCreate,
                           ObjectCreate, ObjectAll, VaultAll, VaultLookup,
-                          UploadPath):
+                          UploadPath, TmplCreate, TmplRetrieve):
         DatasetImportCreate.side_effect = fake_dataset_import_create
         DatasetCreate.side_effect = fake_dataset_create
         ObjectAll.side_effect = fake_object_all
@@ -155,7 +157,10 @@ class CLITests(SolveBioTestCase):
         VaultAll.side_effect = fake_vault_all
         UploadPath.side_effect = upload_path
         VaultLookup.side_effect = fake_vault_create
+        TmplRetrieve.side_effect = fake_dataset_tmpl_retrieve
+        TmplCreate.side_effect = fake_dataset_tmpl_create
 
+        # returns (imports_list, dataset)
         return main.main(args)
 
     def test_import_file(self):
@@ -164,11 +169,16 @@ class CLITests(SolveBioTestCase):
             fp.write('blargh')
 
         args = ['import', '--create-dataset', '--tag', 'hello', '--follow',
+                '--commit-mode', 'overwrite',
                 'solvebio:mock_vault:/test-dataset', file_]
 
-        ds = self._test_import_file(args)
+        imports, ds = self._test_import_file(args)
         self.assertEqual(ds.full_path, 'solvebio:mock_vault:/test-dataset')
         self.assertEqual(ds.tags, ['hello'])
+
+        # should be a manifest with a single file
+        self.assertEqual(len(imports[0].manifest['files']), 1)
+        self.assertEqual(imports[0]['commit_mode'], 'overwrite')
 
         # Non-existent file
         args = ['import', '--create-dataset', '--tag', 'hello', '--follow',
@@ -188,17 +198,47 @@ class CLITests(SolveBioTestCase):
                 '~:/test-dataset',
         ]:
             args = ['import', '--create-dataset', dataset_path, file_]
-            ds = self._test_import_file(args)
+            imports, ds = self._test_import_file(args)
             self.assertEqual(ds.name, 'test-dataset')
+            # should be a manifest with a single file
+            self.assertEqual(len(imports[0].manifest['files']), 1)
 
     def test_import_remote_file(self):
         args = ['import', '--create-dataset', '--tag', 'hello',
                 '--remote-source', 'solvebio:mock_vault:/test-dataset',
                 '/this/is/a/remote/file', '/this/remote/*/path']
 
-        ds = self._test_import_file(args)
+        imports, ds = self._test_import_file(args)
         self.assertEqual(ds.full_path, 'solvebio:mock_vault:/test-dataset')
         self.assertEqual(ds.tags, ['hello'])
+        # should be two imports
+        self.assertEqual(len(imports), 2)
+        for import_ in imports:
+            self.assertEqual(import_['object_id'], 100)
+            self.assertTrue('manifest' not in import_)
+
+    def test_import_file_template(self):
+        template_path = os.path.join(os.path.dirname(__file__),
+                                     "data/template.json")
+
+        args = ['import', '--create-dataset', '--tag', 'hello',
+                '--template-file', template_path,
+                '--remote-source', 'solvebio:mock_vault:/test-dataset',
+                '/this/is/a/remote/file']
+
+        imports, ds = self._test_import_file(args)
+        self.assertEqual(ds.full_path, 'solvebio:mock_vault:/test-dataset')
+        self.assertEqual(ds.tags, ['hello'])
+        self.assertEqual(len(imports), 1)
+        import_ = imports[0]
+        self.assertEqual(import_['object_id'], 100)
+        self.assertTrue('manifest' not in import_)
+
+        with open(template_path, 'r') as fp:
+            template = json.load(fp)
+        for key in ['reader_params', 'annotator_params',
+                    'validation_params', 'entity_params']:
+            self.assertEqual(import_[key], template[key])
 
     @mock.patch(
         'solvebio.resource.apiresource.ListableAPIResource._retrieve_helper')

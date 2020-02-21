@@ -17,3 +17,17 @@ class DatasetTemplate(CreateableAPIResource, ListableAPIResource,
         ('name', 'Name'),
         ('description', 'Description'),
     )
+
+    @property
+    def import_params(self):
+        """
+        Get DatasetImport parameters from a template
+        and format them correctly.
+        """
+        return {
+            'target_fields': self.fields,
+            'reader_params': self.reader_params,
+            'entity_params': self.entity_params,
+            'annotator_params': self.annotator_params,
+            'validation_params': self.validation_params
+        }
