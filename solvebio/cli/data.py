@@ -428,6 +428,8 @@ def import_file(args):
         print("Your import has been submitted, view details at: {0}"
               .format(mesh_url))
 
+    return dataset
+
 
 def should_tag_by_object_type(args, object_):
     """Returns True if object matches object type requirements"""
