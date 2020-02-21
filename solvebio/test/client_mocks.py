@@ -162,6 +162,10 @@ class FakeDatasetTemplateResponse(Fake201Response):
             },
             'fields': None,
             'entity_type': None,
+            'validation_params': None,
+            'entity_params': None,
+            'reader_params': None,
+            'annotator_params': None,
         }
         self.object.update(data)
 

@@ -140,7 +140,35 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
                                    vault.full_path)
 
 
-def create_dataset(args):
+def _create_template_from_file(template_file, dry_run=False):
+    mode = 'r'
+    fopen = open
+    if check_gzip_path(template_file):
+        mode = 'rb'
+        fopen = gzip.open
+
+    # Validate the template file
+    with fopen(template_file, mode) as fp:
+        try:
+            template_json = json.load(fp)
+        except:
+            print('Template file {0} could not be loaded. Please '
+                  'pass valid JSON'.format(template_file))
+            sys.exit(1)
+
+    if dry_run:
+        template = solvebio.DatasetTemplate(**template_json)
+        print("A new dataset template will be created from: {0}"
+              .format(template_file))
+    else:
+        template = solvebio.DatasetTemplate.create(**template_json)
+        print("A new dataset template was created with id: {0}"
+              .format(template.id))
+
+    return template
+
+
+def create_dataset(args, template=None):
     """
     Attempt to create a new dataset given the following params:
 
@@ -168,42 +196,30 @@ def create_dataset(args):
         pass
 
     # Accept a template_id or a template_file
-    if args.template_id:
-        # Validate the template ID
+    if template:
+        # Template has already been validated/created
+        # in the import command that called this
+        pass
+    elif args.template_id:
         try:
-            tpl = solvebio.DatasetTemplate.retrieve(args.template_id)
+            template = solvebio.DatasetTemplate.retrieve(args.template_id)
         except solvebio.SolveError as e:
             if e.status_code != 404:
                 raise e
-            print("No template with ID {0} found!"
-                  .format(args.template_id))
+            print("No template with ID {0} found!".format(args.template_id))
             sys.exit(1)
     elif args.template_file:
-        mode = 'r'
-        fopen = open
-        if check_gzip_path(args.template_file):
-            mode = 'rb'
-            fopen = gzip.open
-
-        # Validate the template file
-        with fopen(args.template_file, mode) as fp:
-            try:
-                tpl_json = json.load(fp)
-            except:
-                print('Template file {0} could not be loaded. Please '
-                      'pass valid JSON'.format(args.template_file))
-                sys.exit(1)
-
-        if args.dry_run:
-            tpl = solvebio.DatasetTemplate(**tpl_json)
-            print("A new dataset template will be created from: {0}"
-                  .format(args.template_file))
-        else:
-            tpl = solvebio.DatasetTemplate.create(**tpl_json)
-            print("A new dataset template was created with id: {0}"
-                  .format(tpl.id))
+        template = _create_template_from_file(args.template_file, args.dry_run)
     else:
-        tpl = None
+        template = None
+
+    if template:
+        print("Creating new dataset {0} using the template '{1}'."
+              .format(full_path, template.name))
+        fields = template.fields
+        description = 'Created with dataset template: {0}' \
+            .format(str(template.id))
+    else:
         fields = []
         description = None
 
@@ -239,13 +255,6 @@ def create_dataset(args):
         if metadata:
             print("Metadata: {}".format(metadata))
         return
-
-    if tpl:
-        print("Creating new dataset {0} using the template '{1}'."
-              .format(full_path, tpl.name))
-        fields = tpl.fields
-        # include template used to create
-        description = 'Created with dataset template: {0}'.format(str(tpl.id))
 
     return solvebio.Dataset.get_or_create_by_full_path(
         full_path,
@@ -383,9 +392,22 @@ def import_file(args):
                       ', '.join(args.file)))
         sys.exit(1)
 
+    if args.template_id:
+        try:
+            template = solvebio.DatasetTemplate.retrieve(args.template_id)
+        except solvebio.SolveError as e:
+            if e.status_code != 404:
+                raise e
+            print("No template with ID {0} found!".format(args.template_id))
+            sys.exit(1)
+    elif args.template_file:
+        template = _create_template_from_file(args.template_file, args.dry_run)
+    else:
+        template = None
+
     # Ensure the dataset exists. Create if necessary.
     if args.create_dataset:
-        dataset = create_dataset(args)
+        dataset = create_dataset(args, template=template)
     else:
         try:
             dataset = solvebio.Dataset.get_by_full_path(full_path)
@@ -406,6 +428,7 @@ def import_file(args):
         return
 
     # Generate a manifest from the local files
+    imports = []
     for file_ in files_list:
         if args.remote_source:
             kwargs = dict(object_id=file_.id)
@@ -414,12 +437,18 @@ def import_file(args):
             manifest.add(file_)
             kwargs = dict(manifest=manifest.manifest)
 
+        # Add template params
+        if template:
+            kwargs.update(template.import_params)
+
         # Create the import
-        solvebio.DatasetImport.create(
+        import_ = solvebio.DatasetImport.create(
             dataset_id=dataset.id,
             commit_mode=args.commit_mode,
             **kwargs
         )
+
+        imports.append(import_)
 
     if args.follow:
         dataset.activity(follow=True)
@@ -428,7 +457,7 @@ def import_file(args):
         print("Your import has been submitted, view details at: {0}"
               .format(mesh_url))
 
-    return dataset
+    return imports, dataset
 
 
 def should_tag_by_object_type(args, object_):
