@@ -170,6 +170,14 @@ class CLITests(SolveBioTestCase):
         self.assertEqual(ds.full_path, 'solvebio:mock_vault:/test-dataset')
         self.assertEqual(ds.tags, ['hello'])
 
+        # Non-existent file
+        args = ['import', '--create-dataset', '--tag', 'hello', '--follow',
+                'solvebio:mock_vault:/test-dataset',
+                'not/a/real/path/file.txt']
+
+        with self.assertRaises(ValueError):
+            self._test_import_file(args)
+
     def test_import_tilde(self):
         _, file_ = tempfile.mkstemp(suffix='.txt')
         with open(file_, 'w') as fp:
@@ -182,6 +190,15 @@ class CLITests(SolveBioTestCase):
             args = ['import', '--create-dataset', dataset_path, file_]
             ds = self._test_import_file(args)
             self.assertEqual(ds.name, 'test-dataset')
+
+    def test_import_remote_file(self):
+        args = ['import', '--create-dataset', '--tag', 'hello',
+                '--remote-source', 'solvebio:mock_vault:/test-dataset',
+                '/this/is/a/remote/file', '/this/remote/*/path']
+
+        ds = self._test_import_file(args)
+        self.assertEqual(ds.full_path, 'solvebio:mock_vault:/test-dataset')
+        self.assertEqual(ds.tags, ['hello'])
 
     @mock.patch(
         'solvebio.resource.apiresource.ListableAPIResource._retrieve_helper')
