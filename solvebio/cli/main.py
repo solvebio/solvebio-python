@@ -268,6 +268,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'flags': '--full-path',
                     'help': 'The full path where the files are located in SolveBio.',
+                    'action': TildeFixStoreAction,
+                    'default': '~/'
                 },
                 {
                     'flags': '--query',
