@@ -460,6 +460,41 @@ def import_file(args):
     return imports, dataset
 
 
+def download(args):
+    """
+    Given a folder or file, download all the files contained within it (not recursive).
+    """
+    local_folder_path = args.local_path
+    sb_path = args.full_path
+    query = args.query
+
+    base_remote_path, path_dict = Object.validate_full_path(sb_path)
+
+    sb_object = Object.get_by_full_path(base_remote_path)
+
+    # If user sets the home directory, expand the path
+    local_folder_path = os.path.expanduser(local_folder_path) if local_folder_path.startswith(
+        '~') else local_folder_path
+
+    if sb_object.is_file:
+        sb_object.download(local_folder_path)
+        print(f'Downloaded: {sb_object.full_path}')
+
+    elif sb_object.is_folder:
+        files = sb_object.files(query=query) if query else sb_object.files()
+
+        if not os.path.exists(local_folder_path):
+            os.makedirs(local_folder_path, exist_ok=True)
+
+        for file in files:
+            file_obj = Object.retrieve(file.id)
+            file_obj.download(local_folder_path)
+            print(f'Downloaded: {file.full_path}')
+
+    else:
+        print(f'ERROR: {sb_object.full_path} is not file or folder.')
+
+
 def should_tag_by_object_type(args, object_):
     """Returns True if object matches object type requirements"""
     valid = True
