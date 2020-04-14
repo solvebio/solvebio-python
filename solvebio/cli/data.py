@@ -478,7 +478,7 @@ def download(args):
 
     if sb_object.is_file:
         sb_object.download(local_folder_path)
-        print(f'Downloaded: {sb_object.full_path}')
+        print('Downloaded: {}'.format(sb_object.full_path))
 
     elif sb_object.is_folder:
         files = sb_object.files(query=query) if query else sb_object.files()
@@ -489,10 +489,10 @@ def download(args):
         for file in files:
             file_obj = Object.retrieve(file.id)
             file_obj.download(local_folder_path)
-            print(f'Downloaded: {file.full_path}')
+            print('Downloaded: {}'.format(file.full_path))
 
     else:
-        print(f'ERROR: {sb_object.full_path} is not file or folder.')
+        print('ERROR: {} is not file or folder.'.format(sb_object.full_path))
 
 
 def should_tag_by_object_type(args, object_):
