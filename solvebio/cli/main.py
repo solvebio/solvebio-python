@@ -262,18 +262,25 @@ class SolveArgumentParser(argparse.ArgumentParser):
         },
         'download': {
             'func': data.download,
-            'help': 'Download a file or directory from a SolveBio Vault. Not recursive '
+            'help': 'Download a file or directory from a Vault. Not recursive '
                     '(will download only files in specified folder).',
             'arguments': [
                 {
                     'flags': '--full-path',
-                    'help': 'The full path where the files are located in SolveBio.',
+                    'help': 'The full path to the files on SolveBio',
                     'action': TildeFixStoreAction,
                     'default': '~/'
                 },
                 {
                     'flags': '--query',
-                    'help': 'Can be used to filter only needed files from folder (for example, ".vcf").',
+                    'help': 'Can be used to filter only needed files '
+                            'from folder (for example, ".vcf").',
+                },
+                {
+                    'flags': '--dry-run',
+                    'help': 'Dry run mode will not download any files or '
+                    'create any folders.',
+                    'action': 'store_true'
                 },
                 {
                     'name': 'local_path',

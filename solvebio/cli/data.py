@@ -462,37 +462,39 @@ def import_file(args):
 
 def download(args):
     """
-    Given a folder or file, download all the files contained within it (not recursive).
+    Given a folder or file, download all the files contained
+    within it (not recursive).
     """
-    local_folder_path = args.local_path
-    sb_path = args.full_path
+    # Always expand ~ in local path
+    local_folder_path = os.path.expanduser(args.local_path)
     query = args.query
 
-    base_remote_path, path_dict = Object.validate_full_path(sb_path)
+    if args.dry_run:
+        print('Running in dry run mode. Not downloading any files.')
 
+    base_remote_path, path_dict = Object.validate_full_path(args.full_path)
+
+    # Validate remote_path exists
     sb_object = Object.get_by_full_path(base_remote_path)
 
-    # If user sets the home directory, expand the path
-    local_folder_path = os.path.expanduser(local_folder_path) if local_folder_path.startswith(
-        '~') else local_folder_path
-
-    if sb_object.is_file:
-        sb_object.download(local_folder_path)
-        print('Downloaded: {}'.format(sb_object.full_path))
-
-    elif sb_object.is_folder:
-        files = sb_object.files(query=query) if query else sb_object.files()
-
-        if not os.path.exists(local_folder_path):
+    if not os.path.exists(local_folder_path):
+        print("Creating local download folder {}".format(local_folder_path))
+        if not args.dry_run:
             os.makedirs(local_folder_path, exist_ok=True)
 
-        for file in files:
-            file_obj = Object.retrieve(file.id)
-            file_obj.download(local_folder_path)
-            print('Downloaded: {}'.format(file.full_path))
-
+    if sb_object.is_file:
+        files = [sb_object]
+    elif sb_object.is_folder:
+        files = sb_object.files(query=query) if query else sb_object.files()
     else:
-        print('ERROR: {} is not file or folder.'.format(sb_object.full_path))
+        sys.exit('ERROR: {} is not file or folder.'
+                 .format(sb_object.full_path))
+
+    for file_ in files:
+        if not args.dry_run:
+            file_.download(local_folder_path)
+        print('Downloaded: {} to {}/{}'.format(
+            file_.full_path, local_folder_path, file_.filename))
 
 
 def should_tag_by_object_type(args, object_):
