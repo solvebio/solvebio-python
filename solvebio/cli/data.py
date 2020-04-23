@@ -465,30 +465,38 @@ def download(args):
     Given a folder or file, download all the files contained
     within it (not recursive).
     """
-    # Always expand ~ in local path
-    local_folder_path = os.path.expanduser(args.local_path)
+    return _download(args.full_path, args.local_path, dry_run=args.dry_run)
 
-    if args.dry_run:
+
+def _download(full_path, local_folder_path, dry_run=False):
+    """
+    Given a folder or file, download all the files contained
+    within it (not recursive).
+    """
+    if dry_run:
         print('Running in dry run mode. Not downloading any files.')
 
-    base_remote_path, path_dict = Object.validate_full_path(args.full_path)
+    local_folder_path = os.path.expanduser(local_folder_path)
+    base_remote_path, path_dict = Object.validate_full_path(full_path)
 
     if not os.path.exists(local_folder_path):
         print("Creating local download folder {}".format(local_folder_path))
-        if not args.dry_run:
+        if not dry_run:
             os.makedirs(local_folder_path, exist_ok=True)
 
     # API will determine depth based on number of "/" in the glob
     # Add */** to match in any vault (recursive)
-    files = Object.all(glob=args.full_path, limit=1000, object_type='file')
+    files = Object.all(glob=full_path, limit=1000, object_type='file')
     if not files:
         print("No file(s) found at --full-path {}\nIf aattempting to download "
               "multiple files, try using a glob 'vault:/path/folder/*'"
-              .format(args.full_path))
+              .format(full_path))
 
     for file_ in files:
-        if not args.dry_run:
+
+        if not dry_run:
             file_.download(local_folder_path)
+
         print('Downloaded: {} to {}/{}'.format(
             file_.full_path, local_folder_path, file_.filename))
 
