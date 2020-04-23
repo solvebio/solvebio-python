@@ -375,3 +375,50 @@ class CLITests(SolveBioTestCase):
         exclude = ['*folder*']
         self.assertTrue(should_exclude('~/folder/2019-01-01/file.txt',
                                         exclude))
+
+    @mock.patch('solvebio.resource.Object.all')
+    @mock.patch(
+        'solvebio.resource.apiresource.DownloadableAPIResource.download'
+    )
+    def _test_download_file(self, args, Download, ObjectAll,
+                            download_success=True):
+        ObjectAll.side_effect = fake_object_all
+
+        if download_success:
+            Download.side_effect = lambda x: True
+        else:
+            Download.side_effect = Exception('Mock Download Fail')
+
+        # returns (imports_list, dataset)
+        return main.main(args)
+
+    def test_download_file(self):
+        args = ['download', '--full-path',
+                'solvebio:mock_vault:/test-file', '.']
+        self._test_download_file(args)
+        self.assertFalse(os.path.exists('.test-file'))
+
+        args = ['download', '--full-path',
+                'solvebio:mock_vault:/test-file/*', '.']
+        self._test_download_file(args)
+        self.assertFalse(os.path.exists('.test-file'))
+
+        # args needed
+        args = ['download']
+        with self.assertRaises(SystemExit):
+            self._test_download_file(args)
+
+        # full path required
+        args = ['download', 'mypath']
+        with self.assertRaises(SystemExit):
+            self._test_download_file(args)
+
+        # local path required
+        args = ['download', '--full-path', 'my-vault:/mypath']
+        with self.assertRaises(SystemExit):
+            self._test_download_file(args)
+
+        args = ['download', '--full-path',
+                'solvebio:mock_vault:/test-file/*', '.']
+        with self.assertRaises(Exception):
+            self._test_download_file(args, download_success=False)

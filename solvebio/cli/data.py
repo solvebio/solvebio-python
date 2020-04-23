@@ -477,12 +477,11 @@ def _download(full_path, local_folder_path, dry_run=False):
         print('Running in dry run mode. Not downloading any files.')
 
     local_folder_path = os.path.expanduser(local_folder_path)
-    base_remote_path, path_dict = Object.validate_full_path(full_path)
-
     if not os.path.exists(local_folder_path):
         print("Creating local download folder {}".format(local_folder_path))
         if not dry_run:
-            os.makedirs(local_folder_path, exist_ok=True)
+            if not os.path.exists(local_folder_path):
+                os.makedirs(local_folder_path)
 
     # API will determine depth based on number of "/" in the glob
     # Add */** to match in any vault (recursive)

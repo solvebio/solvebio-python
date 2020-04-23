@@ -269,6 +269,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'The full path to the files on SolveBio. Supports '
                     'Unix style globs in order to download multiple files. '
                     'Note: Downloads are not recursive.',
+                    'required': True,
                     'action': TildeFixStoreAction
                 },
                 {
