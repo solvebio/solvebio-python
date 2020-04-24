@@ -5,7 +5,7 @@ SolveBio Python Client
 ======================
 
 This is the SolveBio Python package and command-line interface (CLI).
-This module is tested against Python 2.7, 3.5, 3.6 and PyPY.
+This module is tested against Python 2.7, 3.6, 3.7, 3.8, PyPy and PyPy3.
 
 Developer documentation is available at [docs.solvebio.com](https://docs.solvebio.com). For more information about SolveBio visit [www.solvebio.com](https://www.solvebio.com).
 
@@ -60,7 +60,7 @@ Or install `tox` and run:
 Releasing
 ---------
 
-Maintainers can release solvebio-python to PyPI with the following steps: 
+Maintainers can release solvebio-python to PyPI with the following steps:
 
 
     # Bump the version and update the changelog
