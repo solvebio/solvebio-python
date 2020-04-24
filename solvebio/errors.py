@@ -59,5 +59,23 @@ class SolveError(Exception):
                 if self.json_body:
                     self.message += ' %s' % self.json_body
 
+            # TODO
+            # NOTE there are other keys that exist in some Errors that
+            # are not detail or non_field_errors. For instance 'manifest'
+            # is a key if uploading using a manifest with invalid file format.
+            # It includes a very useful error message that gets lost.
+            # Is there harm in just handling any error key here?
+            # (handle keys with list values and those without)
+            # Implementation below
+            #
+            # for k, v in self.json_body:
+            #     if isinstance(v, list):
+            #         self.message += ' %s Errors: %s' % \
+            #             (k, ', '.join(self.json_body[k]))
+            #     else:
+            #         self.message += ' %s Errors: %s' % \
+            #             (k, self.json_body[k])
+            #     del self.json_body[k]
+
     def __str__(self):
         return self.message
