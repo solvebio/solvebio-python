@@ -354,7 +354,7 @@ class Object(CreateableAPIResource,
     def is_file(self):
         return self.object_type == 'file'
 
-    def is_tagged(self, tag):
+    def has_tag(self, tag):
         """Return True if object contains tags"""
 
         def lowercase(x):
@@ -366,13 +366,13 @@ class Object(CreateableAPIResource,
         """Add or remove tags on an object"""
 
         if remove:
-            removal_tags = [tag for tag in tags if self.is_tagged(tag)]
+            removal_tags = [tag for tag in tags if self.has_tag(tag)]
             if removal_tags:
                 print('{}Notice: Removing tags: {} from object: {}'
                       .format('[Dry Run] ' if dry_run else '',
                               ', '.join(removal_tags), self.full_path))
 
-                updated_tags = [tag for tag in tags if not self.is_tagged(tag)]
+                updated_tags = [tag for tag in tags if not self.has_tag(tag)]
             else:
                 print('{}Notice: Object {} does not contain any of the '
                       'following tags: {}'.format(
@@ -380,7 +380,7 @@ class Object(CreateableAPIResource,
                           self.full_path, ', '.join(tags)))
                 return False
         else:
-            new_tags = [tag for tag in tags if not self.is_tagged(tag)]
+            new_tags = [tag for tag in tags if not self.has_tag(tag)]
             if new_tags:
                 print('{}Notice: Adding tags: {} to object: {}'
                       .format('[Dry Run] ' if dry_run else '',
