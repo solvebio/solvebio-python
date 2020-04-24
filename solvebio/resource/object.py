@@ -146,6 +146,18 @@ class Object(CreateableAPIResource,
         return path_dict['full_path'], path_dict
 
     @classmethod
+    def get_by_path(cls, path, **params):
+        assert_type = params.pop('assert_type', None)
+        params.update({'path': path})
+        obj = cls._retrieve_helper('object', 'path', path, **params)
+        if obj and assert_type and obj['object_type'] != assert_type:
+            raise SolveError(
+                "Expected a {} but found a {} at {}"
+                .format(assert_type, obj['object_type'], path))
+
+        return obj
+
+    @classmethod
     def get_by_full_path(cls, full_path, **params):
         # Don't pop client from params since **params is used below
         _client = params.get('client', None) or cls._client or client
@@ -162,16 +174,106 @@ class Object(CreateableAPIResource,
         return obj
 
     @classmethod
-    def get_by_path(cls, path, **params):
-        assert_type = params.pop('assert_type', None)
-        params.update({'path': path})
-        obj = cls._retrieve_helper('object', 'path', path, **params)
-        if obj and assert_type and obj['object_type'] != assert_type:
-            raise SolveError(
-                "Expected a {} but found a {} at {}"
-                .format(assert_type, obj['object_type'], path))
+    def get_or_create_by_full_path(cls, full_path, **kwargs):
+        from solvebio import Vault
+        from solvebio import Object
 
-        return obj
+        _client = kwargs.pop('client', None) or cls._client or client
+        create_vault = kwargs.pop('create_vault', False)
+        create_folders = kwargs.pop('create_folders', True)
+
+        # Check for object type assertion, if not explicitly added, see
+        # if user has passed object_type, as their intent was to get/create
+        # an object of that type.
+        assert_type = kwargs.pop('assert_type',
+                                 kwargs.get('object_type', None))
+
+        try:
+            return cls.get_by_full_path(
+                full_path, assert_type=assert_type, client=_client)
+        except NotFoundError:
+            pass
+
+        # Object type required when creating Object
+        object_type = kwargs.get('object_type')
+        if not object_type:
+            raise Exception("'object_type' is required when creating a new "
+                            "Object. Pass one of: file, folder, dataset")
+
+        # TODO should we require file contents?
+        # Technically a user could then use this object to the call
+        # upload_file()
+        # if object_type == 'file' and not kwargs.get('content'):
+        #     raise Exception('')
+
+        # Object not found, create it step-by-step
+        full_path, parts = Object.validate_full_path(full_path, client=_client)
+
+        if create_vault:
+            vault = Vault.get_or_create_by_full_path(
+                '{0}:{1}'.format(parts['domain'], parts['vault']),
+                client=_client)
+        else:
+            vaults = Vault.all(account_domain=parts['domain'],
+                               name=parts['vault'],
+                               client=_client)
+            if len(vaults.solve_objects()) == 0:
+                raise Exception(
+                    'Vault with name {0}:{1} does not exist. Pass '
+                    'create_vault=True to auto-create'.format(
+                        parts['domain'], parts['vault'])
+                )
+            vault = vaults.solve_objects()[0]
+
+        # Create the folders to hold the object if they do not already exist.
+        object_path = parts['path']
+        curr_path = os.path.dirname(object_path)
+        folders_to_create = []
+        new_folders = []
+        id_map = {'/': None}
+
+        while curr_path != '/':
+            try:
+                obj = Object.get_by_path(curr_path,
+                                         vault_id=vault.id,
+                                         assert_type='folder',
+                                         client=_client)
+                id_map[curr_path] = obj.id
+                break
+            except NotFoundError:
+                if not create_folders:
+                    raise Exception('Folder {} does not exist.  Pass '
+                                    'create_folders=True to auto-create '
+                                    'missing folders')
+
+                folders_to_create.append(curr_path)
+                curr_path = '/'.join(curr_path.split('/')[:-1])
+                if curr_path == '':
+                    break
+
+        for folder in reversed(folders_to_create):
+            new_folder = Object.create(
+                object_type='folder',
+                vault_id=vault.id,
+                filename=os.path.basename(folder),
+                parent_object_id=id_map[os.path.dirname(folder)],
+                client=_client
+            )
+            new_folders.append(new_folder)
+            id_map[folder] = new_folder.id
+
+        if os.path.dirname(object_path) == '/':
+            parent_folder_id = None
+        elif new_folders:
+            parent_folder_id = new_folders[-1].id
+        else:
+            parent_folder_id = id_map[os.path.dirname(object_path)]
+
+        return Object.create(filename=os.path.basename(object_path),
+                             vault_id=vault.id,
+                             parent_object_id=parent_folder_id,
+                             client=_client,
+                             **kwargs)
 
     @classmethod
     def upload_file(cls, local_path, remote_path, vault_full_path, **kwargs):
