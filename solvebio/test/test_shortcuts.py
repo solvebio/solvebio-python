@@ -393,13 +393,11 @@ class CLITests(SolveBioTestCase):
         return main.main(args)
 
     def test_download_file(self):
-        args = ['download', '--full-path',
-                'solvebio:mock_vault:/test-file', '.']
+        args = ['download', 'solvebio:mock_vault:/test-file', '.']
         self._test_download_file(args)
         self.assertFalse(os.path.exists('.test-file'))
 
-        args = ['download', '--full-path',
-                'solvebio:mock_vault:/test-file/*', '.']
+        args = ['download', 'solvebio:mock_vault:/test-file/*', '.']
         self._test_download_file(args)
         self.assertFalse(os.path.exists('.test-file'))
 
@@ -414,11 +412,10 @@ class CLITests(SolveBioTestCase):
             self._test_download_file(args)
 
         # local path required
-        args = ['download', '--full-path', 'my-vault:/mypath']
+        args = ['download', 'my-vault:/mypath']
         with self.assertRaises(SystemExit):
             self._test_download_file(args)
 
-        args = ['download', '--full-path',
-                'solvebio:mock_vault:/test-file/*', '.']
+        args = ['download', 'solvebio:mock_vault:/test-file/*', '.']
         with self.assertRaises(Exception):
             self._test_download_file(args, download_success=False)

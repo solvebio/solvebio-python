@@ -265,18 +265,17 @@ class SolveArgumentParser(argparse.ArgumentParser):
             'help': 'Download one or more files from a SolveBio Vault.',
             'arguments': [
                 {
-                    'flags': '--full-path',
-                    'help': 'The full path to the files on SolveBio. Supports '
-                    'Unix style globs in order to download multiple files. '
-                    'Note: Downloads are not recursive.',
-                    'required': True,
-                    'action': TildeFixStoreAction
-                },
-                {
                     'flags': '--dry-run',
                     'help': 'Dry run mode will not download any files or '
                     'create any folders.',
                     'action': 'store_true'
+                },
+                {
+                    'flags': 'full_path',
+                    'help': 'The full path to the files on SolveBio. Supports '
+                    'Unix style globs in order to download multiple files. '
+                    'Note: Downloads are not recursive.',
+                    'action': TildeFixStoreAction
                 },
                 {
                     'name': 'local_path',
