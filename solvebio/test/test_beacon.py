@@ -12,7 +12,7 @@ class BeaconTests(SolveBioTestCase):
         Check that current Clinvar/Variants returns correct
         fields for beacon
         """
-        dataset = self.client.Dataset.get_by_full_path(
+        dataset = self.client.Object.get_by_full_path(
             self.TEST_DATASET_FULL_PATH)
         beacon = dataset.beacon(chromosome='6',
                                      coordinate=51612854,  # staging
@@ -26,7 +26,7 @@ class BeaconTests(SolveBioTestCase):
         # Check that Clinvar/Variants version 3.7.0-2015-12-06
         # returns true for specific case
 
-        dataset = self.client.Dataset.get_by_full_path(
+        dataset = self.client.Object.get_by_full_path(
             self.TEST_DATASET_FULL_PATH)
         beacontwo = dataset.beacon(chromosome='13',
                                    coordinate=113803460,

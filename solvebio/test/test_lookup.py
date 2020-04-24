@@ -7,7 +7,7 @@ class LookupTests(SolveBioTestCase):
 
     def setUp(self):
         super(LookupTests, self).setUp()
-        self.dataset = self.client.Dataset.get_by_full_path(
+        self.dataset = self.client.Object.get_by_full_path(
             self.TEST_DATASET_FULL_PATH)
 
     def test_lookup_error(self):

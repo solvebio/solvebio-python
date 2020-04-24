@@ -11,7 +11,7 @@ path = '/SampleImport/1.0.0'
 dataset_name = 'SampleDataset'
 
 # Create a dataset
-dataset = solvebio.Dataset.get_or_create_by_full_path(
+dataset = solvebio.Object.get_or_create_by_full_path(
     '{0}:/{1}/{2}'.format(vault.name, path, dataset_name),
 )
 
