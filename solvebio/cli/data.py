@@ -487,7 +487,7 @@ def _download(full_path, local_folder_path, dry_run=False):
     # Add */** to match in any vault (recursive)
     files = Object.all(glob=full_path, limit=1000, object_type='file')
     if not files:
-        print("No file(s) found at --full-path {}\nIf aattempting to download "
+        print("No file(s) found at --full-path {}\nIf attempting to download "
               "multiple files, try using a glob 'vault:/path/folder/*'"
               .format(full_path))
 
