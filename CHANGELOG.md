@@ -1,5 +1,41 @@
 # Change Log
 
+## [v2.10.0](https://github.com/solvebio/solvebio-python/tree/v2.10.0) (2020-04-24)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.9.0...v2.10.0)
+
+**Implemented enhancements:**
+
+- Convert `Dataset.create` calls to `Object.create` to use newer endpoint [\#326](https://github.com/solvebio/solvebio-python/issues/326)
+- Show error message when requests fail with 403 [\#320](https://github.com/solvebio/solvebio-python/issues/320)
+- Give Object instances that represent "datasets" the ability to be queried [\#287](https://github.com/solvebio/solvebio-python/issues/287)
+- Shortcut to create a new file object in a SolveBio vault from an export [\#274](https://github.com/solvebio/solvebio-python/issues/274)
+- Command line import does not support validation/reader/etc.. params from templates [\#254](https://github.com/solvebio/solvebio-python/issues/254)
+- Add shortcut to use a DatasetTemplate for an import [\#245](https://github.com/solvebio/solvebio-python/issues/245)
+
+**Fixed bugs:**
+
+- SolveBio command line shell `--api-token` argument does not work [\#318](https://github.com/solvebio/solvebio-python/issues/318)
+- Cannot log in with python-requests 2.12.4 [\#188](https://github.com/solvebio/solvebio-python/issues/188)
+
+**Closed issues:**
+
+- Update SolveError to include more error messages [\#333](https://github.com/solvebio/solvebio-python/issues/333)
+- Request - Shortcuts for creating folders with descriptions \(or bug where create\_folder doesn't allow slashes?\) [\#251](https://github.com/solvebio/solvebio-python/issues/251)
+
+**Merged pull requests:**
+
+- cleaner error handling [\#335](https://github.com/solvebio/solvebio-python/pull/335) ([jsh2134](https://github.com/jsh2134))
+- Clean the netrc output format for the new "account" item [\#334](https://github.com/solvebio/solvebio-python/pull/334) ([davecap](https://github.com/davecap))
+- More travis builds [\#332](https://github.com/solvebio/solvebio-python/pull/332) ([jsh2134](https://github.com/jsh2134))
+- Object.get\_or\_create\_by\_full\_path\(\) [\#331](https://github.com/solvebio/solvebio-python/pull/331) ([jsh2134](https://github.com/jsh2134))
+- add command to print out the active Task queue [\#330](https://github.com/solvebio/solvebio-python/pull/330) ([jsh2134](https://github.com/jsh2134))
+- adds a shortcut to check if an object contains a tag [\#329](https://github.com/solvebio/solvebio-python/pull/329) ([jsh2134](https://github.com/jsh2134))
+- CLI to download multiple files [\#328](https://github.com/solvebio/solvebio-python/pull/328) ([jsh2134](https://github.com/jsh2134))
+- import command should respect template params [\#323](https://github.com/solvebio/solvebio-python/pull/323) ([jsh2134](https://github.com/jsh2134))
+- More login simplification [\#322](https://github.com/solvebio/solvebio-python/pull/322) ([jsh2134](https://github.com/jsh2134))
+- Updates to "create-dataset" and "import" shortcut commands [\#321](https://github.com/solvebio/solvebio-python/pull/321) ([jsh2134](https://github.com/jsh2134))
+- Access token improvements [\#319](https://github.com/solvebio/solvebio-python/pull/319) ([davecap](https://github.com/davecap))
+
 ## [v2.9.0](https://github.com/solvebio/solvebio-python/tree/v2.9.0) (2019-11-07)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.9...v2.9.0)
 
@@ -722,13 +758,13 @@
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
-
-## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.9)
 
 ## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
-[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.8)
+
+## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.7)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
