@@ -41,7 +41,7 @@ class Fake201Response(object):
         return ExtendedList([self.create()])
 
     def update_paths(self):
-        """Sets vault_name, path and full_path"""
+        """Sets vault_name, path and full_path based on mock inputs"""
         if not self.object['vault_name']:
             self.object['vault_name'] = 'mock_vault'
 
@@ -54,6 +54,11 @@ class Fake201Response(object):
         if not self.object['full_path']:
             self.object['full_path'] = 'solvebio:{0}:{1}'.format(
                 self.object['vault_name'], self.object['path'])
+
+    def update_dataset(self):
+        """Sets dataset_id if object is a dataset"""
+        if self.object['object_type'] == 'dataset':
+            self.object['dataset_id'] = self.object['id']
 
 
 class FakeMigrationResponse(Fake201Response):
@@ -123,6 +128,7 @@ class FakeObjectResponse(Fake201Response):
         }
         self.object.update(data)
         self.update_paths()
+        self.update_dataset()
 
 
 class FakeDatasetResponse(Fake201Response):
@@ -221,6 +227,8 @@ def fake_object_retrieve(*args, **kwargs):
 
 
 def fake_dataset_create(*args, **kwargs):
+    # Dataset.create() is deprecated
+    print("WARNING: Your code likely wants to be using FakeObjectCreate.")
     return FakeDatasetResponse(kwargs).create()
 
 

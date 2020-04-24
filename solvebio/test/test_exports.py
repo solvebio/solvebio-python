@@ -14,7 +14,7 @@ class ExportsTests(SolveBioTestCase):
     def setUp(self):
         super(ExportsTests, self).setUp()
         filters = Filter(rgd_id='RGD:2645')
-        self.dataset = self.client.Dataset.get_by_full_path(
+        self.dataset = self.client.Object.get_by_full_path(
             'solvebio:public:/HGNC/3.0.0-2016-11-10/HGNC')
         self.query = self.dataset.query(filters=filters, fields=['rgd_id'],
                                         genome_build='GRCh37', limit=10)

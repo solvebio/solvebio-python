@@ -14,7 +14,8 @@ class DatasetTests(SolveBioTestCase):
         self.assertTrue('id' in dataset,
                         'Should be able to get id in dataset')
 
-        check_fields = ['class_name', 'created_at',
+        check_fields = ['class_name',
+                        'created_at',
                         'data_url',
                         'vault_id',
                         'vault_object_id',
@@ -49,7 +50,7 @@ class DatasetTests(SolveBioTestCase):
         )
 
     def test_dataset_fields(self):
-        dataset = self.client.Dataset.get_by_full_path(
+        dataset = self.client.Object.get_by_full_path(
             self.TEST_DATASET_FULL_PATH)
         fields = dataset.fields()
         dataset_field = fields.data[0]
@@ -67,22 +68,8 @@ class DatasetTests(SolveBioTestCase):
         self.assertSetEqual(set(dataset_field.keys()), check_fields)
 
     def test_dataset_facets(self):
-        dataset = self.client.Dataset.get_by_full_path(
+        dataset = self.client.Object.get_by_full_path(
             self.TEST_DATASET_FULL_PATH)
         field = dataset.fields('status')
         facets = field.facets()
         self.assertTrue(len(facets['facets']) >= 0)
-
-    """
-    # TODO support a Genomic test dataset (grab clinvar one from API build)
-    def test_dataset_beacon(self):
-        obj = Object.get_by_full_path(self.TEST_DATASET_FULL_PATH)
-        resp = Dataset.retrieve(obj['dataset_id']).beacon(chromosome="6",
-                                                          coordinate=123,
-                                                          allele='G')
-        self.assertTrue('total' in resp and resp['total'] == 0)
-        self.assertTrue('exist' in resp and resp['exist'] == False)
-        self.assertTrue('query' in resp and resp['query']['chromosome'] == '6')
-        self.assertTrue('query' in resp and resp['query']['allele'] == 'G')
-        self.assertTrue('query' in resp and resp['query']['coordinate'] == 123)
-    """

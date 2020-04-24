@@ -20,7 +20,6 @@ from solvebio.test.client_mocks import fake_vault_create
 from solvebio.test.client_mocks import fake_object_all
 from solvebio.test.client_mocks import fake_object_create
 from solvebio.test.client_mocks import fake_object_retrieve
-from solvebio.test.client_mocks import fake_dataset_create
 from solvebio.test.client_mocks import fake_dataset_tmpl_create
 from solvebio.test.client_mocks import fake_dataset_tmpl_retrieve
 from solvebio.test.client_mocks import fake_dataset_import_create
@@ -47,23 +46,23 @@ class CLITests(SolveBioTestCase):
 
     @mock.patch('solvebio.resource.Vault.all')
     @mock.patch('solvebio.resource.Object.all')
-    @mock.patch('solvebio.resource.Dataset.create')
+    @mock.patch('solvebio.resource.Object.create')
     def test_create_dataset(self, DatasetCreate, ObjectAll, VaultAll):
-        DatasetCreate.side_effect = fake_dataset_create
+        DatasetCreate.side_effect = fake_object_create
         ObjectAll.side_effect = fake_object_all
         VaultAll.side_effect = fake_vault_all
         args = ['create-dataset', 'solvebio:test_vault:/test-dataset',
                 '--capacity', 'small']
         ds = main.main(args)
-        self.assertEqual(ds.name, 'test-dataset')
+        self.assertEqual(ds.filename, 'test-dataset')
         self.assertEqual(ds.path, '/test-dataset')
 
     @mock.patch('solvebio.resource.Vault.all')
     @mock.patch('solvebio.resource.Object.all')
-    @mock.patch('solvebio.resource.Dataset.create')
+    @mock.patch('solvebio.resource.Object.create')
     def test_create_dataset_by_filename(self, DatasetCreate, ObjectAll,
                                         VaultAll):
-        DatasetCreate.side_effect = fake_dataset_create
+        DatasetCreate.side_effect = fake_object_create
         ObjectAll.side_effect = fake_object_all
         VaultAll.side_effect = fake_vault_all
         args = [
@@ -75,7 +74,7 @@ class CLITests(SolveBioTestCase):
             '--metadata', 'TEST2=tag2',
         ]
         ds = main.main(args)
-        self.assertEqual(ds.name, 'test-dataset-filename')
+        self.assertEqual(ds.filename, 'test-dataset-filename')
         self.assertEqual(ds.path, '/test-dataset-filename')
         self.assertEqual(ds.capacity, 'small')
         self.assertEqual(ds.tags, ['tag_test'])
@@ -94,13 +93,13 @@ class CLITests(SolveBioTestCase):
 
     @mock.patch('solvebio.resource.Vault.all')
     @mock.patch('solvebio.resource.Object.all')
-    @mock.patch('solvebio.resource.Dataset.create')
+    @mock.patch('solvebio.resource.Object.create')
     @mock.patch('solvebio.resource.DatasetTemplate.create')
     def test_create_dataset_upload_template(self, TmplCreate,
                                             DatasetCreate, ObjectAll,
                                             VaultAll):
         TmplCreate.side_effect = fake_dataset_tmpl_create
-        DatasetCreate.side_effect = fake_dataset_create
+        DatasetCreate.side_effect = fake_object_create
         ObjectAll.side_effect = fake_object_all
         VaultAll.side_effect = fake_vault_all
 
@@ -116,14 +115,14 @@ class CLITests(SolveBioTestCase):
 
     @mock.patch('solvebio.resource.Vault.all')
     @mock.patch('solvebio.resource.Object.all')
-    @mock.patch('solvebio.resource.Dataset.create')
+    @mock.patch('solvebio.resource.Object.create')
     @mock.patch('solvebio.resource.DatasetTemplate.retrieve')
     @mock.patch('solvebio.resource.DatasetTemplate.create')
     def test_create_dataset_template_id(self, TmplCreate, TmplRetrieve,
                                         DatasetCreate, ObjectAll, VaultAll):
         VaultAll.side_effect = fake_vault_all
         ObjectAll.side_effect = fake_object_all
-        DatasetCreate.side_effect = fake_dataset_create
+        DatasetCreate.side_effect = fake_object_create
         TmplRetrieve.side_effect = fake_dataset_tmpl_retrieve
         TmplCreate.side_effect = fake_dataset_tmpl_create
 
@@ -149,15 +148,15 @@ class CLITests(SolveBioTestCase):
     @mock.patch('solvebio.resource.Vault.all')
     @mock.patch('solvebio.resource.Object.all')
     @mock.patch('solvebio.resource.Object.upload_file')
-    @mock.patch('solvebio.resource.Dataset.create')
+    @mock.patch('solvebio.resource.Object.create')
     @mock.patch('solvebio.resource.DatasetImport.create')
-    def _test_import_file(self, args, DatasetImportCreate, DatasetCreate,
-                          ObjectCreate, ObjectAll, VaultAll, VaultLookup,
+    def _test_import_file(self, args, DatasetImportCreate, ObjectCreate,
+                          UploadFile, ObjectAll, VaultAll, VaultLookup,
                           UploadPath, TmplCreate, TmplRetrieve):
         DatasetImportCreate.side_effect = fake_dataset_import_create
-        DatasetCreate.side_effect = fake_dataset_create
-        ObjectAll.side_effect = fake_object_all
         ObjectCreate.side_effect = fake_object_create
+        UploadFile.side_effect = fake_object_create
+        ObjectAll.side_effect = fake_object_all
         VaultAll.side_effect = fake_vault_all
         UploadPath.side_effect = upload_path
         VaultLookup.side_effect = fake_vault_create
@@ -203,7 +202,7 @@ class CLITests(SolveBioTestCase):
         ]:
             args = ['import', '--create-dataset', dataset_path, file_]
             imports, ds = self._test_import_file(args)
-            self.assertEqual(ds.name, 'test-dataset')
+            self.assertEqual(ds.filename, 'test-dataset')
             # should be a manifest with a single file
             self.assertEqual(len(imports[0].manifest['files']), 1)
 

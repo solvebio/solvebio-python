@@ -13,9 +13,12 @@ from collections import defaultdict
 
 import solvebio
 
+from solvebio import Task
 from solvebio import Vault
 from solvebio import Object
-from solvebio import Task
+from solvebio import Dataset
+from solvebio import DatasetImport
+from solvebio import DatasetTemplate
 from solvebio.utils.files import check_gzip_path
 from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
@@ -159,11 +162,11 @@ def _create_template_from_file(template_file, dry_run=False):
             sys.exit(1)
 
     if dry_run:
-        template = solvebio.DatasetTemplate(**template_json)
+        template = DatasetTemplate(**template_json)
         print("A new dataset template will be created from: {0}"
               .format(template_file))
     else:
-        template = solvebio.DatasetTemplate.create(**template_json)
+        template = DatasetTemplate.create(**template_json)
         print("A new dataset template was created with id: {0}"
               .format(template.id))
 
@@ -191,7 +194,7 @@ def create_dataset(args, template=None):
 
     try:
         # Fail if a dataset already exists.
-        solvebio.Dataset.get_by_full_path(full_path)
+        Object.get_by_full_path(full_path, assert_type='dataset')
         print('A dataset already exists at path: {0}'.format(full_path))
         sys.exit(1)
     except NotFoundError:
@@ -204,8 +207,8 @@ def create_dataset(args, template=None):
         pass
     elif args.template_id:
         try:
-            template = solvebio.DatasetTemplate.retrieve(args.template_id)
-        except solvebio.SolveError as e:
+            template = DatasetTemplate.retrieve(args.template_id)
+        except SolveError as e:
             if e.status_code != 404:
                 raise e
             print("No template with ID {0} found!".format(args.template_id))
@@ -258,7 +261,7 @@ def create_dataset(args, template=None):
             print("Metadata: {}".format(metadata))
         return
 
-    return solvebio.Dataset.get_or_create_by_full_path(
+    return Dataset.get_or_create_by_full_path(
         full_path,
         capacity=args.capacity,
         fields=fields,
@@ -396,8 +399,8 @@ def import_file(args):
 
     if args.template_id:
         try:
-            template = solvebio.DatasetTemplate.retrieve(args.template_id)
-        except solvebio.SolveError as e:
+            template = DatasetTemplate.retrieve(args.template_id)
+        except SolveError as e:
             if e.status_code != 404:
                 raise e
             print("No template with ID {0} found!".format(args.template_id))
@@ -412,7 +415,7 @@ def import_file(args):
         dataset = create_dataset(args, template=template)
     else:
         try:
-            dataset = solvebio.Dataset.get_by_full_path(full_path)
+            dataset = Object.get_by_full_path(full_path, assert_type='dataset')
         except solvebio.errors.NotFoundError:
             print("Dataset not found: {0}".format(full_path))
             print("Tip: use the --create-dataset flag "
@@ -444,7 +447,7 @@ def import_file(args):
             kwargs.update(template.import_params)
 
         # Create the import
-        import_ = solvebio.DatasetImport.create(
+        import_ = DatasetImport.create(
             dataset_id=dataset.id,
             commit_mode=args.commit_mode,
             **kwargs

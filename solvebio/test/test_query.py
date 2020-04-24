@@ -11,7 +11,7 @@ class BaseQueryTest(SolveBioTestCase):
     """Test Paging Queries"""
     def setUp(self):
         super(BaseQueryTest, self).setUp()
-        self.dataset = self.client.Dataset.get_by_full_path(
+        self.dataset = self.client.Object.get_by_full_path(
             self.TEST_DATASET_FULL_PATH)
 
     def test_basic(self):
