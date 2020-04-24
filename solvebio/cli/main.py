@@ -346,6 +346,10 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
             ]
         },
+        'queue': {
+            'func': data.show_queue,
+            'help': 'Shows the current job queue, grouped by User',
+        }
     }
 
     def __init__(self, *args, **kwargs):

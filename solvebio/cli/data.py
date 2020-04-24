@@ -9,11 +9,13 @@ import sys
 import gzip
 import json
 from fnmatch import fnmatch
+from collections import defaultdict
 
 import solvebio
 
 from solvebio import Vault
 from solvebio import Object
+from solvebio import Task
 from solvebio.utils.files import check_gzip_path
 from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
@@ -575,3 +577,42 @@ def tag(args):
             object_.tag(
                 args.tag, remove=args.remove,
                 dry_run=args.dry_run, apply_save=True)
+
+
+def show_queue(args):
+    """Show running and queued tasks"""
+    queue()
+
+
+def queue(statuses=['running', 'queued']):
+    """
+    Get all running and queued Tasks for an account
+    and groups them by User and status.
+    It also prints out the Job queue in the order that they
+    will be evaluated.
+    """
+    task_map = {}
+    tasks = Task.all(status=','.join(statuses))
+    for task in tasks:
+        if task.user.id not in task_map:
+            task_map[task.user.id] = []
+
+        task_map[task.user.id].append(task)
+
+    if not task_map:
+        print("No running or queued tasks in your account!")
+        return
+
+    print("##" * 10)
+    print("# Tasks by User")
+    print("##" * 10)
+    for tasks in task_map.values():
+        user = tasks[0].user
+        status_map = defaultdict(int)
+        print("{} Tasks ({})".format(len(tasks), user.full_name))
+        for task in tasks:
+            status_map[task.status] += 1
+
+        for status, cnt in status_map.items():
+            if cnt:
+                print("\t{} are {}".format(cnt, status))
