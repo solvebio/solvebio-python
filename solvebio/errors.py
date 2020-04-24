@@ -33,7 +33,6 @@ class SolveError(Exception):
                     'API Response (%d): %s'
                     % (self.status_code, self.json_body))
             except:
-                self.json_body = ''
                 logger.debug(
                     'API Response (%d): Response does not contain JSON.'
                     % self.status_code)
@@ -47,35 +46,15 @@ class SolveError(Exception):
             elif response.status_code == 404:
                 self.message = '404 Not Found'
 
-            if 'detail' in self.json_body:
-                self.message = '%s' % self.json_body['detail']
-                del self.json_body['detail']
-
-            if 'non_field_errors' in self.json_body:
-                self.message = '%s' % \
-                    ', '.join(self.json_body['non_field_errors'])
-                del self.json_body['non_field_errors']
-
-                if self.json_body:
-                    self.message += ' %s' % self.json_body
-
-            # TODO
-            # NOTE there are other keys that exist in some Errors that
-            # are not detail or non_field_errors. For instance 'manifest'
-            # is a key if uploading using a manifest with invalid file format.
-            # It includes a very useful error message that gets lost.
-            # Is there harm in just handling any error key here?
-            # (handle keys with list values and those without)
-            # Implementation below
-            #
-            # for k, v in self.json_body:
-            #     if isinstance(v, list):
-            #         self.message += ' %s Errors: %s' % \
-            #             (k, ', '.join(self.json_body[k]))
-            #     else:
-            #         self.message += ' %s Errors: %s' % \
-            #             (k, self.json_body[k])
-            #     del self.json_body[k]
+            # Handle other keys
+            for k, v in self.json_body.items():
+                if isinstance(v, list):
+                    self.message += '\nError (%s): %s' % \
+                        (k, ', '.join(self.json_body[k]))
+                else:
+                    self.message += '\nError (%s): %s' % \
+                        (k, self.json_body[k])
+                del self.json_body[k]
 
     def __str__(self):
         return self.message
