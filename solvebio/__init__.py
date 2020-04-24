@@ -148,7 +148,8 @@ def login(**kwargs):
             api_host = creds[0]
             if creds[2] == 'Bearer':
                 access_token = creds[3]
-            elif creds[2] in [None, 'Token']:
+            else:
+                # By default, assume it is an API key.
                 api_key = creds[3]
 
     # Always update the client host, version and agent

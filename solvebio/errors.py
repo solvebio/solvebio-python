@@ -38,13 +38,13 @@ class SolveError(Exception):
                     % self.status_code)
 
             if self.status_code == 400:
-                self.message = 'Bad Request'
+                self.message = 'Bad Request ({})'.format(response.url)
             elif response.status_code == 401:
-                self.message = '401 Unauthorized'
+                self.message = '401 Unauthorized ({})'.format(response.url)
             elif response.status_code == 403:
-                self.message = '403 Forbidden'
+                self.message = '403 Forbidden ({})'.format(response.url)
             elif response.status_code == 404:
-                self.message = '404 Not Found'
+                self.message = '404 Not Found ({})'.format(response.url)
 
             # Handle other keys
             for k, v in self.json_body.items():

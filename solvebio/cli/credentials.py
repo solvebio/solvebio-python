@@ -55,13 +55,8 @@ class netrc(_netrc):
             rep = rep + "machine " + host + "\n\tlogin " \
                 + six.text_type(attrs[0]) + "\n"
             if attrs[1]:
-                rep = rep + "account " + six.text_type(attrs[1])
+                rep = rep + "\taccount " + six.text_type(attrs[1]) + "\n"
             rep = rep + "\tpassword " + six.text_type(attrs[2]) + "\n"
-        for macro in self.macros.keys():
-            rep = rep + "macdef " + macro + "\n"
-            for line in self.macros[macro]:
-                rep = rep + line
-            rep = rep + "\n"
 
         f = open(path, 'w')
         f.write(rep)
