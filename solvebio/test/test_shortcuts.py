@@ -41,6 +41,10 @@ class CLITests(SolveBioTestCase):
         solvebio.api_key = os.environ.get('SOLVEBIO_API_KEY', None)
         solvebio.api_host = os.environ.get('SOLVEBIO_API_HOST', None)
 
+    def test_show_queue(self):
+        """Simple test to print the queue"""
+        main.main(['queue'])
+
     @mock.patch('solvebio.resource.Vault.all')
     @mock.patch('solvebio.resource.Object.all')
     @mock.patch('solvebio.resource.Dataset.create')
