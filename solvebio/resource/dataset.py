@@ -38,10 +38,6 @@ class Dataset(CreateableAPIResource,
     def make_full_path(cls, vault_name, path, name, **kwargs):
         from solvebio import SolveError
 
-        print('[Deprecated] Warning this method has been deprecated'
-              'and will be removed in a future released.'
-              'Use self.vault_object.full_path')
-
         _client = kwargs.pop('client', None) or cls._client or client
 
         try:

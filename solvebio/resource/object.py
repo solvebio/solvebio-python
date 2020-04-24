@@ -452,7 +452,7 @@ class Object(CreateableAPIResource,
                 "Only dataset objects have a Dataset resource. This is a {}"
                 .format(self.object_type))
 
-        return Dataset.retrieve(self['dataset_id'], client=self._client)
+        return Dataset.retrieve(self.dataset_id, client=self._client)
 
     @property
     def parent(self):
