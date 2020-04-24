@@ -1,6 +1,8 @@
 from __future__ import absolute_import
+import mock
 
 from .helper import SolveBioTestCase
+from solvebio.test.client_mocks import fake_object_create
 
 
 class ObjectTests(SolveBioTestCase):
@@ -110,3 +112,22 @@ class ObjectTests(SolveBioTestCase):
         p, _ = self.client.Object.validate_full_path(case, path='foo/bar/baz')
         expected = '{0}:/foo/bar/baz'.format(user_vault)
         self.assertEqual(p, expected)
+
+    @mock.patch('solvebio.resource.Object.create')
+    def test_object_is_tagged(self, ObjectMock):
+        ObjectMock.side_effect = fake_object_create
+
+        tags = ["foo", "bar", "BIZ"]
+        obj = self.client.Object.create(name='blah', tags=tags)
+        self.assertEqual(obj.tags, tags)
+        self.assertTrue(obj.is_tagged("FOO"))
+        self.assertTrue(obj.is_tagged("foo"))
+        self.assertTrue(obj.is_tagged("BAr"))
+        self.assertTrue(obj.is_tagged("BAr"))
+        self.assertTrue(obj.is_tagged("biz"))
+        self.assertFalse(obj.is_tagged("BAz"))
+        self.assertFalse(obj.is_tagged("baz"))
+
+        obj = self.client.Object.create(name='blah_untagged')
+        self.assertEqual(obj.tags, [])
+        self.assertFalse(obj.is_tagged("foo"))
