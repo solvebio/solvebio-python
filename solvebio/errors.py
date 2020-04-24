@@ -19,7 +19,7 @@ class SolveError(Exception):
                        'support@solvebio.com.')
 
     def __init__(self, message=None, response=None):
-        self.json_body = None
+        self.json_body = {}
         self.status_code = None
         self.message = message or self.default_message
         self.field_errors = []
@@ -48,7 +48,7 @@ class SolveError(Exception):
 
             # Handle other keys
             for k, v in self.json_body.items():
-                if k in ["non_field_errors"]:
+                if k in ["non_field_errors", "detail"]:
                     self.message += '\nError: '
                 else:
                     self.message += '\nError (%s): ' % k
