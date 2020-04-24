@@ -5,10 +5,7 @@ SolveBio Python Client
 ======================
 
 This is the SolveBio Python package and command-line interface (CLI).
-This module has been tested on Python 2.6+, Python 3.1+ and PyPy.
-
-This version of the Python Client is compatible with Vault-based datasets
-only (released on July 28th, 2017).
+This module is tested against Python 2.7, 3.5, 3.6 and PyPY.
 
 Developer documentation is available at [docs.solvebio.com](https://docs.solvebio.com). For more information about SolveBio visit [www.solvebio.com](https://www.solvebio.com).
 
@@ -34,16 +31,6 @@ To log in, type:
 
 
 Enter your SolveBio credentials and you should be good to go!
-
-
-Automatic Installer (Python 2.x only)
--------------------------------------
-
-NOTE: The following installer works for Python 2.x only.
-
-Open your terminal and paste the following command:
-
-    curl -skL install.solvebio.com/python | bash
 
 
 Install from Git
