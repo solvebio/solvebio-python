@@ -3,6 +3,7 @@ import mock
 
 from .helper import SolveBioTestCase
 from solvebio.test.client_mocks import fake_object_create
+from solvebio.test.client_mocks import fake_dataset_create
 
 
 class ObjectTests(SolveBioTestCase):
@@ -131,3 +132,37 @@ class ObjectTests(SolveBioTestCase):
         obj = self.client.Object.create(name='blah_untagged')
         self.assertEqual(obj.tags, [])
         self.assertFalse(obj.has_tag("foo"))
+
+    @mock.patch('solvebio.resource.Dataset.create')
+    @mock.patch('solvebio.resource.Object.create')
+    def test_object_dataset_getattr(self, ObjectCreate, DatasetCreate):
+        ObjectCreate.side_effect = fake_object_create
+        DatasetCreate.side_effect = fake_dataset_create
+
+        valid_attrs = [
+            'query', 'lookup', 'beacon',
+            'import_file', 'export', 'migrate',
+            'fields', 'template', 'imports', 'commits',
+            'activity', 'saved_queries'
+        ]
+
+        ds = self.client.Dataset.create(name='foo')
+        ds_obj = self.client.Object.create(name='foo_dataset',
+                                           object_type='dataset')
+        file_ = self.client.Object.create(name='foo_file',
+                                          object_type='file')
+        folder_ = self.client.Object.create(name='foo_folder',
+                                            object_type='folder')
+        for attr in valid_attrs:
+            self.assertTrue(getattr(ds, attr))
+            self.assertTrue(getattr(ds_obj, attr))
+            with self.assertRaises(AttributeError):
+                getattr(file_, attr)
+            with self.assertRaises(AttributeError):
+                getattr(folder_, attr)
+
+        # Test that any old attr doesnt work
+        fake_attr = 'foobar'
+        for obj in [file_, folder_, ds, ds_obj]:
+            with self.assertRaises(AttributeError):
+                getattr(obj, fake_attr)

@@ -94,9 +94,8 @@ class Dataset(CreateableAPIResource,
 
     def fields(self, name=None, **params):
         if 'fields_url' not in self:
-            raise Exception(
-                'Please use Dataset.retrieve({ID}) before looking '
-                'up fields')
+            # Dataset object may not have been retrieved. Grab it.
+            self.refresh()
 
         if name:
             params.update({
@@ -118,18 +117,16 @@ class Dataset(CreateableAPIResource,
 
     def template(self, **params):
         if 'template_url' not in self:
-            raise Exception(
-                'Please use Dataset.retrieve({ID}) before retrieving '
-                'a template')
+            # Dataset object may not have been retrieved. Grab it.
+            self.refresh()
 
         response = self._client.get(self.template_url, params)
         return convert_to_solve_object(response, client=self._client)
 
     def commits(self, **params):
         if 'commits_url' not in self:
-            raise Exception(
-                'Please use Dataset.retrieve({ID}) before looking '
-                'up commits')
+            # Dataset object may not have been retrieved. Grab it.
+            self.refresh()
 
         response = self._client.get(self.commits_url, params)
         results = convert_to_solve_object(response, client=self._client)
@@ -142,9 +139,8 @@ class Dataset(CreateableAPIResource,
 
     def imports(self, **params):
         if 'imports_url' not in self:
-            raise Exception(
-                'Please use Dataset.retrieve({ID}) before looking '
-                'up imports')
+            # Dataset object may not have been retrieved. Grab it.
+            self.refresh()
 
         response = self._client.get(self.imports_url, params)
         results = convert_to_solve_object(response, client=self._client)

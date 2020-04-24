@@ -422,9 +422,10 @@ class Object(CreateableAPIResource,
         """Shortcut to access attributes of the underlying Dataset resource"""
         from solvebio.resource import Dataset
 
-        valid_attrs = [
+        # Valid override attributes that let Object act like a Dataset
+        valid_dataset_attrs = [
             # query data
-            'query', 'lookup',
+            'query', 'lookup', 'beacon',
             # transform data
             'import_file', 'export', 'migrate',
             # dataset meta
@@ -432,13 +433,26 @@ class Object(CreateableAPIResource,
             # helpers
             'activity', 'saved_queries'
         ]
-        if name in valid_attrs and self.is_dataset:
-            return getattr(Dataset(self.dataset_id, client=self._client), name)
 
         try:
             return self[name]
         except KeyError as err:
+            if name in valid_dataset_attrs and self.is_dataset:
+                return getattr(
+                    Dataset(self.dataset_id, client=self._client), name)
+
             raise AttributeError(*err.args)
+
+    @property
+    def dataset(self):
+        """ Returns the dataset object """
+        from solvebio import Dataset
+        if not self.is_dataset:
+            raise SolveError(
+                "Only dataset objects have a Dataset resource. This is a {}"
+                .format(self.object_type))
+
+        return Dataset.retrieve(self['dataset_id'], client=self._client)
 
     @property
     def parent(self):
