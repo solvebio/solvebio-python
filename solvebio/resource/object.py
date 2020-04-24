@@ -418,17 +418,27 @@ class Object(CreateableAPIResource,
     def ls(self, **params):
         return self.objects(**params)
 
-    def query(self, query=None, **params):
-        """Shortcut to query the underlying Dataset object"""
-        from solvebio import Dataset
+    def __getattr__(self, name):
+        """Shortcut to access attributes of the underlying Dataset resource"""
+        from solvebio.resource import Dataset
 
-        if not self.is_dataset:
-            raise SolveError(
-                "The query method can only be used by a dataset. Found a {}"
-                .format(self.object_type))
+        valid_attrs = [
+            # query data
+            'query', 'lookup',
+            # transform data
+            'import_file', 'export', 'migrate',
+            # dataset meta
+            'fields', 'template', 'imports', 'commits',
+            # helpers
+            'activity', 'saved_queries'
+        ]
+        if name in valid_attrs and self.is_dataset:
+            return getattr(Dataset(self.dataset_id, client=self._client), name)
 
-        return Dataset(self.dataset_id, client=self._client).query(
-            query=query, **params)
+        try:
+            return self[name]
+        except KeyError as err:
+            raise AttributeError(*err.args)
 
     @property
     def parent(self):
