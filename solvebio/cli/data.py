@@ -460,6 +460,46 @@ def import_file(args):
     return imports, dataset
 
 
+def download(args):
+    """
+    Given a folder or file, download all the files contained
+    within it (not recursive).
+    """
+    return _download(args.full_path, args.local_path, dry_run=args.dry_run)
+
+
+def _download(full_path, local_folder_path, dry_run=False):
+    """
+    Given a folder or file, download all the files contained
+    within it (not recursive).
+    """
+    if dry_run:
+        print('Running in dry run mode. Not downloading any files.')
+
+    local_folder_path = os.path.expanduser(local_folder_path)
+    if not os.path.exists(local_folder_path):
+        print("Creating local download folder {}".format(local_folder_path))
+        if not dry_run:
+            if not os.path.exists(local_folder_path):
+                os.makedirs(local_folder_path)
+
+    # API will determine depth based on number of "/" in the glob
+    # Add */** to match in any vault (recursive)
+    files = Object.all(glob=full_path, limit=1000, object_type='file')
+    if not files:
+        print("No file(s) found at --full-path {}\nIf attempting to download "
+              "multiple files, try using a glob 'vault:/path/folder/*'"
+              .format(full_path))
+
+    for file_ in files:
+
+        if not dry_run:
+            file_.download(local_folder_path)
+
+        print('Downloaded: {} to {}/{}'.format(
+            file_.full_path, local_folder_path, file_.filename))
+
+
 def should_tag_by_object_type(args, object_):
     """Returns True if object matches object type requirements"""
     valid = True
