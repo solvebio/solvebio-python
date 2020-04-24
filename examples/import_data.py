@@ -27,7 +27,7 @@ imp = solvebio.DatasetImport.create(
 
 # Prints updates as the data is processed
 # and indexed into SolveBio
-imp.follow()
+dataset.activity(follow=True)
 
 #
 # You now have data!
@@ -49,5 +49,4 @@ imp = solvebio.DatasetImport.create(
     dataset_id=dataset.id,
     data_records=new_records
 )
-
-imp.follow()
+dataset.activity(follow=True)
