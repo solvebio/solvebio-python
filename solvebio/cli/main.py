@@ -260,6 +260,30 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 }
             ]
         },
+        'download': {
+            'func': data.download,
+            'help': 'Download one or more files from a SolveBio Vault.',
+            'arguments': [
+                {
+                    'flags': '--dry-run',
+                    'help': 'Dry run mode will not download any files or '
+                    'create any folders.',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': 'full_path',
+                    'help': 'The full path to the files on SolveBio. Supports '
+                    'Unix style globs in order to download multiple files. '
+                    'Note: Downloads are not recursive.',
+                    'action': TildeFixStoreAction
+                },
+                {
+                    'name': 'local_path',
+                    'help': 'The path to the local directory where '
+                            'to download files.',
+                }
+            ]
+        },
         'tag': {
             'func': data.tag,
             'help': 'Apply tags or remove tags on objects',
@@ -322,6 +346,10 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
             ]
         },
+        'queue': {
+            'func': data.show_queue,
+            'help': 'Shows the current job queue, grouped by User',
+        }
     }
 
     def __init__(self, *args, **kwargs):

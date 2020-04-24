@@ -123,7 +123,8 @@ class FakeObjectResponse(Fake201Response):
             'full_path': None,
             'vault_name': None,
             'vault_id': None,
-            'object_type': 'folder'
+            'object_type': 'folder',
+            'tags': [],
         }
         self.object.update(data)
         self.update_paths()
