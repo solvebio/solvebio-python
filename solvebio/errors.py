@@ -48,12 +48,15 @@ class SolveError(Exception):
 
             # Handle other keys
             for k, v in self.json_body.items():
-                if isinstance(v, list):
-                    self.message += '\nError (%s): %s' % \
-                        (k, ', '.join(self.json_body[k]))
+                if k in ["non_field_errors"]:
+                    self.message += '\nError: '
                 else:
-                    self.message += '\nError (%s): %s' % \
-                        (k, self.json_body[k])
+                    self.message += '\nError (%s): ' % k
+
+                if isinstance(v, list):
+                    self.message += ', '.join(self.json_body[k])
+                else:
+                    self.message += self.json_body[k]
                 del self.json_body[k]
 
     def __str__(self):
