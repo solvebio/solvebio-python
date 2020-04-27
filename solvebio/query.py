@@ -726,9 +726,9 @@ class Query(object):
         from solvebio import DatasetMigration
 
         # Target can be provided as an object or an ID.
-        if hasattr(target, 'id'):
+        try:
             target_id = target.id
-        else:
+        except AttributeError:
             target_id = target
 
         # If a limit is set in the Query and not overridden here, use it.

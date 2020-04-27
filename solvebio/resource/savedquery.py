@@ -36,9 +36,9 @@ class SavedQuery(CreateableAPIResource, ListableAPIResource,
                 'the Dataset ID.')
 
         # Can be provided as an object or as an ID.
-        if hasattr(dataset, 'id'):
+        try:
             dataset_id = dataset.id
-        else:
+        except AttributeError:
             dataset_id = dataset
 
         return Query(dataset_id, client=self._client, **self.params)
