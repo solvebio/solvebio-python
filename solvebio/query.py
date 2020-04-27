@@ -723,11 +723,10 @@ class Query(object):
         * commit_mode
 
         """
-        from solvebio import Dataset
         from solvebio import DatasetMigration
 
-        # Target can be provided as a Dataset, or as an ID.
-        if isinstance(target, Dataset):
+        # Target can be provided as an object or an ID.
+        if hasattr(target, 'id'):
             target_id = target.id
         else:
             target_id = target

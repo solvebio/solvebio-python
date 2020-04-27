@@ -1,7 +1,5 @@
 from ..query import Query
 
-from .dataset import Dataset
-
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import UpdateableAPIResource
@@ -37,7 +35,8 @@ class SavedQuery(CreateableAPIResource, ListableAPIResource,
                 'Please provide either the Dataset object or '
                 'the Dataset ID.')
 
-        if isinstance(dataset, Dataset):
+        # Can be provided as an object or as an ID.
+        if hasattr(dataset, 'id'):
             dataset_id = dataset.id
         else:
             dataset_id = dataset

@@ -237,8 +237,8 @@ class Dataset(CreateableAPIResource,
                 'Please instantiate the Dataset '
                 'object with an ID.')
 
-        # Target can be provided as a Dataset, or as an ID.
-        if isinstance(target, Dataset):
+        # Target can be provided as an object or as an ID.
+        if hasattr(target, 'id'):
             target_id = target.id
         else:
             target_id = target
