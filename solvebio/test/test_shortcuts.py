@@ -20,6 +20,7 @@ from solvebio.test.client_mocks import fake_vault_create
 from solvebio.test.client_mocks import fake_object_all
 from solvebio.test.client_mocks import fake_object_create
 from solvebio.test.client_mocks import fake_object_retrieve
+from solvebio.test.client_mocks import fake_dataset_retrieve
 from solvebio.test.client_mocks import fake_dataset_tmpl_create
 from solvebio.test.client_mocks import fake_dataset_tmpl_retrieve
 from solvebio.test.client_mocks import fake_dataset_import_create
@@ -150,9 +151,11 @@ class CLITests(SolveBioTestCase):
     @mock.patch('solvebio.resource.Object.upload_file')
     @mock.patch('solvebio.resource.Object.create')
     @mock.patch('solvebio.resource.DatasetImport.create')
-    def _test_import_file(self, args, DatasetImportCreate, ObjectCreate,
-                          UploadFile, ObjectAll, VaultAll, VaultLookup,
-                          UploadPath, TmplCreate, TmplRetrieve):
+    @mock.patch('solvebio.resource.Dataset.retrieve')
+    def _test_import_file(self, args, DatasetRetrieve, DatasetImportCreate,
+                          ObjectCreate, UploadFile, ObjectAll, VaultAll,
+                          VaultLookup, UploadPath, TmplCreate, TmplRetrieve):
+        DatasetRetrieve.side_effect = fake_dataset_retrieve
         DatasetImportCreate.side_effect = fake_dataset_import_create
         ObjectCreate.side_effect = fake_object_create
         UploadFile.side_effect = fake_object_create

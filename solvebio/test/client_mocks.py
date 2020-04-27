@@ -145,9 +145,9 @@ class FakeDatasetResponse(Fake201Response):
                 'name': None,
                 'domain': None,
             },
-            'path': '/{0}'.format(data['name']),
+            'path': '/{0}'.format(data.get('name', data.get('id'))),
             'full_path': None,
-            'vault_object_name': data['name'],
+            'vault_object_name': data.get('name', data.get('id')),
         }
         self.object.update(data)
         self.update_paths()
@@ -230,6 +230,11 @@ def fake_dataset_create(*args, **kwargs):
     # Dataset.create() is deprecated
     print("WARNING: Your code likely wants to be using FakeObjectCreate.")
     return FakeDatasetResponse(kwargs).create()
+
+
+def fake_dataset_retrieve(*args, **kwargs):
+    return FakeDatasetResponse(kwargs)._retrieve_helper(
+        'Dataset', "foo", *args, **kwargs)
 
 
 def fake_dataset_import_create(*args, **kwargs):
