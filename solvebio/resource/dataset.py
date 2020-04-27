@@ -70,7 +70,8 @@ class Dataset(CreateableAPIResource,
         # Assert this is a dataset
         kwargs['assert_type'] = 'dataset'
         kwargs['object_type'] = 'dataset'
-        return Object.get_or_create_by_full_path(full_path, **kwargs)
+        obj = Object.get_or_create_by_full_path(full_path, **kwargs)
+        return cls.retrieve(obj.dataset_id)
 
     def saved_queries(self, **params):
         from solvebio import SavedQuery
