@@ -437,7 +437,7 @@ class Object(CreateableAPIResource,
         try:
             return self[name]
         except KeyError as err:
-            if name in valid_dataset_attrs and self.is_dataset:
+            if name in valid_dataset_attrs and self.dataset_id:
                 return getattr(
                     Dataset(self.dataset_id, client=self._client), name)
 
