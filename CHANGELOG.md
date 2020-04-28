@@ -1,6 +1,6 @@
 # Change Log
 
-## [v2.10.1](https://github.com/solvebio/solvebio-python/tree/v2.10.1) (2020-04-27)
+## [v2.10.1](https://github.com/solvebio/solvebio-python/tree/v2.10.1) (2020-04-28)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.10.0...v2.10.1)
 
 **Fixed bugs:**
@@ -9,6 +9,7 @@
 
 **Merged pull requests:**
 
+- Dataset.get\_or\_create\_by\_full\_path should always return Dataset object [\#338](https://github.com/solvebio/solvebio-python/pull/338) ([jsh2134](https://github.com/jsh2134))
 - do not expect that error contains json [\#337](https://github.com/solvebio/solvebio-python/pull/337) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.10.0](https://github.com/solvebio/solvebio-python/tree/v2.10.0) (2020-04-24)
