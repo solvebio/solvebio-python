@@ -437,7 +437,10 @@ class Object(CreateableAPIResource,
         try:
             return self[name]
         except KeyError as err:
-            if name in valid_dataset_attrs and self.is_dataset:
+            # If the Object has a dataset_id, it is of object_type "dataset"
+            # If there is no dataset_id, either this Object is a file or folder
+            # or the resource has not yet been retrieved from the API.
+            if name in valid_dataset_attrs and self.dataset_id:
                 return getattr(
                     Dataset(self.dataset_id, client=self._client), name)
 

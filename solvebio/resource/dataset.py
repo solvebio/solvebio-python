@@ -67,10 +67,13 @@ class Dataset(CreateableAPIResource,
     @classmethod
     def get_or_create_by_full_path(cls, full_path, **kwargs):
         from solvebio import Object
-        # Assert this is a dataset
+
+        # Assert this is a dataset (for the "get" in get_or_create)
         kwargs['assert_type'] = 'dataset'
+        # Create this is a dataset (for the "create" in get_or_create)
         kwargs['object_type'] = 'dataset'
-        return Object.get_or_create_by_full_path(full_path, **kwargs)
+        obj = Object.get_or_create_by_full_path(full_path, **kwargs)
+        return cls.retrieve(obj.dataset_id)
 
     def saved_queries(self, **params):
         from solvebio import SavedQuery
@@ -237,10 +240,10 @@ class Dataset(CreateableAPIResource,
                 'Please instantiate the Dataset '
                 'object with an ID.')
 
-        # Target can be provided as a Dataset, or as an ID.
-        if isinstance(target, Dataset):
+        # Target can be provided as an object or as an ID.
+        try:
             target_id = target.id
-        else:
+        except AttributeError:
             target_id = target
 
         migration = DatasetMigration.create(

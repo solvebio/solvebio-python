@@ -1,7 +1,5 @@
 from ..query import Query
 
-from .dataset import Dataset
-
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import UpdateableAPIResource
@@ -37,9 +35,10 @@ class SavedQuery(CreateableAPIResource, ListableAPIResource,
                 'Please provide either the Dataset object or '
                 'the Dataset ID.')
 
-        if isinstance(dataset, Dataset):
+        # Can be provided as an object or as an ID.
+        try:
             dataset_id = dataset.id
-        else:
+        except AttributeError:
             dataset_id = dataset
 
         return Query(dataset_id, client=self._client, **self.params)

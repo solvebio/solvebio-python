@@ -723,13 +723,12 @@ class Query(object):
         * commit_mode
 
         """
-        from solvebio import Dataset
         from solvebio import DatasetMigration
 
-        # Target can be provided as a Dataset, or as an ID.
-        if isinstance(target, Dataset):
+        # Target can be provided as an object or an ID.
+        try:
             target_id = target.id
-        else:
+        except AttributeError:
             target_id = target
 
         # If a limit is set in the Query and not overridden here, use it.
