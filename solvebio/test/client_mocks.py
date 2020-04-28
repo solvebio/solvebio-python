@@ -136,20 +136,18 @@ class FakeDatasetResponse(Fake201Response):
     class_name = 'Dataset'
 
     def __init__(self, data):
-        self.object = {
-            'class_name': self.class_name,
-            'vault_id': None,
-            'vault_name': None,
-            'id': 100,
-            'account': {
-                'name': None,
-                'domain': None,
-            },
-            'path': '/{0}'.format(data.get('name', data.get('id'))),
+
+        # Override default object options
+        overrides = {
+            'object_type': 'dataset',
+            'filename': data.get('name', 'test-dataset'),
+            'vault_object_name': data.get('name', 'test-dataset'),
+            'path': None,
             'full_path': None,
-            'vault_object_name': data.get('name', data.get('id')),
+            'class_name': self.class_name,
         }
-        self.object.update(data)
+        data.update(overrides)
+        self.object = FakeObjectResponse(data).object
         self.update_paths()
 
 
@@ -232,9 +230,16 @@ def fake_dataset_create(*args, **kwargs):
     return FakeDatasetResponse(kwargs).create()
 
 
-def fake_dataset_retrieve(*args, **kwargs):
-    return FakeDatasetResponse(kwargs)._retrieve_helper(
-        'Dataset', "foo", *args, **kwargs)
+def fake_dataset_get_or_create(*args, **kwargs):
+    from solvebio.resource import Object
+    dataset_obj = FakeObjectResponse(kwargs).create()
+
+    # Dataset.create requires a full_path, override with this
+    full_path, path_dict = Object.validate_full_path(args[0])
+    dataset_obj.name = path_dict['filename']
+    dataset_obj.path = path_dict['path']
+    dataset_obj.full_path = full_path
+    return FakeDatasetResponse(dict(dataset_obj)).create()
 
 
 def fake_dataset_import_create(*args, **kwargs):
