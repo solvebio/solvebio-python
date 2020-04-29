@@ -72,7 +72,7 @@ class Dataset(CreateableAPIResource,
         kwargs['assert_type'] = 'dataset'
         # Create this is a dataset (for the "create" in get_or_create)
         kwargs['object_type'] = 'dataset'
-        obj = Object.get_or_create_by_full_path(full_path, **kwargs)
+        obj = Object.get_or_create_by_full_path(full_path, client=_client, **kwargs)
         return cls.retrieve(obj.dataset_id)
 
     def saved_queries(self, **params):
