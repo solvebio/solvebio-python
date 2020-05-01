@@ -312,7 +312,8 @@ class BaseQueryTest(SolveBioTestCase):
         # Invalid fields
         try:
             query = self.dataset.query(target_fields=[1])
-        except SolveError:
+        except SolveError as e:
+            assert "{u'target_fields': [u'Invalid data']}" in e
             pass
 
         entities = [('gene', 'BRCA2')]
