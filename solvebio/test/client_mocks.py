@@ -87,6 +87,36 @@ class FakeMigrationResponse(Fake201Response):
         self.object.update(data)
 
 
+class FakeExportResponse(Fake201Response):
+
+    class_name = 'DatasetExport'
+
+    def __init__(self, data):
+        # Set the default properties of DatasetExport
+        self.object = {
+            'class_name': self.class_name,
+            'id': 100,
+            'target_fields': [],
+            'documents_count': 0,
+            'dataset_id': data.get('dataset_id'),
+            'dataset': dict(id=data.get('dataset_id')),
+            'params': {
+                "fields": None,
+                "exclude_fields": None,
+                "entities": None,
+                "genome_build": None,
+                "limit": None,
+                "filters": None,
+                "offset": None,
+                "query": None,
+                "debug": False
+            },
+            'annotator_params': [],
+            'metadata': {},
+        }
+        self.object.update(data)
+
+
 class FakeVaultResponse(Fake201Response):
 
     class_name = 'Vault'
@@ -256,3 +286,7 @@ def fake_dataset_tmpl_retrieve(rid, *args, **kwargs):
 
 def fake_migration_create(*args, **kwargs):
     return FakeMigrationResponse(kwargs).create()
+
+
+def fake_export_create(*args, **kwargs):
+    return FakeExportResponse(kwargs).create()

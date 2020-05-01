@@ -1,41 +1,39 @@
 from __future__ import absolute_import
-# import hashlib
-from solvebio import Filter
+import mock
+
+from solvebio.test.client_mocks import fake_export_create
 
 from .helper import SolveBioTestCase
 
-# from os import path, remove
 
+class TestDatasetExports(SolveBioTestCase):
 
-class ExportsTests(SolveBioTestCase):
-    """
-    Test exporting SolveBio Query object.
-    """
-    def setUp(self):
-        super(ExportsTests, self).setUp()
-        filters = Filter(rgd_id='RGD:2645')
-        self.dataset = self.client.Object.get_by_full_path(
-            'solvebio:public:/HGNC/3.0.0-2016-11-10/HGNC')
-        self.query = self.dataset.query(filters=filters, fields=['rgd_id'],
-                                        genome_build='GRCh37', limit=10)
+    def _validate_export(self, export, dataset, **kwargs):
+        self.assertEqual(export.dataset_id, dataset.id)
 
-    """
-    # Removing this test
-    # since it generates an export each time.
-    # TODO mock this in the future
-    def test_csv_exporter(self):
+    @mock.patch('solvebio.resource.DatasetExport.create')
+    def test_export_from_query(self, Create):
+        Create.side_effect = fake_export_create
 
-        # CSV exports are compressed
-        test_file = '/tmp/test_export.csv'
-        reference_file = 'solvebio/test/data/test_export.csv'
-        export = self.query.export(follow=True, format='csv')
-        export.download(test_file)
+        # Test with params
+        params = {
+            'fields': ['my_field'],
+            'limit': 100,
+        }
+        target_fields = [dict(name='test')]
 
-        self.assertTrue(export.dataset.id, self.dataset.id)
-        self.assertTrue(path.isfile(test_file))
-        self.assertEqual(
-            hashlib.sha1(open(test_file, 'rb').read()).hexdigest(),
-            hashlib.sha1(open(reference_file, 'rb').read()).hexdigest()
+        dataset = self.client.Dataset(1)
+        export = dataset.export(
+            params=params,
+            dataset=dataset,
+            target_fields=target_fields,
+            target_full_path='~/hello',
+            format='tsv.gz',
+            follow=False
         )
-        remove(test_file)
-    """
+        self.assertEqual(export.dataset_id, dataset.id)
+        self.assertEqual(export.target_fields, target_fields)
+        self.assertEqual(export.target_full_path, '~/hello')
+        self.assertEqual(export.format, 'tsv.gz')
+        for k in ['fields', 'limit']:
+            self.assertEqual(export.params[k], params[k])

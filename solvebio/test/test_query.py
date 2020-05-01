@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from solvebio.query import Filter
+from solvebio import SolveError
 
 from .helper import SolveBioTestCase
 from six.moves import map
@@ -305,3 +306,21 @@ class BaseQueryTest(SolveBioTestCase):
         entities = [('gene', 'BRCA2')]
         query = self.dataset.query(entities=entities)
         self.assertEqual(query.count(), 1)
+
+    def test_target_fields(self):
+
+        # Invalid fields
+        try:
+            query = self.dataset.query(target_fields=[1])
+        except SolveError as e:
+            assert "{u'target_fields': [u'Invalid data']}" in e
+            pass
+
+        entities = [('gene', 'BRCA2')]
+        query = self.dataset.query(
+            entities=entities,
+            target_fields=[dict(name='user', expression='user()["email"]')],
+            limit=1)
+        self.assertEqual(query.count(), 1)
+        for record in query:
+            assert "@solvebio.com" in record['user']
