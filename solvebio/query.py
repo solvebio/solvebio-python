@@ -791,6 +791,78 @@ class Query(object):
 
         return Annotator(fields, client=self._client, **kwargs).annotate(self)
 
+    def join(self, query_b, key, key_b=None, prefix_b="b_"):
+        """Performs a left outer join between the current
+        query (query A) and another query (query B).
+
+        WARNING:
+
+            This is a limited join in that it will only select
+            one record in dataset B to join for each key.
+            i.e. If multiple records in dataset B have the same key,
+            only ONE will be retrieved.
+
+        """
+        from solvebio import Dataset
+
+        # If no key_b is provided, use the same key as for A
+        key_b = key_b or key
+
+        # Prepare the filters for the B query expression
+        query_params = query_b._build_query()
+        base_filter = '["{}", get(record, "{}")]'.format(key_b, key)
+        if query_params.get('filters'):
+            filters = '[{{"and": [{}, {}]}}]'.format(base_filter, query_params['filters'][0])
+        else:
+            filters = '[{}]'.format(base_filter)
+
+        # Try to use a unique field for the sub-query
+        b_query_field_name = prefix_b + "__data__"
+        target_fields = [{
+            "name": b_query_field_name,
+            "data_type": "object",
+            "is_list": False,
+            "is_transient": True,
+            "expression": """
+                dataset_query(
+                    "{}",
+                    filters={},
+                    entities={},
+                    limit=1
+                ) if get(record, "{}") else {{}}
+            """.format(query_b._dataset_id,
+                       filters,
+                       query_params.get('entities'),
+                       key_b)
+        }]
+
+        # Get list of fields to join from query B
+        fields = [f for f in Dataset(query_b._dataset_id, client=self._client).fields()]
+        if query_b._exclude_fields:
+            fields = [f for f in fields if f.name not in query_b._exclude_fields]
+        if query_b._fields:
+            fields = [f for f in fields if f.name in query_b._fields]
+
+        for field in fields:
+            target_fields.append({
+                "name": prefix_b + field.name,
+                "title": field.title,
+                "data_type": field.data_type,
+                "ordering": field.ordering,
+                "is_list": False,
+                "is_transient": False,
+                "expression": """
+                    get(record, "{}.{}")
+                """.format(b_query_field_name, field.name),
+                "depends_on": [b_query_field_name]
+            })
+
+        new_query = self._clone()
+        # Add to any existing target fields
+        new_query._target_fields = (new_query._target_fields or []) + target_fields
+
+        return new_query
+
 
 class BatchQuery(object):
     """
