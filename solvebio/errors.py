@@ -1,9 +1,6 @@
 from __future__ import absolute_import
 import logging
-logger = logging.getLogger('solvebio')
-
-
-class NotFoundError(Exception):
+logger = logging.getLogger('solvebio') class NotFoundError(Exception):
     pass
 
 
@@ -56,7 +53,9 @@ class SolveError(Exception):
                 if isinstance(v, list):
                     self.message += ', '.join(self.json_body[k])
                 else:
-                    self.message += self.json_body[k]
+                    # TODO: json_body[k] seems to be a dict sometimes
+                    #       requiring str()
+                    self.message += str(self.json_body[k])
                 del self.json_body[k]
 
     def __str__(self):

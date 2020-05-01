@@ -243,6 +243,8 @@ class Query(object):
             limit=float('inf'),
             page_size=DEFAULT_PAGE_SIZE,
             result_class=dict,
+            target_fields=None,
+            annotator_params=None,
             debug=False,
             error=None,
             **kwargs):
@@ -261,6 +263,8 @@ class Query(object):
           - `filters` (optional): Filter or List of filter objects.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
+          - `target_fields` (optional): Add target fields to annotate the query results.
+          - `annotator_params` (optional): For use with `target_fields` to adjust annotator parameters.
           - `debug` (optional): Sends debug information to the API.
         """
         self._dataset_id = dataset_id
@@ -274,6 +278,8 @@ class Query(object):
         self._ordering = ordering
         self._debug = debug
         self._error = error
+        self._target_fields = target_fields
+        self._annotator_params = annotator_params
         if filters:
             if isinstance(filters, Filter):
                 filters = [filters]
@@ -318,6 +324,8 @@ class Query(object):
                              ordering=self._ordering,
                              page_size=self._page_size,
                              result_class=self._result_class,
+                             target_fields=self._target_fields,
+                             annotator_params=self._annotator_params,
                              debug=self._debug,
                              client=self._client)
         new._filters += self._filters
@@ -646,6 +654,12 @@ class Query(object):
 
         if self._debug:
             q['debug'] = 'True'
+
+        if self._target_fields:
+            q['target_fields'] = self._target_fields
+
+        if self._annotator_params:
+            q['annotator_params'] = self._annotator_params
 
         # Add or modify query parameters
         # (used by BatchQuery and facets)
