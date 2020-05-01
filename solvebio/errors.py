@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 import logging
-logger = logging.getLogger('solvebio') class NotFoundError(Exception):
+logger = logging.getLogger('solvebio')
+
+
+class NotFoundError(Exception):
     pass
 
 
