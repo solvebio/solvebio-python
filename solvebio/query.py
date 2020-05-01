@@ -710,10 +710,20 @@ class Query(object):
         if limit:
             params['limit'] = limit
 
+        # target_fields and annotator_params must be passed
+        # directly into the migration.
+        # Prefer explicitly passed-in values before query values.
+        target_fields = kwargs.pop('target_fields', None) or \
+            params.pop('target_fields', None)
+        annotator_params = kwargs.pop('annotator_params', None) or \
+            params.pop('annotator_params', None)
+
         export = DatasetExport.create(
             dataset_id=self._dataset_id,
             format=format,
             params=params,
+            target_fields=target_fields,
+            annotator_params=annotator_params,
             client=self._client,
             **kwargs
         )
@@ -754,10 +764,20 @@ class Query(object):
         params.pop('offset', None)
         params.pop('ordering', None)
 
+        # target_fields and annotator_params must be passed
+        # directly into the migration.
+        # Prefer explicitly passed-in values before query values.
+        target_fields = kwargs.pop('target_fields', None) or \
+            params.pop('target_fields', None)
+        annotator_params = kwargs.pop('annotator_params', None) or \
+            params.pop('annotator_params', None)
+
         migration = DatasetMigration.create(
             source_id=self._dataset_id,
             target_id=target_id,
             source_params=params,
+            target_fields=target_fields,
+            annotator_params=annotator_params,
             client=self._client,
             **kwargs)
 

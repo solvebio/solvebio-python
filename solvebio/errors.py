@@ -54,11 +54,9 @@ class SolveError(Exception):
                     self.message += '\nError (%s): ' % k
 
                 if isinstance(v, list):
-                    self.message += ', '.join(self.json_body[k])
+                    self.message += ', '.join(v)
                 else:
-                    # json_body[k] can be a dict or a list sometimes
-                    self.message += str(self.json_body[k])
-                del self.json_body[k]
+                    self.message += str(v)
 
     def __str__(self):
         return self.message
