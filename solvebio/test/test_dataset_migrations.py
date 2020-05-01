@@ -13,17 +13,7 @@ class TestDatasetMigrations(SolveBioTestCase):
     def _validate_migration(self, migration, source, target):
         self.assertEqual(migration.source_id, source.id)
         self.assertEqual(migration.target_id, target.id)
-
-        # Test with source_params
-        source_params = {
-            'fields': ['my_field']
-        }
-        migration = source.migrate(
-            target=target, source_params=source_params,
-            commit_mode='overwrite', follow=False)
         self.assertEqual(migration.commit_mode, 'overwrite')
-        self.assertEqual(migration.source_params['fields'],
-                         source_params['fields'])
 
     @mock.patch('solvebio.resource.DatasetMigration.create')
     def test_migration_from_query(self, Create):
