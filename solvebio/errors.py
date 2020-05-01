@@ -56,8 +56,7 @@ class SolveError(Exception):
                 if isinstance(v, list):
                     self.message += ', '.join(self.json_body[k])
                 else:
-                    # TODO: json_body[k] seems to be a dict sometimes
-                    #       requiring str()
+                    # json_body[k] can be a dict or a list sometimes
                     self.message += str(self.json_body[k])
                 del self.json_body[k]
 
