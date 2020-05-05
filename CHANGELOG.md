@@ -1,5 +1,14 @@
 # Change Log
 
+## [v2.11.0](https://github.com/solvebio/solvebio-python/tree/v2.11.0) (2020-05-05)
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.10.1...v2.11.0)
+
+**Merged pull requests:**
+
+- Add alpha query join \(limited left outer join\) feature [\#341](https://github.com/solvebio/solvebio-python/pull/341) ([davecap](https://github.com/davecap))
+- Ability to add target fields to queries [\#340](https://github.com/solvebio/solvebio-python/pull/340) ([davecap](https://github.com/davecap))
+- Add missing client pass-through for Dataset.get\_or\_create\_by\_full\_path [\#339](https://github.com/solvebio/solvebio-python/pull/339) ([davecap](https://github.com/davecap))
+
 ## [v2.10.1](https://github.com/solvebio/solvebio-python/tree/v2.10.1) (2020-04-28)
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.10.0...v2.10.1)
 
