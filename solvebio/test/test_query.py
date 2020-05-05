@@ -324,3 +324,24 @@ class BaseQueryTest(SolveBioTestCase):
         self.assertEqual(query.count(), 1)
         for record in query:
             assert "@solvebio.com" in record['user']
+
+    def test_join(self):
+        query_a = self.dataset.query(fields=['symbol']).filter(symbol='A1BG')
+        query_b = self.dataset.query(fields=['symbol', 'entrez_id'])
+        join_query = query_a.join(query_b, key='symbol')
+        expect = [{'b_symbol': 'A1BG', 'symbol': 'A1BG', 'b_entrez_id': '1.0'}]
+        self.assertEqual(list(join_query), expect)
+
+    def test_join_custom_prefix(self):
+        query_a = self.dataset.query(fields=['symbol']).filter(symbol='A1BG')
+        query_b = self.dataset.query(fields=['symbol', 'entrez_id'])
+        join_query = query_a.join(query_b, key='symbol', prefix='query_b_')
+        expect = [{'query_b_symbol': 'A1BG', 'symbol': 'A1BG', 'query_b_entrez_id': '1.0'}]
+        self.assertEqual(list(join_query), expect)
+
+    def test_join_disable_always_prefix(self):
+        query_a = self.dataset.query(fields=['symbol']).filter(symbol='A1BG')
+        query_b = self.dataset.query(fields=['entrez_id'])
+        join_query = query_a.join(query_b, key='symbol', always_prefix=False)
+        expect = [{'symbol': 'A1BG', 'entrez_id': '1.0'}]
+        self.assertEqual(list(join_query), expect)
