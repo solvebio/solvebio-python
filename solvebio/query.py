@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 import six
 import json
+import uuid
 
 from .client import client
 from .utils.printing import pretty_int
@@ -696,6 +697,19 @@ class Query(object):
                      % self._response)
         return _params, self._response
 
+    def fields(self):
+        """Returns all expected fields that will be found in the results."""
+
+        from solvebio import Dataset
+
+        fields = [f for f in Dataset(self._dataset_id, client=self._client).fields()]
+        if self._fields:
+            fields = [f for f in fields if f.name in self._fields]
+        if self._exclude_fields:
+            fields = [f for f in fields if f.name not in self._exclude_fields]
+
+        return fields
+
     def export(self, format='json', follow=True, limit=None, **kwargs):
         from solvebio import DatasetExport
 
@@ -791,9 +805,12 @@ class Query(object):
 
         return Annotator(fields, client=self._client, **kwargs).annotate(self)
 
-    def join(self, query_b, key, key_b=None, prefix_b="b_"):
+    def join(self, query_b, key, key_b=None, prefix="b_", always_prefix=True):
         """Performs a left outer join between the current
         query (query A) and another query (query B).
+
+        Set prefix to None to use a random prefix.
+        Disable always_prefix to only prefix when necessary.
 
         WARNING:
 
@@ -803,10 +820,25 @@ class Query(object):
             only ONE will be retrieved.
 
         """
-        from solvebio import Dataset
+
+        # Generate a random ID for the transient query field
+        join_id = str(uuid.uuid4())[:8]
+        # If prefix is cleared, use the join ID
+        if not prefix:
+            prefix = join_id + '_'
 
         # If no key_b is provided, use the same key as for A
         key_b = key_b or key
+
+        # Prepare new returned query object
+        new_query = self._clone()
+        # Set list of existing field names to avoid overwriting fields
+        # in the join.
+        existing_field_names = [f.name for f in self.fields()]
+        if new_query._target_fields:
+            existing_field_names += [f['name'] for f in new_query._target_fields]
+        else:
+            new_query._target_fields = []
 
         # Prepare the filters for the B query expression
         query_params = query_b._build_query()
@@ -816,36 +848,43 @@ class Query(object):
         else:
             filters = '[{}]'.format(base_filter)
 
-        # Try to use a unique field for the sub-query
-        b_query_field_name = prefix_b + "__data__"
+        # Try to use a unique field for the sub-query data
+        query_b_fields = query_b.fields()
+        query_b_join_field_name = "join_{}".format(join_id)
         target_fields = [{
-            "name": b_query_field_name,
+            "name": query_b_join_field_name,
             "data_type": "object",
             "is_list": False,
             "is_transient": True,
             "expression": """
                 dataset_query(
                     "{}",
+                    fields={},
                     filters={},
                     entities={},
                     limit=1
                 ) if get(record, "{}") else {{}}
             """.format(query_b._dataset_id,
+                       [f.name for f in query_b_fields] + [key_b],
                        filters,
                        query_params.get('entities'),
                        key_b)
         }]
 
         # Get list of fields to join from query B
-        fields = [f for f in Dataset(query_b._dataset_id, client=self._client).fields()]
-        if query_b._exclude_fields:
-            fields = [f for f in fields if f.name not in query_b._exclude_fields]
-        if query_b._fields:
-            fields = [f for f in fields if f.name in query_b._fields]
+        for field in query_b_fields:
+            # If "always prefix" is enable, or the field name is found
+            # in existing list of names, add the prefix.
+            if always_prefix or field.name in existing_field_names:
+                name = prefix + field.name
+            else:
+                name = field.name
 
-        for field in fields:
+            if name in existing_field_names:
+                logger.warning("Field '{}' will be overwritten in the join results")
+
             target_fields.append({
-                "name": prefix_b + field.name,
+                "name": name,
                 "title": field.title,
                 "data_type": field.data_type,
                 "ordering": field.ordering,
@@ -853,13 +892,12 @@ class Query(object):
                 "is_transient": False,
                 "expression": """
                     get(record, "{}.{}")
-                """.format(b_query_field_name, field.name),
-                "depends_on": [b_query_field_name]
+                """.format(query_b_join_field_name, field.name),
+                "depends_on": [query_b_join_field_name]
             })
 
-        new_query = self._clone()
         # Add to any existing target fields
-        new_query._target_fields = (new_query._target_fields or []) + target_fields
+        new_query._target_fields += target_fields
 
         return new_query
 
