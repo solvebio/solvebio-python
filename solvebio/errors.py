@@ -53,7 +53,9 @@ class SolveError(Exception):
                 else:
                     self.message += '\nError (%s): ' % k
 
-                if isinstance(v, list):
+                # Join lists of errors by commas, but if
+                # those items are a dict, just stringify (e.g. annotator failures)
+                if isinstance(v, list) and not isinstance(v[0], dict):
                     self.message += ', '.join(v)
                 else:
                     self.message += str(v)
