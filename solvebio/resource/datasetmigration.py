@@ -55,9 +55,8 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
                 processed_records = self.metadata\
                     .get('progress', {})\
                     .get('processed_records', 0)
-                print("Migration '{0}' is running: {2}/{3} records migrated"
+                print("Migration '{}' is running: {}/{} records migrated"
                       .format(self.id,
-                              self.status,
                               processed_records,
                               self.documents_count))
 
