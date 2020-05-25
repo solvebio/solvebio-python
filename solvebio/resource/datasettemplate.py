@@ -36,6 +36,14 @@ class DatasetTemplate(CreateableAPIResource, ListableAPIResource,
             if getattr(func, "field", None):
                 self.fields.append(func.field)
 
+    def get_or_create(self, **params):
+        objects = self.all(**params).solve_objects()
+        if objects:
+            # TODO: Raise exception?
+            return objects[0]
+        else:
+            return self.create(**params)
+
     @property
     def import_params(self):
         """
