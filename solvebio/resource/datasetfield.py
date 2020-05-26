@@ -5,6 +5,8 @@ from .apiresource import ListableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
 
+from ..annotate import Expression
+
 
 class DatasetField(CreateableAPIResource,
                    ListableAPIResource,
@@ -23,3 +25,10 @@ class DatasetField(CreateableAPIResource,
 
     def help(self):
         return self.facets()
+
+    def evaluate(self):
+        if not self.get('expression'):
+            return None
+
+        return Expression(self['expression'], client=self._client).evaluate(
+            data_type=self.get('data_type', 'string'))
