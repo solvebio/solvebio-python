@@ -23,7 +23,7 @@ class Vault(CreateableAPIResource,
     Typically, vaults contain a series of datasets that are compatible with
     each other (i.e. they come from the same data source or project).
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/vaults'
 
     LIST_FIELDS = (
         ('id', 'ID'),

@@ -13,7 +13,7 @@ class BeaconSet(CreateableAPIResource,
     entity-based search endpoints for datasets. Beacon sets can be
     used to query a group of related datasets in a single API request.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/beacon_sets'
 
     LIST_FIELDS = (
         ('id', 'ID'),

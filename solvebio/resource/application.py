@@ -12,7 +12,7 @@ class Application(CreateableAPIResource,
                   SearchableAPIResource,
                   UpdateableAPIResource):
     ID_ATTR = 'client_id'
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/applications'
 
     LIST_FIELDS = (
         ('client_id', 'Client ID'),

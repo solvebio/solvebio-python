@@ -15,7 +15,7 @@ class DatasetField(CreateableAPIResource,
     which can be used as filters. Dataset field resources provide
     users with documentation about each field.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/dataset_fields'
 
     def facets(self, **params):
         response = self._client.get(self.facets_url, params)

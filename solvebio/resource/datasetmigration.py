@@ -17,7 +17,7 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
     For interactive use, DatasetMigration can be "followed" to watch
     the progression of the task.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/dataset_migrations'
 
     LIST_FIELDS = (
         ('id', 'ID'),
