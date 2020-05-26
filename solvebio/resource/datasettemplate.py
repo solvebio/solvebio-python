@@ -26,23 +26,33 @@ class DatasetTemplate(CreateableAPIResource, ListableAPIResource,
 
     def __init__(self, *args, **kwargs):
         super(DatasetTemplate, self).__init__(*args, **kwargs)
+        self.fields = self.__init_fields(**kwargs)
 
-        self.fields = kwargs.get('fields') or []
-        for attr in dir(self):
-            if attr.startswith('__'):
+    @classmethod
+    def __init_fields(cls, *args, **kwargs):
+        fields = kwargs.get("fields") or []
+        for attr in dir(cls):
+            if attr.startswith("__"):
                 continue
 
-            func = getattr(self, attr, None)
+            func = getattr(cls, attr, None)
             if getattr(func, "field", None):
-                self.fields.append(func.field)
+                fields.append(func.field)
 
-    def get_or_create(self, **params):
-        objects = self.all(**params).solve_objects()
+        return fields
+
+    @classmethod
+    def create(cls, **params):
+        params["fields"] = cls.__init_fields(**params)
+        return super(DatasetTemplate, cls).create(**params)
+
+    @classmethod
+    def get_or_create_by_name(cls, name, **params):
+        objects = cls.all(name=name, **params).solve_objects()
         if objects:
-            # TODO: Raise exception?
             return objects[0]
-        else:
-            return self.create(**params)
+
+        return cls.create(name=name, **params)
 
     @property
     def import_params(self):
@@ -64,6 +74,8 @@ class DatasetTemplate(CreateableAPIResource, ListableAPIResource,
             source_lines = inspect.getsourcelines(func)[0]
             source_lines = dropwhile(lambda x: x.startswith('@'), source_lines)
             source = ''.join(source_lines)
+            # Remove comments
+            source = re.sub(r'(?m)^ *#.*\n?', '', source)
             pattern = re.compile(
                 r'(async\s+)?def\s+\w+\s*\(.*?\)\s*:\s*(.*)',
                 flags=re.S)
