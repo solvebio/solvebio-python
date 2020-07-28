@@ -86,7 +86,8 @@ def get_credentials():
 
     host = as_netrc_machine(solvebio.api_host)
     if host in netrc_obj.hosts:
-        return ('https://' + host,) + netrc_obj.authenticators(host)
+        proto = "http://" if "http://" in solvebio.api_host else "https://"
+        return (proto + host,) + netrc_obj.authenticators(host)
 
     # If the preferred host is not the global default, don't try
     # to select any other.
