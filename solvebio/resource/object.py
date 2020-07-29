@@ -501,7 +501,8 @@ class Object(CreateableAPIResource,
                       .format('[Dry Run] ' if dry_run else '',
                               ', '.join(removal_tags), self.full_path))
 
-                updated_tags = [tag for tag in tags if not self.has_tag(tag)]
+                tags_for_removal = [tag for tag in tags if self.has_tag(tag)]
+                updated_tags = [tag for tag in self.tags if tag not in tags_for_removal]
             else:
                 print('{}Notice: Object {} does not contain any of the '
                       'following tags: {}'.format(
