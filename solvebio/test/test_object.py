@@ -206,15 +206,15 @@ class ObjectTests(SolveBioTestCase):
         for tag in tags:
             self.assertTrue(file_.has_tag(tag))
 
-        tags_for_removal = ['tag1', 'tag2']
-        file_.untag(tags=tags_for_removal, apply_save=True)
+        tags_for_untagging = ['tag1', 'tag2']
+        file_.untag(tags=tags_for_untagging, apply_save=True)
 
-        # test that given tags are removed
-        for tag in tags_for_removal:
+        # test that given tags are untagged
+        for tag in tags_for_untagging:
             self.assertFalse(file_.has_tag(tag))
 
-        updated_tags = [tag for tag in tags if tag not in tags_for_removal]
+        updated_tags = [tag for tag in tags if tag not in tags_for_untagging]
 
-        # test that tags which have not been removed are still there
+        # test that tags which have not been untagged are still there
         for tag in updated_tags:
             self.assertTrue(file_.has_tag(tag))
