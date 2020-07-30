@@ -496,11 +496,13 @@ class Object(CreateableAPIResource,
     def tag(self, tags, remove=False, dry_run=False, apply_save=True):
         """Add or remove tags on an object"""
 
-        def iterable(arg):
+        def is_iterable_non_string(arg):
+            """python2/python3 compatible way to check if arg is an iterable but not string"""
+
             return (isinstance(arg, collections.Iterable) and
                     not isinstance(arg, six.string_types))
 
-        if not iterable(tags):
+        if not is_iterable_non_string(tags):
             tags = [str(tags)]
         else:
             tags = [str(tag) for tag in tags]
