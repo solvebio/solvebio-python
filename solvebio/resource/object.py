@@ -4,6 +4,7 @@ import re
 import base64
 import binascii
 import mimetypes
+from functools import partial
 
 import requests
 from requests.packages.urllib3.util.retry import Retry
@@ -527,3 +528,10 @@ class Object(CreateableAPIResource,
             self.save()
 
         return True
+
+    def untag(self, tags, dry_run=False, apply_save=False):
+        """Remove tags on an object"""
+
+        untag_part = partial(self.tag, remove=True)
+
+        return untag_part(tags=tags, dry_run=dry_run, apply_save=apply_save)

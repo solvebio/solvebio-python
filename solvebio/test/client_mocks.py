@@ -10,7 +10,7 @@ class Fake201Response(object):
 
     def __init__(self, data):
         self.object = {
-            'id': 100,
+            'id': data.get('id', 100),
             'class_name': self.class_name
         }
 
@@ -19,6 +19,9 @@ class Fake201Response(object):
 
     def create(self, *args, **kwargs):
         return convert_to_solve_object(self.object)
+
+    def save(self, *args, **kwargs):
+        return self.create(*args, **kwargs)
 
     def retrieve(self, r_id, *args, **kwargs):
         obj = self.create()
@@ -247,6 +250,10 @@ def fake_object_all(*args, **kwargs):
 
 def fake_object_create(*args, **kwargs):
     return FakeObjectResponse(kwargs).create()
+
+
+def fake_object_save(*args, **kwargs):
+    return FakeObjectResponse(kwargs).save()
 
 
 def fake_object_retrieve(*args, **kwargs):
