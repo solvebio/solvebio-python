@@ -218,3 +218,21 @@ class ObjectTests(SolveBioTestCase):
         # test that tags which have not been untagged are still there
         for tag in updated_tags:
             self.assertTrue(file_.has_tag(tag))
+
+    @mock.patch('solvebio.resource.Object.create')
+    @mock.patch('solvebio.resource.Object.save')
+    def test_object_add_tag_non_iterable_or_string(self, ObjectCreate, ObjectSave):
+        ObjectCreate.side_effect = fake_object_create
+        ObjectSave.side_effect = fake_object_save
+
+        # test that a string is added propery
+        tags = 'tag1'
+        file_ = self.client.Object.create(filename='foo_file',
+                                          object_type='file')
+        file_.tag(tags)
+        self.assertTrue(file_.has_tag(tags))
+
+        # test that non iterable (e.g. integer) added properly
+        tags = 1
+        file_.tag(tags)
+        self.assertTrue(file_.has_tag(tags))

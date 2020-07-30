@@ -1,4 +1,5 @@
 """Solvebio Object API resource"""
+import collections
 import os
 import re
 import base64
@@ -6,6 +7,7 @@ import binascii
 import mimetypes
 
 import requests
+import six
 from requests.packages.urllib3.util.retry import Retry
 
 from solvebio.errors import SolveError
@@ -484,15 +486,24 @@ class Object(CreateableAPIResource,
         return self.object_type == 'file'
 
     def has_tag(self, tag):
-        """Return True if object contains tags"""
+        """Return True if object contains tag"""
 
         def lowercase(x):
             return x.lower()
 
-        return lowercase(tag) in map(lowercase, self.tags)
+        return lowercase(str(tag)) in map(lowercase, self.tags)
 
     def tag(self, tags, remove=False, dry_run=False, apply_save=True):
         """Add or remove tags on an object"""
+
+        def iterable(arg):
+            return (isinstance(arg, collections.Iterable) and
+                    not isinstance(arg, six.string_types))
+
+        if not iterable(tags):
+            tags = [str(tags)]
+        else:
+            tags = [str(tag) for tag in tags]
 
         if remove:
             removal_tags = [tag for tag in tags if self.has_tag(tag)]
