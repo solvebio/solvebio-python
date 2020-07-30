@@ -4,7 +4,6 @@ import re
 import base64
 import binascii
 import mimetypes
-from functools import partial
 
 import requests
 from requests.packages.urllib3.util.retry import Retry
