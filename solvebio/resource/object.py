@@ -532,6 +532,4 @@ class Object(CreateableAPIResource,
     def untag(self, tags, dry_run=False, apply_save=False):
         """Remove tags on an object"""
 
-        untag_part = partial(self.tag, remove=True)
-
-        return untag_part(tags=tags, dry_run=dry_run, apply_save=apply_save)
+        return self.tag(tags=tags, remove=True, dry_run=dry_run, apply_save=apply_save)
