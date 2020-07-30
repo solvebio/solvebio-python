@@ -491,7 +491,7 @@ class Object(CreateableAPIResource,
 
         return lowercase(tag) in map(lowercase, self.tags)
 
-    def tag(self, tags, remove=False, dry_run=False, apply_save=False):
+    def tag(self, tags, remove=False, dry_run=False, apply_save=True):
         """Add or remove tags on an object"""
 
         if remove:
@@ -528,7 +528,7 @@ class Object(CreateableAPIResource,
 
         return True
 
-    def untag(self, tags, dry_run=False, apply_save=False):
+    def untag(self, tags, dry_run=False, apply_save=True):
         """Remove tags on an object"""
 
         return self.tag(tags=tags, remove=True, dry_run=dry_run, apply_save=apply_save)
