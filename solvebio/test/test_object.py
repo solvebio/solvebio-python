@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import mock
 
 from .helper import SolveBioTestCase
-from solvebio.test.client_mocks import fake_object_create
+from solvebio.test.client_mocks import fake_object_create, fake_object_save
 from solvebio.test.client_mocks import fake_dataset_create
 
 
@@ -166,3 +166,73 @@ class ObjectTests(SolveBioTestCase):
         for obj in [file_, folder_, ds, ds_obj]:
             with self.assertRaises(AttributeError):
                 getattr(obj, fake_attr)
+
+    @mock.patch('solvebio.resource.Object.create')
+    @mock.patch('solvebio.resource.Object.save')
+    def test_object_remove_tag(self, ObjectCreate, ObjectSave):
+        ObjectCreate.side_effect = fake_object_create
+        ObjectSave.side_effect = fake_object_save
+
+        tags = ['tag1', 'tag2', 'tag3']
+        file_ = self.client.Object.create(filename='foo_file',
+                                          object_type='file',
+                                          tags=tags)
+        for tag in tags:
+            self.assertTrue(file_.has_tag(tag))
+
+        tags_for_removal = ['tag1', 'tag2']
+        file_.tag(tags=tags_for_removal, remove=True, apply_save=True)
+
+        # test that given tags are removed
+        for tag in tags_for_removal:
+            self.assertFalse(file_.has_tag(tag))
+
+        updated_tags = [tag for tag in tags if tag not in tags_for_removal]
+
+        # test that tags which have not been removed are still there
+        for tag in updated_tags:
+            self.assertTrue(file_.has_tag(tag))
+
+    @mock.patch('solvebio.resource.Object.create')
+    @mock.patch('solvebio.resource.Object.save')
+    def test_object_untag(self, ObjectCreate, ObjectSave):
+        ObjectCreate.side_effect = fake_object_create
+        ObjectSave.side_effect = fake_object_save
+
+        tags = ['tag1', 'tag2', 'tag3']
+        file_ = self.client.Object.create(filename='foo_file',
+                                          object_type='file',
+                                          tags=tags)
+        for tag in tags:
+            self.assertTrue(file_.has_tag(tag))
+
+        tags_for_untagging = ['tag1', 'tag2']
+        file_.untag(tags=tags_for_untagging, apply_save=True)
+
+        # test that given tags are untagged
+        for tag in tags_for_untagging:
+            self.assertFalse(file_.has_tag(tag))
+
+        updated_tags = [tag for tag in tags if tag not in tags_for_untagging]
+
+        # test that tags which have not been untagged are still there
+        for tag in updated_tags:
+            self.assertTrue(file_.has_tag(tag))
+
+    @mock.patch('solvebio.resource.Object.create')
+    @mock.patch('solvebio.resource.Object.save')
+    def test_object_add_tag_non_iterable_or_string(self, ObjectCreate, ObjectSave):
+        ObjectCreate.side_effect = fake_object_create
+        ObjectSave.side_effect = fake_object_save
+
+        # test that a string is added propery
+        tags = 'tag1'
+        file_ = self.client.Object.create(filename='foo_file',
+                                          object_type='file')
+        file_.tag(tags)
+        self.assertTrue(file_.has_tag(tags))
+
+        # test that non iterable (e.g. integer) added properly
+        tags = 1
+        file_.tag(tags)
+        self.assertTrue(file_.has_tag(tags))
