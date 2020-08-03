@@ -38,7 +38,7 @@ class VaultTests(SolveBioTestCase):
             self.assertEqual(v, vault.full_path)
 
         test_cases = [
-            ['myVault/', '{0}:myVault'.format(domain, user_vault)],
+            ['myVault/', '{0}:myVault'.format(domain)],
             ['myVault', '{0}:myVault'.format(domain)],
             ['{0}:myVault'.format(domain), '{0}:myVault'.format(domain)],
             ['acme:myVault', 'acme:myVault'],

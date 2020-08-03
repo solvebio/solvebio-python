@@ -1,4 +1,5 @@
 """Solvebio Object API resource"""
+import collections
 import os
 import re
 import base64
@@ -6,6 +7,7 @@ import binascii
 import mimetypes
 
 import requests
+import six
 from requests.packages.urllib3.util.retry import Retry
 
 from solvebio.errors import SolveError
@@ -484,15 +486,26 @@ class Object(CreateableAPIResource,
         return self.object_type == 'file'
 
     def has_tag(self, tag):
-        """Return True if object contains tags"""
+        """Return True if object contains tag"""
 
         def lowercase(x):
             return x.lower()
 
-        return lowercase(tag) in map(lowercase, self.tags)
+        return lowercase(str(tag)) in map(lowercase, self.tags)
 
-    def tag(self, tags, remove=False, dry_run=False, apply_save=False):
+    def tag(self, tags, remove=False, dry_run=False, apply_save=True):
         """Add or remove tags on an object"""
+
+        def is_iterable_non_string(arg):
+            """python2/python3 compatible way to check if arg is an iterable but not string"""
+
+            return (isinstance(arg, collections.Iterable) and
+                    not isinstance(arg, six.string_types))
+
+        if not is_iterable_non_string(tags):
+            tags = [str(tags)]
+        else:
+            tags = [str(tag) for tag in tags]
 
         if remove:
             removal_tags = [tag for tag in tags if self.has_tag(tag)]
@@ -501,7 +514,8 @@ class Object(CreateableAPIResource,
                       .format('[Dry Run] ' if dry_run else '',
                               ', '.join(removal_tags), self.full_path))
 
-                updated_tags = [tag for tag in tags if not self.has_tag(tag)]
+                tags_for_removal = [tag for tag in tags if self.has_tag(tag)]
+                updated_tags = [tag for tag in self.tags if tag not in tags_for_removal]
             else:
                 print('{}Notice: Object {} does not contain any of the '
                       'following tags: {}'.format(
@@ -526,3 +540,8 @@ class Object(CreateableAPIResource,
             self.save()
 
         return True
+
+    def untag(self, tags, dry_run=False, apply_save=True):
+        """Remove tags on an object"""
+
+        return self.tag(tags=tags, remove=True, dry_run=dry_run, apply_save=apply_save)
