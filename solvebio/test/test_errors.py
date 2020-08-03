@@ -16,8 +16,10 @@ class ErrorTests(SolveBioTestCase):
                 manifest=dict(files=[dict(filename='soemthing.md')])
             )
         except SolveError as e:
-            self.assertTrue('Error (dataset_id): Invalid dataset' in str(e), e)
-            self.assertTrue('Error (manifest): Each file must' in str(e), e)
+            self.assertTrue('Error (dataset_id):' in str(e), e)
+            self.assertTrue('Invalid dataset' in str(e), e)
+            self.assertTrue('Error (manifest):' in str(e), e)
+            self.assertTrue('Each file must' in str(e), e)
 
 
 class ErrorTestsAuth(SolveBioTestCase):
