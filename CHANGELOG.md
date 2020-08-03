@@ -1,6 +1,27 @@
-# Change Log
+# Changelog
+
+## [v2.12.0](https://github.com/solvebio/solvebio-python/tree/v2.12.0) (2020-08-03)
+
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.11.0...v2.12.0)
+
+**Fixed bugs:**
+
+- solvebio login requires quoted arguments [\#179](https://github.com/solvebio/solvebio-python/issues/179)
+
+**Closed issues:**
+
+- object.tag\(\) clear existing tags in solvebio 2.11.0 [\#347](https://github.com/solvebio/solvebio-python/issues/347)
+- Error on updating fields in DatasetTemplate [\#344](https://github.com/solvebio/solvebio-python/issues/344)
+- Add param to disable email notifications on Dataset export [\#327](https://github.com/solvebio/solvebio-python/issues/327)
+
+**Merged pull requests:**
+
+- Object tagging updates [\#353](https://github.com/solvebio/solvebio-python/pull/353) ([nikolamaric](https://github.com/nikolamaric))
+- Add protocol resolving logic [\#348](https://github.com/solvebio/solvebio-python/pull/348) ([nikolamaric](https://github.com/nikolamaric))
+- handle case where the error message contains a list of dicts [\#343](https://github.com/solvebio/solvebio-python/pull/343) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.11.0](https://github.com/solvebio/solvebio-python/tree/v2.11.0) (2020-05-05)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.10.1...v2.11.0)
 
 **Merged pull requests:**
@@ -10,6 +31,7 @@
 - Add missing client pass-through for Dataset.get\_or\_create\_by\_full\_path [\#339](https://github.com/solvebio/solvebio-python/pull/339) ([davecap](https://github.com/davecap))
 
 ## [v2.10.1](https://github.com/solvebio/solvebio-python/tree/v2.10.1) (2020-04-28)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.10.0...v2.10.1)
 
 **Fixed bugs:**
@@ -22,6 +44,7 @@
 - do not expect that error contains json [\#337](https://github.com/solvebio/solvebio-python/pull/337) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.10.0](https://github.com/solvebio/solvebio-python/tree/v2.10.0) (2020-04-24)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.9.0...v2.10.0)
 
 **Implemented enhancements:**
@@ -45,7 +68,6 @@
 
 **Merged pull requests:**
 
-- cleaner error handling [\#335](https://github.com/solvebio/solvebio-python/pull/335) ([jsh2134](https://github.com/jsh2134))
 - Clean the netrc output format for the new "account" item [\#334](https://github.com/solvebio/solvebio-python/pull/334) ([davecap](https://github.com/davecap))
 - More travis builds [\#332](https://github.com/solvebio/solvebio-python/pull/332) ([jsh2134](https://github.com/jsh2134))
 - Object.get\_or\_create\_by\_full\_path\(\) [\#331](https://github.com/solvebio/solvebio-python/pull/331) ([jsh2134](https://github.com/jsh2134))
@@ -58,6 +80,7 @@
 - Access token improvements [\#319](https://github.com/solvebio/solvebio-python/pull/319) ([davecap](https://github.com/davecap))
 
 ## [v2.9.0](https://github.com/solvebio/solvebio-python/tree/v2.9.0) (2019-11-07)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.9...v2.9.0)
 
 **Implemented enhancements:**
@@ -71,13 +94,13 @@
 
 **Merged pull requests:**
 
-- clean up `solvebio tag` code [\#317](https://github.com/solvebio/solvebio-python/pull/317) ([jsh2134](https://github.com/jsh2134))
 - Fix error message when IP whitelisted [\#316](https://github.com/solvebio/solvebio-python/pull/316) ([davidhpark](https://github.com/davidhpark))
 - Upload CLI changes, Tag CLI, vault object shortcuts [\#315](https://github.com/solvebio/solvebio-python/pull/315) ([jsh2134](https://github.com/jsh2134))
 - retry on more status codes, raise error when upload unsuccessful [\#314](https://github.com/solvebio/solvebio-python/pull/314) ([jsh2134](https://github.com/jsh2134))
 - Update tests reliant on deleted source data [\#313](https://github.com/solvebio/solvebio-python/pull/313) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.8.9](https://github.com/solvebio/solvebio-python/tree/v2.8.9) (2019-09-19)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.8...v2.8.9)
 
 **Merged pull requests:**
@@ -86,6 +109,7 @@
 - add target\_full\_path kwarg to export shortcut [\#310](https://github.com/solvebio/solvebio-python/pull/310) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.8.8](https://github.com/solvebio/solvebio-python/tree/v2.8.8) (2019-09-12)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.7...v2.8.8)
 
 **Merged pull requests:**
@@ -94,6 +118,7 @@
 - hotfix for login when no credentials found [\#308](https://github.com/solvebio/solvebio-python/pull/308) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.8.7](https://github.com/solvebio/solvebio-python/tree/v2.8.7) (2019-09-03)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.6...v2.8.7)
 
 **Fixed bugs:**
@@ -110,6 +135,7 @@
 - Add ability for scripts to customize the user-agent [\#305](https://github.com/solvebio/solvebio-python/pull/305) ([davecap](https://github.com/davecap))
 
 ## [v2.8.6](https://github.com/solvebio/solvebio-python/tree/v2.8.6) (2019-07-03)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.5...v2.8.6)
 
 **Implemented enhancements:**
@@ -121,6 +147,7 @@
 - Set cookie with SameSite=Lax to allow link-outs to Dash apps [\#304](https://github.com/solvebio/solvebio-python/pull/304) ([davecap](https://github.com/davecap))
 
 ## [v2.8.5](https://github.com/solvebio/solvebio-python/tree/v2.8.5) (2019-06-28)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.4...v2.8.5)
 
 **Merged pull requests:**
@@ -128,6 +155,7 @@
 - Fix typo and pop salt before passing to SolveBioAuth [\#302](https://github.com/solvebio/solvebio-python/pull/302) ([davidhpark](https://github.com/davidhpark))
 
 ## [v2.8.4](https://github.com/solvebio/solvebio-python/tree/v2.8.4) (2019-03-25)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.3...v2.8.4)
 
 **Fixed bugs:**
@@ -139,6 +167,7 @@
 - Use six.moves to eliminate 2to3 issues \(closes \#299\) [\#300](https://github.com/solvebio/solvebio-python/pull/300) ([davecap](https://github.com/davecap))
 
 ## [v2.8.3](https://github.com/solvebio/solvebio-python/tree/v2.8.3) (2019-03-22)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.2...v2.8.3)
 
 **Fixed bugs:**
@@ -150,6 +179,7 @@
 - Prevent cookie from expiring immediately [\#298](https://github.com/solvebio/solvebio-python/pull/298) ([davidhpark](https://github.com/davidhpark))
 
 ## [v2.8.2](https://github.com/solvebio/solvebio-python/tree/v2.8.2) (2019-03-07)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.1...v2.8.2)
 
 **Merged pull requests:**
@@ -157,6 +187,7 @@
 - Revert change to Query.facets\(\) [\#293](https://github.com/solvebio/solvebio-python/pull/293) ([davecap](https://github.com/davecap))
 
 ## [v2.8.1](https://github.com/solvebio/solvebio-python/tree/v2.8.1) (2019-03-05)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.0...v2.8.1)
 
 **Implemented enhancements:**
@@ -177,6 +208,7 @@
 - Dont expose the token in \_\_repr\_\_ [\#284](https://github.com/solvebio/solvebio-python/pull/284) ([davecap](https://github.com/davecap))
 
 ## [v2.8.0](https://github.com/solvebio/solvebio-python/tree/v2.8.0) (2018-10-29)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.7.0...v2.8.0)
 
 **Implemented enhancements:**
@@ -188,6 +220,7 @@
 - Remove deprecated/unused exporters and remove curl dependency [\#282](https://github.com/solvebio/solvebio-python/pull/282) ([davecap](https://github.com/davecap))
 
 ## [v2.7.0](https://github.com/solvebio/solvebio-python/tree/v2.7.0) (2018-09-11)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.6.1...v2.7.0)
 
 **Implemented enhancements:**
@@ -201,6 +234,7 @@
 - add support for saving credentials with your api key [\#270](https://github.com/solvebio/solvebio-python/pull/270) ([davecap](https://github.com/davecap))
 
 ## [v2.6.1](https://github.com/solvebio/solvebio-python/tree/v2.6.1) (2018-07-10)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.6.0...v2.6.1)
 
 **Merged pull requests:**
@@ -208,6 +242,7 @@
 - fix issue with ipython embed + args [\#269](https://github.com/solvebio/solvebio-python/pull/269) ([davecap](https://github.com/davecap))
 
 ## [v2.6.0](https://github.com/solvebio/solvebio-python/tree/v2.6.0) (2018-07-10)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.5.1...v2.6.0)
 
 **Fixed bugs:**
@@ -228,6 +263,7 @@
 - Fix two issues with IPython shell [\#258](https://github.com/solvebio/solvebio-python/pull/258) ([davecap](https://github.com/davecap))
 
 ## [v2.5.1](https://github.com/solvebio/solvebio-python/tree/v2.5.1) (2018-05-25)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.5.0...v2.5.1)
 
 **Implemented enhancements:**
@@ -239,6 +275,7 @@
 - Add support for latest dash-auth [\#253](https://github.com/solvebio/solvebio-python/pull/253) ([davecap](https://github.com/davecap))
 
 ## [v2.5.0](https://github.com/solvebio/solvebio-python/tree/v2.5.0) (2018-04-25)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.6...v2.5.0)
 
 **Implemented enhancements:**
@@ -250,6 +287,7 @@
 - add support for loading json filters [\#248](https://github.com/solvebio/solvebio-python/pull/248) ([davecap](https://github.com/davecap))
 
 ## [v2.4.6](https://github.com/solvebio/solvebio-python/tree/v2.4.6) (2018-02-23)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.5...v2.4.6)
 
 **Closed issues:**
@@ -264,6 +302,7 @@
 - removed six import, changed input to raw\_input [\#236](https://github.com/solvebio/solvebio-python/pull/236) ([davidhpark](https://github.com/davidhpark))
 
 ## [v2.4.5](https://github.com/solvebio/solvebio-python/tree/v2.4.5) (2018-02-13)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.4...v2.4.5)
 
 **Merged pull requests:**
@@ -271,6 +310,7 @@
 - fix client-passthrough for object validation [\#234](https://github.com/solvebio/solvebio-python/pull/234) ([davecap](https://github.com/davecap))
 
 ## [v2.4.4](https://github.com/solvebio/solvebio-python/tree/v2.4.4) (2018-02-12)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.3...v2.4.4)
 
 **Fixed bugs:**
@@ -282,6 +322,7 @@
 - fix error message and client pass-through for object path validation [\#233](https://github.com/solvebio/solvebio-python/pull/233) ([davecap](https://github.com/davecap))
 
 ## [v2.4.3](https://github.com/solvebio/solvebio-python/tree/v2.4.3) (2018-02-08)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.2...v2.4.3)
 
 **Closed issues:**
@@ -294,6 +335,7 @@
 - include optional object type assertion when getting objects [\#230](https://github.com/solvebio/solvebio-python/pull/230) ([davecap](https://github.com/davecap))
 
 ## [v2.4.2](https://github.com/solvebio/solvebio-python/tree/v2.4.2) (2018-02-01)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.1...v2.4.2)
 
 **Implemented enhancements:**
@@ -307,6 +349,7 @@
 - add reader\_params [\#216](https://github.com/solvebio/solvebio-python/pull/216) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.4.1](https://github.com/solvebio/solvebio-python/tree/v2.4.1) (2018-01-16)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.4.0...v2.4.1)
 
 **Fixed bugs:**
@@ -328,6 +371,7 @@
 - validate the object's full path before getting it by full path [\#219](https://github.com/solvebio/solvebio-python/pull/219) ([davecap](https://github.com/davecap))
 
 ## [v2.4.0](https://github.com/solvebio/solvebio-python/tree/v2.4.0) (2018-01-11)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.3...v2.4.0)
 
 **Merged pull requests:**
@@ -337,6 +381,7 @@
 - remove invalid tabulate fields for Application resource [\#215](https://github.com/solvebio/solvebio-python/pull/215) ([davecap](https://github.com/davecap))
 
 ## [v2.3.3](https://github.com/solvebio/solvebio-python/tree/v2.3.3) (2017-12-13)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.2...v2.3.3)
 
 **Fixed bugs:**
@@ -357,6 +402,7 @@
 - use cross-platform /dev/null \(closes \#189\) [\#190](https://github.com/solvebio/solvebio-python/pull/190) ([davecap](https://github.com/davecap))
 
 ## [v2.3.2](https://github.com/solvebio/solvebio-python/tree/v2.3.2) (2017-11-28)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.1...v2.3.2)
 
 **Closed issues:**
@@ -368,6 +414,7 @@
 - \[Bug\] method turned property bug [\#206](https://github.com/solvebio/solvebio-python/pull/206) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.3.1](https://github.com/solvebio/solvebio-python/tree/v2.3.1) (2017-11-22)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.3.0...v2.3.1)
 
 **Merged pull requests:**
@@ -376,6 +423,7 @@
 - replace PRINTABLE\_NAME with something dynamic [\#203](https://github.com/solvebio/solvebio-python/pull/203) ([davecap](https://github.com/davecap))
 
 ## [v2.3.0](https://github.com/solvebio/solvebio-python/tree/v2.3.0) (2017-11-09)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.2.1...v2.3.0)
 
 **Implemented enhancements:**
@@ -388,6 +436,7 @@
 - add Application resource [\#200](https://github.com/solvebio/solvebio-python/pull/200) ([davecap](https://github.com/davecap))
 
 ## [v2.2.1](https://github.com/solvebio/solvebio-python/tree/v2.2.1) (2017-10-18)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.2.0...v2.2.1)
 
 **Fixed bugs:**
@@ -399,6 +448,7 @@
 - fix issue where task method did not pass client through [\#198](https://github.com/solvebio/solvebio-python/pull/198) ([davecap](https://github.com/davecap))
 
 ## [v2.2.0](https://github.com/solvebio/solvebio-python/tree/v2.2.0) (2017-10-05)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.1.0...v2.2.0)
 
 **Fixed bugs:**
@@ -412,6 +462,7 @@
 - Support for isolated SolveClient \(with non-global tokens\) [\#191](https://github.com/solvebio/solvebio-python/pull/191) ([davecap](https://github.com/davecap))
 
 ## [v2.1.0](https://github.com/solvebio/solvebio-python/tree/v2.1.0) (2017-09-08)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.0.1...v2.1.0)
 
 **Closed issues:**
@@ -424,6 +475,7 @@
 - add basic BeaconSet and Beacon resources [\#185](https://github.com/solvebio/solvebio-python/pull/185) ([davecap](https://github.com/davecap))
 
 ## [v2.0.1](https://github.com/solvebio/solvebio-python/tree/v2.0.1) (2017-08-23)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.0.0...v2.0.1)
 
 **Merged pull requests:**
@@ -431,6 +483,7 @@
 - update filter creation to correctly handle nested dict filters [\#180](https://github.com/solvebio/solvebio-python/pull/180) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.0.0](https://github.com/solvebio/solvebio-python/tree/v2.0.0) (2017-07-28)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.17.1...v2.0.0)
 
 **Implemented enhancements:**
@@ -450,13 +503,10 @@
 
 **Merged pull requests:**
 
-- remove genome build and is\_genomic [\#177](https://github.com/solvebio/solvebio-python/pull/177) ([jsh2134](https://github.com/jsh2134))
-- Upload multiple files in upload shortcut [\#176](https://github.com/solvebio/solvebio-python/pull/176) ([jsh2134](https://github.com/jsh2134))
-- Activity [\#175](https://github.com/solvebio/solvebio-python/pull/175) ([jsh2134](https://github.com/jsh2134))
-- force absolute path. fix bug with name lookup [\#174](https://github.com/solvebio/solvebio-python/pull/174) ([jsh2134](https://github.com/jsh2134))
 - Hyrule Support for Python Client [\#172](https://github.com/solvebio/solvebio-python/pull/172) ([jhuttner](https://github.com/jhuttner))
 
 ## [v1.17.1](https://github.com/solvebio/solvebio-python/tree/v1.17.1) (2017-06-05)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.17.0...v1.17.1)
 
 **Implemented enhancements:**
@@ -480,6 +530,7 @@
 - move commit follow\(\) into commit resource [\#168](https://github.com/solvebio/solvebio-python/pull/168) ([jsh2134](https://github.com/jsh2134))
 
 ## [v1.17.0](https://github.com/solvebio/solvebio-python/tree/v1.17.0) (2017-05-04)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.16.0...v1.17.0)
 
 **Closed issues:**
@@ -494,6 +545,7 @@
 - fix the last message on DatasetMigration.follow\(\) [\#159](https://github.com/solvebio/solvebio-python/pull/159) ([davecap](https://github.com/davecap))
 
 ## [v1.16.0](https://github.com/solvebio/solvebio-python/tree/v1.16.0) (2017-04-21)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.4...v1.16.0)
 
 **Implemented enhancements:**
@@ -522,6 +574,7 @@
 - Add retries to Upload creation \(fixes \#147\) [\#152](https://github.com/solvebio/solvebio-python/pull/152) ([davecap](https://github.com/davecap))
 
 ## [v1.15.4](https://github.com/solvebio/solvebio-python/tree/v1.15.4) (2017-03-15)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.3...v1.15.4)
 
 **Merged pull requests:**
@@ -529,6 +582,7 @@
 - include randint in deponame also [\#144](https://github.com/solvebio/solvebio-python/pull/144) ([jsh2134](https://github.com/jsh2134))
 
 ## [v1.15.3](https://github.com/solvebio/solvebio-python/tree/v1.15.3) (2017-03-15)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.2...v1.15.3)
 
 **Closed issues:**
@@ -542,6 +596,7 @@
 - Fix capacity argument in import dataset command [\#140](https://github.com/solvebio/solvebio-python/pull/140) ([davecap](https://github.com/davecap))
 
 ## [v1.15.2](https://github.com/solvebio/solvebio-python/tree/v1.15.2) (2017-03-14)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.1...v1.15.2)
 
 **Merged pull requests:**
@@ -549,6 +604,7 @@
 - fix an issue where the CLI was ignoring env var or other default api\_key [\#138](https://github.com/solvebio/solvebio-python/pull/138) ([davecap](https://github.com/davecap))
 
 ## [v1.15.1](https://github.com/solvebio/solvebio-python/tree/v1.15.1) (2017-03-12)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.15.0...v1.15.1)
 
 **Implemented enhancements:**
@@ -571,6 +627,7 @@
 - update genome builds upon get\_or\_create, add new create-dataset command [\#126](https://github.com/solvebio/solvebio-python/pull/126) ([davecap](https://github.com/davecap))
 
 ## [v1.15.0](https://github.com/solvebio/solvebio-python/tree/v1.15.0) (2016-12-19)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.14.2...v1.15.0)
 
 **Implemented enhancements:**
@@ -584,6 +641,7 @@
 - fix issue where solvebio cli did not open in python3 [\#121](https://github.com/solvebio/solvebio-python/pull/121) ([davecap](https://github.com/davecap))
 
 ## [v1.14.2](https://github.com/solvebio/solvebio-python/tree/v1.14.2) (2016-12-13)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.14.1...v1.14.2)
 
 **Merged pull requests:**
@@ -591,14 +649,17 @@
 - remove trailing commas that broke things, read GZipped template files [\#118](https://github.com/solvebio/solvebio-python/pull/118) ([jsh2134](https://github.com/jsh2134))
 
 ## [v1.14.1](https://github.com/solvebio/solvebio-python/tree/v1.14.1) (2016-12-12)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.14.0...v1.14.1)
 
 **Merged pull requests:**
 
 - create datasets with a template file or without a template at all [\#117](https://github.com/solvebio/solvebio-python/pull/117) ([jsh2134](https://github.com/jsh2134))
+- add support for query ordering param \(closes \#114\) [\#116](https://github.com/solvebio/solvebio-python/pull/116) ([davecap](https://github.com/davecap))
 - add simple manifest upload example [\#113](https://github.com/solvebio/solvebio-python/pull/113) ([jsh2134](https://github.com/jsh2134))
 
 ## [v1.14.0](https://github.com/solvebio/solvebio-python/tree/v1.14.0) (2016-12-05)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.6...v1.14.0)
 
 **Implemented enhancements:**
@@ -611,12 +672,12 @@
 
 **Merged pull requests:**
 
-- add support for query ordering param \(closes \#114\) [\#116](https://github.com/solvebio/solvebio-python/pull/116) ([davecap](https://github.com/davecap))
 - add JSON exporter for queries [\#115](https://github.com/solvebio/solvebio-python/pull/115) ([davecap](https://github.com/davecap))
 - First example Python script [\#112](https://github.com/solvebio/solvebio-python/pull/112) ([dandanxu](https://github.com/dandanxu))
 - Flat CSV Exporter [\#95](https://github.com/solvebio/solvebio-python/pull/95) ([jercoh](https://github.com/jercoh))
 
 ## [v1.13.6](https://github.com/solvebio/solvebio-python/tree/v1.13.6) (2016-10-27)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.5...v1.13.6)
 
 **Merged pull requests:**
@@ -625,6 +686,7 @@
 - use pyvcf built-in file extension detection and gzip support [\#110](https://github.com/solvebio/solvebio-python/pull/110) ([davecap](https://github.com/davecap))
 
 ## [v1.13.5](https://github.com/solvebio/solvebio-python/tree/v1.13.5) (2016-09-15)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.4...v1.13.5)
 
 **Merged pull requests:**
@@ -633,6 +695,7 @@
 - add support for specialized SnpEff ANN field parsing [\#108](https://github.com/solvebio/solvebio-python/pull/108) ([davecap](https://github.com/davecap))
 
 ## [v1.13.4](https://github.com/solvebio/solvebio-python/tree/v1.13.4) (2016-08-25)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.3...v1.13.4)
 
 **Merged pull requests:**
@@ -640,6 +703,7 @@
 - add SolveBio variant ID to VCF to JSON parser output [\#107](https://github.com/solvebio/solvebio-python/pull/107) ([davecap](https://github.com/davecap))
 
 ## [v1.13.3](https://github.com/solvebio/solvebio-python/tree/v1.13.3) (2016-08-11)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.2...v1.13.3)
 
 **Closed issues:**
@@ -651,6 +715,7 @@
 - expanduser not expandpath \(fixes \#105\) [\#106](https://github.com/solvebio/solvebio-python/pull/106) ([davecap](https://github.com/davecap))
 
 ## [v1.13.2](https://github.com/solvebio/solvebio-python/tree/v1.13.2) (2016-08-03)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.1...v1.13.2)
 
 **Implemented enhancements:**
@@ -672,9 +737,11 @@
 - Add expanding vcf parser as a contrib module [\#100](https://github.com/solvebio/solvebio-python/pull/100) ([davecap](https://github.com/davecap))
 
 ## [v1.13.1](https://github.com/solvebio/solvebio-python/tree/v1.13.1) (2016-06-03)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.13.0...v1.13.1)
 
 ## [v1.13.0](https://github.com/solvebio/solvebio-python/tree/v1.13.0) (2016-06-03)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.12.1...v1.13.0)
 
 **Merged pull requests:**
@@ -682,6 +749,7 @@
 - Refactor subcommand arguments; add simple dataset import subcommand [\#99](https://github.com/solvebio/solvebio-python/pull/99) ([davecap](https://github.com/davecap))
 
 ## [v1.12.1](https://github.com/solvebio/solvebio-python/tree/v1.12.1) (2016-05-12)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.12.0...v1.12.1)
 
 **Fixed bugs:**
@@ -693,6 +761,7 @@
 - use expanduser instead of looking for $HOME manually \(fixes \#97\) [\#98](https://github.com/solvebio/solvebio-python/pull/98) ([davecap](https://github.com/davecap))
 
 ## [v1.12.0](https://github.com/solvebio/solvebio-python/tree/v1.12.0) (2016-05-10)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.11.0...v1.12.0)
 
 **Merged pull requests:**
@@ -700,6 +769,7 @@
 - Add support for uploads and imports [\#96](https://github.com/solvebio/solvebio-python/pull/96) ([davecap](https://github.com/davecap))
 
 ## [v1.11.0](https://github.com/solvebio/solvebio-python/tree/v1.11.0) (2016-03-28)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.10.0...v1.11.0)
 
 **Fixed bugs:**
@@ -711,6 +781,7 @@
 - adds domain support to login cli \(fixes \#93\) [\#94](https://github.com/solvebio/solvebio-python/pull/94) ([davecap](https://github.com/davecap))
 
 ## [v1.10.0](https://github.com/solvebio/solvebio-python/tree/v1.10.0) (2016-03-07)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.9.1...v1.10.0)
 
 **Merged pull requests:**
@@ -718,6 +789,7 @@
 - Adds Dataset bulk export helper/verification code [\#92](https://github.com/solvebio/solvebio-python/pull/92) ([davecap](https://github.com/davecap))
 
 ## [v1.9.1](https://github.com/solvebio/solvebio-python/tree/v1.9.1) (2016-02-10)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.9.0...v1.9.1)
 
 **Merged pull requests:**
@@ -727,6 +799,7 @@
 - Adds export functionality closes \#3 [\#88](https://github.com/solvebio/solvebio-python/pull/88) ([davecap](https://github.com/davecap))
 
 ## [v1.9.0](https://github.com/solvebio/solvebio-python/tree/v1.9.0) (2016-02-01)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.8.1...v1.9.0)
 
 **Implemented enhancements:**
@@ -755,9 +828,11 @@
 - test\_cases\_changelog [\#84](https://github.com/solvebio/solvebio-python/pull/84) ([eyalfoni](https://github.com/eyalfoni))
 
 ## [v1.8.1](https://github.com/solvebio/solvebio-python/tree/v1.8.1) (2015-07-22)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.8.0...v1.8.1)
 
 ## [v1.8.0](https://github.com/solvebio/solvebio-python/tree/v1.8.0) (2015-07-14)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.7.11...v1.8.0)
 
 **Closed issues:**
@@ -769,6 +844,7 @@
 - Adds Python3 support [\#77](https://github.com/solvebio/solvebio-python/pull/77) ([davecap](https://github.com/davecap))
 
 ## [v1.7.11](https://github.com/solvebio/solvebio-python/tree/v1.7.11) (2015-03-26)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.7.10...v1.7.11)
 
 **Merged pull requests:**
@@ -776,21 +852,27 @@
 - Add beacon and changelog endpoints [\#76](https://github.com/solvebio/solvebio-python/pull/76) ([jsh2134](https://github.com/jsh2134))
 
 ## [v1.7.10](https://github.com/solvebio/solvebio-python/tree/v1.7.10) (2015-03-12)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.9...v1.7.10)
 
 ## [1.7.9](https://github.com/solvebio/solvebio-python/tree/1.7.9) (2015-02-18)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.7...1.7.9)
 
 ## [1.7.7](https://github.com/solvebio/solvebio-python/tree/1.7.7) (2015-02-04)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.8...1.7.7)
 
 ## [1.7.8](https://github.com/solvebio/solvebio-python/tree/1.7.8) (2015-02-04)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.6...1.7.8)
 
 ## [1.7.6](https://github.com/solvebio/solvebio-python/tree/1.7.6) (2015-01-29)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.5...1.7.6)
 
 ## [1.7.5](https://github.com/solvebio/solvebio-python/tree/1.7.5) (2015-01-26)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.4...1.7.5)
 
 **Implemented enhancements:**
@@ -802,12 +884,15 @@
 - improve performance when combining Filters; make it easier to get api\_key from local credentials [\#74](https://github.com/solvebio/solvebio-python/pull/74) ([davecap](https://github.com/davecap))
 
 ## [1.7.4](https://github.com/solvebio/solvebio-python/tree/1.7.4) (2014-12-23)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.3...1.7.4)
 
 ## [1.7.3](https://github.com/solvebio/solvebio-python/tree/1.7.3) (2014-12-18)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.2...1.7.3)
 
 ## [1.7.2](https://github.com/solvebio/solvebio-python/tree/1.7.2) (2014-12-15)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.1...1.7.2)
 
 **Merged pull requests:**
@@ -815,6 +900,7 @@
 - Feature/query refactor [\#73](https://github.com/solvebio/solvebio-python/pull/73) ([davecap](https://github.com/davecap))
 
 ## [1.7.1](https://github.com/solvebio/solvebio-python/tree/1.7.1) (2014-12-08)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.7.0...1.7.1)
 
 **Fixed bugs:**
@@ -822,6 +908,7 @@
 - List index out of range error when looping through query [\#67](https://github.com/solvebio/solvebio-python/issues/67)
 
 ## [1.7.0](https://github.com/solvebio/solvebio-python/tree/1.7.0) (2014-11-28)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.6.1...1.7.0)
 
 **Implemented enhancements:**
@@ -861,6 +948,7 @@
 - tabulate dataset fields in printing \(\_\_str\_\_\) [\#57](https://github.com/solvebio/solvebio-python/pull/57) ([rocky](https://github.com/rocky))
 
 ## [1.6.1](https://github.com/solvebio/solvebio-python/tree/1.6.1) (2014-11-03)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.6.0...1.6.1)
 
 **Implemented enhancements:**
@@ -876,6 +964,7 @@
 - \_ask\_for\_credentials: default\_email is put in prompt \*only\* if it is str... [\#48](https://github.com/solvebio/solvebio-python/pull/48) ([rocky](https://github.com/rocky))
 
 ## [1.6.0](https://github.com/solvebio/solvebio-python/tree/1.6.0) (2014-10-31)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.5.2...1.6.0)
 
 **Closed issues:**
@@ -899,6 +988,7 @@
 - Tabulate [\#26](https://github.com/solvebio/solvebio-python/pull/26) ([rocky](https://github.com/rocky))
 
 ## [1.5.2](https://github.com/solvebio/solvebio-python/tree/1.5.2) (2014-09-25)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.5.1...1.5.2)
 
 **Merged pull requests:**
@@ -907,6 +997,7 @@
 - Recursive shell call bug [\#23](https://github.com/solvebio/solvebio-python/pull/23) ([rocky](https://github.com/rocky))
 
 ## [1.5.1](https://github.com/solvebio/solvebio-python/tree/1.5.1) (2014-09-18)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.5.0...1.5.1)
 
 **Fixed bugs:**
@@ -924,6 +1015,7 @@
 - Add .netrc login status [\#15](https://github.com/solvebio/solvebio-python/pull/15) ([rocky](https://github.com/rocky))
 
 ## [1.5.0](https://github.com/solvebio/solvebio-python/tree/1.5.0) (2014-08-27)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.4.0...1.5.0)
 
 **Closed issues:**
@@ -935,6 +1027,7 @@
 - Add SolveBio API test to SolveBio CLI and add pretty printing for xml fields [\#14](https://github.com/solvebio/solvebio-python/pull/14) ([andrewmillspaugh](https://github.com/andrewmillspaugh))
 
 ## [1.4.0](https://github.com/solvebio/solvebio-python/tree/1.4.0) (2014-07-24)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.3.4...1.4.0)
 
 **Merged pull requests:**
@@ -942,6 +1035,7 @@
 - Improvements to SolveArgumentParser [\#13](https://github.com/solvebio/solvebio-python/pull/13) ([andrewmillspaugh](https://github.com/andrewmillspaugh))
 
 ## [1.3.4](https://github.com/solvebio/solvebio-python/tree/1.3.4) (2014-07-17)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.3.3...1.3.4)
 
 **Implemented enhancements:**
@@ -953,9 +1047,11 @@
 - Bulk query interface [\#1](https://github.com/solvebio/solvebio-python/issues/1)
 
 ## [1.3.3](https://github.com/solvebio/solvebio-python/tree/1.3.3) (2014-06-12)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.3.2...1.3.3)
 
 ## [1.3.2](https://github.com/solvebio/solvebio-python/tree/1.3.2) (2014-06-11)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.3.1...1.3.2)
 
 **Closed issues:**
@@ -963,9 +1059,11 @@
 - Query proxy view for django-solvebio app [\#12](https://github.com/solvebio/solvebio-python/issues/12)
 
 ## [1.3.1](https://github.com/solvebio/solvebio-python/tree/1.3.1) (2014-05-28)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.3.0...1.3.1)
 
 ## [1.3.0](https://github.com/solvebio/solvebio-python/tree/1.3.0) (2014-05-28)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.2.2...1.3.0)
 
 **Implemented enhancements:**
@@ -977,9 +1075,11 @@
 - OAuth2 app client\_credentials support [\#10](https://github.com/solvebio/solvebio-python/issues/10)
 
 ## [1.2.2](https://github.com/solvebio/solvebio-python/tree/1.2.2) (2014-04-09)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.2.1...1.2.2)
 
 ## [1.2.1](https://github.com/solvebio/solvebio-python/tree/1.2.1) (2014-04-08)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.2.0...1.2.1)
 
 **Fixed bugs:**
@@ -987,51 +1087,69 @@
 - Make the netrc path configurable [\#7](https://github.com/solvebio/solvebio-python/issues/7)
 
 ## [1.2.0](https://github.com/solvebio/solvebio-python/tree/1.2.0) (2014-04-04)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.1.0...1.2.0)
 
 ## [1.1.0](https://github.com/solvebio/solvebio-python/tree/1.1.0) (2014-03-29)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.0.6...1.1.0)
 
 ## [1.0.6](https://github.com/solvebio/solvebio-python/tree/1.0.6) (2014-03-28)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.0.5...1.0.6)
 
 ## [1.0.5](https://github.com/solvebio/solvebio-python/tree/1.0.5) (2014-03-26)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.0.4...1.0.5)
 
 ## [1.0.4](https://github.com/solvebio/solvebio-python/tree/1.0.4) (2014-03-25)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.0.3...1.0.4)
 
 ## [1.0.3](https://github.com/solvebio/solvebio-python/tree/1.0.3) (2014-03-20)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.0.2...1.0.3)
 
 ## [1.0.2](https://github.com/solvebio/solvebio-python/tree/1.0.2) (2014-03-12)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.0.1...1.0.2)
 
 ## [1.0.1](https://github.com/solvebio/solvebio-python/tree/1.0.1) (2014-02-24)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/1.0.0...1.0.1)
 
 ## [1.0.0](https://github.com/solvebio/solvebio-python/tree/1.0.0) (2014-02-14)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/0.1.7...1.0.0)
 
 ## [0.1.7](https://github.com/solvebio/solvebio-python/tree/0.1.7) (2013-11-01)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/0.1.5...0.1.7)
 
 ## [0.1.5](https://github.com/solvebio/solvebio-python/tree/0.1.5) (2013-10-15)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/0.1.4...0.1.5)
 
 ## [0.1.4](https://github.com/solvebio/solvebio-python/tree/0.1.4) (2013-10-15)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/0.1.3...0.1.4)
 
 ## [0.1.3](https://github.com/solvebio/solvebio-python/tree/0.1.3) (2013-10-14)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/0.1.2...0.1.3)
 
 ## [0.1.2](https://github.com/solvebio/solvebio-python/tree/0.1.2) (2013-10-14)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/0.1.1...0.1.2)
 
 ## [0.1.1](https://github.com/solvebio/solvebio-python/tree/0.1.1) (2013-10-14)
+
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/0.1.0...0.1.1)
 
 ## [0.1.0](https://github.com/solvebio/solvebio-python/tree/0.1.0) (2013-10-14)
 
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/4d7a467647fd74d7d0638603788f9ff55c9694ac...0.1.0)
 
-\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+
+
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
