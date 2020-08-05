@@ -312,9 +312,19 @@ class UpdateableAPIResource(APIResource):
 
     def serialize(self, obj):
         params = {}
-        if obj._unsaved_values:
-            for k in obj._unsaved_values:
-                if k == 'id' or k == self.ID_ATTR:
-                    continue
+        unsaved_values = obj._unsaved_values
+
+        # adding 'metadata' attribute to be serialized
+        unsaved_values.add('metadata')
+
+        for k in unsaved_values:
+            if k == 'id' or k == self.ID_ATTR:
+                continue
+
+            attr = getattr(obj, k)
+            if k == 'metadata' and isinstance(attr, SolveObject):
+                params[k] = dict(attr)
+            else:
                 params[k] = getattr(obj, k) or ""
+
         return params
