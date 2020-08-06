@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import uuid
+
 from .helper import SolveBioTestCase
 
 
@@ -21,7 +23,7 @@ class APIResourceTests(SolveBioTestCase):
 
     def test_apiresource_serialize_metadata(self):
         folder_no_metadata = self.client.Object.\
-            get_or_create_by_full_path('~/test_folder_no_metadata', object_type='folder')
+            get_or_create_by_full_path('~/{}'.format(uuid.uuid4()), object_type='folder')
 
         metadata = folder_no_metadata.metadata
         foo_tuple = ('foo', 'bar')
@@ -37,7 +39,7 @@ class APIResourceTests(SolveBioTestCase):
         self.assertTrue(foo_tuple in params['metadata'].items())
 
         folder_with_metadata = self.client.Object.\
-            get_or_create_by_full_path('~/test_folder_with_metadata',
+            get_or_create_by_full_path('~/{}'.format(uuid.uuid4()),
                                        object_type='folder',
                                        metadata=dict([foo_tuple]))
 
