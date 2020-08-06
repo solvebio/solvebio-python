@@ -73,21 +73,3 @@ class DatasetTests(SolveBioTestCase):
         field = dataset.fields('status')
         facets = field.facets()
         self.assertTrue(len(facets['facets']) >= 0)
-
-    def test_dataset_metadata(self):
-        dataset = self.client.Dataset.get_by_full_path(
-            self.TEST_DATASET_FULL_PATH)
-        metadata = dataset.metadata
-
-        metadata['foo_1'] = 'bar_1'
-
-        # Test that setting item has been done successfully
-        self.assertTrue(metadata.get('foo_1') == 'bar_1')
-
-        metadata = {'foo_2': 'bar_2'}
-        self.assertTrue(metadata.get('foo_2') == 'bar_2')
-
-        # Test that direct assignement overrides SolveBio object type with the given dictionary
-        self.assertTrue(len(metadata) == 1 and
-                        metadata.pop('foo_2') == 'bar_2' and
-                        len(metadata) == 0)
