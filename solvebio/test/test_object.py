@@ -1,4 +1,7 @@
 from __future__ import absolute_import
+
+import uuid
+
 import mock
 
 from .helper import SolveBioTestCase
@@ -236,3 +239,21 @@ class ObjectTests(SolveBioTestCase):
         tags = 1
         file_.tag(tags)
         self.assertTrue(file_.has_tag(tags))
+
+    def test_object_set_metadata(self):
+        folder = self.client.Object.\
+            get_or_create_by_full_path('~/{}'.format(uuid.uuid4()), object_type='folder')
+        metadata = folder.metadata
+
+        metadata['foo_1'] = 'bar_1'
+
+        # Test that item has been set successfully
+        self.assertTrue(metadata.get('foo_1') == 'bar_1')
+
+        metadata = {'foo_2': 'bar_2'}
+        self.assertTrue(metadata.get('foo_2') == 'bar_2')
+
+        # Test that direct assignement overrides SolveBio object type with the given dictionary
+        self.assertTrue(len(metadata) == 1 and
+                        metadata.pop('foo_2') == 'bar_2' and
+                        len(metadata) == 0)
