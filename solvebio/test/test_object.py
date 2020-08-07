@@ -270,10 +270,10 @@ class ObjectTests(SolveBioTestCase):
         folder.save()
 
         # Test that 'metadata' is an empty dict
-        self.assertTrue(isinstance(folder.metadata, dict) and not folder.metadata)
+        self.assertTrue(folder.metadata == {})
 
         folder.metadata = []
         folder.save()
 
         # Test that 'metadata' is an empty list
-        self.assertTrue(isinstance(folder.metadata, list) and not folder.metadata)
+        self.assertTrue(folder.metadata == [])
