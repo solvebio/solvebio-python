@@ -259,6 +259,8 @@ class ObjectTests(SolveBioTestCase):
                         metadata.pop('foo_2') == 'bar_2' and
                         len(metadata) == 0)
 
+        folder.delete(force=True)
+
     def test_object_set_metadata_empty_dict_list(self):
         folder = self.client.Object. \
             get_or_create_by_full_path('~/{}'.format(uuid.uuid4()), object_type='folder')
@@ -277,3 +279,5 @@ class ObjectTests(SolveBioTestCase):
 
         # Test that 'metadata' is an empty list
         self.assertTrue(folder.metadata == [])
+
+        folder.delete(force=True)
