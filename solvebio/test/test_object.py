@@ -246,6 +246,7 @@ class ObjectTests(SolveBioTestCase):
         metadata = folder.metadata
 
         metadata['foo_1'] = 'bar_1'
+        folder.save()
 
         # Test that item has been set successfully
         self.assertTrue(metadata.get('foo_1') == 'bar_1')
@@ -257,3 +258,26 @@ class ObjectTests(SolveBioTestCase):
         self.assertTrue(len(metadata) == 1 and
                         metadata.pop('foo_2') == 'bar_2' and
                         len(metadata) == 0)
+
+        folder.delete(force=True)
+
+    def test_object_set_metadata_empty_dict_list(self):
+        folder = self.client.Object. \
+            get_or_create_by_full_path('~/{}'.format(uuid.uuid4()), object_type='folder')
+
+        folder.metadata['foo'] = 'bar'
+        folder.save()
+
+        folder.metadata = {}
+        folder.save()
+
+        # Test that 'metadata' is an empty dict
+        self.assertTrue(folder.metadata == {})
+
+        folder.metadata = []
+        folder.save()
+
+        # Test that 'metadata' is an empty list
+        self.assertTrue(folder.metadata == [])
+
+        folder.delete(force=True)

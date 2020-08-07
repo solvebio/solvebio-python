@@ -327,6 +327,6 @@ class UpdateableAPIResource(APIResource):
             if isinstance(attr, SolveObject):
                 params[k] = dict(attr)
             else:
-                params[k] = attr or ""
+                params[k] = attr
 
         return params
