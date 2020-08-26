@@ -809,7 +809,7 @@ class Query(object):
 
         return Annotator(fields, client=self._client, **kwargs).annotate(self)
 
-    def join(self, query_b, key, key_b=None, prefix="b_", always_prefix=True, limit=1000):
+    def join(self, query_b, key, key_b=None, prefix="b_", always_prefix=True, query_limit=100000):
         """Performs a left outer join between the current
         query (query A) and another query (query B).
 
@@ -835,10 +835,10 @@ class Query(object):
         key_b = key_b or key
 
         # Limit cannot be larger than 1000 * 100
-        if limit > JOIN_LIMIT:
+        if query_limit > JOIN_LIMIT:
             logger.warning('The number of retrieved rows in join cannot '
                            'be larger than {}'.format(JOIN_LIMIT))
-            limit = JOIN_LIMIT
+            query_limit = JOIN_LIMIT
 
         # Prepare new returned query object
         new_query = self._clone()
@@ -879,7 +879,7 @@ class Query(object):
                            [f.name for f in query_b_fields] + [key_b],
                            filters,
                            query_params.get('entities'),
-                           limit,
+                           query_b._limit,
                            key_b)
             },
             {
@@ -934,7 +934,12 @@ class Query(object):
             post_annotation_expression="explode(record, fields=fields)"
         )
 
-        return exploded_query
+        cnt = 0
+        for record in exploded_query:
+            cnt += 1
+            if cnt == query_limit + 1:
+                return record
+            yield record
 
 
 class BatchQuery(object):
