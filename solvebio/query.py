@@ -5,6 +5,8 @@ import six
 import json
 import uuid
 
+from .annotate import Annotator
+
 from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
@@ -851,27 +853,41 @@ class Query(object):
         # Try to use a unique field for the sub-query data
         query_b_fields = query_b.fields()
         query_b_join_field_name = "join_{}".format(join_id)
-        target_fields = [{
-            "name": query_b_join_field_name,
-            "data_type": "object",
-            "is_list": False,
-            "is_transient": True,
-            "expression": """
-                dataset_query(
-                    "{}",
-                    fields={},
-                    filters={},
-                    entities={},
-                    limit=1
-                ) if get(record, "{}") else {{}}
-            """.format(query_b._dataset_id,
-                       [f.name for f in query_b_fields] + [key_b],
-                       filters,
-                       query_params.get('entities'),
-                       key_b)
-        }]
+        target_fields = [
+            {
+                "name": query_b_join_field_name,
+                "data_type": "object",
+                "is_list": True,
+                "is_transient": True,
+                "expression": """
+                    dataset_query(
+                        "{}",
+                        fields={},
+                        filters={},
+                        entities={},
+                        limit={}
+                    ) if get(record, "{}") else {{}}
+                """.format(query_b._dataset_id,
+                           [f.name for f in query_b_fields] + [key_b],
+                           filters,
+                           query_params.get('entities'),
+                           len(query_b),
+                           key_b)
+            },
+            {
+                "name": 'exploded_join_field',
+                "data_type": "object",
+                "is_list": True,
+                "is_transient": True,
+                "depends_on": [query_b_join_field_name],
+                "expression": """
+                    explode(record, fields=['{}'])
+                    """.format(query_b_join_field_name)
+            }
+        ]
 
         # Get list of fields to join from query B
+        query_b_prefixed_fields = []
         for field in query_b_fields:
             # If "always prefix" is enable, or the field name is found
             # in existing list of names, add the prefix.
@@ -880,26 +896,37 @@ class Query(object):
             else:
                 name = field.name
 
+            query_b_prefixed_fields.append(name)
+
             if name in existing_field_names:
-                logger.warning("Field '{}' will be overwritten in the join results")
+                logger.warning("Field '{}' will be overwritten in the join results".format(name))
 
             target_fields.append({
                 "name": name,
                 "title": field.title,
                 "data_type": field.data_type,
                 "ordering": field.ordering,
-                "is_list": False,
+                "is_list": True,
                 "is_transient": False,
                 "expression": """
-                    get(record, "{}.{}")
+                    [get(item, "{}.{}") for item in record.exploded_join_field]
                 """.format(query_b_join_field_name, field.name),
-                "depends_on": [query_b_join_field_name]
+                "depends_on": [query_b_join_field_name, 'exploded_join_field']
             })
 
         # Add to any existing target fields
         new_query._target_fields += target_fields
 
-        return new_query
+        # Explode new_query records
+        data = {
+            'fields': query_b_prefixed_fields
+        }
+        exploded_query = Annotator(fields=target_fields, data=data).annotate(
+            new_query,
+            post_annotation_expression="explode(record, fields=fields)"
+        )
+
+        return exploded_query
 
 
 class BatchQuery(object):
