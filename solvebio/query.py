@@ -16,6 +16,8 @@ import copy
 import logging
 logger = logging.getLogger('solvebio')
 
+JOIN_LIMIT = 1000 * 100
+
 
 class Filter(object):
     """
@@ -807,7 +809,7 @@ class Query(object):
 
         return Annotator(fields, client=self._client, **kwargs).annotate(self)
 
-    def join(self, query_b, key, key_b=None, prefix="b_", always_prefix=True):
+    def join(self, query_b, key, key_b=None, prefix="b_", always_prefix=True, limit=1000):
         """Performs a left outer join between the current
         query (query A) and another query (query B).
 
@@ -831,6 +833,12 @@ class Query(object):
 
         # If no key_b is provided, use the same key as for A
         key_b = key_b or key
+
+        # Limit cannot be larger than 1000 * 100
+        if limit > JOIN_LIMIT:
+            logger.warning('The number of retrieved rows in join cannot '
+                           'be larger than {}'.format(JOIN_LIMIT))
+            limit = JOIN_LIMIT
 
         # Prepare new returned query object
         new_query = self._clone()
@@ -871,7 +879,7 @@ class Query(object):
                            [f.name for f in query_b_fields] + [key_b],
                            filters,
                            query_params.get('entities'),
-                           len(query_b),
+                           limit,
                            key_b)
             },
             {
