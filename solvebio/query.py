@@ -934,11 +934,7 @@ class Query(object):
             post_annotation_expression="explode(record, fields=fields)"
         )
 
-        cnt = 0
-        for record in exploded_query:
-            cnt += 1
-            if cnt == query_limit + 1:
-                return record
+        for record in list(exploded_query)[:query_limit]:
             yield record
 
 
