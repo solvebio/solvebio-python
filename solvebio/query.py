@@ -435,6 +435,9 @@ class Query(object):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
+        if getattr(self, '_total', None) == float('inf'):
+            # TODO: Is there a better way?
+            return 999999999
         return min(self._limit, self.count())
 
     def __nonzero__(self):
@@ -623,7 +626,14 @@ class Query(object):
 
         self._cursor += 1
         self._buffer_idx += 1
-        return self._buffer[self._buffer_idx - 1]
+
+        try:
+            return self._buffer[self._buffer_idx - 1]
+        except IndexError:
+            # If this is a join query, there might not be any more
+            # items in the buffer, and no more data to fetch.
+            # TODO: Should we confirm it is a join?
+            raise StopIteration()
 
     def _build_query(self, **kwargs):
         q = {}
@@ -894,7 +904,8 @@ class Query(object):
             target_fields.append({
                 "name": name,
                 "title": field.title,
-                "data_type": field.data_type,
+                # Handle case where sub-query returns a list of lists (of strings or something)
+                "data_type": "object" if field.is_list else field.data_type,
                 "ordering": field.ordering,
                 "is_list": True,
                 "is_transient": False,
@@ -908,15 +919,18 @@ class Query(object):
         new_query._target_fields += target_fields
 
         # Explode new_query records
-        return new_query.annotate(
-            target_fields,
-            post_annotation_expression="explode(record, fields={})".format(explode_fields))
+        # return new_query.annotate(
+        #     target_fields,
+        #     post_annotation_expression="explode(record, fields={})".format(explode_fields))
 
         # TODO: This doesn't work as expected, I cannot figure out why?
-        # new_query._annotator_params = {
-        #     'post_annotation_expression': "explode(record, fields={})".format(explode_fields)
-        # }
-        # return new_query
+        new_query._annotator_params = {
+            'post_annotation_expression': "explode(record, fields={})".format(explode_fields)
+        }
+        # TODO: Some kind of way of telling the Query object that we don't know
+        #       how many records will come back... might not be necessary though
+        new_query._total = float('inf')
+        return new_query
 
 
 class BatchQuery(object):
