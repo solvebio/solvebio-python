@@ -353,9 +353,3 @@ class BaseQueryTest(SolveBioTestCase):
 
         for row in join_query:
             self.assertTrue(row.get('rs_id'))
-
-    def test_join_query_limit(self):
-        query_a = self.dataset2.query(fields=['gene'], limit=2).filter(gene='MAN2B1')
-        query_b = self.dataset2.query(fields=['gene', 'rs_id'], limit=10)
-        join_query = query_a.join(query_b, key='gene', query_limit=10)
-        self.assertEqual(len(list(join_query)), 10)

@@ -5,8 +5,6 @@ import six
 import json
 import uuid
 
-from .annotate import Annotator
-
 from .client import client
 from .utils.printing import pretty_int
 from .utils.tabulate import tabulate
@@ -15,8 +13,6 @@ from .errors import SolveError
 import copy
 import logging
 logger = logging.getLogger('solvebio')
-
-JOIN_LIMIT = 1000 * 100
 
 
 class Filter(object):
@@ -809,7 +805,7 @@ class Query(object):
 
         return Annotator(fields, client=self._client, **kwargs).annotate(self)
 
-    def join(self, query_b, key, key_b=None, prefix="b_", always_prefix=True, query_limit=100000):
+    def join(self, query_b, key, key_b=None, prefix="b_", always_prefix=True):
         """Performs a left outer join between the current
         query (query A) and another query (query B).
 
@@ -833,12 +829,6 @@ class Query(object):
 
         # If no key_b is provided, use the same key as for A
         key_b = key_b or key
-
-        # Limit cannot be larger than 1000 * 100
-        if query_limit > JOIN_LIMIT:
-            logger.warning('The number of retrieved rows in join cannot '
-                           'be larger than {}'.format(JOIN_LIMIT))
-            query_limit = JOIN_LIMIT
 
         # Prepare new returned query object
         new_query = self._clone()
@@ -879,18 +869,8 @@ class Query(object):
                            [f.name for f in query_b_fields] + [key_b],
                            filters,
                            query_params.get('entities'),
-                           query_b._limit,
+                           query_b._limit if isinstance(query_b._limit, int) else 100000,
                            key_b)
-            },
-            {
-                "name": 'exploded_join_field',
-                "data_type": "object",
-                "is_list": True,
-                "is_transient": True,
-                "depends_on": [query_b_join_field_name],
-                "expression": """
-                    explode(record, fields=['{}'])
-                    """.format(query_b_join_field_name)
             }
         ]
 
@@ -917,25 +897,18 @@ class Query(object):
                 "is_list": True,
                 "is_transient": False,
                 "expression": """
-                    [get(item, "{}.{}") for item in record.exploded_join_field]
-                """.format(query_b_join_field_name, field.name),
-                "depends_on": [query_b_join_field_name, 'exploded_join_field']
+                    [get(item, "{}") for item in record.{}]
+                """.format(field.name, query_b_join_field_name),
+                "depends_on": [query_b_join_field_name]
             })
 
         # Add to any existing target fields
         new_query._target_fields += target_fields
 
         # Explode new_query records
-        data = {
-            'fields': query_b_prefixed_fields
-        }
-        exploded_query = Annotator(fields=target_fields, data=data).annotate(
-            new_query,
-            post_annotation_expression="explode(record, fields=fields)"
-        )
-
-        for record in list(exploded_query)[:query_limit]:
-            yield record
+        return new_query.annotate(
+            target_fields,
+            post_annotation_expression="explode(record, fields={})".format(query_b_prefixed_fields))
 
 
 class BatchQuery(object):
