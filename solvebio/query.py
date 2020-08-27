@@ -863,19 +863,21 @@ class Query(object):
                         fields={},
                         filters={},
                         entities={},
-                        limit={}
+                        limit={},
+                        ordering={}
                     ) if get(record, "{}") else {{}}
                 """.format(query_b._dataset_id,
                            [f.name for f in query_b_fields] + [key_b],
                            filters,
                            query_params.get('entities'),
                            query_b._limit if isinstance(query_b._limit, int) else 100000,
+                           query_b._ordering,
                            key_b)
             }
         ]
 
         # Get list of fields to join from query B
-        query_b_prefixed_fields = []
+        explode_fields = []
         for field in query_b_fields:
             # If "always prefix" is enable, or the field name is found
             # in existing list of names, add the prefix.
@@ -884,7 +886,7 @@ class Query(object):
             else:
                 name = field.name
 
-            query_b_prefixed_fields.append(name)
+            explode_fields.append(name)
 
             if name in existing_field_names:
                 logger.warning("Field '{}' will be overwritten in the join results".format(name))
@@ -897,7 +899,7 @@ class Query(object):
                 "is_list": True,
                 "is_transient": False,
                 "expression": """
-                    [get(item, "{}") for item in record.{}]
+                    [get(item, "{}") for item in get(record, "{}")]
                 """.format(field.name, query_b_join_field_name),
                 "depends_on": [query_b_join_field_name]
             })
@@ -908,7 +910,13 @@ class Query(object):
         # Explode new_query records
         return new_query.annotate(
             target_fields,
-            post_annotation_expression="explode(record, fields={})".format(query_b_prefixed_fields))
+            post_annotation_expression="explode(record, fields={})".format(explode_fields))
+
+        # TODO: This doesn't work as expected, I cannot figure out why?
+        # new_query._annotator_params = {
+        #     'post_annotation_expression': "explode(record, fields={})".format(explode_fields)
+        # }
+        # return new_query
 
 
 class BatchQuery(object):
