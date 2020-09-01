@@ -363,10 +363,3 @@ class BaseQueryTest(SolveBioTestCase):
             count += 1
             if count == 10:
                 break
-
-    # def test_join_limit(self):
-    #     query_a = self.dataset2.query(fields=['gene'], limit=2).filter(gene='MAN2B1')
-    #     query_b = self.dataset2.query(fields=['gene'])
-    #     join_query = query_a.join(query_b, key='gene', always_prefix=False)
-    #
-    #     self.assertEqual(len(join_query), 2)

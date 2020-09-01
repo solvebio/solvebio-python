@@ -435,9 +435,8 @@ class Query(object):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
-        if getattr(self, '_total', None) == float('inf'):
-            # TODO: Is there a better way?
-            return 999999999
+        if getattr(self, '_is_join', False):
+            return len(self._buffer)
         return min(self._limit, self.count())
 
     def __nonzero__(self):
@@ -627,13 +626,7 @@ class Query(object):
         self._cursor += 1
         self._buffer_idx += 1
 
-        try:
-            return self._buffer[self._buffer_idx - 1]
-        except IndexError:
-            # If this is a join query, there might not be any more
-            # items in the buffer, and no more data to fetch.
-            # TODO: Should we confirm it is a join?
-            raise StopIteration()
+        return self._buffer[self._buffer_idx - 1]
 
     def _build_query(self, **kwargs):
         q = {}
@@ -821,14 +814,6 @@ class Query(object):
 
         Set prefix to None to use a random prefix.
         Disable always_prefix to only prefix when necessary.
-
-        WARNING:
-
-            This is a limited join in that it will only select
-            one record in dataset B to join for each key.
-            i.e. If multiple records in dataset B have the same key,
-            only ONE will be retrieved.
-
         """
 
         # Generate a random ID for the transient query field
@@ -852,11 +837,11 @@ class Query(object):
 
         # Prepare the filters for the B query expression
         query_params = query_b._build_query()
-        # base_filter = '["{}", get(record, "{}")]'.format(key_b, key)
+        base_filter = '["{}", get(record, "{}")]'.format(key_b, key)
         if query_params.get('filters'):
-            filters = '[{{"and": [{}]}}]'.format(query_params['filters'][0])
+            filters = '[{{"and": [{}, {}]}}]'.format(base_filter, query_params['filters'][0])
         else:
-            filters = '[]'
+            filters = '[{}]'.format(base_filter)
 
         # Try to use a unique field for the sub-query data
         query_b_fields = query_b.fields()
@@ -910,9 +895,8 @@ class Query(object):
                 "is_list": True,
                 "is_transient": False,
                 "expression": """
-                    [get(item, "{}") for item in get(record, "{}") 
-                    if get(item, "{}") == get(record, "{}")]
-                """.format(field.name, query_b_join_field_name, key_b, key),
+                    [get(item, "{}") for item in get(record, "{}")]
+                """.format(field.name, query_b_join_field_name),
                 "depends_on": [query_b_join_field_name]
             })
 
@@ -922,9 +906,7 @@ class Query(object):
         new_query._annotator_params = {
             'post_annotation_expression': "explode(record, fields={})".format(explode_fields)
         }
-        # TODO: Some kind of way of telling the Query object that we don't know
-        #       how many records will come back... might not be necessary though
-        new_query._total = self._limit
+        new_query._is_join = True
         return new_query
 
 
