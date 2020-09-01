@@ -363,3 +363,24 @@ class BaseQueryTest(SolveBioTestCase):
             count += 1
             if count == 10:
                 break
+
+    def test_join_empty_query_a(self):
+        # Empty query_a
+        query_a = self.dataset2.query(fields=['gene']).filter(gene='PoshRoyalGene')
+        query_b = self.dataset2.query(fields=['gene'])
+        join_query = query_a.join(query_b, key='gene')
+
+        self.assertEqual(list(join_query), [])
+
+    def test_join_empty_query_b(self):
+        query_a = self.dataset2.query(fields=['gene'], limit=5).filter(gene='MAN2B1')
+        # Empty query_b
+        query_b = self.dataset2.query(fields=['gene']).filter(gene='PoshRoyalGene')
+        join_query = query_a.join(query_b, key='gene')
+
+        self.assertEqual(len(join_query), 5)
+
+        for row in join_query:
+            for key, value in row.items():
+                if 'b_' in key:
+                    self.assertEqual(value, [])
