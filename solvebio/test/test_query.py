@@ -343,12 +343,11 @@ class BaseQueryTest(SolveBioTestCase):
 
         for row in list(join_query)[:10]:
             self.assertTrue(row.get('query_b_gene'))
-            self.assertTrue(row.get('query_b_rs_id'))
 
     def test_join_disable_always_prefix(self):
         query_a = self.dataset2.query(fields=['gene'], limit=1).filter(gene='MAN2B1')
-        query_b = self.dataset2.query(fields=['rs_id'])
+        query_b = self.dataset2.query(fields=['gene'])
         join_query = query_a.join(query_b, key='gene', always_prefix=False)
 
         for row in list(join_query)[:10]:
-            self.assertTrue(row.get('rs_id'))
+            self.assertTrue(row.get('b_gene'))

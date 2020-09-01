@@ -918,12 +918,6 @@ class Query(object):
         # Add to any existing target fields
         new_query._target_fields += target_fields
 
-        # Explode new_query records
-        # return new_query.annotate(
-        #     target_fields,
-        #     post_annotation_expression="explode(record, fields={})".format(explode_fields))
-
-        # TODO: This doesn't work as expected, I cannot figure out why?
         new_query._annotator_params = {
             'post_annotation_expression': "explode(record, fields={})".format(explode_fields)
         }
