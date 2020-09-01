@@ -924,7 +924,7 @@ class Query(object):
         }
         # TODO: Some kind of way of telling the Query object that we don't know
         #       how many records will come back... might not be necessary though
-        new_query._total = float('inf')
+        new_query._total = self._limit
         return new_query
 
 
