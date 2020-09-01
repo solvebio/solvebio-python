@@ -332,22 +332,34 @@ class BaseQueryTest(SolveBioTestCase):
         query_b = self.dataset2.query(fields=['gene', 'rs_id'])
         join_query = query_a.join(query_b, key='gene')
 
-        for row in list(join_query)[:10]:
+        count = 0
+        for row in join_query:
             self.assertEqual(row['b_gene'], 'MAN2B1')
             self.assertEqual(row['gene'], 'MAN2B1')
+            count += 1
+            if count == 10:
+                break
 
     def test_join_custom_prefix(self):
         query_a = self.dataset2.query(fields=['gene'], limit=1).filter(gene='MAN2B1')
         query_b = self.dataset2.query(fields=['gene', 'rs_id'])
         join_query = query_a.join(query_b, key='gene', prefix='query_b_')
 
-        for row in list(join_query)[:10]:
+        count = 0
+        for row in join_query:
             self.assertTrue(row.get('query_b_gene'))
+            count += 1
+            if count == 10:
+                break
 
     def test_join_disable_always_prefix(self):
         query_a = self.dataset2.query(fields=['gene'], limit=1).filter(gene='MAN2B1')
         query_b = self.dataset2.query(fields=['gene'])
         join_query = query_a.join(query_b, key='gene', always_prefix=False)
 
-        for row in list(join_query)[:10]:
+        count = 0
+        for row in join_query:
             self.assertTrue(row.get('b_gene'))
+            count += 1
+            if count == 10:
+                break
