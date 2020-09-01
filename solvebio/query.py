@@ -852,11 +852,11 @@ class Query(object):
 
         # Prepare the filters for the B query expression
         query_params = query_b._build_query()
-        base_filter = '["{}", get(record, "{}")]'.format(key_b, key)
+        # base_filter = '["{}", get(record, "{}")]'.format(key_b, key)
         if query_params.get('filters'):
-            filters = '[{{"and": [{}, {}]}}]'.format(base_filter, query_params['filters'][0])
+            filters = '[{{"and": [{}]}}]'.format(query_params['filters'][0])
         else:
-            filters = '[{}]'.format(base_filter)
+            filters = '[]'
 
         # Try to use a unique field for the sub-query data
         query_b_fields = query_b.fields()
@@ -910,8 +910,9 @@ class Query(object):
                 "is_list": True,
                 "is_transient": False,
                 "expression": """
-                    [get(item, "{}") for item in get(record, "{}")]
-                """.format(field.name, query_b_join_field_name),
+                    [get(item, "{}") for item in get(record, "{}") 
+                    if get(item, "{}") == get(record, "{}")]
+                """.format(field.name, query_b_join_field_name, key_b, key),
                 "depends_on": [query_b_join_field_name]
             })
 
