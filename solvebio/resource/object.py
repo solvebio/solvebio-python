@@ -485,6 +485,10 @@ class Object(CreateableAPIResource,
     def is_file(self):
         return self.object_type == 'file'
 
+    @property
+    def data_url(self):
+        return '/v2/objects/{}/data'.format(self.solvebio_id)
+
     def has_tag(self, tag):
         """Return True if object contains tag"""
 
@@ -545,3 +549,19 @@ class Object(CreateableAPIResource,
         """Remove tags on an object"""
 
         return self.tag(tags=tags, remove=True, dry_run=dry_run, apply_save=apply_save)
+
+    def query_object_content(self, limit=100, **_kwargs):
+
+        if not self.is_file:
+            raise SolveError('The functionality is only supported for files. '
+                             'This is a {}.'.format(self.object_type))
+
+        # TODO: limit param has been implemented in the API endpoint so far
+        params = {'limit': limit}
+
+        try:
+            resp = self._client.get(self.data_url, params)
+        except SolveError:
+            raise
+
+        return resp
