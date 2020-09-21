@@ -550,18 +550,19 @@ class Object(CreateableAPIResource,
 
         return self.tag(tags=tags, remove=True, dry_run=dry_run, apply_save=apply_save)
 
-    def query_object_content(self, limit=100, **_kwargs):
+    def query(self, limit=1000, **kwargs):
 
         if not self.is_file:
             raise SolveError('The functionality is only supported for files. '
                              'This is a {}.'.format(self.object_type))
 
+        # TODO: delete when issue https://github.com/solvebio/www.solvebio.com/issues/1848
+        #  is resolved
+        if not self.size or not isinstance(self.size, int):
+            raise SolveError('Uploading of an empty file is not allowed.')
+
         # TODO: limit param has been implemented in the API endpoint so far
         params = {'limit': limit}
-
-        try:
-            resp = self._client.get(self.data_url, params)
-        except SolveError:
-            raise
+        resp = self._client.get(self.data_url, params)
 
         return resp
