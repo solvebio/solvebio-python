@@ -430,7 +430,7 @@ class Object(CreateableAPIResource,
         # Valid override attributes that let Object act like a Dataset
         valid_dataset_attrs = [
             # query data
-            'query', 'lookup', 'beacon',
+            'lookup', 'beacon',
             # transform data
             'import_file', 'export', 'migrate',
             # dataset meta
@@ -553,23 +553,19 @@ class Object(CreateableAPIResource,
 
         return self.tag(tags=tags, remove=True, dry_run=dry_run, apply_save=apply_save)
 
-    def query_object(self, query=None, limit=1000, **params):
+    def query(self, **params):
         """S3 Select query against an object"""
+        from solvebio.resource.dataset import Dataset
+
         if not self.is_file and not self.is_dataset:
             raise SolveError('The functionality is only supported for files and datasets. '
                              'This is a {}.'.format(self.object_type))
 
-        params_ = {'limit': limit}
-
         if self.is_dataset:
-            params_.update(params)
-            return self.query(query=query, **params_)
+            return Dataset(self.dataset_id, client=self._client).query(**params)
         else:
-            if not self.size or not isinstance(self.size, int):
-                raise SolveError('An empty file {} cannot be queried.'.format(self.filename))
-
             # TODO: limit param has been implemented in the S3 Select API endpoint so far
-            return self._file_query_object_generator(params_)
+            return self._file_query_object_generator(params)
 
     def _file_query_object_generator(self, params):
         """Helper method that creates a generator for S3 Select query results"""
