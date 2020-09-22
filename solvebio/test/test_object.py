@@ -143,7 +143,7 @@ class ObjectTests(SolveBioTestCase):
         DatasetCreate.side_effect = fake_dataset_create
 
         valid_attrs = [
-            'query', 'lookup', 'beacon',
+            'lookup', 'beacon',
             'import_file', 'export', 'migrate',
             'fields', 'template', 'imports', 'commits',
             'activity', 'saved_queries'

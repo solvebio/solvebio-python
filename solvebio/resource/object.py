@@ -564,7 +564,6 @@ class Object(CreateableAPIResource,
         if self.is_dataset:
             return Dataset(self.dataset_id, client=self._client).query(**params)
         else:
-            # TODO: limit param has been implemented in the S3 Select API endpoint so far
             return self._file_query_object_generator(params)
 
     def _file_query_object_generator(self, params):
