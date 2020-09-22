@@ -286,7 +286,9 @@ class ObjectTests(SolveBioTestCase):
     @mock.patch('solvebio.client.SolveClient.get')
     def test_object_query(self, SolveClientGet, ObjectCreate):
         ObjectCreate.side_effect = fake_object_create
-        valid_response = [{'foo': 1}, {'bar': 2}]
+        valid_response = {
+            'results': [{'foo': 1}, {'bar': 2}]
+        }
 
         file = self.client.Object.create(filename='foo_file.json',
                                          object_type='file',
@@ -298,14 +300,15 @@ class ObjectTests(SolveBioTestCase):
         SolveClientGet.return_value = valid_response
         resp = file.query_object()
 
-        self.assertEqual(resp, valid_response)
+        self.assertEqual(list(resp), valid_response['results'])
 
     @mock.patch('solvebio.resource.Object.create')
     def test_object_query_empty_file(self, ObjectCreate):
         ObjectCreate.side_effect = fake_object_create
 
         file = self.client.Object.create(filename='foo_file.json',
-                                         object_type='file')
+                                         object_type='file',
+                                         size=0)
         from .. import SolveClient
         from solvebio import SolveError
 

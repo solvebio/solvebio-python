@@ -553,17 +553,26 @@ class Object(CreateableAPIResource,
 
         return self.tag(tags=tags, remove=True, dry_run=dry_run, apply_save=apply_save)
 
-    def query_object(self, limit=1000, **kwargs):
+    def query_object(self, query=None, limit=1000, **params):
         """S3 Select query against an object"""
-        if not self.is_file:
-            raise SolveError('The functionality is only supported for files. '
+        if not self.is_file and not self.is_dataset:
+            raise SolveError('The functionality is only supported for files and datasets. '
                              'This is a {}.'.format(self.object_type))
 
-        if not self.size or not isinstance(self.size, int):
-            raise SolveError('An empty file {} cannot be queried.'.format(self.filename))
+        params_ = {'limit': limit}
 
-        # TODO: limit param has been implemented in the API endpoint so far
-        params = {'limit': limit}
+        if self.is_dataset:
+            params_.update(params)
+            return self.query(query=query, **params_)
+        else:
+            if not self.size or not isinstance(self.size, int):
+                raise SolveError('An empty file {} cannot be queried.'.format(self.filename))
+
+            # TODO: limit param has been implemented in the S3 Select API endpoint so far
+            return self._file_query_object_generator(params_)
+
+    def _file_query_object_generator(self, params):
+        """Helper method that creates a generator for S3 Select query results"""
         resp = self._client.get(self.data_url, params)
-
-        return resp
+        for item in resp['results']:
+            yield item
