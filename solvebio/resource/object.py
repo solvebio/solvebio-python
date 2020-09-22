@@ -553,7 +553,7 @@ class Object(CreateableAPIResource,
 
         return self.tag(tags=tags, remove=True, dry_run=dry_run, apply_save=apply_save)
 
-    def query(self, limit=1000, **kwargs):
+    def query_object(self, limit=1000, **kwargs):
         """S3 Select query against an object"""
         if not self.is_file:
             raise SolveError('The functionality is only supported for files. '

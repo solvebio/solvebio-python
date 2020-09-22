@@ -296,7 +296,7 @@ class ObjectTests(SolveBioTestCase):
         file._client = SolveClient()
 
         SolveClientGet.return_value = valid_response
-        resp = file.query()
+        resp = file.query_object()
 
         self.assertEqual(resp, valid_response)
 
@@ -311,7 +311,7 @@ class ObjectTests(SolveBioTestCase):
 
         file._client = SolveClient()
         with self.assertRaises(SolveError) as err:
-            file.query()
+            file.query_object()
 
         self.assertEqual(err.exception.message, 'An empty file {} cannot '
                                                 'be queried.'.format(file.filename))
