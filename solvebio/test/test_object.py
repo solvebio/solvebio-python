@@ -281,3 +281,37 @@ class ObjectTests(SolveBioTestCase):
         self.assertTrue(folder.metadata == [])
 
         folder.delete(force=True)
+
+    @mock.patch('solvebio.resource.Object.create')
+    @mock.patch('solvebio.client.SolveClient.get')
+    def test_object_query(self, SolveClientGet, ObjectCreate):
+        ObjectCreate.side_effect = fake_object_create
+        valid_response = [{'foo': 1}, {'bar': 2}]
+
+        file = self.client.Object.create(filename='foo_file.json',
+                                         object_type='file',
+                                         size=100)
+        from .. import SolveClient
+
+        file._client = SolveClient()
+
+        SolveClientGet.return_value = valid_response
+        resp = file.query()
+
+        self.assertEqual(resp, valid_response)
+
+    @mock.patch('solvebio.resource.Object.create')
+    def test_object_query_empty_file(self, ObjectCreate):
+        ObjectCreate.side_effect = fake_object_create
+
+        file = self.client.Object.create(filename='foo_file.json',
+                                         object_type='file')
+        from .. import SolveClient
+        from solvebio import SolveError
+
+        file._client = SolveClient()
+        with self.assertRaises(SolveError) as err:
+            file.query()
+
+        self.assertEqual(err.exception.message, 'An empty file {} cannot '
+                                                'be queried.'.format(file.filename))
