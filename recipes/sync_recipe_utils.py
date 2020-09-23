@@ -1,6 +1,7 @@
 """
 helper functions for managing recipes
 """
+import sys
 from collections import OrderedDict
 
 import solvebio as sb
@@ -99,6 +100,14 @@ def export_recipes_to_yaml(recipes, yml_file):
         RecipeDumper.add_representer(OrderedDict, _dict_representer)
         RecipeDumper.add_representer(literal, _literal_representer)
 
+        # Needed for python2,
+        # otherwise: 'item': !!python/unicode "some string" is dumped
+        if sys.version_info < (3,0):
+            def represent_unicode(dumper, data):
+                return dumper.represent_scalar(u'tag:yaml.org,2002:str', data)
+
+            RecipeDumper.add_representer(unicode, represent_unicode)
+
         yaml_recipes = []
         for r in recipes:
             recipe_expression = literal(unicode(dict(r)['fields'][0]['expression']))
@@ -117,7 +126,7 @@ def export_recipes_to_yaml(recipes, yml_file):
                            if i not in ['state', 'dictitems'] and dict(r)['fields'][0][i]}
             }
             yaml_recipes.append(recipe_details)
-        yaml.dump({"recipes": yaml_recipes}, outfile, RecipeDumper,
+        yaml.dump({"recipes": yaml_recipes}, outfile, RecipeDumper, encoding='utf-8',
                   default_flow_style=False)
 
     print("Wrote recipe to file: {}".format(yml_file))
