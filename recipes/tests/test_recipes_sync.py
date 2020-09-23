@@ -1,10 +1,10 @@
 import os
 import pytest
 import solvebio as sb
-import sync_recipes
+import recipes.sync_recipes as sync_recipes
 import mock
 from click.testing import CliRunner
-import sync_recipe_utils as sr
+import recipes.sync_recipe_utils as sr
 
 
 def get_input(name):
