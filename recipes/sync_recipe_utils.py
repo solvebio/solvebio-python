@@ -1,15 +1,14 @@
 """
 helper functions for managing recipes
 """
-from typing import OrderedDict
+from collections import OrderedDict
 
 import solvebio as sb
 import ruamel.yaml as yaml
 import click
-from pyparsing import unicode
 
 
-def create_recipe(description: dict):
+def create_recipe(description):
     fields = [description['fields']]
     recipe_version = description['version']
     recipe_name = description['name']
@@ -51,7 +50,7 @@ def get_recipe_by_name_from_yml(all_recipes, name):
     return None
 
 
-def load_recipes_from_yaml(yml_file: str):
+def load_recipes_from_yaml(yml_file):
     with open(yml_file, 'r') as yml:
         all_recipes = yaml.load(yml)
     return all_recipes['recipes']
