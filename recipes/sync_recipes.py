@@ -1,6 +1,6 @@
 import click
 import solvebio as sb
-import sync_recipe_utils as sr
+import recipe.sync_recipe_utils as sr
 
 
 @click.command()

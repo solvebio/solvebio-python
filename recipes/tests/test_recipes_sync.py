@@ -4,7 +4,6 @@ import solvebio as sb
 import recipes.sync_recipes as sync_recipes
 import mock
 from click.testing import CliRunner
-import recipes.sync_recipe_utils as sr
 
 
 def get_input(name):
