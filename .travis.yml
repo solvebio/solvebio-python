@@ -6,6 +6,8 @@ python:
 - '3.8'
 - 'pypy'
 - 'pypy3'
+before_install:
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)
 install:
 - pip install -r requirements-dev.txt
 - pip install PyVCF==0.6.8 XlsxWriter===0.9.3
