@@ -6,7 +6,7 @@ import sys
 import warnings
 
 VERSION = 'undefined'
-install_requires = ['six', 'pyprind']
+install_requires = ['six', 'pyprind', 'pyparsing==2.4.7']
 extra = {}
 
 with open('solvebio/version.py') as f:
@@ -50,14 +50,15 @@ setup(
     author_email='contact@solvebio.com',
     url='https://github.com/solvebio/solvebio-python',
     packages=find_packages(),
-    package_dir={'solvebio': 'solvebio'},
+    package_dir={'solvebio': 'solvebio', 'recipes': 'recipes'},
     test_suite='nose.collector',
     include_package_data=True,
     install_requires=install_requires,
     platforms='any',
     extras_require={},
     entry_points={
-        'console_scripts': ['solvebio = solvebio.cli.main:main']
+        'console_scripts': ['solvebio = solvebio.cli.main:main',
+            'solvebio-recipes = recipes.sync_recipes:sync_recipes']
     },
     classifiers=[
         'Intended Audience :: Science/Research',

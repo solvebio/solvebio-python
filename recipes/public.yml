@@ -1,0 +1,75 @@
+recipes:
+  - name: cDNA Change
+    version: 1.0.0
+    description: Gets the cDNA change from the variant field
+    is_public: true
+    fields:
+      name: cdna_change
+      data_type: string
+      expression: |
+          get(translate_variant(record.variant),'cdna_change')
+          if record.variant else None
+  - name: Gene
+    version: 1.0.0
+    description: Gets the gene symbol from the variant field
+    is_public: true
+    fields:
+      name: gene
+      data_type: string
+      expression: |
+          get(translate_variant(record.variant),'gene')
+          if record.variant else None
+  - name: Protein Change
+    version: 1.0.0
+    description: Gets the protein change from the variant field
+    is_public: true
+    fields:
+      name: protein_change
+      data_type: string
+      expression: |
+        get(translate_variant(record.variant),'protein_change')
+        if record.variant else None
+  - name: gnomAD Allele Frequency
+    version: 1.0.0
+    description: Gets the population allele frequency from gnomAD v2.1.1 - supports both GRCh37 and GRCh38 builds
+    is_public: true
+    fields:
+      name: gnomad_af
+      data_type: float
+      is_list: true
+      expression: |
+        dataset_field_values('solvebio:public:/gnomAD/2.1.1/Exomes-{}'.format(record.variant.split('-')[0]), field='af',
+        entities=[('variant',record.variant)])
+        if get(record,'variant') else None
+  - name: Genes for genomic region
+    description: Returns all the genes within a genomic region - supports both GRCh37 and GRCh38
+    version: 1.0.0
+    is_public: true
+    fields:
+      name: gene
+      data_type: string
+      entity_type: gene
+      is_list: true
+      expression: |
+        dataset_field_values(
+               'solvebio:public:/GENCODE/3.0.0-29/GENCODE-{}'.format(get(record, 'genomic_coordinates.build')),
+               'gene_symbol',
+                entities=[('genomic_region',record.genomic_coordinates)],
+                filters=[('info.gene_type','protein_coding'),('feature','gene')],
+                limit=20000)
+        if get(record,'genomic_coordinates') else None
+  - name: dbSNP
+    description: Adds dbsnp ids using the variant record from a dataset - supports both GRCh37 and GRCh38
+    version: 1.0.0
+    is_public: true
+    fields:
+      name: gene
+      data_type: string
+      entity_type: gene
+      is_list: true
+      expression: |
+        dataset_field_values(
+                'solvebio:public:/dbSNP/2.0.0-b153/Variants-{}'.format(get(record, 'genomic_coordinates.build')),
+                field='row_id',
+                entities=[('variant', record.variant)])
+        if get(record, 'variant') else None
