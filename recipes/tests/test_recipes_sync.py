@@ -33,11 +33,8 @@ def mock_user_retrieve(monkeypatch):
         return usr
     monkeypatch.setattr(sync_recipes.sb.User, "retrieve", retrieve)
 
-
-def test_sync_recipe(
-        mock_dataset_template_retrieve,
-        mock_user_retrieve
-):
+def test_sync_recipe(mock_dataset_template_retrieve,
+                     mock_user_retrieve):
     with pytest.raises(SystemExit) as e:
         sync_recipes.sync_recipes(["--help"])
     assert e.value.code == 0
@@ -81,6 +78,7 @@ def test_sync_recipe(
     result = runner.invoke(sync_recipes.sync_recipes,
                            args=["--mode", "sync", "--all", config2],
                            input="y")
+
     assert result.exit_code == 0
     assert "create Gene (v1.0.3)" in result.output
     assert "create Protein Change (v1.0.4)" in result.output
