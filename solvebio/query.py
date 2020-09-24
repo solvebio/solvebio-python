@@ -949,3 +949,300 @@ class BatchQuery(object):
         _params.update(**params)
         response = self._client.post('/v2/batch_query', _params)
         return response
+
+
+class QueryFile(object):
+    """
+        A Query API request wrapper that generates a request for an object content query,
+        and can iterate through streaming result sets.
+        """
+    # The maximum number of results fetched in one go.
+    DEFAULT_PAGE_SIZE = 100
+
+    # Special case for Query class to pre-set SolveClient
+    _client = None
+
+    def __init__(
+            self,
+            file_id,
+            limit=DEFAULT_PAGE_SIZE,
+            result_class=dict,
+            debug=False,
+            error=None,
+            **kwargs):
+        """
+        Creates a new Query object.
+
+        :Parameters:
+          - `file_id`: Unique ID of file to query.
+          - `result_class` (optional): Class of object returned by query.
+          - `limit` (optional): Maximum number of query results to return.
+          - `page_size` (optional): Number of results to fetch per query page.
+          - `debug` (optional): Sends debug information to the API.
+        """
+        self._file_id = file_id
+        self._data_url = '/v2/objects/{0}/data'.format(file_id)
+        self._result_class = result_class
+        self._debug = debug
+        self._error = error
+
+        # init response and cursor
+        self._response = None
+        # Limit defines the total number of results that will be returned
+        # from a query involving 1 or more pagination requests.
+        self._limit = limit
+        # Page offset can only be set by execute(). It is always set to the
+        # current absolute offset contained in the buffer.
+        self._page_offset = None
+        # slice is set when the Query is being sliced.
+        # In this case, __iter__() and next() will not
+        # reset the page_offset to 0 before iterating.
+        self._slice = None
+
+        # parameter error checking
+        if self._limit < 0:
+            raise Exception('\'limit\' parameter must be >= 0')
+
+        # Set up the SolveClient
+        # (kwargs overrides pre-set, which overrides global)
+        self._client = kwargs.get('client') or self._client or client
+
+    def _clone(self, limit=None):
+        new = self.__class__(self._file_id,
+                             limit=self._limit,
+                             result_class=self._result_class,
+                             debug=self._debug,
+                             client=self._client)
+
+        if limit:
+            new._limit = limit
+
+        return new
+
+    def limit(self, limit):
+        """
+        Returns a new Query instance with the new
+        limit values.
+        """
+        return self._clone(limit=limit)
+
+    def count(self):
+        """
+        Returns the total number of results returned by a query.
+        The count is dependent on the filters, but independent of any limit.
+        It is like SQL:
+           SELECT COUNT(*) FROM <table> [WHERE condition].
+        See also __len__ for a function that is dependent on limit.
+        """
+        # self.total will warm up the response if it needs to
+        return self.total
+
+    def __len__(self):
+        """
+        Returns the total number of results returned in a query. It is the
+        number of items you can iterate over.
+
+        In contrast to count(), the result does take into account any limit
+        given. In SQL it is like:
+
+              SELECT COUNT(*) FROM (
+                 SELECT * FROM <table> [WHERE condition] [LIMIT number]
+              )
+        """
+        return min(self._limit, self.count())
+
+    def __nonzero__(self):
+        return bool(len(self))
+
+    @property
+    def _buffer(self):
+        if self._response is None:
+            logger.debug('warmup (buffer)')
+            self.execute(self._slice.start if self._slice else 0)
+        return self._response['results']
+
+    def __repr__(self):
+        # Check that Query object does not have any previous errors
+        # otherwise, raise the error.
+        if self._error:
+            raise self._error
+
+        if len(self) == 0:
+            return 'Query returned 0 results.'
+
+        return '\n%s\n\n... %s more results.' % (
+            tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
+                     aligns=['right', 'left'], sort=True),
+            pretty_int(len(self) - 1))
+
+    def __getattr__(self, key):
+        if self._response is None:
+            logger.debug('warmup (__getattr__: %s)' % key)
+            self.execute(self._slice.start if self._slice else 0)
+
+        # Check that Query object does not have any previous errors
+        # otherwise, raise the error.
+        # execute() sets the error, so the check is placed after it.
+        if self._error:
+            raise self._error
+
+        if key in self._response:
+            return self._response[key]
+
+        raise AttributeError(
+            '\'%s\' object has no attribute \'%s\'' %
+            (self.__class__.__name__, key))
+
+    @staticmethod
+    def bounded_slice(_slice):
+        return slice(
+            _slice.start if _slice.start is not None else 0,
+            _slice.stop if _slice.stop is not None else float('inf')
+        )
+
+    @staticmethod
+    def as_slice(slice_or_idx):
+        if isinstance(slice_or_idx, slice):
+            return QueryFile.bounded_slice(slice_or_idx)
+        return slice(slice_or_idx, slice_or_idx + 1)
+
+    def __getitem__(self, key):
+        """
+        Retrieve an item or slice from the result set.
+
+        Query's do not support negative indexing.
+
+        :Parameters:
+        - `key`: The requested slice range or index.
+        """
+        if not isinstance(key, (slice,) + six.integer_types):
+            raise TypeError
+
+        if isinstance(key, slice):
+            key = QueryFile.bounded_slice(key)
+            start = 0 if key.start is None else key.start
+            stop = float('inf') if key.stop is None else key.stop
+
+            if start < 0 or stop < 0 or start > stop:
+                raise ValueError('Negative indexing is not supported')
+
+            # If a slice is already set, the new slice should be relative
+            if self._slice:
+                start += self._slice.start
+                stop = min(self._slice.start + stop, self._slice.stop)
+                # Make sure the new relative start position is within
+                # the previous slice.
+                if start >= self._slice.stop:
+                    return []
+
+            # We need to make a few requests to get the data.
+            # We should respect the user's limit if it is smaller than slice.
+            # To prevent the state of page_size/offset from being stored,
+            # we'll clone this object first.
+            q = self._clone()
+            q._limit = min(stop - start, self._limit)
+            # Setting slice will signal to the iter methods the page_offset.
+            q._slice = slice(start, stop)
+            return q
+
+        # Not a slice (key is an int)
+        if key < 0:
+            raise ValueError('Negative indexing is not supported')
+
+        # If a slice already exists, the key is relative to that slice
+        if self._slice:
+            key = key + self._slice.start
+            if key >= self._slice.stop:
+                raise IndexError('list index out of range')
+
+        # Use key as the new page_offset and fetch a new page of results
+        q = self._clone()
+        q._limit = min(1, self._limit)  # Limit may be 0
+        q.execute(key)
+        return q._buffer[0]
+
+    def __iter__(self):
+        # e.g. [r for r in results] will NOT call __getitem__ and
+        # requires that we start iteration from the 0th element
+        self.execute(self._slice.start if self._slice else 0)
+
+        # Reset the cursor
+        self._cursor = 0  # Count the number of results returned
+        self._buffer_idx = 0  # The current position within the buffer
+
+        return self
+
+    def __next__(self):
+        """Python 3"""
+        return self.next()
+
+    def next(self):
+        """
+        Allows the Query object to be an iterable.
+
+        This method will iterate through a cached result set
+        and fetch successive pages as required.
+
+        A `StopIteration` exception will be raised when there aren't
+        any more results available or when the requested result
+        slice range or limit has been fetched.
+
+        Returns: The next result.
+        """
+        if not hasattr(self, '_cursor'):
+            # Iterator not initialized yet
+            self.__iter__()
+
+        # len(self) returns `min(limit, total)` results
+        if self._cursor == len(self):
+            raise StopIteration()
+
+        if self._buffer_idx == len(self._buffer):
+            self.execute(self._page_offset + self._buffer_idx)
+            self._buffer_idx = 0
+
+        self._cursor += 1
+        self._buffer_idx += 1
+
+        return self._buffer[self._buffer_idx - 1]
+
+    def _build_query(self, **kwargs):
+        q = {}
+
+        if self._debug:
+            q['debug'] = 'True'
+
+        # Add or modify query parameters
+        # (used by BatchQuery and facets)
+        q.update(**kwargs)
+
+        return q
+
+    def execute(self, offset=0, **query):
+        """
+        Executes a query. Additional query parameters can be passed
+        as keyword arguments.
+
+        Returns: The request parameters and the raw query response.
+        """
+        _params = self._build_query(**query)
+        self._page_offset = offset
+
+        _params.update(
+            offset=self._page_offset,
+            limit=self._limit
+        )
+
+        logger.debug('executing query. from/limit: %6d/%d' %
+                     (_params['offset'], _params['limit']))
+
+        # If the request results in a SolveError (ie bad filter) set the error.
+        try:
+            self._response = self._client.get(self._data_url, _params)
+        except SolveError as e:
+            self._error = e
+            raise
+
+        logger.debug('query response took: %(took)d ms, total: %(total)d'
+                     % self._response)
+        return _params, self._response

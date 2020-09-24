@@ -554,8 +554,12 @@ class Object(CreateableAPIResource,
         return self.tag(tags=tags, remove=True, dry_run=dry_run, apply_save=apply_save)
 
     def query(self, **params):
-        """S3 Select query against an object"""
+        """
+        Return the Query or QueryFile object depending on object type
+        that represents query results against an object.
+        """
         from solvebio.resource.dataset import Dataset
+        from solvebio.query import QueryFile
 
         if not self.is_file and not self.is_dataset:
             raise SolveError('The functionality is only supported for files and datasets. '
@@ -564,10 +568,4 @@ class Object(CreateableAPIResource,
         if self.is_dataset:
             return Dataset(self.dataset_id, client=self._client).query(**params)
         else:
-            return self._file_query_object_generator(params)
-
-    def _file_query_object_generator(self, params):
-        """Helper method that creates a generator for S3 Select query results"""
-        resp = self._client.get(self.data_url, params)
-        for item in resp['results']:
-            yield item
+            return QueryFile(self['id'], client=self._client, **params)

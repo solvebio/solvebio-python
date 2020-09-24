@@ -287,6 +287,8 @@ class ObjectTests(SolveBioTestCase):
     def test_object_query(self, SolveClientGet, ObjectCreate):
         ObjectCreate.side_effect = fake_object_create
         valid_response = {
+            'took': 100,
+            'total': 2,
             'results': [{'foo': 1}, {'bar': 2}]
         }
 
@@ -294,7 +296,6 @@ class ObjectTests(SolveBioTestCase):
                                          object_type='file',
                                          size=100)
         from .. import SolveClient
-
         file._client = SolveClient()
 
         SolveClientGet.return_value = valid_response
