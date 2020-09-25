@@ -297,7 +297,8 @@ class Object(CreateableAPIResource,
 
         # Get MD5, mimetype, and file size for the object
         local_md5, _ = md5sum(local_path, multipart_threshold=None)
-        _, mimetype = mimetypes.guess_type(local_path)
+        mime_tuple = mimetypes.guess_type(local_path)
+        mimetype = mime_tuple[1] if mime_tuple[1] else mime_tuple[0]
         size = os.path.getsize(local_path)
 
         # Check if object exists already and compare md5sums
