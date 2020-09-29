@@ -6,7 +6,7 @@ import sys
 import warnings
 
 VERSION = 'undefined'
-install_requires = ['six', 'pyprind', 'pyparsing==2.4.7']
+install_requires = ['six', 'pyprind']
 extra = {}
 
 with open('solvebio/version.py') as f:

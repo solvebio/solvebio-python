@@ -69,7 +69,7 @@ recipes:
       is_list: true
       expression: |
         dataset_field_values(
-                'solvebio:public:/dbSNP/2.0.0-b153/Variants-{}'.format(get(record, 'genomic_coordinates.build')),
+                'solvebio:public:/dbSNP/2.0.0-b151/Variants-{}'.format(get(record, 'genomic_coordinates.build')),
                 field='row_id',
                 entities=[('variant', record.variant)])
         if get(record, 'variant') else None
