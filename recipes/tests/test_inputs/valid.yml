@@ -1,0 +1,11 @@
+recipes:
+  - name: cDNA Change
+    version: 1.0.2
+    description: Gets the cDNA change from the variant field
+    is_public: true
+    fields:
+      name: cdna_change
+      data_type: string
+      expression: |
+          get(translate_variant(record.variant),'cdna_change')
+          if record.variant else None
