@@ -59,13 +59,12 @@ recipes:
                 limit=20000)
         if get(record,'genomic_coordinates') else None
   - name: dbSNP
-    description: Adds dbsnp ids using the variant record from a dataset - supports both GRCh37 and GRCh38
+    description: Adds dbSNP rs_ids using the variant - supports both GRCh37 and GRCh38
     version: 1.0.0
     is_public: true
     fields:
-      name: gene
+      name: rs_id
       data_type: string
-      entity_type: gene
       is_list: true
       expression: |
         dataset_field_values(
