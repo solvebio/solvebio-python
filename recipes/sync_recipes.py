@@ -1,6 +1,14 @@
-import click
+import sys
 import solvebio as sb
-import recipes.sync_recipe_utils as sr
+
+
+try:
+    import click  # noqa
+    import recipes.sync_recipe_utils as sr
+except ImportError:
+    print("The SolveBio recipes tools requires additonal dependencies."
+          "To install them, type: 'pip install -r recipes/requirements.txt'")
+    sys.exit(1)
 
 
 @click.command()
