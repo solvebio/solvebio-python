@@ -35,7 +35,7 @@ def delete_recipe(recipe_name):
         click.echo("{} doesn't exist!".format(recipe_name))
         return
     for recipe in existing_recipe:
-        recipe.delete()
+        recipe.delete(force=True)
 
 
 def sync_recipe(recipe):

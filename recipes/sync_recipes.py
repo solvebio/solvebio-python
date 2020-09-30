@@ -56,7 +56,8 @@ def sync_recipes(ctx, recipes_file, mode, account_recipes=None, public_recipes=N
                 prompt_delete("{} (v{})".format(yml_recipe['name'], yml_recipe['version']))
         elif name and mode == 'sync':
             yml_recipe = sr.get_recipe_by_name_from_yml(yml_recipes, name)
-            prompt_sync(yml_recipe)
+            if yml_recipe:
+                prompt_sync(yml_recipe)
         elif name and mode == 'delete':
             prompt_delete(name)
 
