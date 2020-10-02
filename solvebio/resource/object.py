@@ -285,20 +285,17 @@ class Object(CreateableAPIResource,
         _client = kwargs.pop('client', None) or cls._client or client
 
         local_path = os.path.expanduser(local_path)
-        # TODO: the if statement below can be deleted when
-        #  the issue https://github.com/solvebio/www.solvebio.com/issues/1848
-        #  is resolved
-        if os.stat(local_path).st_size == 0:
-            print('Notice: Cannot upload empty file {0}'.format(local_path))
-            return
 
         # Get vault
         vault = Vault.get_by_full_path(vault_full_path, client=_client)
 
-        # Get MD5, mimetype, and file size for the object
+        # Get MD5
         local_md5, _ = md5sum(local_path, multipart_threshold=None)
+        # Get a mimetype of file
         mime_tuple = mimetypes.guess_type(local_path)
+        # If a file is compressed get a compression type, otherwise a file type
         mimetype = mime_tuple[1] if mime_tuple[1] else mime_tuple[0]
+        # Get file size
         size = os.path.getsize(local_path)
 
         # Check if object exists already and compare md5sums
@@ -562,11 +559,10 @@ class Object(CreateableAPIResource,
         from solvebio.resource.dataset import Dataset
         from solvebio.query import QueryFile
 
-        if not self.is_file and not self.is_dataset:
-            raise SolveError('The functionality is only supported for files and datasets. '
-                             'This is a {}.'.format(self.object_type))
-
         if self.is_dataset:
             return Dataset(self.dataset_id, client=self._client).query(**params)
-        else:
+        elif self.is_file:
             return QueryFile(self['id'], client=self._client, **params)
+        else:
+            raise SolveError('The functionality is only supported for files and datasets. '
+                             'This is a {}.'.format(self.object_type))

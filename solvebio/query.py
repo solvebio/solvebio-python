@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+from abc import ABCMeta
+
 import six
 import json
 import uuid
@@ -219,17 +221,212 @@ class GenomicFilter(Filter):
         return '<GenomicFilter {0}>'.format(self.filters)
 
 
-class Query(object):
+@six.add_metaclass(ABCMeta)
+class QueryBase(object):
     """
-    A Query API request wrapper that generates a request from Filter objects,
-    and can iterate through streaming result sets.
+    A helper abstract mixin class that contains
+    common methods for Query and QueryFile classes.
     """
-    # The maximum number of results fetched in one go. Note however
-    # that iterating over a query can cause more fetches.
+
+    # The maximum number of results fetched in one go.
     DEFAULT_PAGE_SIZE = 100
 
     # Special case for Query class to pre-set SolveClient
     _client = None
+
+    def limit(self, limit):
+        """
+        Returns a new Query instance with the new
+        limit values.
+        """
+        return self._clone(limit=limit)
+
+    def count(self):
+        """
+        Returns the total number of results returned by a query.
+        The count is dependent on the filters, but independent of any limit.
+        It is like SQL:
+           SELECT COUNT(*) FROM <table> [WHERE condition].
+        See also __len__ for a function that is dependent on limit.
+        """
+        # self.total will warm up the response if it needs to
+        return self.total
+
+    def __len__(self):
+        """
+        Returns the total number of results returned in a query. It is the
+        number of items you can iterate over.
+
+        In contrast to count(), the result does take into account any limit
+        given. In SQL it is like:
+
+              SELECT COUNT(*) FROM (
+                 SELECT * FROM <table> [WHERE condition] [LIMIT number]
+              )
+        """
+        return min(self._limit, self.count())
+
+    def __nonzero__(self):
+        return bool(len(self))
+
+    @property
+    def _buffer(self):
+        if self._response is None:
+            logger.debug('warmup (buffer)')
+            self.execute(self._slice.start if self._slice else 0)
+        return self._response['results']
+
+    def __repr__(self):
+        # Check that Query object does not have any previous errors
+        # otherwise, raise the error.
+        if self._error:
+            raise self._error
+
+        if len(self) == 0:
+            return 'Query returned 0 results.'
+
+        return '\n%s\n\n... %s more results.' % (
+            tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
+                     aligns=['right', 'left'], sort=True),
+            pretty_int(len(self) - 1))
+
+    def __getattr__(self, key):
+        if self._response is None:
+            logger.debug('warmup (__getattr__: %s)' % key)
+            self.execute(self._slice.start if self._slice else 0)
+
+        # Check that Query object does not have any previous errors
+        # otherwise, raise the error.
+        # execute() sets the error, so the check is placed after it.
+        if self._error:
+            raise self._error
+
+        if key in self._response:
+            return self._response[key]
+
+        raise AttributeError(
+            '\'%s\' object has no attribute \'%s\'' %
+            (self.__class__.__name__, key))
+
+    @staticmethod
+    def bounded_slice(_slice):
+        return slice(
+            _slice.start if _slice.start is not None else 0,
+            _slice.stop if _slice.stop is not None else float('inf')
+        )
+
+    @staticmethod
+    def as_slice(slice_or_idx):
+        if isinstance(slice_or_idx, slice):
+            return QueryFile.bounded_slice(slice_or_idx)
+        return slice(slice_or_idx, slice_or_idx + 1)
+
+    def __getitem__(self, key):
+        """
+        Retrieve an item or slice from the result set.
+
+        Query's do not support negative indexing.
+
+        :Parameters:
+        - `key`: The requested slice range or index.
+        """
+        if not isinstance(key, (slice,) + six.integer_types):
+            raise TypeError
+
+        if isinstance(key, slice):
+            key = QueryFile.bounded_slice(key)
+            start = 0 if key.start is None else key.start
+            stop = float('inf') if key.stop is None else key.stop
+
+            if start < 0 or stop < 0 or start > stop:
+                raise ValueError('Negative indexing is not supported')
+
+            # If a slice is already set, the new slice should be relative
+            if self._slice:
+                start += self._slice.start
+                stop = min(self._slice.start + stop, self._slice.stop)
+                # Make sure the new relative start position is within
+                # the previous slice.
+                if start >= self._slice.stop:
+                    return []
+
+            # We need to make a few requests to get the data.
+            # We should respect the user's limit if it is smaller than slice.
+            # To prevent the state of page_size/offset from being stored,
+            # we'll clone this object first.
+            q = self._clone()
+            q._limit = min(stop - start, self._limit)
+            # Setting slice will signal to the iter methods the page_offset.
+            q._slice = slice(start, stop)
+            return q
+
+        # Not a slice (key is an int)
+        if key < 0:
+            raise ValueError('Negative indexing is not supported')
+
+        # If a slice already exists, the key is relative to that slice
+        if self._slice:
+            key = key + self._slice.start
+            if key >= self._slice.stop:
+                raise IndexError('list index out of range')
+
+        # Use key as the new page_offset and fetch a new page of results
+        q = self._clone()
+        q._limit = min(1, self._limit)  # Limit may be 0
+        q.execute(key)
+        return q._buffer[0]
+
+    def __iter__(self):
+        # e.g. [r for r in results] will NOT call __getitem__ and
+        # requires that we start iteration from the 0th element
+        self.execute(self._slice.start if self._slice else 0)
+
+        # Reset the cursor
+        self._cursor = 0  # Count the number of results returned
+        self._buffer_idx = 0  # The current position within the buffer
+
+        return self
+
+    def __next__(self):
+        """Python 3"""
+        return self.next()
+
+    def next(self):
+        """
+        Allows the Query object to be an iterable.
+
+        This method will iterate through a cached result set
+        and fetch successive pages as required.
+
+        A `StopIteration` exception will be raised when there aren't
+        any more results available or when the requested result
+        slice range or limit has been fetched.
+
+        Returns: The next result.
+        """
+        if not hasattr(self, '_cursor'):
+            # Iterator not initialized yet
+            self.__iter__()
+
+        # len(self) returns `min(limit, total)` results
+        if self._cursor == len(self):
+            raise StopIteration()
+
+        if self._buffer_idx == len(self._buffer):
+            self.execute(self._page_offset + self._buffer_idx)
+            self._buffer_idx = 0
+
+        self._cursor += 1
+        self._buffer_idx += 1
+
+        return self._buffer[self._buffer_idx - 1]
+
+
+class Query(QueryBase):
+    """
+    A Query API request wrapper that generates a request from Filter objects,
+    and can iterate through streaming result sets.
+    """
 
     def __init__(
             self,
@@ -242,7 +439,7 @@ class Query(object):
             entities=None,
             ordering=None,
             limit=float('inf'),
-            page_size=DEFAULT_PAGE_SIZE,
+            page_size=QueryBase.DEFAULT_PAGE_SIZE,
             result_class=dict,
             target_fields=None,
             annotator_params=None,
@@ -339,13 +536,6 @@ class Query(object):
 
         return new
 
-    def limit(self, limit):
-        """
-        Returns a new Query instance with the new
-        limit values.
-        """
-        return self._clone(limit=limit)
-
     def filter(self, *filters, **kwargs):
         """
         Returns this Query instance with the query args combined with
@@ -383,17 +573,6 @@ class Query(object):
         """
         return self._clone(
             filters=[GenomicFilter(chromosome, position, exact=exact)])
-
-    def count(self):
-        """
-        Returns the total number of results returned by a query.
-        The count is dependent on the filters, but independent of any limit.
-        It is like SQL:
-           SELECT COUNT(*) FROM <table> [WHERE condition].
-        See also __len__ for a function that is dependent on limit.
-        """
-        # self.total will warm up the response if it needs to
-        return self.total
 
     def facets(self, *args, **kwargs):
         """
@@ -437,17 +616,8 @@ class Query(object):
         """
         if getattr(self, '_is_join', False):
             return len(self._buffer)
-        return min(self._limit, self.count())
-
-    def __nonzero__(self):
-        return bool(len(self))
-
-    @property
-    def _buffer(self):
-        if self._response is None:
-            logger.debug('warmup (buffer)')
-            self.execute(self._slice.start if self._slice else 0)
-        return self._response['results']
+        # return min(self._limit, self.count())
+        return super(Query, self).__len__()
 
     @classmethod
     def _process_filters(cls, filters):
@@ -482,151 +652,6 @@ class Query(object):
                 data.extend((f,))
 
         return data
-
-    def __repr__(self):
-        # Check that Query object does not have any previous errors
-        # otherwise, raise the error.
-        if self._error:
-            raise self._error
-
-        if len(self) == 0:
-            return 'Query returned 0 results.'
-
-        return '\n%s\n\n... %s more results.' % (
-            tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
-                     aligns=['right', 'left'], sort=True),
-            pretty_int(len(self) - 1))
-
-    def __getattr__(self, key):
-        if self._response is None:
-            logger.debug('warmup (__getattr__: %s)' % key)
-            self.execute(self._slice.start if self._slice else 0)
-
-        # Check that Query object does not have any previous errors
-        # otherwise, raise the error.
-        # execute() sets the error, so the check is placed after it.
-        if self._error:
-            raise self._error
-
-        if key in self._response:
-            return self._response[key]
-
-        raise AttributeError(
-            '\'%s\' object has no attribute \'%s\'' %
-            (self.__class__.__name__, key))
-
-    @staticmethod
-    def bounded_slice(_slice):
-        return slice(
-            _slice.start if _slice.start is not None else 0,
-            _slice.stop if _slice.stop is not None else float('inf')
-        )
-
-    @staticmethod
-    def as_slice(slice_or_idx):
-        if isinstance(slice_or_idx, slice):
-            return Query.bounded_slice(slice_or_idx)
-        return slice(slice_or_idx, slice_or_idx + 1)
-
-    def __getitem__(self, key):
-        """
-        Retrieve an item or slice from the result set.
-
-        Query's do not support negative indexing.
-
-        :Parameters:
-        - `key`: The requested slice range or index.
-        """
-        if not isinstance(key, (slice,) + six.integer_types):
-            raise TypeError
-
-        if isinstance(key, slice):
-            key = Query.bounded_slice(key)
-            start = 0 if key.start is None else key.start
-            stop = float('inf') if key.stop is None else key.stop
-
-            if start < 0 or stop < 0 or start > stop:
-                raise ValueError('Negative indexing is not supported')
-
-            # If a slice is already set, the new slice should be relative
-            if self._slice:
-                start += self._slice.start
-                stop = min(self._slice.start + stop, self._slice.stop)
-                # Make sure the new relative start position is within
-                # the previous slice.
-                if start >= self._slice.stop:
-                    return []
-
-            # We need to make a few requests to get the data.
-            # We should respect the user's limit if it is smaller than slice.
-            # To prevent the state of page_size/offset from being stored,
-            # we'll clone this object first.
-            q = self._clone()
-            q._limit = min(stop - start, self._limit)
-            # Setting slice will signal to the iter methods the page_offset.
-            q._slice = slice(start, stop)
-            return q
-
-        # Not a slice (key is an int)
-        if key < 0:
-            raise ValueError('Negative indexing is not supported')
-
-        # If a slice already exists, the key is relative to that slice
-        if self._slice:
-            key = key + self._slice.start
-            if key >= self._slice.stop:
-                raise IndexError('list index out of range')
-
-        # Use key as the new page_offset and fetch a new page of results
-        q = self._clone()
-        q._limit = min(1, self._limit)  # Limit may be 0
-        q.execute(key)
-        return q._buffer[0]
-
-    def __iter__(self):
-        # e.g. [r for r in results] will NOT call __getitem__ and
-        # requires that we start iteration from the 0th element
-        self.execute(self._slice.start if self._slice else 0)
-
-        # Reset the cursor
-        self._cursor = 0  # Count the number of results returned
-        self._buffer_idx = 0  # The current position within the buffer
-
-        return self
-
-    def __next__(self):
-        """Python 3"""
-        return self.next()
-
-    def next(self):
-        """
-        Allows the Query object to be an iterable.
-
-        This method will iterate through a cached result set
-        and fetch successive pages as required.
-
-        A `StopIteration` exception will be raised when there aren't
-        any more results available or when the requested result
-        slice range or limit has been fetched.
-
-        Returns: The next result.
-        """
-        if not hasattr(self, '_cursor'):
-            # Iterator not initialized yet
-            self.__iter__()
-
-        # len(self) returns `min(limit, total)` results
-        if self._cursor == len(self):
-            raise StopIteration()
-
-        if self._buffer_idx == len(self._buffer):
-            self.execute(self._page_offset + self._buffer_idx)
-            self._buffer_idx = 0
-
-        self._cursor += 1
-        self._buffer_idx += 1
-
-        return self._buffer[self._buffer_idx - 1]
 
     def _build_query(self, **kwargs):
         q = {}
@@ -951,21 +976,16 @@ class BatchQuery(object):
         return response
 
 
-class QueryFile(object):
+class QueryFile(QueryBase):
     """
         A Query API request wrapper that generates a request for an object content query,
         and can iterate through streaming result sets.
         """
-    # The maximum number of results fetched in one go.
-    DEFAULT_PAGE_SIZE = 100
-
-    # Special case for Query class to pre-set SolveClient
-    _client = None
 
     def __init__(
             self,
             file_id,
-            limit=DEFAULT_PAGE_SIZE,
+            limit=QueryBase.DEFAULT_PAGE_SIZE,
             result_class=dict,
             debug=False,
             error=None,
@@ -1018,193 +1038,6 @@ class QueryFile(object):
             new._limit = limit
 
         return new
-
-    def limit(self, limit):
-        """
-        Returns a new Query instance with the new
-        limit values.
-        """
-        return self._clone(limit=limit)
-
-    def count(self):
-        """
-        Returns the total number of results returned by a query.
-        The count is dependent on the filters, but independent of any limit.
-        It is like SQL:
-           SELECT COUNT(*) FROM <table> [WHERE condition].
-        See also __len__ for a function that is dependent on limit.
-        """
-        # self.total will warm up the response if it needs to
-        return self.total
-
-    def __len__(self):
-        """
-        Returns the total number of results returned in a query. It is the
-        number of items you can iterate over.
-
-        In contrast to count(), the result does take into account any limit
-        given. In SQL it is like:
-
-              SELECT COUNT(*) FROM (
-                 SELECT * FROM <table> [WHERE condition] [LIMIT number]
-              )
-        """
-        return min(self._limit, self.count())
-
-    def __nonzero__(self):
-        return bool(len(self))
-
-    @property
-    def _buffer(self):
-        if self._response is None:
-            logger.debug('warmup (buffer)')
-            self.execute(self._slice.start if self._slice else 0)
-        return self._response['results']
-
-    def __repr__(self):
-        # Check that Query object does not have any previous errors
-        # otherwise, raise the error.
-        if self._error:
-            raise self._error
-
-        if len(self) == 0:
-            return 'Query returned 0 results.'
-
-        return '\n%s\n\n... %s more results.' % (
-            tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
-                     aligns=['right', 'left'], sort=True),
-            pretty_int(len(self) - 1))
-
-    def __getattr__(self, key):
-        if self._response is None:
-            logger.debug('warmup (__getattr__: %s)' % key)
-            self.execute(self._slice.start if self._slice else 0)
-
-        # Check that Query object does not have any previous errors
-        # otherwise, raise the error.
-        # execute() sets the error, so the check is placed after it.
-        if self._error:
-            raise self._error
-
-        if key in self._response:
-            return self._response[key]
-
-        raise AttributeError(
-            '\'%s\' object has no attribute \'%s\'' %
-            (self.__class__.__name__, key))
-
-    @staticmethod
-    def bounded_slice(_slice):
-        return slice(
-            _slice.start if _slice.start is not None else 0,
-            _slice.stop if _slice.stop is not None else float('inf')
-        )
-
-    @staticmethod
-    def as_slice(slice_or_idx):
-        if isinstance(slice_or_idx, slice):
-            return QueryFile.bounded_slice(slice_or_idx)
-        return slice(slice_or_idx, slice_or_idx + 1)
-
-    def __getitem__(self, key):
-        """
-        Retrieve an item or slice from the result set.
-
-        Query's do not support negative indexing.
-
-        :Parameters:
-        - `key`: The requested slice range or index.
-        """
-        if not isinstance(key, (slice,) + six.integer_types):
-            raise TypeError
-
-        if isinstance(key, slice):
-            key = QueryFile.bounded_slice(key)
-            start = 0 if key.start is None else key.start
-            stop = float('inf') if key.stop is None else key.stop
-
-            if start < 0 or stop < 0 or start > stop:
-                raise ValueError('Negative indexing is not supported')
-
-            # If a slice is already set, the new slice should be relative
-            if self._slice:
-                start += self._slice.start
-                stop = min(self._slice.start + stop, self._slice.stop)
-                # Make sure the new relative start position is within
-                # the previous slice.
-                if start >= self._slice.stop:
-                    return []
-
-            # We need to make a few requests to get the data.
-            # We should respect the user's limit if it is smaller than slice.
-            # To prevent the state of page_size/offset from being stored,
-            # we'll clone this object first.
-            q = self._clone()
-            q._limit = min(stop - start, self._limit)
-            # Setting slice will signal to the iter methods the page_offset.
-            q._slice = slice(start, stop)
-            return q
-
-        # Not a slice (key is an int)
-        if key < 0:
-            raise ValueError('Negative indexing is not supported')
-
-        # If a slice already exists, the key is relative to that slice
-        if self._slice:
-            key = key + self._slice.start
-            if key >= self._slice.stop:
-                raise IndexError('list index out of range')
-
-        # Use key as the new page_offset and fetch a new page of results
-        q = self._clone()
-        q._limit = min(1, self._limit)  # Limit may be 0
-        q.execute(key)
-        return q._buffer[0]
-
-    def __iter__(self):
-        # e.g. [r for r in results] will NOT call __getitem__ and
-        # requires that we start iteration from the 0th element
-        self.execute(self._slice.start if self._slice else 0)
-
-        # Reset the cursor
-        self._cursor = 0  # Count the number of results returned
-        self._buffer_idx = 0  # The current position within the buffer
-
-        return self
-
-    def __next__(self):
-        """Python 3"""
-        return self.next()
-
-    def next(self):
-        """
-        Allows the Query object to be an iterable.
-
-        This method will iterate through a cached result set
-        and fetch successive pages as required.
-
-        A `StopIteration` exception will be raised when there aren't
-        any more results available or when the requested result
-        slice range or limit has been fetched.
-
-        Returns: The next result.
-        """
-        if not hasattr(self, '_cursor'):
-            # Iterator not initialized yet
-            self.__iter__()
-
-        # len(self) returns `min(limit, total)` results
-        if self._cursor == len(self):
-            raise StopIteration()
-
-        if self._buffer_idx == len(self._buffer):
-            self.execute(self._page_offset + self._buffer_idx)
-            self._buffer_idx = 0
-
-        self._cursor += 1
-        self._buffer_idx += 1
-
-        return self._buffer[self._buffer_idx - 1]
 
     def _build_query(self, **kwargs):
         q = {}
