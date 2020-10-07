@@ -2,6 +2,8 @@ import click
 import recipes.sync_recipe_utils as sr
 import solvebio as sb
 
+__version__ = '1.0.0'
+
 
 @click.group()
 @click.option('--access-token', help='Manually provide a SolveBio Access Token')
@@ -10,7 +12,8 @@ import solvebio as sb
 @click.pass_context
 def sync_recipes(ctx, api_key=None, access_token=None, api_host=None):
 
-    sb.login(api_key=api_key, access_token=access_token, api_host=api_host)
+    sb.login(api_key=api_key, access_token=access_token, api_host=api_host,
+             version=__version__, name="SolveBio Recipes")
     user = sb.User.retrieve()
 
     click.echo('Logged-in as: {} ({})'.format(
