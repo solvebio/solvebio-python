@@ -1,29 +1,35 @@
 recipes:
-- annotator_params:
-    annotator: parallel
+- name: dbSNP (v1.0.0)
   description: Adds dbSNP rs_ids using the variant - supports both GRCh37 and GRCh38
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: rs_id
+    is_list: true
     expression: |
       dataset_field_values(
               'solvebio:public:/dbSNP/2.0.0-b151/Variants-{}'.format(get(record, 'genomic_coordinates.build')),
               field='row_id',
               entities=[('variant', record.variant)])
       if get(record, 'variant') else None
-    is_list: true
     name: rs_id
-    title: rs_id
-  is_public: 'True'
-  name: dbSNP (v1.0.0)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Genes for genomic region (v1.0.0)
   description: Returns all the genes within a genomic region - supports both GRCh37
     and GRCh38
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
     entity_type: gene
+    title: gene
+    is_list: true
     expression: |
       dataset_field_values(
              'solvebio:public:/GENCODE/3.0.0-29/GENCODE-{}'.format(get(record, 'genomic_coordinates.build')),
@@ -32,78 +38,79 @@ recipes:
               filters=[('info.gene_type','protein_coding'),('feature','gene')],
               limit=20000)
       if get(record,'genomic_coordinates') else None
-    is_list: true
     name: gene
-    title: gene
-  is_public: 'True'
-  name: Genes for genomic region (v1.0.0)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: gnomAD Allele Frequency (v1.0.0)
   description: Gets the population allele frequency from gnomAD v2.1.1 - supports
     both GRCh37 and GRCh38 builds
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: float
+    title: gnomad_af
+    is_list: true
     expression: |
       dataset_field_values('solvebio:public:/gnomAD/2.1.1/Exomes-{}'.format(record.variant.split('-')[0]), field='af',
       entities=[('variant',record.variant)])
       if get(record,'variant') else None
-    is_list: true
     name: gnomad_af
-    title: gnomad_af
-  is_public: 'True'
-  name: gnomAD Allele Frequency (v1.0.0)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Protein Change (v1.0.0)
   description: Gets the protein change from the variant field
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: protein_change
     expression: |
       get(translate_variant(record.variant),'protein_change')
       if record.variant else None
     name: protein_change
-    title: protein_change
-  is_public: 'True'
-  name: Protein Change (v1.0.0)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Gene (v1.0.0)
   description: Gets the gene symbol from the variant field
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: gene
     expression: |
       get(translate_variant(record.variant),'gene')
       if record.variant else None
     name: gene
-    title: gene
-  is_public: 'True'
-  name: Gene (v1.0.0)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: cDNA Change (v1.0.0)
   description: Gets the cDNA change from the variant field
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: cdna_change
     expression: |
       get(translate_variant(record.variant),'cdna_change')
       if record.variant else None
     name: cdna_change
-    title: cdna_change
-  is_public: 'True'
-  name: cDNA Change (v1.0.0)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: ClinVar clinical significance (GRCh38)
   description: Annotate this variant with the current ClinVar clinical significance.
     Requires valid GRCh38 variant field.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: Clinvar
+    ordering: 8
+    is_list: true
     expression: |-
       dataset_field_values(
           'solvebio:public:/ClinVar/5.0.0-20190805/Variants-GRCH38',
@@ -111,81 +118,81 @@ recipes:
           entities=[('variant', record.variant)],
           limit=1
       )  if get(record, 'variant') else None
-    is_list: true
     name: clinvar
-    ordering: 8
-    title: Clinvar
-  is_public: 'True'
-  name: ClinVar clinical significance (GRCh38)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Crossmap (GRCh37 -> GRCh38)
   description: Use crossmap to convert GRCh37 coordinates to GRCh38 coordinates.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
-    data_type: string
-    entity_type: variant
+    title: variant
     expression: |-
       crossmap(record.variant, 'GRCH38')  if get(record, 'variant') else None
     name: variant
-    title: variant
-  is_public: 'True'
-  name: Crossmap (GRCh37 -> GRCh38)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
-  description: Use crossmap to convert GRCh38 coordinates to GRCh37 coordinates.
-  fields:
     data_type: string
     entity_type: variant
+- name: Crossmap (GRCh38 -> GRCh37)
+  description: Use crossmap to convert GRCh38 coordinates to GRCh37 coordinates.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
+  fields:
+    title: variant
     expression: |-
       crossmap(record.variant, 'GRCH37')  if get(record, 'variant') else None
     name: variant
-    title: variant
-  is_public: 'True'
-  name: Crossmap (GRCh38 -> GRCh37)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+    data_type: string
+    entity_type: variant
+- name: Nucleotide change
   description: Returns the ref sequence and the alt sequence separated by >. Requires
     valid variant.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
-    data_type: string
     description: Returns the ref sequence and the alt sequence separated by >.
+    data_type: string
+    title: Nucleotide change
     expression: |-
       '>'.join([genomic_sequence('-'.join(record.variant.split('-')[:4])), record.variant.split('-')[4]])  if get(record, 'variant') else None
     name: nucleotide_change
-    title: Nucleotide change
-  is_public: 'True'
-  name: Nucleotide change
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Nucleotide context
   description: Returns the neighboring reference sequence for a given variant (1 position
     on each side). For example, a SNV will return the trinucleotide context. Requires
     valid variant.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
-    data_type: string
     description: The neighboring reference sequence for a given variant (1 position
       on each side). For example, a SNV will return the trinucleotide context.
+    data_type: string
+    title: Nucleotide context
     expression: |-
       genomic_sequence('-'.join([record.variant.split('-')[0], record.variant.split('-')[1], str(int(record.variant.split('-')[2])-1), str(int(record.variant.split('-')[3])+1)]))  if get(record, 'variant') else None
     name: nucleotide_context
-    title: Nucleotide context
-  is_public: 'True'
-  name: Nucleotide context
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: 'TCGA cancers count (GRCh37) '
   description: TCGA cancer types with at least one occurrence of this variant. Requires
     valid variant field. GRCh37 variants only.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
-    data_type: string
     description: TCGA cancers that have at last one occurrence of this variant
+    data_type: string
+    title: TCGA cancers
+    ordering: 12
+    is_list: true
     expression: |-
       [facet.get('term') for facet in dataset_field_top_terms(
           'solvebio:public:/TCGA/2.0.0-2018-mc3-v0.2.8/SomaticMutations-GRCh37',
@@ -193,36 +200,35 @@ recipes:
           entities=[('variant', record.variant)],
           limit=100
       )] if get(record, 'variant') else None
-    is_list: true
     name: tcga_cancers
-    ordering: 12
-    title: TCGA cancers
-  is_public: 'True'
-  name: 'TCGA cancers count (GRCh37) '
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Split by comma
   description: Split a comma-delimited string into a list of values. Requires field
     named PMIDs with multiple comma separated PubMed IDs.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: PubMed ID
+    ordering: 10
     entity_type: literature
+    is_list: true
     expression: |-
       record.PMIDs.split(', ')  if get(record, 'PMIDs') else None
-    is_list: true
     name: pubmed_id
-    ordering: 10
-    title: PubMed ID
-  is_public: 'True'
-  name: Split by comma
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: "Prevalence in TCGA (gene)\t"
   description: Prevalence of mutations in this gene in TCGA. Requires valid gene field.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: double
+    title: Prevalence
+    ordering: 12
     expression: |-
       prevalence(
           'solvebio:public:/TCGA/2.0.0-2018-mc3-v0.2.8/SomaticMutations-GRCh37',
@@ -230,33 +236,34 @@ recipes:
           sample_field='sample_barcode'
       )  if get(record, 'gene') else None
     name: prevalence
-    ordering: 12
-    title: Prevalence
-  is_public: 'True'
-  name: "Prevalence in TCGA (gene)\t"
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Predict variant effect (variant)
   description: Predicts effect of this variant in sequence ontology terms with veppy.
     Requires valid variant field.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: Effects
+    ordering: 9
     expression: |-
       predict_variant_effects(record.variant)[0].get('so_term') if get(record, 'variant') else None
     name: effects
-    ordering: 9
-    title: Effects
-  is_public: 'True'
-  name: Predict variant effect (variant)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: ClinVar clinical significance (GRCh37)
   description: Annotate this variant with the current ClinVar clinical significance.
     Requires valid GRCh37 variant field.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: Clinvar
+    ordering: 8
+    is_list: true
     expression: |-
       dataset_field_values(
           'solvebio:public:/ClinVar/5.0.0-20190805/Variants-GRCH37',
@@ -264,34 +271,34 @@ recipes:
           entities=[('variant', record.variant)],
           limit=1
       ) if get(record, 'variant') else None
-    is_list: true
     name: clinvar
-    ordering: 8
-    title: Clinvar
-  is_public: 'True'
-  name: ClinVar clinical significance (GRCh37)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Current user
   description: Save the current user
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: object
+    title: Last updated by
+    ordering: 1
     expression: |-
       user()
     name: last_updated_by
-    ordering: 1
-    title: Last updated by
-  is_public: 'True'
-  name: Current user
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Diseases (gene)
   description: Diseases associated with this gene from NHGRI's Clinical Genomic Database.
     Requires valid gene field.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: Diseases
+    ordering: 11
+    is_list: true
     expression: |-
       dataset_field_values(
           'solvebio:public:/CGD/1.2.0-2017-06-19/CGD',
@@ -299,20 +306,19 @@ recipes:
           entities=[('gene', record.gene)],
           limit=1
       )  if get(record, 'gene') else None
-    is_list: true
     name: diseases
-    ordering: 11
-    title: Diseases
-  is_public: 'True'
-  name: Diseases (gene)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: 'ExAC allele frequency (GRCh37) '
   description: Find the allele frequency of this variant in all of ExAC. Requires
     valid variant field. GRCh37 only.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: double
+    title: Exac AF
+    ordering: 7
     expression: |-
       dataset_field_values(
               'solvebio:public:/ExAC/2.1.0-r1/ExAC-GRCh37',
@@ -320,18 +326,18 @@ recipes:
               entities=[('variant', record.variant)],
               limit=1)  if get(record, 'variant') else None
     name: exac_af
-    ordering: 7
-    title: Exac AF
-  is_public: 'True'
-  name: 'ExAC allele frequency (GRCh37) '
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: ExAC allele frequency (GRCh38)
   description: Find the allele frequency of this variant in all of ExAC. Requires
     valid variant field. GRCh38 only.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: double
+    title: Exac AF
+    ordering: 7
     expression: |-
       dataset_field_values(
               'solvebio:public:/ExAC/2.1.0-r1/ExAC-GRCh38',
@@ -339,18 +345,18 @@ recipes:
               entities=[('variant', record.variant)],
               limit=1)  if get(record, 'variant') else None
     name: exac_af
-    ordering: 7
-    title: Exac AF
-  is_public: 'True'
-  name: ExAC allele frequency (GRCh38)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Gene synonyms (gene)
   description: Annotate each record with gene synonyms from HUGO. Requires valid gene
     field.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: object
+    title: HUGO
+    ordering: 12
     expression: |-
       dataset_query(
           'solvebio:public:/HGNC/3.1.0-2017-06-29/HGNC',
@@ -359,47 +365,48 @@ recipes:
           limit=1
       )  if get(record, 'gene') else None
     name: hugo
-    ordering: 12
-    title: HUGO
-  is_public: 'True'
-  name: Gene synonyms (gene)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Normalize variant (variant)
   description: Normalize existing variant (left shifted, minimal representation).
     Requires valid variant field.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: Normalized
+    ordering: 2
     expression: |-
       normalize_variant(record.variant) if get(record, 'variant') else None
     name: variant_normalized
-    ordering: 2
-    title: Normalized
-  is_public: 'True'
-  name: Normalize variant (variant)
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Current time
   description: Creates a field with the current time
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: date
+    title: Date Modified
+    ordering: 3
     expression: |-
       now()
     name: date_modified
-    ordering: 3
-    title: Date Modified
-  is_public: 'True'
-  name: Current time
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: 'Cancer beacons '
   description: 'Make a list of cancer-related datasets that each variant in this dataset
     is found in. Requires valid variant field.  '
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: Cancer Beacons
+    ordering: 5
+    is_list: true
     expression: |-
       [ds.split('/')[1] for ds in [
               'solvebio:public:/3DHotSpots/1.0.0-2017-01/SignificantResidues-GRCh37',
@@ -413,28 +420,21 @@ recipes:
               ])
           )
       ]  if get(record, 'variant') else None
-    is_list: true
     name: cancer_beacons
-    ordering: 5
-    title: Cancer Beacons
-  is_public: 'True'
-  name: 'Cancer beacons '
-  template_type: recipe
-  version: 1.0.0
-- annotator_params:
-    annotator: parallel
+- name: Map variant entity (GRCh38)
   description: Use SolveBio's entity mapping engine to find the matching variant for
     a field named alteration containing HGVS, rs ID, or gene and amino acid change.
     This will return a GRCh38 variant.
+  template_type: recipe
+  is_public: 'True'
+  version: 1.0.0
+  annotator_params:
+    annotator: parallel
   fields:
     data_type: string
+    title: Variant
+    ordering: 2
     entity_type: variant
     expression: |-
       entity_ids('variant', record.alteration) if get(record, 'alteration') else None
     name: variant
-    ordering: 2
-    title: Variant
-  is_public: 'True'
-  name: Map variant entity (GRCh38)
-  template_type: recipe
-  version: 1.0.0
