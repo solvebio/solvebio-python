@@ -833,12 +833,12 @@ class Query(QueryBase):
 
         return Annotator(fields, client=self._client, **kwargs).annotate(self)
 
-    def join(self, query_b, key, key_b=None, prefix="b_", always_prefix=True):
+    def join(self, query_b, key, key_b=None, prefix="b_", always_prefix=False):
         """Performs a left outer join between the current
         query (query A) and another query (query B).
 
         Set prefix to None to use a random prefix.
-        Disable always_prefix to only prefix when necessary.
+        Enable always_prefix to always apply a prefix.
         """
 
         # Generate a random ID for the transient query field
@@ -870,6 +870,11 @@ class Query(QueryBase):
 
         # Try to use a unique field for the sub-query data
         query_b_fields = query_b.fields()
+
+        # If a joining key in both datasets is the same then remove it from query_b
+        if key_b == key:
+            query_b_fields = [item for item in query_b_fields if not item.name == key_b]
+
         query_b_join_field_name = "join_{}".format(join_id)
         target_fields = [
             {

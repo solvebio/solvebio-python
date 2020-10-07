@@ -329,37 +329,37 @@ class BaseQueryTest(SolveBioTestCase):
 
     def test_join(self):
         query_a = self.dataset2.query(fields=['gene'], limit=1).filter(gene='MAN2B1')
-        query_b = self.dataset2.query(fields=['gene', 'rs_id'])
+        query_b = self.dataset2.query(fields=['gene', 'variant'])
         join_query = query_a.join(query_b, key='gene')
 
         count = 0
         for row in join_query:
-            self.assertEqual(row['b_gene'], 'MAN2B1')
+            self.assertTrue('b_gene' not in row)
             self.assertEqual(row['gene'], 'MAN2B1')
             count += 1
             if count == 10:
                 break
 
     def test_join_custom_prefix(self):
-        query_a = self.dataset2.query(fields=['gene'], limit=1).filter(gene='MAN2B1')
-        query_b = self.dataset2.query(fields=['gene', 'rs_id'])
+        query_a = self.dataset2.query(fields=['gene', 'variant'], limit=1).filter(gene='MAN2B1')
+        query_b = self.dataset2.query(fields=['gene', 'variant'])
         join_query = query_a.join(query_b, key='gene', prefix='query_b_')
 
         count = 0
         for row in join_query:
-            self.assertTrue(row.get('query_b_gene'))
+            self.assertTrue('query_b_variant' in row)
             count += 1
             if count == 10:
                 break
 
-    def test_join_disable_always_prefix(self):
+    def test_join_enable_always_prefix(self):
         query_a = self.dataset2.query(fields=['gene'], limit=1).filter(gene='MAN2B1')
-        query_b = self.dataset2.query(fields=['gene'])
-        join_query = query_a.join(query_b, key='gene', always_prefix=False)
+        query_b = self.dataset2.query(fields=['gene', 'variant'])
+        join_query = query_a.join(query_b, key='gene', always_prefix=True)
 
         count = 0
         for row in join_query:
-            self.assertTrue(row.get('b_gene'))
+            self.assertTrue('b_variant' in row)
             count += 1
             if count == 10:
                 break
