@@ -90,14 +90,13 @@ def export_recipes_to_yaml(recipes, yml_file):
 
         def _dict_representer(dumper, data):
             return dumper.represent_mapping(
-                yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-                data.items())
+                yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, data.items())
 
         def _literal_representer(dumper, data):
             return dumper.represent_scalar(
                 u'tag:yaml.org,2002:str', data, style='|')
 
-        RecipeDumper.add_representer(OrderedDict, _dict_representer)
+        RecipeDumper.add_representer(dict, _dict_representer)
         RecipeDumper.add_representer(literal, _literal_representer)
 
         # Needed for python2,
