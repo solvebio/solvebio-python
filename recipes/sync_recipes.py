@@ -78,9 +78,10 @@ def delete(ctx, recipes_file, all=False, name=None):
 @click.pass_context
 def export(ctx, recipes_file, account_recipes, public_recipes):
     if account_recipes:
+        user = sb.User.retrieve()
         click.echo("Exporting recipes for account {} to {}."
-                   .format(sync_recipes.obj["USER"]['account']['id'], recipes_file))
-        sr.export_recipes_to_yaml(sr.get_account_recipes(sync_recipes.obj["USER"]), recipes_file)
+                   .format(user['account']['id'], recipes_file))
+        sr.export_recipes_to_yaml(sr.get_account_recipes(user), recipes_file)
         click.echo("Recipes successfully exported!")
     elif public_recipes:
         click.echo("Exporting all public recipes to {}.".format(recipes_file))
@@ -89,6 +90,7 @@ def export(ctx, recipes_file, account_recipes, public_recipes):
     else:
         ctx.fail("Export mode should be used with --account-recipes or --public-recipes!")
     return
+
 
 def prompt_sync(yml_recipe):
     if sb.DatasetTemplate.all(name="{} (v{})".format(yml_recipe['name'], yml_recipe['version'])):
