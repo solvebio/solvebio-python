@@ -64,7 +64,15 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
 
     def _can_rollback(self):
         """Check if this commit can be reverted"""
-        resp = self._client.get(self._beacon_url(), {})
+        # NOTE this always returns a 400....
+        try:
+            resp = self._client.get(self._rollback_url(), {})
+        except Exception:
+            # TODO
+            # how to get the valid details?
+            # add special kwarg to client.request() to allow 400 as valid response?
+            raise
+
         return resp['is_blocked'], resp['detail'], \
             [convert_to_solve_object(dc) for dc in resp['blocking_commits']]
 

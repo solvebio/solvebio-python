@@ -13,6 +13,7 @@ from .apiresource import DeletableAPIResource
 from .task import Task
 from .datasetfield import DatasetField
 from .datasetexport import DatasetExport
+from .datasetcommit import DatasetCommit
 from .datasetmigration import DatasetMigration
 
 
@@ -291,6 +292,18 @@ class Dataset(CreateableAPIResource,
             time.sleep(sleep_seconds)
 
         return list(activity)
+
+    def revert(self):
+        """Revert the most recent commit"""
+        commit_ids = [c.id for c in self.commits()]
+        if not commit_ids:
+            print("WARNING: No commits exist on this dataset")
+            return
+
+        # Sort commits by oldest
+        commit_ids = sorted(commit_ids, reverse=True)
+        commit = DatasetCommit(id=commit_ids[0])
+        return commit.rollback()
 
     #
     # Vault properties
