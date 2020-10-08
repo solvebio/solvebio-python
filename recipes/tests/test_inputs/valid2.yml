@@ -1,0 +1,21 @@
+recipes:
+  - name: Gene
+    version: 1.0.3
+    description: Gets the gene symbol from the variant field
+    is_public: true
+    fields:
+      name: gene
+      data_type: string
+      expression: |
+        get(translate_variant(record.variant),'gene')
+        if record.variant else None
+  - name: Protein Change
+    version: 1.0.4
+    description: Gets the protein change from the variant field
+    is_public: true
+    fields:
+      name: protein_change
+      data_type: string
+      expression: |
+        get(translate_variant(record.variant),'protein_change')
+        if record.variant else None

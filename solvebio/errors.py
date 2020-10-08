@@ -53,10 +53,8 @@ class SolveError(Exception):
                 else:
                     self.message += '\nError (%s): ' % k
 
-                if isinstance(v, list):
-                    self.message += ', '.join(v)
-                else:
-                    self.message += str(v)
+                # can be a list, dict, string
+                self.message += str(v)
 
     def __str__(self):
         return self.message

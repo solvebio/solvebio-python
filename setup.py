@@ -27,6 +27,17 @@ elif sys.version_info < (2, 7):
 else:
     install_requires.append('requests>=2.0.0')
 
+
+# solvebio-recipes requires additional packages
+recipes_requires = [
+    'pyyaml==5.3.1',
+    'click==7.1.2',
+    'ruamel.yaml==0.16.12'
+]
+extras_requires = {
+    "recipes": recipes_requires
+}
+
 # Adjustments for Python 2 vs 3
 if sys.version_info < (3, 0):
     # Get simplejson if we don't already have json
@@ -34,6 +45,9 @@ if sys.version_info < (3, 0):
         import json  # noqa
     except ImportError:
         install_requires.append('simplejson')
+
+    # solvebio-recipes only available in python3
+    extras_requires = {}
 else:
     extra['use_2to3'] = True
 
@@ -50,14 +64,15 @@ setup(
     author_email='contact@solvebio.com',
     url='https://github.com/solvebio/solvebio-python',
     packages=find_packages(),
-    package_dir={'solvebio': 'solvebio'},
+    package_dir={'solvebio': 'solvebio', 'recipes': 'recipes'},
     test_suite='nose.collector',
     include_package_data=True,
     install_requires=install_requires,
     platforms='any',
-    extras_require={},
+    extras_require=extras_requires,
     entry_points={
-        'console_scripts': ['solvebio = solvebio.cli.main:main']
+        'console_scripts': ['solvebio = solvebio.cli.main:main',
+                            'solvebio-recipes = recipes.sync_recipes:sync_recipes']
     },
     classifiers=[
         'Intended Audience :: Science/Research',

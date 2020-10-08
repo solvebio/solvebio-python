@@ -6,12 +6,15 @@ python:
 - '3.8'
 - 'pypy'
 - 'pypy3'
+before_install:
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)
 install:
 - pip install -r requirements-dev.txt
 - pip install PyVCF==0.6.8 XlsxWriter===0.9.3
 script:
 - stty cols 80
-- nosetests -e test_solvebio_auth
+- nosetests -e test_solvebio_auth -e recipes
+- pytest recipes/tests/test_recipes_sync.py
 - flake8 solvebio
 notifications:
   email: false
