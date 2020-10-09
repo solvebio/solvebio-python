@@ -874,7 +874,7 @@ class Query(QueryBase):
 
         # If a joining key in both datasets is the same and
         # it is not the only one field then remove it from query_b
-        if key_b == key and len(query_b_fields) == 1 and query_b_fields[0].name != key_b:
+        if key_b == key and not (len(query_b_fields) == 1 and query_b_fields[0].name == key_b):
             query_b_fields = [item for item in query_b_fields if not item.name == key_b]
 
         query_b_join_field_name = "join_{}".format(join_id)
@@ -904,7 +904,6 @@ class Query(QueryBase):
         ]
 
         # Get list of fields to join from query B
-        explode_fields = []
         for field in query_b_fields:
             # If "always prefix" is enable, or the field name is found
             # in existing list of names, add the prefix.
@@ -912,8 +911,6 @@ class Query(QueryBase):
                 name = prefix + field.name
             else:
                 name = field.name
-
-            explode_fields.append(name)
 
             if name in existing_field_names:
                 raise Exception("Field '{}' found in both queries, "
