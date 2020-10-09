@@ -852,6 +852,10 @@ class Query(QueryBase):
 
         # Prepare new returned query object
         new_query = self._clone()
+
+        # Set prefix in order to use it in a mutiple join
+        new_query._prefix = join_id + '_'
+
         # Set list of existing field names to avoid overwriting fields
         # in the join.
         existing_field_names = [f.name for f in self.fields()]
@@ -914,7 +918,10 @@ class Query(QueryBase):
             explode_fields.append(name)
 
             if name in existing_field_names:
-                logger.warning("Field '{}' will be overwritten in the join results".format(name))
+                _name = new_query._prefix + field.name
+                logger.warning("Field '{}' will be overwritten in the join results as '{}'. ".
+                               format(name, _name))
+                name = _name
 
             target_fields.append({
                 "name": name,
@@ -932,6 +939,9 @@ class Query(QueryBase):
 
         # Add to any existing target fields
         new_query._target_fields += target_fields
+
+        # Extend explode_fields with prefixed fields to be exploded
+        explode_fields = [field['name'] for field in new_query._target_fields if 'join' not in field['name']]
 
         new_query._annotator_params = {
             'post_annotation_expression': "explode(record, fields={})".format(explode_fields)
