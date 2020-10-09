@@ -14,6 +14,8 @@ class BaseQueryTest(SolveBioTestCase):
         super(BaseQueryTest, self).setUp()
         self.dataset = self.client.Object.get_by_full_path(
             self.TEST_DATASET_FULL_PATH)
+        self.dataset2 = self.client.Object.get_by_full_path(
+            self.TEST_DATASET_FULL_PATH_2)
 
     def test_basic(self):
         results = self.dataset.query().filter(
@@ -326,22 +328,59 @@ class BaseQueryTest(SolveBioTestCase):
             assert "@solvebio.com" in record['user']
 
     def test_join(self):
-        query_a = self.dataset.query(fields=['symbol']).filter(symbol='A1BG')
-        query_b = self.dataset.query(fields=['symbol', 'entrez_id'])
-        join_query = query_a.join(query_b, key='symbol')
-        expect = [{'b_symbol': 'A1BG', 'symbol': 'A1BG', 'b_entrez_id': '1.0'}]
-        self.assertEqual(list(join_query), expect)
+        query_a = self.dataset2.query(fields=['gene'], limit=1).filter(gene='MAN2B1')
+        query_b = self.dataset2.query(fields=['gene', 'variant'])
+        join_query = query_a.join(query_b, key='gene')
+
+        count = 0
+        for row in join_query:
+            self.assertTrue('b_gene' not in row)
+            self.assertEqual(row['gene'], 'MAN2B1')
+            count += 1
+            if count == 10:
+                break
 
     def test_join_custom_prefix(self):
-        query_a = self.dataset.query(fields=['symbol']).filter(symbol='A1BG')
-        query_b = self.dataset.query(fields=['symbol', 'entrez_id'])
-        join_query = query_a.join(query_b, key='symbol', prefix='query_b_')
-        expect = [{'query_b_symbol': 'A1BG', 'symbol': 'A1BG', 'query_b_entrez_id': '1.0'}]
-        self.assertEqual(list(join_query), expect)
+        query_a = self.dataset2.query(fields=['gene', 'variant'], limit=1).filter(gene='MAN2B1')
+        query_b = self.dataset2.query(fields=['gene', 'variant'])
+        join_query = query_a.join(query_b, key='gene', prefix='query_b_')
 
-    def test_join_disable_always_prefix(self):
-        query_a = self.dataset.query(fields=['symbol']).filter(symbol='A1BG')
-        query_b = self.dataset.query(fields=['entrez_id'])
-        join_query = query_a.join(query_b, key='symbol', always_prefix=False)
-        expect = [{'symbol': 'A1BG', 'entrez_id': '1.0'}]
-        self.assertEqual(list(join_query), expect)
+        count = 0
+        for row in join_query:
+            self.assertTrue('query_b_variant' in row)
+            count += 1
+            if count == 10:
+                break
+
+    def test_join_enable_always_prefix(self):
+        query_a = self.dataset2.query(fields=['gene'], limit=1).filter(gene='MAN2B1')
+        query_b = self.dataset2.query(fields=['gene', 'variant'])
+        join_query = query_a.join(query_b, key='gene', always_prefix=True)
+
+        count = 0
+        for row in join_query:
+            self.assertTrue('b_variant' in row)
+            count += 1
+            if count == 10:
+                break
+
+    def test_join_empty_query_a(self):
+        # Empty query_a
+        query_a = self.dataset2.query(fields=['gene']).filter(gene='PoshRoyalGene')
+        query_b = self.dataset2.query(fields=['gene'])
+        join_query = query_a.join(query_b, key='gene')
+
+        self.assertEqual(list(join_query), [])
+
+    def test_join_empty_query_b(self):
+        query_a = self.dataset2.query(fields=['gene'], limit=5).filter(gene='MAN2B1')
+        # Empty query_b
+        query_b = self.dataset2.query(fields=['gene']).filter(gene='PoshRoyalGene')
+        join_query = query_a.join(query_b, key='gene')
+
+        self.assertEqual(len(join_query), 5)
+
+        for row in join_query:
+            for key, value in row.items():
+                if 'b_' in key:
+                    self.assertEqual(value, [])

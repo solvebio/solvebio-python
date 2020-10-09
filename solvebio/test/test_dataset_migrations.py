@@ -52,9 +52,11 @@ class TestDatasetMigrations(SolveBioTestCase):
     def test_migration_from_query_target_object(self, Create):
         Create.side_effect = fake_migration_create
 
-        source = self.client.Object(1, object_type='dataset')
+        source = self.client.Object(1)
         source.dataset_id = source.id
-        target = self.client.Object(2, object_type='dataset')
+        source.object_type = 'dataset'
+        target = self.client.Object(2)
+        target.object_type = 'dataset'
 
         query = source\
             .query(limit=10, fields=['my_field'])\
