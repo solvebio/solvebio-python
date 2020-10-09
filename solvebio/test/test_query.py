@@ -383,4 +383,4 @@ class BaseQueryTest(SolveBioTestCase):
         for row in join_query:
             for key, value in row.items():
                 if 'b_' in key:
-                    self.assertEqual(value, [])
+                    self.assertEqual(value, None)

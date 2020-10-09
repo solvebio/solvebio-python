@@ -853,9 +853,6 @@ class Query(QueryBase):
         # Prepare new returned query object
         new_query = self._clone()
 
-        # Set prefix in order to use it in a mutiple join
-        new_query._prefix = join_id + '_'
-
         # Set list of existing field names to avoid overwriting fields
         # in the join.
         existing_field_names = [f.name for f in self.fields()]
@@ -875,8 +872,9 @@ class Query(QueryBase):
         # Try to use a unique field for the sub-query data
         query_b_fields = query_b.fields()
 
-        # If a joining key in both datasets is the same then remove it from query_b
-        if key_b == key:
+        # If a joining key in both datasets is the same and
+        # it is not the only one field then remove it from query_b
+        if key_b == key and len(query_b_fields) == 1 and query_b_fields[0].name != key_b:
             query_b_fields = [item for item in query_b_fields if not item.name == key_b]
 
         query_b_join_field_name = "join_{}".format(join_id)
@@ -918,10 +916,8 @@ class Query(QueryBase):
             explode_fields.append(name)
 
             if name in existing_field_names:
-                _name = new_query._prefix + field.name
-                logger.warning("Field '{}' will be overwritten in the join results as '{}'. ".
-                               format(name, _name))
-                name = _name
+                raise Exception("Field '{}' found in both queries, "
+                                "please use a different prefix.".format(name))
 
             target_fields.append({
                 "name": name,
