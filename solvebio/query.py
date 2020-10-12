@@ -941,8 +941,8 @@ class Query(QueryBase):
         new_query._target_fields += target_fields
 
         new_query._annotator_params = {
-            'post_annotation_expression': "explode(record, fields={})".
-                format(new_query._explode_fields)
+            'post_annotation_expression':
+                "explode(record, fields={})".format(new_query._explode_fields)
         }
         new_query._is_join = True
         return new_query
