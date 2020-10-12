@@ -384,3 +384,16 @@ class BaseQueryTest(SolveBioTestCase):
             for key, value in row.items():
                 if 'b_' in key:
                     self.assertEqual(value, None)
+
+    def test_join_multiple_join(self):
+        query_a = self.dataset2.query(fields=['gene'], limit=1).filter(gene='MAN2B1')
+        query_b = self.dataset2.query(fields=['gene'])
+        query_c = self.dataset2.query(fields=['gene'])
+
+        join_query = query_a.join(query_b, key='gene', prefix='b_')
+        multiple_join_query = join_query.join(query_c, key='gene', prefix='c_')
+
+        for record in multiple_join_query:
+            self.assertTrue('gene' in record)
+            self.assertTrue('b_gene' in record)
+            self.assertTrue('c_gene' in record)
