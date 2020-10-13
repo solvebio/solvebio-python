@@ -854,8 +854,7 @@ class Query(QueryBase):
         new_query = self._clone()
 
         # Initialize _explode_fields attribute if it does not exist
-        new_query._explode_fields = [] if not getattr(self, '_explode_fields', None) \
-            else self._explode_fields
+        new_query._explode_fields = getattr(self, '_explode_fields', None) or []
 
         # Set list of existing field names to avoid overwriting fields
         # in the join.
