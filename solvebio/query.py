@@ -852,6 +852,10 @@ class Query(QueryBase):
 
         # Prepare new returned query object
         new_query = self._clone()
+
+        # Initialize _explode_fields attribute if it does not exist
+        new_query._explode_fields = getattr(self, '_explode_fields', None) or []
+
         # Set list of existing field names to avoid overwriting fields
         # in the join.
         existing_field_names = [f.name for f in self.fields()]
@@ -871,8 +875,9 @@ class Query(QueryBase):
         # Try to use a unique field for the sub-query data
         query_b_fields = query_b.fields()
 
-        # If a joining key in both datasets is the same then remove it from query_b
-        if key_b == key:
+        # If a joining key in both datasets is the same and
+        # it is not the only one field in a query_b then remove it from query_b
+        if key_b == key and not (len(query_b_fields) == 1 and query_b_fields[0].name == key_b):
             query_b_fields = [item for item in query_b_fields if not item.name == key_b]
 
         query_b_join_field_name = "join_{}".format(join_id)
@@ -902,7 +907,6 @@ class Query(QueryBase):
         ]
 
         # Get list of fields to join from query B
-        explode_fields = []
         for field in query_b_fields:
             # If "always prefix" is enable, or the field name is found
             # in existing list of names, add the prefix.
@@ -911,10 +915,12 @@ class Query(QueryBase):
             else:
                 name = field.name
 
-            explode_fields.append(name)
-
             if name in existing_field_names:
-                logger.warning("Field '{}' will be overwritten in the join results".format(name))
+                raise Exception("Field '{}' found in both queries, "
+                                "please use a different prefix.".format(name))
+
+            # Add a newly created field to list that will be passed to the explode function
+            new_query._explode_fields.append(name)
 
             target_fields.append({
                 "name": name,
@@ -934,7 +940,8 @@ class Query(QueryBase):
         new_query._target_fields += target_fields
 
         new_query._annotator_params = {
-            'post_annotation_expression': "explode(record, fields={})".format(explode_fields)
+            'post_annotation_expression':
+                "explode(record, fields={})".format(new_query._explode_fields)
         }
         new_query._is_join = True
         return new_query
