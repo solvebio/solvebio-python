@@ -285,16 +285,17 @@ class Object(CreateableAPIResource,
         _client = kwargs.pop('client', None) or cls._client or client
 
         local_path = os.path.expanduser(local_path)
-        if os.stat(local_path).st_size == 0:
-            print('Notice: Cannot upload empty file {0}'.format(local_path))
-            return
 
         # Get vault
         vault = Vault.get_by_full_path(vault_full_path, client=_client)
 
-        # Get MD5, mimetype, and file size for the object
+        # Get MD5
         local_md5, _ = md5sum(local_path, multipart_threshold=None)
-        _, mimetype = mimetypes.guess_type(local_path)
+        # Get a mimetype of file
+        mime_tuple = mimetypes.guess_type(local_path)
+        # If a file is compressed get a compression type, otherwise a file type
+        mimetype = mime_tuple[1] if mime_tuple[1] else mime_tuple[0]
+        # Get file size
         size = os.path.getsize(local_path)
 
         # Check if object exists already and compare md5sums
@@ -427,7 +428,7 @@ class Object(CreateableAPIResource,
         # Valid override attributes that let Object act like a Dataset
         valid_dataset_attrs = [
             # query data
-            'query', 'lookup', 'beacon',
+            'lookup', 'beacon',
             # transform data
             'import_file', 'export', 'migrate',
             # dataset meta
@@ -484,6 +485,10 @@ class Object(CreateableAPIResource,
     @property
     def is_file(self):
         return self.object_type == 'file'
+
+    @property
+    def data_url(self):
+        return '/v2/objects/{}/data'.format(self.solvebio_id)
 
     def has_tag(self, tag):
         """Return True if object contains tag"""
@@ -545,3 +550,19 @@ class Object(CreateableAPIResource,
         """Remove tags on an object"""
 
         return self.tag(tags=tags, remove=True, dry_run=dry_run, apply_save=apply_save)
+
+    def query(self, **params):
+        """
+        Return the Query or QueryFile object depending on object type
+        that represents query results against an object.
+        """
+        from solvebio.resource.dataset import Dataset
+        from solvebio.query import QueryFile
+
+        if self.is_dataset:
+            return Dataset(self.dataset_id, client=self._client).query(**params)
+        elif self.is_file:
+            return QueryFile(self['id'], client=self._client, **params)
+        else:
+            raise SolveError('The functionality is only supported for files and datasets. '
+                             'This is a {}.'.format(self.object_type))

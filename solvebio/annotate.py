@@ -28,6 +28,8 @@ class Annotator(object):
             'annotator',
             'debug',
             'include_errors',
+            'post_annotation_expression',
+            'pre_annotation_expression'
         ]
         self.annotator_params = {}
         for key in annotator_param_keys:

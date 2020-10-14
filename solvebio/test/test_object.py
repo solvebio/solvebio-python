@@ -143,7 +143,7 @@ class ObjectTests(SolveBioTestCase):
         DatasetCreate.side_effect = fake_dataset_create
 
         valid_attrs = [
-            'query', 'lookup', 'beacon',
+            'lookup', 'beacon',
             'import_file', 'export', 'migrate',
             'fields', 'template', 'imports', 'commits',
             'activity', 'saved_queries'
@@ -281,3 +281,24 @@ class ObjectTests(SolveBioTestCase):
         self.assertTrue(folder.metadata == [])
 
         folder.delete(force=True)
+
+    @mock.patch('solvebio.resource.Object.create')
+    @mock.patch('solvebio.client.SolveClient.get')
+    def test_object_query(self, SolveClientGet, ObjectCreate):
+        ObjectCreate.side_effect = fake_object_create
+        valid_response = {
+            'took': 100,
+            'total': 2,
+            'results': [{'foo': 1}, {'bar': 2}]
+        }
+
+        file = self.client.Object.create(filename='foo_file.json',
+                                         object_type='file',
+                                         size=100)
+        from .. import SolveClient
+        file._client = SolveClient()
+
+        SolveClientGet.return_value = valid_response
+        resp = file.query()
+
+        self.assertEqual(list(resp), valid_response['results'])
