@@ -282,6 +282,16 @@ class ObjectTests(SolveBioTestCase):
 
         folder.delete(force=True)
 
+    def test_object_serialize_metadata(self):
+        tpl = self.client.DatasetTemplate()
+        tpl.name = "test"
+        res = tpl.serialize(tpl)
+        self.assertEqual(res, {'name': 'test'})
+
+        tpl.metadata = {"hello": "world"}
+        res = tpl.serialize(tpl)
+        self.assertEqual(res, {'metadata': {'hello': 'world'}, 'name': 'test'})
+
     @mock.patch('solvebio.resource.Object.create')
     @mock.patch('solvebio.client.SolveClient.get')
     def test_object_query(self, SolveClientGet, ObjectCreate):

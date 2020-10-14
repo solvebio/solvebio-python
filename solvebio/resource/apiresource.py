@@ -315,7 +315,7 @@ class UpdateableAPIResource(APIResource):
         unsaved_values = obj._unsaved_values
 
         # adding 'metadata' attribute to be serialized
-        if getattr(obj, 'metadata'):
+        if getattr(obj, 'metadata', None) is not None:
             unsaved_values.add('metadata')
 
         for k in unsaved_values:
