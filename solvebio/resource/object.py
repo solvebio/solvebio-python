@@ -421,6 +421,11 @@ class Object(CreateableAPIResource,
     def ls(self, **params):
         return self.objects(**params)
 
+    def search(self, query='', **params):
+        params['parent_object_id'] = self.parent_object_id
+        params['object_type'] = self.object_type
+        return super(Object, self).search(query, **params)
+
     def __getattr__(self, name):
         """Shortcut to access attributes of the underlying Dataset resource"""
         from solvebio.resource import Dataset
