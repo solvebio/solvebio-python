@@ -388,7 +388,7 @@ class Object(CreateableAPIResource,
 
         return obj
 
-    def _object_list_helper(self, **params):
+    def _object_list_helper(self, query='', **params):
         """Helper method to get objects within"""
 
         if not self.is_folder:
@@ -403,28 +403,34 @@ class Object(CreateableAPIResource,
         else:
             params['parent_object_id'] = self.id
 
+        if query:
+            params['q'] = query
+
         items = self.all(client=self._client, **params)
         return items
 
-    def files(self, **params):
-        return self._object_list_helper(object_type='file', **params)
+    def files(self, query='', **params):
+        query = query or params.pop('query', '')
+        params.pop('object_type', None)
+        return self._object_list_helper(object_type='file', query=query, **params)
 
-    def folders(self, **params):
-        return self._object_list_helper(object_type='folder', **params)
+    def folders(self, query='', **params):
+        query = query or params.pop('query', '')
+        params.pop('object_type', None)
+        return self._object_list_helper(object_type='folder', query=query, **params)
 
-    def datasets(self, **params):
-        return self._object_list_helper(object_type='dataset', **params)
+    def datasets(self, query='', **params):
+        query = query or params.pop('query', '')
+        params.pop('object_type', None)
+        return self._object_list_helper(object_type='dataset', query=query, **params)
 
-    def objects(self, **params):
-        return self._object_list_helper(**params)
+    def objects(self, query='', **params):
+        query = query or params.pop('query', '')
+        return self._object_list_helper(query=query, **params)
 
-    def ls(self, **params):
-        return self.objects(**params)
-
-    def search(self, query='', **params):
-        params['parent_object_id'] = self.parent_object_id
-        params['object_type'] = self.object_type
-        return super(Object, self).search(query, **params)
+    def ls(self, query='', **params):
+        query = query or params.pop('query', '')
+        return self.objects(query=query, **params)
 
     def __getattr__(self, name):
         """Shortcut to access attributes of the underlying Dataset resource"""
