@@ -1,11 +1,10 @@
-dist: bionic
 language: python
 python:
 - '2.7'
 - '3.6'
 - '3.7'
 - '3.8'
-- 'pypy2'
+- 'pypy'
 - 'pypy3'
 before_install:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
