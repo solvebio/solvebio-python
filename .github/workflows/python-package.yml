@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8, 'pypy', 'pypy3']
+        python-version: [3.6, 3.7, 3.8]
 
     steps:
     - name: Checkout repository
@@ -22,8 +22,8 @@ jobs:
     - name: Install dependencies
       run: |
         pip3 install -U wheel --user
-        pip install -r requirements-dev.txt
-        pip install PyVCF==0.6.8 XlsxWriter===0.9.3
+        pip3 install -r requirements-dev.txt
+        pip3 install PyVCF==0.6.8 XlsxWriter===0.9.3
     - name: Scripts
       run: |
         nosetests -e test_solvebio_auth -e recipes
