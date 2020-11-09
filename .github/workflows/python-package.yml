@@ -21,6 +21,7 @@ jobs:
         export PYTHONPATH=$PYTHONPATH:$(pwd)
     - name: Install dependencies
       run: |
+        pip install tox tox-gh-actions
         pip3 install -U wheel --user
         pip3 install setuptools
         pip3 install -r requirements-dev.txt
