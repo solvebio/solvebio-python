@@ -22,6 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip3 install -U wheel --user
+        pip3 install setuptools
         pip3 install -r requirements-dev.txt
         pip3 install PyVCF==0.6.8 XlsxWriter===0.9.3
     - name: Scripts
