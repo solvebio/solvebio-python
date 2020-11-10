@@ -15,10 +15,10 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-    - name: Setup Python ${{ matrix.python }}
+    - name: Setup Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python }}
+        python-version: "3.6"
     - name: Export pythonpath
       run: |
         export PYTHONPATH=$PYTHONPATH:$(pwd)
