@@ -14,6 +14,8 @@ from .task import Task
 from .datasetfield import DatasetField
 from .datasetexport import DatasetExport
 from .datasetmigration import DatasetMigration
+from .dataset_restore_task import DatasetRestoreTask
+from .dataset_snapshot_task import DatasetSnapshotTask
 
 
 class Dataset(CreateableAPIResource,
@@ -259,6 +261,44 @@ class Dataset(CreateableAPIResource,
             migration.follow()
 
         return migration
+
+    def archive(self, follow=False, **kwargs):
+        """
+        Archive this dataset
+        """
+        if 'id' not in self or not self['id']:
+            raise Exception(
+                'No source dataset ID found. '
+                'Please instantiate the Dataset '
+                'object with an ID.')
+
+        task = DatasetSnapshotTask.create(
+            dataset_id=self['id'],
+            **kwargs)
+
+        if follow:
+            task.follow()
+
+        return task
+
+    def restore(self, follow=False, **kwargs):
+        """
+        Restore this dataset
+        """
+        if 'id' not in self or not self['id']:
+            raise Exception(
+                'No source dataset ID found. '
+                'Please instantiate the Dataset '
+                'object with an ID.')
+
+        task = DatasetRestoreTask.create(
+            dataset_id=self['id'],
+            **kwargs)
+
+        if follow:
+            task.follow()
+
+        return task
 
     def activity(self, follow=False, limit=1,
                  sleep_seconds=Task.SLEEP_WAIT_DEFAULT):

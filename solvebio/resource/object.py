@@ -431,6 +431,8 @@ class Object(CreateableAPIResource,
             'lookup', 'beacon',
             # transform data
             'import_file', 'export', 'migrate',
+            # archive/restore the dataset
+            'archive', 'restore',
             # dataset meta
             'fields', 'template', 'imports', 'commits',
             # helpers
