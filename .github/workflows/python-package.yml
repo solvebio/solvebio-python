@@ -24,9 +24,7 @@ jobs:
       run: |
         pip install -U wheel --user
         pip install setuptools
-        pip install tox
-    - name: Run Tox
-      run: tox -e py
+        pip install nosetests pytest flake8
     - name: Export pythonpath
       run: |
         export PYTHONPATH=$PYTHONPATH:$(pwd)
