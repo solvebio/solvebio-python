@@ -24,7 +24,7 @@ jobs:
       run: |
         pip install -U wheel --user
         pip install setuptools
-        pip install nosetests pytest flake8
+        pip install nose pytest flake8
     - name: Export pythonpath
       run: |
         export PYTHONPATH=$PYTHONPATH:$(pwd)
