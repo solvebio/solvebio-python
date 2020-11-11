@@ -1,6 +1,7 @@
 from .apiresource import ListableAPIResource
 from .apiresource import CreateableAPIResource
 from .solveobject import convert_to_solve_object
+from .task import Task
 
 import time
 
@@ -24,7 +25,7 @@ class DatasetSnapshotTask(CreateableAPIResource, ListableAPIResource):
         response = self._client.get(self['dataset']['url'], {})
         return convert_to_solve_object(response, client=self._client)
 
-    def follow(self, loop=True):
+    def follow(self, loop=True, sleep_seconds=Task.SLEEP_WAIT_DEFAULT):
         if self.status == 'queued':
             print("Waiting for Dataset Snapshot task (id = {0}) to start..."
                   .format(self.id))
@@ -37,12 +38,16 @@ class DatasetSnapshotTask(CreateableAPIResource, ListableAPIResource):
                 status = self.status
 
             if self.status == 'running':
-                print("Snapshot '{0}' is {1}".format(self.id, self.status))
+                progress = self.metadata.get('progress', {}).get('snapshot')
+                if progress:
+                    print("Snapshot '{0}' is {1} (Progress: {2}%% completed)".format(self.id, self.status, progress))
+                else:
+                    print("Snapshot '{0}' is {1}".format(self.id, self.status))
 
             if not loop:
                 return
 
-            time.sleep(3)
+            time.sleep(sleep_seconds)
             self.refresh()
 
         if self.status == 'completed':
