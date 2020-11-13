@@ -431,8 +431,6 @@ class Object(CreateableAPIResource,
             'lookup', 'beacon',
             # transform data
             'import_file', 'export', 'migrate',
-            # archive/restore the dataset
-            'archive', 'restore',
             # dataset meta
             'fields', 'template', 'imports', 'commits',
             # helpers
@@ -568,3 +566,36 @@ class Object(CreateableAPIResource,
         else:
             raise SolveError('The functionality is only supported for files and datasets. '
                              'This is a {}.'.format(self.object_type))
+
+    def archive(self, storage_class=None, follow=False):
+        """
+        Archive this dataset
+        """
+        if not self.is_dataset:
+            raise SolveError("Only dataset objects can be archived.")
+
+        # The default archive storage class is called "Archive"
+        if not storage_class:
+            storage_class = "Archive"
+
+        # Updating storage class is only available at the objects endpoint
+        self.storage_class = storage_class
+        self.save()
+
+        if follow:
+            self.dataset.activity(follow=True)
+
+    def restore(self, storage_class=None, follow=False, **kwargs):
+        """
+        Restore this dataset
+        """
+        if not self.is_dataset:
+            raise SolveError("Only datasets can be restored.")
+
+        # Updating storage class is only available at the objects endpoint
+        # TODO this doesnt work if it is None
+        self.storage_class = storage_class
+        self.save()
+
+        if follow:
+            self.dataset.activity(follow=True)
