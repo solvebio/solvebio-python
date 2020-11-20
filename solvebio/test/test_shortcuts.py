@@ -103,13 +103,15 @@ class CreateDatasetTests(CLITests):
         self.assertEqual(ds.description,
                          'Created with dataset template: 100')
 
-    def test_create_dataset_template_id(self):
+    @mock.patch('solvebio.resource.DatasetTemplate.create')
+    def test_create_dataset_template_id(self, TmplCreate):
         # create template
         template_path = os.path.join(os.path.dirname(__file__),
                                      "data/template.json")
         with open(template_path, 'r') as fp:
             tpl_json = json.load(fp)
 
+        TmplCreate.side_effect = fake_dataset_tmpl_create
         tpl = DatasetTemplate.create(**tpl_json)
         args = ['create-dataset', 'solvebio:test_vault:/test-dataset',
                    '--template-id', str(tpl.id),
