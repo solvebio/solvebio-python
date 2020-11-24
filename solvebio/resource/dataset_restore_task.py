@@ -51,4 +51,4 @@ class DatasetRestoreTask(CreateableAPIResource, ListableAPIResource):
             self.refresh()
 
         if self.status == 'completed':
-            print('Restore complete! Dataset is now avaiable')
+            print('Restore complete! Dataset is now available')
