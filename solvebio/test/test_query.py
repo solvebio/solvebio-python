@@ -294,14 +294,14 @@ class BaseQueryTest(SolveBioTestCase):
     def test_field_filters(self):
         limit = 1
         results = self.dataset.query(limit=limit)
-        self.assertEqual(len(results[0].keys()), 54)
+        self.assertEqual(len(results[0].keys()), 55)
 
         results = self.dataset.query(limit=limit, fields=['entrez_id'])
         self.assertEqual(len(results[0].keys()), 1)
 
         results = self.dataset.query(
             limit=limit, exclude_fields=['entrez_id'])
-        self.assertEqual(len(results[0].keys()), 53)
+        self.assertEqual(len(results[0].keys()), 54)
         self.assertTrue('entrez_id' not in results[0].keys())
 
     def test_entity_filters(self):

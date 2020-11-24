@@ -359,7 +359,7 @@ recipes:
     ordering: 12
     expression: |-
       dataset_query(
-          'solvebio:public:/HGNC/3.1.0-2017-06-29/HGNC',
+          'solvebio:public:/HGNC/3.3.0-2020-10-29/HGNC',
           fields=['synonyms'],
           entities=[('gene', record.gene)],
           limit=1
