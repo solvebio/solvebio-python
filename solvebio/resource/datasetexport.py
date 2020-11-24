@@ -2,6 +2,7 @@ from .apiresource import ListableAPIResource
 from .apiresource import DeletableAPIResource
 from .apiresource import CreateableAPIResource
 from .apiresource import DownloadableAPIResource
+from .task import Task
 from .solveobject import convert_to_solve_object
 
 import time
@@ -32,7 +33,7 @@ class DatasetExport(CreateableAPIResource, ListableAPIResource,
         response = self._client.get(self['dataset']['url'], {})
         return convert_to_solve_object(response, client=self._client)
 
-    def follow(self, loop=True):
+    def follow(self, loop=True, sleep_seconds=Task.SLEEP_WAIT_DEFAULT):
         if self.status == 'queued':
             print("Waiting for export (id = {0}) to start..."
                   .format(self.id))
@@ -54,7 +55,7 @@ class DatasetExport(CreateableAPIResource, ListableAPIResource,
             if not loop:
                 return
 
-            time.sleep(3)
+            time.sleep(sleep_seconds)
             self.refresh()
 
         if self.status == 'completed':

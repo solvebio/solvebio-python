@@ -260,6 +260,18 @@ class Dataset(CreateableAPIResource,
 
         return migration
 
+    def archive(self, storage_class=None, follow=False):
+        """
+        Archive this dataset
+        """
+        return self.vault_object.archive(storage_class=storage_class, follow=follow)
+
+    def restore(self, storage_class=None, follow=False, **kwargs):
+        """
+        Restore this dataset
+        """
+        return self.vault_object.restore(storage_class=storage_class, follow=follow)
+
     def activity(self, follow=False, limit=1,
                  sleep_seconds=Task.SLEEP_WAIT_DEFAULT):
         """Get a list of active Tasks that have a target object of
