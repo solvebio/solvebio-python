@@ -12,7 +12,7 @@ class ErrorTests(SolveBioTestCase):
         try:
             # two errors get raised
             DatasetImport.create(
-                dataset_id='999',
+                dataset_id='510113719950913753',
                 manifest=dict(files=[dict(filename='soemthing.md')])
             )
         except SolveError as e:
