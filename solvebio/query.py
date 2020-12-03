@@ -922,19 +922,27 @@ class Query(QueryBase):
             # Add a newly created field to list that will be passed to the explode function
             new_query._explode_fields.append(name)
 
+            # Extract all the field values from each joined record
+            expression = '[get(item, "{}") for item in get(record, "{}")]'.format(
+                field.name, query_b_join_field_name)
+
+            if field.is_list:
+                # Handle case where the sub-query contains a list of lists of <field.data_type>,
+                # which will happen if the field contains a list of values.
+                # In this case, we will flatten it to avoid returning a list of lists.
+                expression = '[item for sublist in ' + expression + ' for item in sublist]'
+
             target_fields.append({
                 "name": name,
                 "title": field.title,
-                # Handle case where sub-query returns a list of lists (of strings or something)
-                "data_type": "object" if field.is_list else field.data_type,
+                "data_type": field.data_type,
                 "ordering": field.ordering,
                 "is_list": True,
                 "is_transient": False,
-                "expression": """
-                    [get(item, "{}") for item in get(record, "{}")]
-                """.format(field.name, query_b_join_field_name),
+                "expression": expression,
                 "depends_on": [query_b_join_field_name]
             })
+
 
         # Add to any existing target fields
         new_query._target_fields += target_fields
