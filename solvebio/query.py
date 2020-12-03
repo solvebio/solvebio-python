@@ -943,14 +943,16 @@ class Query(QueryBase):
                 "depends_on": [query_b_join_field_name]
             })
 
-
         # Add to any existing target fields
         new_query._target_fields += target_fields
 
-        new_query._annotator_params = {
-            'post_annotation_expression':
-                "explode(record, fields={})".format(new_query._explode_fields)
-        }
+        # Preserve existing annotator params (pre_annotation_expression only)
+        if not new_query._annotator_params:
+            new_query._annotator_params = {}
+
+        new_query._annotator_params['post_annotation_expression'] = \
+            "explode(record, fields={})".format(new_query._explode_fields)
+
         new_query._is_join = True
         return new_query
 
