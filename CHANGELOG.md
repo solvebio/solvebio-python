@@ -1,5 +1,17 @@
 # Changelog
 
+## [v2.14.1](https://github.com/solvebio/solvebio-python/tree/v2.14.1) (2020-12-04)
+
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.14.0...v2.14.1)
+
+**Closed issues:**
+
+- Don't change data types to object in joins for list fields [\#380](https://github.com/solvebio/solvebio-python/issues/380)
+
+**Merged pull requests:**
+
+- Flatten lists of lists instead of using "object" data type in joins [\#379](https://github.com/solvebio/solvebio-python/pull/379) ([davecap](https://github.com/davecap))
+
 ## [v2.14.0](https://github.com/solvebio/solvebio-python/tree/v2.14.0) (2020-12-01)
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.13.1...v2.14.0)
@@ -182,7 +194,6 @@
 **Merged pull requests:**
 
 - Task Activity improvements [\#306](https://github.com/solvebio/solvebio-python/pull/306) ([jsh2134](https://github.com/jsh2134))
-- Add ability for scripts to customize the user-agent [\#305](https://github.com/solvebio/solvebio-python/pull/305) ([davecap](https://github.com/davecap))
 
 ## [v2.8.6](https://github.com/solvebio/solvebio-python/tree/v2.8.6) (2019-07-03)
 
@@ -194,6 +205,7 @@
 
 **Merged pull requests:**
 
+- Add ability for scripts to customize the user-agent [\#305](https://github.com/solvebio/solvebio-python/pull/305) ([davecap](https://github.com/davecap))
 - Set cookie with SameSite=Lax to allow link-outs to Dash apps [\#304](https://github.com/solvebio/solvebio-python/pull/304) ([davecap](https://github.com/davecap))
 
 ## [v2.8.5](https://github.com/solvebio/solvebio-python/tree/v2.8.5) (2019-06-28)
@@ -224,10 +236,6 @@
 
 - \[DashAuth\] Specify cookie `max\_age` to prevent immediate expiry [\#296](https://github.com/solvebio/solvebio-python/issues/296)
 
-**Merged pull requests:**
-
-- Prevent cookie from expiring immediately [\#298](https://github.com/solvebio/solvebio-python/pull/298) ([davidhpark](https://github.com/davidhpark))
-
 ## [v2.8.2](https://github.com/solvebio/solvebio-python/tree/v2.8.2) (2019-03-07)
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.1...v2.8.2)
@@ -256,6 +264,7 @@
 - Retry uploads up to 5 times [\#292](https://github.com/solvebio/solvebio-python/pull/292) ([davecap](https://github.com/davecap))
 - Handle case where Query iterator has not been initialized \(closes \#286\) [\#288](https://github.com/solvebio/solvebio-python/pull/288) ([davecap](https://github.com/davecap))
 - Dont expose the token in \_\_repr\_\_ [\#284](https://github.com/solvebio/solvebio-python/pull/284) ([davecap](https://github.com/davecap))
+- Remove deprecated/unused exporters and remove curl dependency [\#282](https://github.com/solvebio/solvebio-python/pull/282) ([davecap](https://github.com/davecap))
 
 ## [v2.8.0](https://github.com/solvebio/solvebio-python/tree/v2.8.0) (2018-10-29)
 
@@ -264,10 +273,6 @@
 **Implemented enhancements:**
 
 - Remove deprecated exporters and pycurl dependency [\#281](https://github.com/solvebio/solvebio-python/issues/281)
-
-**Merged pull requests:**
-
-- Remove deprecated/unused exporters and remove curl dependency [\#282](https://github.com/solvebio/solvebio-python/pull/282) ([davecap](https://github.com/davecap))
 
 ## [v2.7.0](https://github.com/solvebio/solvebio-python/tree/v2.7.0) (2018-09-11)
 
@@ -279,6 +284,7 @@
 
 **Merged pull requests:**
 
+- Prevent cookie from expiring immediately [\#298](https://github.com/solvebio/solvebio-python/pull/298) ([davidhpark](https://github.com/davidhpark))
 - Update Task objects and add shortcut to cancel tasks [\#273](https://github.com/solvebio/solvebio-python/pull/273) ([jsh2134](https://github.com/jsh2134))
 - add annotator\_params to annotate endpoint [\#272](https://github.com/solvebio/solvebio-python/pull/272) ([jsh2134](https://github.com/jsh2134))
 - add support for saving credentials with your api key [\#270](https://github.com/solvebio/solvebio-python/pull/270) ([davecap](https://github.com/davecap))
@@ -286,6 +292,10 @@
 ## [v2.6.1](https://github.com/solvebio/solvebio-python/tree/v2.6.1) (2018-07-10)
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.6.0...v2.6.1)
+
+**Merged pull requests:**
+
+- fix issue with ipython embed + args [\#269](https://github.com/solvebio/solvebio-python/pull/269) ([davecap](https://github.com/davecap))
 
 ## [v2.6.0](https://github.com/solvebio/solvebio-python/tree/v2.6.0) (2018-07-10)
 
@@ -301,7 +311,6 @@
 
 **Merged pull requests:**
 
-- fix issue with ipython embed + args [\#269](https://github.com/solvebio/solvebio-python/pull/269) ([davecap](https://github.com/davecap))
 - Add Group resource [\#267](https://github.com/solvebio/solvebio-python/pull/267) ([jsh2134](https://github.com/jsh2134))
 - Add saved queries [\#265](https://github.com/solvebio/solvebio-python/pull/265) ([davidhpark](https://github.com/davidhpark))
 - Keep Dash scripts.config.serve\_locally False [\#264](https://github.com/solvebio/solvebio-python/pull/264) ([davidhpark](https://github.com/davidhpark))
@@ -393,6 +402,7 @@
 
 - Fix issue where files were not uploaded in binary mode [\#228](https://github.com/solvebio/solvebio-python/pull/228) ([davecap](https://github.com/davecap))
 - allow login\(api\_host=XYZ\) [\#225](https://github.com/solvebio/solvebio-python/pull/225) ([davecap](https://github.com/davecap))
+- add reader\_params [\#216](https://github.com/solvebio/solvebio-python/pull/216) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.4.1](https://github.com/solvebio/solvebio-python/tree/v2.4.1) (2018-01-16)
 
@@ -424,7 +434,6 @@
 
 - try refactoring path validators with regex [\#218](https://github.com/solvebio/solvebio-python/pull/218) ([davecap](https://github.com/davecap))
 - update import and create-dataset shortcuts to require full path [\#217](https://github.com/solvebio/solvebio-python/pull/217) ([jsh2134](https://github.com/jsh2134))
-- add reader\_params [\#216](https://github.com/solvebio/solvebio-python/pull/216) ([jsh2134](https://github.com/jsh2134))
 - remove invalid tabulate fields for Application resource [\#215](https://github.com/solvebio/solvebio-python/pull/215) ([davecap](https://github.com/davecap))
 
 ## [v2.3.3](https://github.com/solvebio/solvebio-python/tree/v2.3.3) (2017-12-13)
@@ -575,7 +584,6 @@
 - Test case updates [\#170](https://github.com/solvebio/solvebio-python/pull/170) ([jsh2134](https://github.com/jsh2134))
 - handle max export limit case [\#169](https://github.com/solvebio/solvebio-python/pull/169) ([jsh2134](https://github.com/jsh2134))
 - move commit follow\(\) into commit resource [\#168](https://github.com/solvebio/solvebio-python/pull/168) ([jsh2134](https://github.com/jsh2134))
-- Add support for DatasetExports [\#154](https://github.com/solvebio/solvebio-python/pull/154) ([davecap](https://github.com/davecap))
 
 ## [v1.17.0](https://github.com/solvebio/solvebio-python/tree/v1.17.0) (2017-05-04)
 
@@ -617,6 +625,7 @@
 - update follow logic of imports now the commits are decoupled [\#157](https://github.com/solvebio/solvebio-python/pull/157) ([jsh2134](https://github.com/jsh2134))
 - Add built-in connection retries using a request session [\#156](https://github.com/solvebio/solvebio-python/pull/156) ([davecap](https://github.com/davecap))
 - add DatasetMigration resource and migrate functions for Query and Dataset [\#155](https://github.com/solvebio/solvebio-python/pull/155) ([davecap](https://github.com/davecap))
+- Add support for DatasetExports [\#154](https://github.com/solvebio/solvebio-python/pull/154) ([davecap](https://github.com/davecap))
 - add exclude\_fields param to Query \(closes \#148\) [\#153](https://github.com/solvebio/solvebio-python/pull/153) ([davecap](https://github.com/davecap))
 - Add retries to Upload creation \(fixes \#147\) [\#152](https://github.com/solvebio/solvebio-python/pull/152) ([davecap](https://github.com/davecap))
 
