@@ -415,7 +415,7 @@ class BaseQueryTest(SolveBioTestCase):
             .limit(10)
 
         for i in query_a.join(query_b, "clinical_significance"):
-            self.assertTrue(isinstance(i['clinical_significance'], str))
+            self.assertFalse(isinstance(i['clinical_significance'], list))
             self.assertTrue('_errors' not in i)
 
     def test_join_with_list_values(self):
@@ -438,6 +438,6 @@ class BaseQueryTest(SolveBioTestCase):
         for i in query_a.join(query_b, "variant"):
             # Since each value contains one element, the resulting output is just a flat string
             # as the API takes the first value in the list.
-            self.assertTrue(isinstance(i['clinical_significance'], str))
-            self.assertTrue(isinstance(i['b_clinical_significance'], str))
+            self.assertFalse(isinstance(i['clinical_significance'], list))
+            self.assertFalse(isinstance(i['b_clinical_significance'], list))
             self.assertTrue('_errors' not in i)
