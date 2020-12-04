@@ -397,3 +397,47 @@ class BaseQueryTest(SolveBioTestCase):
             self.assertTrue('gene' in record)
             self.assertTrue('b_gene' in record)
             self.assertTrue('c_gene' in record)
+
+    def test_join_with_list_key(self):
+        """Test a join where the key is a list. In this case, clinical_significance is a list.
+        Ensure that the output contains a single value in each resulting record."""
+
+        annotator_params = {"pre_annotation_expression": "explode(record, ['clinical_significance'])"}
+        query_a = self.dataset2\
+            .query(
+                fields=['clinical_significance', 'variant'],
+                annotator_params=annotator_params)\
+            .filter(gene='MAN2B1')\
+            .limit(10)
+        query_b = self.dataset2\
+            .query(fields=['clinical_significance', 'gene'])\
+            .filter(gene='MAN2B1')\
+            .limit(10)
+
+        for i in query_a.join(query_b, "clinical_significance"):
+            self.assertFalse(isinstance(i['clinical_significance'], list))
+            self.assertTrue('_errors' not in i)
+
+    def test_join_with_list_values(self):
+        """Test a join where one of the fields is a list.
+        In this case, clinical_significance is a list.
+        Ensure that the output contains a list of strings (not lists)."""
+
+        annotator_params = {"pre_annotation_expression": "explode(record, ['clinical_significance'])"}
+        query_a = self.dataset2\
+            .query(
+                fields=['clinical_significance', 'variant'],
+                annotator_params=annotator_params)\
+            .filter(gene='MAN2B1')\
+            .limit(10)
+        query_b = self.dataset2\
+            .query(fields=['clinical_significance', 'gene', 'variant'])\
+            .filter(gene='MAN2B1')\
+            .limit(10)
+
+        for i in query_a.join(query_b, "variant"):
+            # Since each value contains one element, the resulting output is just a flat string
+            # as the API takes the first value in the list.
+            self.assertFalse(isinstance(i['clinical_significance'], list))
+            self.assertFalse(isinstance(i['b_clinical_significance'], list))
+            self.assertTrue('_errors' not in i)
