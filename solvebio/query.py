@@ -421,6 +421,64 @@ class QueryBase(object):
 
         return self._buffer[self._buffer_idx - 1]
 
+    def filter(self, *filters, **kwargs):
+        """
+        Returns this Query/QueryFile instance with the query args combined with
+        existing set with AND.
+
+        kwargs are simply passed to a new Filter object and combined to any
+        other filters with AND.
+
+        By default, everything is combined using AND. If you provide
+        multiple filters in a single filter call, those are ANDed
+        together. If you provide multiple filters in multiple filter
+        calls, those are ANDed together.
+
+        If you want something different, use the F class which supports
+        ``&`` (and), ``|`` (or) and ``~`` (not) operators. Then call
+        filter once with the resulting Filter instance.
+        """
+        f = list(filters)
+
+        if kwargs:
+            f += [Filter(**kwargs)]
+
+        return self._clone(filters=f)
+
+    @classmethod
+    def _process_filters(cls, filters):
+        """Takes a list of filters and returns JSON
+
+        :Parameters:
+        - `filters`: List of Filters, (key, val) tuples, or dicts
+
+        Returns: List of JSON API filters
+        """
+        data = []
+
+        # Filters should always be a list
+        for f in filters:
+            if isinstance(f, Filter):
+                if f.filters:
+                    data.extend(cls._process_filters(f.filters))
+            elif isinstance(f, dict):
+                key = list(f.keys())[0]
+                val = f[key]
+
+                if isinstance(val, dict):
+                    # pass val (a dict) as list
+                    # so that it gets processed properly
+                    filter_filters = cls._process_filters([val])
+                    if len(filter_filters) == 1:
+                        filter_filters = filter_filters[0]
+                    data.append({key: filter_filters})
+                else:
+                    data.append({key: cls._process_filters(val)})
+            else:
+                data.extend((f,))
+
+        return data
+
 
 class Query(QueryBase):
     """
@@ -536,29 +594,29 @@ class Query(QueryBase):
 
         return new
 
-    def filter(self, *filters, **kwargs):
-        """
-        Returns this Query instance with the query args combined with
-        existing set with AND.
-
-        kwargs are simply passed to a new Filter object and combined to any
-        other filters with AND.
-
-        By default, everything is combined using AND. If you provide
-        multiple filters in a single filter call, those are ANDed
-        together. If you provide multiple filters in multiple filter
-        calls, those are ANDed together.
-
-        If you want something different, use the F class which supports
-        ``&`` (and), ``|`` (or) and ``~`` (not) operators. Then call
-        filter once with the resulting Filter instance.
-        """
-        f = list(filters)
-
-        if kwargs:
-            f += [Filter(**kwargs)]
-
-        return self._clone(filters=f)
+    # def filter(self, *filters, **kwargs):
+    #     """
+    #     Returns this Query instance with the query args combined with
+    #     existing set with AND.
+    #
+    #     kwargs are simply passed to a new Filter object and combined to any
+    #     other filters with AND.
+    #
+    #     By default, everything is combined using AND. If you provide
+    #     multiple filters in a single filter call, those are ANDed
+    #     together. If you provide multiple filters in multiple filter
+    #     calls, those are ANDed together.
+    #
+    #     If you want something different, use the F class which supports
+    #     ``&`` (and), ``|`` (or) and ``~`` (not) operators. Then call
+    #     filter once with the resulting Filter instance.
+    #     """
+    #     f = list(filters)
+    #
+    #     if kwargs:
+    #         f += [Filter(**kwargs)]
+    #
+    #     return self._clone(filters=f)
 
     def range(self, chromosome, start, stop, exact=False):
         """
@@ -616,42 +674,42 @@ class Query(QueryBase):
         """
         if getattr(self, '_is_join', False):
             return len(self._buffer)
-        # return min(self._limit, self.count())
+
         return super(Query, self).__len__()
 
-    @classmethod
-    def _process_filters(cls, filters):
-        """Takes a list of filters and returns JSON
-
-        :Parameters:
-        - `filters`: List of Filters, (key, val) tuples, or dicts
-
-        Returns: List of JSON API filters
-        """
-        data = []
-
-        # Filters should always be a list
-        for f in filters:
-            if isinstance(f, Filter):
-                if f.filters:
-                    data.extend(cls._process_filters(f.filters))
-            elif isinstance(f, dict):
-                key = list(f.keys())[0]
-                val = f[key]
-
-                if isinstance(val, dict):
-                    # pass val (a dict) as list
-                    # so that it gets processed properly
-                    filter_filters = cls._process_filters([val])
-                    if len(filter_filters) == 1:
-                        filter_filters = filter_filters[0]
-                    data.append({key: filter_filters})
-                else:
-                    data.append({key: cls._process_filters(val)})
-            else:
-                data.extend((f,))
-
-        return data
+    # @classmethod
+    # def _process_filters(cls, filters):
+    #     """Takes a list of filters and returns JSON
+    #
+    #     :Parameters:
+    #     - `filters`: List of Filters, (key, val) tuples, or dicts
+    #
+    #     Returns: List of JSON API filters
+    #     """
+    #     data = []
+    #
+    #     # Filters should always be a list
+    #     for f in filters:
+    #         if isinstance(f, Filter):
+    #             if f.filters:
+    #                 data.extend(cls._process_filters(f.filters))
+    #         elif isinstance(f, dict):
+    #             key = list(f.keys())[0]
+    #             val = f[key]
+    #
+    #             if isinstance(val, dict):
+    #                 # pass val (a dict) as list
+    #                 # so that it gets processed properly
+    #                 filter_filters = cls._process_filters([val])
+    #                 if len(filter_filters) == 1:
+    #                     filter_filters = filter_filters[0]
+    #                 data.append({key: filter_filters})
+    #             else:
+    #                 data.append({key: cls._process_filters(val)})
+    #         else:
+    #             data.extend((f,))
+    #
+    #     return data
 
     def _build_query(self, **kwargs):
         q = {}
@@ -660,7 +718,7 @@ class Query(QueryBase):
             q['query'] = self._query
 
         if self._filters:
-            filters = Query._process_filters(self._filters)
+            filters = self.__class__._process_filters(self._filters)
             if len(filters) > 1:
                 q['filters'] = [{'and': filters}]
             else:
@@ -1007,6 +1065,9 @@ class QueryFile(QueryBase):
     def __init__(
             self,
             file_id,
+            fields=None,
+            exclude_fields=None,
+            filters=None,
             limit=QueryBase.DEFAULT_PAGE_SIZE,
             result_class=dict,
             debug=False,
@@ -1017,6 +1078,9 @@ class QueryFile(QueryBase):
 
         :Parameters:
           - `file_id`: Unique ID of file to query.
+          - `fields` (optional): List of specific fields to retrieve.
+          - `exclude_fields` (optional): List of specific fields to exclude.
+          - `filters` (optional): Filter or List of filter objects.
           - `result_class` (optional): Class of object returned by query.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
@@ -1024,9 +1088,20 @@ class QueryFile(QueryBase):
         """
         self._file_id = file_id
         self._data_url = '/v2/objects/{0}/data'.format(file_id)
+        self._fields_url = '/v2/objects/{0}/fields'.format(file_id)
         self._result_class = result_class
         self._debug = debug
         self._error = error
+        self._fields = fields
+        self._exclude_fields = exclude_fields
+        self._filters = filters
+
+        if filters:
+            if isinstance(filters, Filter):
+                filters = [filters]
+        else:
+            filters = []
+        self._filters = filters
 
         # init response and cursor
         self._response = None
@@ -1049,12 +1124,19 @@ class QueryFile(QueryBase):
         # (kwargs overrides pre-set, which overrides global)
         self._client = kwargs.get('client') or self._client or client
 
-    def _clone(self, limit=None):
+    def _clone(self, filters=None, limit=None):
         new = self.__class__(self._file_id,
                              limit=self._limit,
+                             fields=self._fields,
+                             exclude_fields=self._exclude_fields,
                              result_class=self._result_class,
                              debug=self._debug,
                              client=self._client)
+
+        new._filters += self._filters
+
+        if filters:
+            new._filters += filters
 
         if limit:
             new._limit = limit
@@ -1063,6 +1145,20 @@ class QueryFile(QueryBase):
 
     def _build_query(self, **kwargs):
         q = {}
+
+        if self._filters:
+            filters = self.__class__._process_filters(self._filters)
+            # filters = QueryFile._process_filters(self._filters)
+            if len(filters) > 1:
+                q['filters'] = [{'and': filters}]
+            else:
+                q['filters'] = filters
+
+        if self._fields is not None:
+            q['fields'] = self._fields
+
+        if self._exclude_fields is not None:
+            q['exclude_fields'] = self._exclude_fields
 
         if self._debug:
             q['debug'] = 'True'
@@ -1093,7 +1189,9 @@ class QueryFile(QueryBase):
 
         # If the request results in a SolveError (ie bad filter) set the error.
         try:
-            self._response = self._client.get(self._data_url, _params)
+            # TODO: Think if it makes sense to use teh GET S3 Select endpoint anymore
+            # self._response = self._client.get(self._data_url, _params)
+            self._response = self._client.post(self._data_url, _params)
         except SolveError as e:
             self._error = e
             raise
@@ -1101,3 +1199,14 @@ class QueryFile(QueryBase):
         logger.debug('query response took: %(took)d ms, total: %(total)d'
                      % self._response)
         return _params, self._response
+
+    def fields(self):
+        """Returns all expected fields that will be found in the results."""
+
+        fields = [f for f in self._client.get(self._fields_url, {})['fields']]
+        if self._fields:
+            fields = [f for f in fields if f in self._fields]
+        if self._exclude_fields:
+            fields = [f for f in fields if f not in self._exclude_fields]
+
+        return fields
