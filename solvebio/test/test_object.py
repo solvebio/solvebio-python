@@ -293,8 +293,8 @@ class ObjectTests(SolveBioTestCase):
         self.assertEqual(res, {'metadata': {'hello': 'world'}, 'name': 'test'})
 
     @mock.patch('solvebio.resource.Object.create')
-    @mock.patch('solvebio.client.SolveClient.get')
-    def test_object_query(self, SolveClientGet, ObjectCreate):
+    @mock.patch('solvebio.client.SolveClient.post')
+    def test_object_query(self, SolveClientPost, ObjectCreate):
         ObjectCreate.side_effect = fake_object_create
         valid_response = {
             'took': 100,
@@ -308,7 +308,7 @@ class ObjectTests(SolveBioTestCase):
         from .. import SolveClient
         file._client = SolveClient()
 
-        SolveClientGet.return_value = valid_response
+        SolveClientPost.return_value = valid_response
         resp = file.query()
 
         self.assertEqual(list(resp), valid_response['results'])

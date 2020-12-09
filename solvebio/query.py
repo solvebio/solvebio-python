@@ -231,12 +231,12 @@ class QueryBase(object):
     # The maximum number of results fetched in one go.
     DEFAULT_PAGE_SIZE = 100
 
-    # Special case for Query class to pre-set SolveClient
+    # Special case for Query/QueryFile class to pre-set SolveClient
     _client = None
 
     def limit(self, limit):
         """
-        Returns a new Query instance with the new
+        Returns a new Query/QueryFile instance with the new
         limit values.
         """
         return self._clone(limit=limit)
@@ -277,7 +277,7 @@ class QueryBase(object):
         return self._response['results']
 
     def __repr__(self):
-        # Check that Query object does not have any previous errors
+        # Check that Query/QueryFile object does not have any previous errors
         # otherwise, raise the error.
         if self._error:
             raise self._error
@@ -295,7 +295,7 @@ class QueryBase(object):
             logger.debug('warmup (__getattr__: %s)' % key)
             self.execute(self._slice.start if self._slice else 0)
 
-        # Check that Query object does not have any previous errors
+        # Check that Query/QueryFile object does not have any previous errors
         # otherwise, raise the error.
         # execute() sets the error, so the check is placed after it.
         if self._error:
@@ -325,7 +325,7 @@ class QueryBase(object):
         """
         Retrieve an item or slice from the result set.
 
-        Query's do not support negative indexing.
+        Query/QueryFile's do not support negative indexing.
 
         :Parameters:
         - `key`: The requested slice range or index.
@@ -393,7 +393,7 @@ class QueryBase(object):
 
     def next(self):
         """
-        Allows the Query object to be an iterable.
+        Allows the Query/QueryFile object to be an iterable.
 
         This method will iterate through a cached result set
         and fetch successive pages as required.
@@ -594,30 +594,6 @@ class Query(QueryBase):
 
         return new
 
-    # def filter(self, *filters, **kwargs):
-    #     """
-    #     Returns this Query instance with the query args combined with
-    #     existing set with AND.
-    #
-    #     kwargs are simply passed to a new Filter object and combined to any
-    #     other filters with AND.
-    #
-    #     By default, everything is combined using AND. If you provide
-    #     multiple filters in a single filter call, those are ANDed
-    #     together. If you provide multiple filters in multiple filter
-    #     calls, those are ANDed together.
-    #
-    #     If you want something different, use the F class which supports
-    #     ``&`` (and), ``|`` (or) and ``~`` (not) operators. Then call
-    #     filter once with the resulting Filter instance.
-    #     """
-    #     f = list(filters)
-    #
-    #     if kwargs:
-    #         f += [Filter(**kwargs)]
-    #
-    #     return self._clone(filters=f)
-
     def range(self, chromosome, start, stop, exact=False):
         """
         Shortcut to do range filters on genomic datasets.
@@ -676,40 +652,6 @@ class Query(QueryBase):
             return len(self._buffer)
 
         return super(Query, self).__len__()
-
-    # @classmethod
-    # def _process_filters(cls, filters):
-    #     """Takes a list of filters and returns JSON
-    #
-    #     :Parameters:
-    #     - `filters`: List of Filters, (key, val) tuples, or dicts
-    #
-    #     Returns: List of JSON API filters
-    #     """
-    #     data = []
-    #
-    #     # Filters should always be a list
-    #     for f in filters:
-    #         if isinstance(f, Filter):
-    #             if f.filters:
-    #                 data.extend(cls._process_filters(f.filters))
-    #         elif isinstance(f, dict):
-    #             key = list(f.keys())[0]
-    #             val = f[key]
-    #
-    #             if isinstance(val, dict):
-    #                 # pass val (a dict) as list
-    #                 # so that it gets processed properly
-    #                 filter_filters = cls._process_filters([val])
-    #                 if len(filter_filters) == 1:
-    #                     filter_filters = filter_filters[0]
-    #                 data.append({key: filter_filters})
-    #             else:
-    #                 data.append({key: cls._process_filters(val)})
-    #         else:
-    #             data.extend((f,))
-    #
-    #     return data
 
     def _build_query(self, **kwargs):
         q = {}
@@ -1058,7 +1000,7 @@ class BatchQuery(object):
 
 class QueryFile(QueryBase):
     """
-        A Query API request wrapper that generates a request for an object content query,
+        A QueryFile API request wrapper that generates a request for an object content query,
         and can iterate through streaming result sets.
         """
 
@@ -1074,7 +1016,7 @@ class QueryFile(QueryBase):
             error=None,
             **kwargs):
         """
-        Creates a new Query object.
+        Creates a new QueryFile object.
 
         :Parameters:
           - `file_id`: Unique ID of file to query.
@@ -1111,7 +1053,7 @@ class QueryFile(QueryBase):
         # Page offset can only be set by execute(). It is always set to the
         # current absolute offset contained in the buffer.
         self._page_offset = None
-        # slice is set when the Query is being sliced.
+        # slice is set when the QueryFile is being sliced.
         # In this case, __iter__() and next() will not
         # reset the page_offset to 0 before iterating.
         self._slice = None
@@ -1148,7 +1090,6 @@ class QueryFile(QueryBase):
 
         if self._filters:
             filters = self.__class__._process_filters(self._filters)
-            # filters = QueryFile._process_filters(self._filters)
             if len(filters) > 1:
                 q['filters'] = [{'and': filters}]
             else:
@@ -1189,8 +1130,6 @@ class QueryFile(QueryBase):
 
         # If the request results in a SolveError (ie bad filter) set the error.
         try:
-            # TODO: Think if it makes sense to use teh GET S3 Select endpoint anymore
-            # self._response = self._client.get(self._data_url, _params)
             self._response = self._client.post(self._data_url, _params)
         except SolveError as e:
             self._error = e
