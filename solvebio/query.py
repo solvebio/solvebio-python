@@ -826,8 +826,7 @@ class Query(QueryBase):
         if follow:
             # Multiple migration objects returned
             if "data" in migration:
-                for mig in migration:
-                    mig.follow()
+                self.activity(follow=True)
             else:
                 migration.follow()
 
