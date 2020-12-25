@@ -318,7 +318,7 @@ class QueryBase(object):
     @staticmethod
     def as_slice(slice_or_idx):
         if isinstance(slice_or_idx, slice):
-            return QueryFile.bounded_slice(slice_or_idx)
+            return QueryBase.bounded_slice(slice_or_idx)
         return slice(slice_or_idx, slice_or_idx + 1)
 
     def __getitem__(self, key):
@@ -334,7 +334,7 @@ class QueryBase(object):
             raise TypeError
 
         if isinstance(key, slice):
-            key = QueryFile.bounded_slice(key)
+            key = QueryBase.bounded_slice(key)
             start = 0 if key.start is None else key.start
             stop = float('inf') if key.stop is None else key.stop
 
@@ -1000,9 +1000,11 @@ class BatchQuery(object):
 
 class QueryFile(QueryBase):
     """
-        A QueryFile API request wrapper that generates a request for an object content query,
-        and can iterate through streaming result sets.
-        """
+    A QueryFile API request wrapper that generates a request for an object content query,
+    and can iterate through streaming result sets.
+    """
+    # The maximum number of results fetched in one go.
+    DEFAULT_PAGE_SIZE = 1000
 
     def __init__(
             self,
@@ -1010,7 +1012,8 @@ class QueryFile(QueryBase):
             fields=None,
             exclude_fields=None,
             filters=None,
-            limit=QueryBase.DEFAULT_PAGE_SIZE,
+            limit=DEFAULT_PAGE_SIZE,
+            page_size=DEFAULT_PAGE_SIZE,
             result_class=dict,
             debug=False,
             error=None,
@@ -1052,6 +1055,9 @@ class QueryFile(QueryBase):
         self._limit = limit
         # Page offset can only be set by execute(). It is always set to the
         # current absolute offset contained in the buffer.
+        self._page_size = int(page_size)
+        # Page offset can only be set by execute(). It is always set to the
+        # current absolute offset contained in the buffer.
         self._page_offset = None
         # slice is set when the QueryFile is being sliced.
         # In this case, __iter__() and next() will not
@@ -1071,6 +1077,7 @@ class QueryFile(QueryBase):
                              limit=self._limit,
                              fields=self._fields,
                              exclude_fields=self._exclude_fields,
+                             page_size=self._page_size,
                              result_class=self._result_class,
                              debug=self._debug,
                              client=self._client)
@@ -1122,7 +1129,7 @@ class QueryFile(QueryBase):
 
         _params.update(
             offset=self._page_offset,
-            limit=self._limit
+            limit=min(self._page_size, self._limit)
         )
 
         logger.debug('executing query. from/limit: %6d/%d' %
