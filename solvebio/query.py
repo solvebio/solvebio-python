@@ -416,11 +416,11 @@ class QueryBase(object):
             self.execute(self._page_offset + self._buffer_idx)
             self._buffer_idx = 0
 
+        if not self._buffer:
+            raise StopIteration()
+
         self._cursor += 1
         self._buffer_idx += 1
-
-        if not self._buffer:
-            raise StopIteration
 
         return self._buffer[self._buffer_idx - 1]
 
