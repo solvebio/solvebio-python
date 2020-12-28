@@ -409,7 +409,7 @@ class QueryBase(object):
             self.__iter__()
 
         # len(self) returns `min(limit, total)` results
-        elif self._cursor == len(self):
+        if self._cursor == len(self):
             raise StopIteration()
 
         if self._buffer_idx == len(self._buffer):
