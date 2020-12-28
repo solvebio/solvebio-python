@@ -264,7 +264,7 @@ class QueryBase(object):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
-        return min(self._limit, self.count())
+        return min(self._limit, self.count()) if not self.count() is None else self._limit
 
     def __nonzero__(self):
         return bool(len(self))
@@ -410,14 +410,14 @@ class QueryBase(object):
 
         # len(self) returns `min(limit, total)` results
         if self._cursor == len(self):
-            raise StopIteration()
+            raise StopIteration
 
         if self._buffer_idx == len(self._buffer):
             self.execute(self._page_offset + self._buffer_idx)
             self._buffer_idx = 0
 
         if not self._buffer:
-            raise StopIteration()
+            raise StopIteration
 
         self._cursor += 1
         self._buffer_idx += 1
@@ -1145,8 +1145,9 @@ class QueryFile(QueryBase):
             self._error = e
             raise
 
-        logger.debug('query response took: %(took)d ms, total: %(total)d'
-                     % self._response)
+        logger.debug('query response took: {} ms, total: {}'.
+                     format(self._response['took'],
+                            'nan' if self._response['total'] is None else self._response['total']))
         return _params, self._response
 
     def fields(self):
