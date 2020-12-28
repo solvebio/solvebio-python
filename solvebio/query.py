@@ -409,7 +409,12 @@ class QueryBase(object):
             self.__iter__()
 
         # len(self) returns `min(limit, total)` results
-        if self._cursor == len(self):
+        # Raise StopIteration when query()[n:] has been exhausted
+        if self._slice and self._slice.stop == float('inf') and self._cursor == len(self) - 1:
+            raise StopIteration()
+
+        # Raise StopIteration when query()[n:m] has been exhausted
+        elif self._cursor == len(self):
             raise StopIteration()
 
         if self._buffer_idx == len(self._buffer):
