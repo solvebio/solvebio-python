@@ -229,6 +229,18 @@ class BaseQueryTest(SolveBioTestCase):
         # Ensure that the second repr for [0:2] == [1:3]
         self.assertEqual(repr(zero_two[1]), repr(one_three[0]))
 
+    def test_slice_until_dataset_end(self):
+        total = self.dataset.query(limit=0).count()
+
+        sliced_ds = self.dataset.query(limit=10)[total - 1:]
+
+        left_records = 0
+        for _ in sliced_ds:
+            left_records += 1
+
+        # Ensure that only one records has left in the dataset
+        self.assertEqual(left_records, 1)
+
     def test_slice_ranges_with_small_limit(self):
         # Test slices larger than 'limit'
         # query returns 6
