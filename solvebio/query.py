@@ -824,11 +824,7 @@ class Query(QueryBase):
             **kwargs)
 
         if follow:
-            # Multiple migration objects returned
-            if "data" in migration:
-                self.activity(follow=True)
-            else:
-                migration.follow()
+            self.activity(follow=True)
 
         return migration
 
