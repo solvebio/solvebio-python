@@ -256,7 +256,11 @@ class Dataset(CreateableAPIResource,
             **kwargs)
 
         if follow:
-            self.activity(follow=True)
+            # Multiple migration objects returned
+            if "data" in migration:
+                self.activity(follow=True)
+            else:
+                migration.follow()
 
         return migration
 
