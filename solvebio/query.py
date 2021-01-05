@@ -817,7 +817,7 @@ class Query(QueryBase):
         annotator_params = kwargs.pop('annotator_params', None) or \
             params.pop('annotator_params', None)
 
-        migration = DatasetMigration.create(
+        migration_resp = DatasetMigration.create(
             source_id=self._dataset_id,
             target_id=target_id,
             source_params=params,
@@ -827,13 +827,15 @@ class Query(QueryBase):
             **kwargs)
 
         if follow:
-            # Multiple migration objects returned
-            if "data" in migration:
-                self.activity(follow=True)
+            # If migration was created with the parallel flag, then multiple
+            # migration objects will be returned.
+            if "data" in migration_resp:
+                for migration in migration_resp["data"]:
+                    migration.follow()
             else:
-                migration.follow()
+                migration_resp.follow()
 
-        return migration
+        return migration_resp
 
     def annotate(self, fields, **kwargs):
         from solvebio.annotate import Annotator

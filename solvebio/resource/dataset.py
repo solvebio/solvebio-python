@@ -250,19 +250,21 @@ class Dataset(CreateableAPIResource,
         except AttributeError:
             target_id = target
 
-        migration = DatasetMigration.create(
+        migration_resp = DatasetMigration.create(
             source_id=self['id'],
             target_id=target_id,
             **kwargs)
 
         if follow:
-            # Multiple migration objects returned
-            if "data" in migration:
-                self.activity(follow=True)
+            # If migration was created with the parallel flag, then multiple
+            # migration objects will be returned.
+            if "data" in migration_resp:
+                for migration in migration_resp["data"]:
+                    migration.follow()
             else:
-                migration.follow()
+                migration_resp.follow()
 
-        return migration
+        return migration_resp
 
     def archive(self, storage_class=None, follow=False):
         """
