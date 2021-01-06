@@ -1146,8 +1146,7 @@ class QueryFile(QueryBase):
             raise
 
         logger.debug('query response took: {} ms, total: {}'.
-                     format(self._response['took'],
-                            'nan' if self._response['total'] is None else self._response['total']))
+                     format(self._response['took'], self._response['total']))
         return _params, self._response
 
     def fields(self):
