@@ -663,7 +663,7 @@ class Query(QueryBase):
             q['query'] = self._query
 
         if self._filters:
-            filters = self.__class__._process_filters(self._filters)
+            filters = self._process_filters(self._filters)
             if len(filters) > 1:
                 q['filters'] = [{'and': filters}]
             else:
@@ -1105,7 +1105,7 @@ class QueryFile(QueryBase):
         q = {}
 
         if self._filters:
-            filters = self.__class__._process_filters(self._filters)
+            filters = self._process_filters(self._filters)
             if len(filters) > 1:
                 q['filters'] = [{'and': filters}]
             else:
