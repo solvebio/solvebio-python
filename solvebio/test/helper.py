@@ -16,6 +16,7 @@ import solvebio
 class SolveBioTestCase(unittest.TestCase):
     TEST_DATASET_FULL_PATH = 'solvebio:public:/HGNC/3.3.0-2020-10-29/HGNC'
     TEST_DATASET_FULL_PATH_2 = 'solvebio:public:/ClinVar/5.1.0-20200720/Variants-GRCH38'
+    TEST_FILE_FULL_PATH = 'solvebio:public:/HGNC/3.3.0-2020-10-29/hgnc_1000_rows.txt'
 
     def setUp(self):
         super(SolveBioTestCase, self).setUp()
