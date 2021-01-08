@@ -268,8 +268,7 @@ class QueryBase(object):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
-        _limit = self.INF if self._limit == float('inf') else self._limit
-        return min(_limit, self.count()) if not self.count() is None else _limit
+        return min(self._limit, self.count()) if not self.count() is None else self._limit
 
     def __nonzero__(self):
         return bool(len(self))
@@ -1026,7 +1025,7 @@ class QueryFile(QueryBase):
             fields=None,
             exclude_fields=None,
             filters=None,
-            limit=float('inf'),
+            limit=QueryBase.INF,
             page_size=DEFAULT_PAGE_SIZE,
             result_class=dict,
             debug=False,
