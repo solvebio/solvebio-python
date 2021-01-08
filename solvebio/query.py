@@ -1021,7 +1021,7 @@ class QueryFile(QueryBase):
             fields=None,
             exclude_fields=None,
             filters=None,
-            limit=DEFAULT_PAGE_SIZE,
+            limit=float('inf'),
             page_size=DEFAULT_PAGE_SIZE,
             result_class=dict,
             debug=False,
