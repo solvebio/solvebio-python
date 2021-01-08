@@ -231,6 +231,10 @@ class QueryBase(object):
     # The maximum number of results fetched in one go.
     DEFAULT_PAGE_SIZE = 100
 
+    # INF represents an integer version of 'float('inf')'
+    # because it could not be typecasted to integer
+    INF = 10 ** 15
+
     # Special case for Query/QueryFile class to pre-set SolveClient
     _client = None
 
@@ -264,7 +268,7 @@ class QueryBase(object):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
-        _limit = 10 ** 15 if self._limit == float('inf') else self._limit
+        _limit = self.INF if self._limit == float('inf') else self._limit
         return min(_limit, self.count()) if not self.count() is None else _limit
 
     def __nonzero__(self):
