@@ -264,7 +264,8 @@ class QueryBase(object):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
-        return min(self._limit, self.count()) if not self.count() is None else self._limit
+        _limit = 10 ** 15 if self._limit == float('inf') else self._limit
+        return min(_limit, self.count()) if not self.count() is None else _limit
 
     def __nonzero__(self):
         return bool(len(self))
