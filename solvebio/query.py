@@ -1020,7 +1020,7 @@ class QueryFile(QueryBase):
     A QueryFile API request wrapper that generates a request for an object content query,
     and can iterate through streaming result sets.
     """
-    # The maximum number of results fetched in one go.
+    # The default number of records fetched in one go.
     DEFAULT_PAGE_SIZE = 1000
 
     def __init__(
