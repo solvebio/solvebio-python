@@ -1030,6 +1030,7 @@ class QueryFile(QueryBase):
             result_class=dict,
             debug=False,
             error=None,
+            output_format='json',
             **kwargs):
         """
         Creates a new QueryFile object.
@@ -1053,6 +1054,7 @@ class QueryFile(QueryBase):
         self._fields = fields
         self._exclude_fields = exclude_fields
         self._filters = filters
+        self._output_format = output_format
 
         if filters:
             if isinstance(filters, Filter):
@@ -1093,7 +1095,8 @@ class QueryFile(QueryBase):
                              page_size=self._page_size,
                              result_class=self._result_class,
                              debug=self._debug,
-                             client=self._client)
+                             client=self._client,
+                             output_format=self._output_format)
 
         new._filters += self._filters
 
@@ -1106,7 +1109,7 @@ class QueryFile(QueryBase):
         return new
 
     def _build_query(self, **kwargs):
-        q = {}
+        q = {'output_format': self._output_format}
 
         if self._filters:
             filters = self._process_filters(self._filters)
