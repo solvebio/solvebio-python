@@ -1095,8 +1095,8 @@ class QueryFile(QueryBase):
                              page_size=self._page_size,
                              result_class=self._result_class,
                              debug=self._debug,
-                             client=self._client,
-                             output_format=self._output_format)
+                             output_format=self._output_format,
+                             client=self._client,)
 
         new._filters += self._filters
 
