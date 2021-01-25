@@ -1044,6 +1044,7 @@ class QueryFile(QueryBase):
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
           - `debug` (optional): Sends debug information to the API.
+          - `output_format` (optional): Format of query results (json, csv or tsv)
         """
         self._file_id = file_id
         self._data_url = '/v2/objects/{0}/data'.format(file_id)
