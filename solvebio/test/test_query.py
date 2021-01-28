@@ -229,6 +229,18 @@ class BaseQueryTest(SolveBioTestCase):
         # Ensure that the second repr for [0:2] == [1:3]
         self.assertEqual(repr(zero_two[1]), repr(one_three[0]))
 
+    def test_slice_until_object_end(self):
+        total = self.dataset.query(limit=0).count()
+
+        sliced_ds = self.dataset.query(limit=10)[total - 1:]
+
+        left_records = 0
+        for _ in sliced_ds:
+            left_records += 1
+
+        # Ensure that only one records has left in the dataset
+        self.assertEqual(left_records, 1)
+
     def test_slice_ranges_with_small_limit(self):
         # Test slices larger than 'limit'
         # query returns 6
@@ -294,14 +306,14 @@ class BaseQueryTest(SolveBioTestCase):
     def test_field_filters(self):
         limit = 1
         results = self.dataset.query(limit=limit)
-        self.assertEqual(len(results[0].keys()), 54)
+        self.assertEqual(len(results[0].keys()), 55)
 
         results = self.dataset.query(limit=limit, fields=['entrez_id'])
         self.assertEqual(len(results[0].keys()), 1)
 
         results = self.dataset.query(
             limit=limit, exclude_fields=['entrez_id'])
-        self.assertEqual(len(results[0].keys()), 53)
+        self.assertEqual(len(results[0].keys()), 54)
         self.assertTrue('entrez_id' not in results[0].keys())
 
     def test_entity_filters(self):
@@ -397,3 +409,47 @@ class BaseQueryTest(SolveBioTestCase):
             self.assertTrue('gene' in record)
             self.assertTrue('b_gene' in record)
             self.assertTrue('c_gene' in record)
+
+    def test_join_with_list_key(self):
+        """Test a join where the key is a list. In this case, clinical_significance is a list.
+        Ensure that the output contains a single value in each resulting record."""
+
+        annotator_params = {"pre_annotation_expression": "explode(record, ['clinical_significance'])"}
+        query_a = self.dataset2\
+            .query(
+                fields=['clinical_significance', 'variant'],
+                annotator_params=annotator_params)\
+            .filter(gene='MAN2B1')\
+            .limit(10)
+        query_b = self.dataset2\
+            .query(fields=['clinical_significance', 'gene'])\
+            .filter(gene='MAN2B1')\
+            .limit(10)
+
+        for i in query_a.join(query_b, "clinical_significance"):
+            self.assertFalse(isinstance(i['clinical_significance'], list))
+            self.assertTrue('_errors' not in i)
+
+    def test_join_with_list_values(self):
+        """Test a join where one of the fields is a list.
+        In this case, clinical_significance is a list.
+        Ensure that the output contains a list of strings (not lists)."""
+
+        annotator_params = {"pre_annotation_expression": "explode(record, ['clinical_significance'])"}
+        query_a = self.dataset2\
+            .query(
+                fields=['clinical_significance', 'variant'],
+                annotator_params=annotator_params)\
+            .filter(gene='MAN2B1')\
+            .limit(10)
+        query_b = self.dataset2\
+            .query(fields=['clinical_significance', 'gene', 'variant'])\
+            .filter(gene='MAN2B1')\
+            .limit(10)
+
+        for i in query_a.join(query_b, "variant"):
+            # Since each value contains one element, the resulting output is just a flat string
+            # as the API takes the first value in the list.
+            self.assertFalse(isinstance(i['clinical_significance'], list))
+            self.assertFalse(isinstance(i['b_clinical_significance'], list))
+            self.assertTrue('_errors' not in i)

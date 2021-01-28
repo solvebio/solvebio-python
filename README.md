@@ -60,23 +60,15 @@ Or install `tox` and run:
 Releasing
 ---------
 
+You will need to [configure Twine](https://twine.readthedocs.io/en/latest/#installation) in order to push to PyPI.
+
 Maintainers can release solvebio-python to PyPI with the following steps:
 
-
-    # Bump the version and update the changelog
     bumpversion <major|minor|patch>
     git push --tags
-    github_changelog_generator
+    make changelog
+    make release
 
-    # Build and release to PyPI
-    find . -name '*.pyc' -delete
-    rm -rf dist/*
-    python setup.py clean
-    python setup.py sdist bdist_wheel
-    twine upload dist/*
-
-
-You will need to [configure Twine](https://twine.readthedocs.io/en/latest/#installation) in order to push to PyPI.
 
 
 Support

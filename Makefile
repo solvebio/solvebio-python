@@ -2,7 +2,7 @@
 # These comments before the targets start with #:
 # remake --tasks to shows the targets and the comments
 
-PHONY=check clean dist distclean test clean_pyc lint
+PHONY=all check clean dist distclean test clean_pyc lint install changelog release
 GIT2CL ?= git2cl
 PYTHON ?= python
 PYTHON3 ?= python3
@@ -18,28 +18,21 @@ check:
 #	$(PYTHON3) ./setup.py test
 
 #: Clean up temporary files and .pyc files
-clean: clean_pyc
-	$(PYTHON) ./setup.py $@
+clean: distclean clean_pyc
+	$(PYTHON) ./setup.py clean
+	$(RM) -rf dist/*
 
-#: Create source (tarball) and binary (egg) distribution
+#: Create source (tarball) and wheel distribution
 dist:
-	$(PYTHON) ./setup.py sdist bdist
+	$(PYTHON) ./setup.py sdist bdist_wheel
 
 #: Remove .pyc files
 clean_pyc:
 	$(RM) -f */*.pyc */*/*.pyc
 
-#: Create source tarball
-sdist:
-	$(PYTHON) ./setup.py sdist
-
 #: Style check. Set env var LINT to pyflakes, flake, or flake8
 lint:
 	$(LINT)
-
-#: Create binary egg distribution
-bdist_egg:
-	$(PYTHON) ./setup.py bdist_egg
 
 # It is too much work to figure out how to add a new command to distutils
 # to do the following. I'm sure distutils will someday get there.
@@ -61,6 +54,10 @@ test-%:
 	python -m unittest solvebio.test.$(subst test-,test_,$@)
 
 changelog:
-	github_changelog_generator
+	github_changelog_generator --user solvebio --project solvebio-python
+
+release: clean dist
+	twine upload dist/*
+
 
 .PHONY: $(PHONY)

@@ -231,12 +231,16 @@ class QueryBase(object):
     # The maximum number of results fetched in one go.
     DEFAULT_PAGE_SIZE = 100
 
-    # Special case for Query class to pre-set SolveClient
+    # INF represents an integer version of 'float('inf')'
+    # because it could not be typecasted to integer
+    INF = 10 ** 15
+
+    # Special case for Query/QueryFile class to pre-set SolveClient
     _client = None
 
     def limit(self, limit):
         """
-        Returns a new Query instance with the new
+        Returns a new Query/QueryFile instance with the new
         limit values.
         """
         return self._clone(limit=limit)
@@ -264,7 +268,7 @@ class QueryBase(object):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
-        return min(self._limit, self.count())
+        return min(self._limit, self.count()) if not self.count() is None else self._limit
 
     def __nonzero__(self):
         return bool(len(self))
@@ -277,7 +281,7 @@ class QueryBase(object):
         return self._response['results']
 
     def __repr__(self):
-        # Check that Query object does not have any previous errors
+        # Check that Query/QueryFile object does not have any previous errors
         # otherwise, raise the error.
         if self._error:
             raise self._error
@@ -295,7 +299,7 @@ class QueryBase(object):
             logger.debug('warmup (__getattr__: %s)' % key)
             self.execute(self._slice.start if self._slice else 0)
 
-        # Check that Query object does not have any previous errors
+        # Check that Query/QueryFile object does not have any previous errors
         # otherwise, raise the error.
         # execute() sets the error, so the check is placed after it.
         if self._error:
@@ -318,14 +322,14 @@ class QueryBase(object):
     @staticmethod
     def as_slice(slice_or_idx):
         if isinstance(slice_or_idx, slice):
-            return QueryFile.bounded_slice(slice_or_idx)
+            return QueryBase.bounded_slice(slice_or_idx)
         return slice(slice_or_idx, slice_or_idx + 1)
 
     def __getitem__(self, key):
         """
         Retrieve an item or slice from the result set.
 
-        Query's do not support negative indexing.
+        Query/QueryFile's do not support negative indexing.
 
         :Parameters:
         - `key`: The requested slice range or index.
@@ -334,7 +338,7 @@ class QueryBase(object):
             raise TypeError
 
         if isinstance(key, slice):
-            key = QueryFile.bounded_slice(key)
+            key = QueryBase.bounded_slice(key)
             start = 0 if key.start is None else key.start
             stop = float('inf') if key.stop is None else key.stop
 
@@ -393,7 +397,7 @@ class QueryBase(object):
 
     def next(self):
         """
-        Allows the Query object to be an iterable.
+        Allows the Query/QueryFile object to be an iterable.
 
         This method will iterate through a cached result set
         and fetch successive pages as required.
@@ -410,16 +414,77 @@ class QueryBase(object):
 
         # len(self) returns `min(limit, total)` results
         if self._cursor == len(self):
-            raise StopIteration()
+            raise StopIteration
 
         if self._buffer_idx == len(self._buffer):
             self.execute(self._page_offset + self._buffer_idx)
             self._buffer_idx = 0
 
+        if not self._buffer:
+            raise StopIteration
+
         self._cursor += 1
         self._buffer_idx += 1
 
         return self._buffer[self._buffer_idx - 1]
+
+    def filter(self, *filters, **kwargs):
+        """
+        Returns this Query/QueryFile instance with the query args combined with
+        existing set with AND.
+
+        kwargs are simply passed to a new Filter object and combined to any
+        other filters with AND.
+
+        By default, everything is combined using AND. If you provide
+        multiple filters in a single filter call, those are ANDed
+        together. If you provide multiple filters in multiple filter
+        calls, those are ANDed together.
+
+        If you want something different, use the F class which supports
+        ``&`` (and), ``|`` (or) and ``~`` (not) operators. Then call
+        filter once with the resulting Filter instance.
+        """
+        f = list(filters)
+
+        if kwargs:
+            f += [Filter(**kwargs)]
+
+        return self._clone(filters=f)
+
+    @classmethod
+    def _process_filters(cls, filters):
+        """Takes a list of filters and returns JSON
+
+        :Parameters:
+        - `filters`: List of Filters, (key, val) tuples, or dicts
+
+        Returns: List of JSON API filters
+        """
+        data = []
+
+        # Filters should always be a list
+        for f in filters:
+            if isinstance(f, Filter):
+                if f.filters:
+                    data.extend(cls._process_filters(f.filters))
+            elif isinstance(f, dict):
+                key = list(f.keys())[0]
+                val = f[key]
+
+                if isinstance(val, dict):
+                    # pass val (a dict) as list
+                    # so that it gets processed properly
+                    filter_filters = cls._process_filters([val])
+                    if len(filter_filters) == 1:
+                        filter_filters = filter_filters[0]
+                    data.append({key: filter_filters})
+                else:
+                    data.append({key: cls._process_filters(val)})
+            else:
+                data.extend((f,))
+
+        return data
 
 
 class Query(QueryBase):
@@ -536,30 +601,6 @@ class Query(QueryBase):
 
         return new
 
-    def filter(self, *filters, **kwargs):
-        """
-        Returns this Query instance with the query args combined with
-        existing set with AND.
-
-        kwargs are simply passed to a new Filter object and combined to any
-        other filters with AND.
-
-        By default, everything is combined using AND. If you provide
-        multiple filters in a single filter call, those are ANDed
-        together. If you provide multiple filters in multiple filter
-        calls, those are ANDed together.
-
-        If you want something different, use the F class which supports
-        ``&`` (and), ``|`` (or) and ``~`` (not) operators. Then call
-        filter once with the resulting Filter instance.
-        """
-        f = list(filters)
-
-        if kwargs:
-            f += [Filter(**kwargs)]
-
-        return self._clone(filters=f)
-
     def range(self, chromosome, start, stop, exact=False):
         """
         Shortcut to do range filters on genomic datasets.
@@ -616,42 +657,8 @@ class Query(QueryBase):
         """
         if getattr(self, '_is_join', False):
             return len(self._buffer)
-        # return min(self._limit, self.count())
+
         return super(Query, self).__len__()
-
-    @classmethod
-    def _process_filters(cls, filters):
-        """Takes a list of filters and returns JSON
-
-        :Parameters:
-        - `filters`: List of Filters, (key, val) tuples, or dicts
-
-        Returns: List of JSON API filters
-        """
-        data = []
-
-        # Filters should always be a list
-        for f in filters:
-            if isinstance(f, Filter):
-                if f.filters:
-                    data.extend(cls._process_filters(f.filters))
-            elif isinstance(f, dict):
-                key = list(f.keys())[0]
-                val = f[key]
-
-                if isinstance(val, dict):
-                    # pass val (a dict) as list
-                    # so that it gets processed properly
-                    filter_filters = cls._process_filters([val])
-                    if len(filter_filters) == 1:
-                        filter_filters = filter_filters[0]
-                    data.append({key: filter_filters})
-                else:
-                    data.append({key: cls._process_filters(val)})
-            else:
-                data.extend((f,))
-
-        return data
 
     def _build_query(self, **kwargs):
         q = {}
@@ -660,7 +667,7 @@ class Query(QueryBase):
             q['query'] = self._query
 
         if self._filters:
-            filters = Query._process_filters(self._filters)
+            filters = self._process_filters(self._filters)
             if len(filters) > 1:
                 q['filters'] = [{'and': filters}]
             else:
@@ -814,7 +821,7 @@ class Query(QueryBase):
         annotator_params = kwargs.pop('annotator_params', None) or \
             params.pop('annotator_params', None)
 
-        migration = DatasetMigration.create(
+        migration_resp = DatasetMigration.create(
             source_id=self._dataset_id,
             target_id=target_id,
             source_params=params,
@@ -824,9 +831,15 @@ class Query(QueryBase):
             **kwargs)
 
         if follow:
-            migration.follow()
+            # If migration was created with the parallel flag, then multiple
+            # migration objects will be returned.
+            if "data" in migration_resp:
+                for migration in migration_resp["data"]:
+                    migration.follow()
+            else:
+                migration_resp.follow()
 
-        return migration
+        return migration_resp
 
     def annotate(self, fields, **kwargs):
         from solvebio.annotate import Annotator
@@ -922,27 +935,37 @@ class Query(QueryBase):
             # Add a newly created field to list that will be passed to the explode function
             new_query._explode_fields.append(name)
 
+            # Extract all the field values from each joined record
+            expression = '[get(item, "{}") for item in get(record, "{}")]'.format(
+                field.name, query_b_join_field_name)
+
+            if field.is_list:
+                # Handle case where the sub-query contains a list of lists of <field.data_type>,
+                # which will happen if the field contains a list of values.
+                # In this case, we will flatten it to avoid returning a list of lists.
+                expression = '[item for sublist in ' + expression + ' for item in sublist]'
+
             target_fields.append({
                 "name": name,
                 "title": field.title,
-                # Handle case where sub-query returns a list of lists (of strings or something)
-                "data_type": "object" if field.is_list else field.data_type,
+                "data_type": field.data_type,
                 "ordering": field.ordering,
                 "is_list": True,
                 "is_transient": False,
-                "expression": """
-                    [get(item, "{}") for item in get(record, "{}")]
-                """.format(field.name, query_b_join_field_name),
+                "expression": expression,
                 "depends_on": [query_b_join_field_name]
             })
 
         # Add to any existing target fields
         new_query._target_fields += target_fields
 
-        new_query._annotator_params = {
-            'post_annotation_expression':
-                "explode(record, fields={})".format(new_query._explode_fields)
-        }
+        # Preserve existing annotator params (pre_annotation_expression only)
+        if not new_query._annotator_params:
+            new_query._annotator_params = {}
+
+        new_query._annotator_params['post_annotation_expression'] = \
+            "explode(record, fields={})".format(new_query._explode_fields)
+
         new_query._is_join = True
         return new_query
 
@@ -990,23 +1013,32 @@ class BatchQuery(object):
 
 class QueryFile(QueryBase):
     """
-        A Query API request wrapper that generates a request for an object content query,
-        and can iterate through streaming result sets.
-        """
+    A QueryFile API request wrapper that generates a request for an object content query,
+    and can iterate through streaming result sets.
+    """
+    # The maximum number of results fetched in one go.
+    DEFAULT_PAGE_SIZE = 1000
 
     def __init__(
             self,
             file_id,
-            limit=QueryBase.DEFAULT_PAGE_SIZE,
+            fields=None,
+            exclude_fields=None,
+            filters=None,
+            limit=QueryBase.INF,
+            page_size=DEFAULT_PAGE_SIZE,
             result_class=dict,
             debug=False,
             error=None,
             **kwargs):
         """
-        Creates a new Query object.
+        Creates a new QueryFile object.
 
         :Parameters:
           - `file_id`: Unique ID of file to query.
+          - `fields` (optional): List of specific fields to retrieve.
+          - `exclude_fields` (optional): List of specific fields to exclude.
+          - `filters` (optional): Filter or List of filter objects.
           - `result_class` (optional): Class of object returned by query.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
@@ -1014,9 +1046,20 @@ class QueryFile(QueryBase):
         """
         self._file_id = file_id
         self._data_url = '/v2/objects/{0}/data'.format(file_id)
+        self._fields_url = '/v2/objects/{0}/fields'.format(file_id)
         self._result_class = result_class
         self._debug = debug
         self._error = error
+        self._fields = fields
+        self._exclude_fields = exclude_fields
+        self._filters = filters
+
+        if filters:
+            if isinstance(filters, Filter):
+                filters = [filters]
+        else:
+            filters = []
+        self._filters = filters
 
         # init response and cursor
         self._response = None
@@ -1025,8 +1068,11 @@ class QueryFile(QueryBase):
         self._limit = limit
         # Page offset can only be set by execute(). It is always set to the
         # current absolute offset contained in the buffer.
+        self._page_size = int(page_size)
+        # Page offset can only be set by execute(). It is always set to the
+        # current absolute offset contained in the buffer.
         self._page_offset = None
-        # slice is set when the Query is being sliced.
+        # slice is set when the QueryFile is being sliced.
         # In this case, __iter__() and next() will not
         # reset the page_offset to 0 before iterating.
         self._slice = None
@@ -1039,12 +1085,20 @@ class QueryFile(QueryBase):
         # (kwargs overrides pre-set, which overrides global)
         self._client = kwargs.get('client') or self._client or client
 
-    def _clone(self, limit=None):
+    def _clone(self, filters=None, limit=None):
         new = self.__class__(self._file_id,
                              limit=self._limit,
+                             fields=self._fields,
+                             exclude_fields=self._exclude_fields,
+                             page_size=self._page_size,
                              result_class=self._result_class,
                              debug=self._debug,
                              client=self._client)
+
+        new._filters += self._filters
+
+        if filters:
+            new._filters += filters
 
         if limit:
             new._limit = limit
@@ -1053,6 +1107,19 @@ class QueryFile(QueryBase):
 
     def _build_query(self, **kwargs):
         q = {}
+
+        if self._filters:
+            filters = self._process_filters(self._filters)
+            if len(filters) > 1:
+                q['filters'] = [{'and': filters}]
+            else:
+                q['filters'] = filters
+
+        if self._fields is not None:
+            q['fields'] = self._fields
+
+        if self._exclude_fields is not None:
+            q['exclude_fields'] = self._exclude_fields
 
         if self._debug:
             q['debug'] = 'True'
@@ -1075,7 +1142,7 @@ class QueryFile(QueryBase):
 
         _params.update(
             offset=self._page_offset,
-            limit=self._limit
+            limit=min(self._page_size, self._limit)
         )
 
         logger.debug('executing query. from/limit: %6d/%d' %
@@ -1083,11 +1150,22 @@ class QueryFile(QueryBase):
 
         # If the request results in a SolveError (ie bad filter) set the error.
         try:
-            self._response = self._client.get(self._data_url, _params)
+            self._response = self._client.post(self._data_url, _params)
         except SolveError as e:
             self._error = e
             raise
 
-        logger.debug('query response took: %(took)d ms, total: %(total)d'
-                     % self._response)
+        logger.debug('query response took: {} ms, total: {}'.
+                     format(self._response['took'], self._response['total']))
         return _params, self._response
+
+    def fields(self):
+        """Returns all expected fields that will be found in the results."""
+
+        fields = [f for f in self._client.get(self._fields_url, {})['fields']]
+        if self._fields:
+            fields = [f for f in fields if f in self._fields]
+        if self._exclude_fields:
+            fields = [f for f in fields if f not in self._exclude_fields]
+
+        return fields

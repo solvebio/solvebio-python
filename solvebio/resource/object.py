@@ -566,3 +566,43 @@ class Object(CreateableAPIResource,
         else:
             raise SolveError('The functionality is only supported for files and datasets. '
                              'This is a {}.'.format(self.object_type))
+
+    def archive(self, storage_class=None, follow=False):
+        """
+        Archive this dataset
+        """
+        if not self.is_dataset:
+            raise SolveError("Only dataset objects can be archived.")
+
+        # The default archive storage class is called "Archive"
+        if not storage_class:
+            storage_class = "Archive"
+
+        # Updating storage class is only available at the objects endpoint
+        self.storage_class = storage_class
+        self.save()
+
+        if follow:
+            self.dataset.activity(follow=True)
+
+    def restore(self, storage_class=None, follow=False, **kwargs):
+        """
+        Restore this dataset
+        """
+        if not self.is_dataset:
+            raise SolveError("Only datasets can be restored.")
+
+        # The default storage class for most accounts is Standard
+        # This is simplest for now. We could also:
+        #   - choose the Vault.default_storage_class if set
+        #   - the Account.default_storage_class if set (and exposed?)
+        #   - get the most recent Dataset snapshot task and pull config from there
+        if not storage_class:
+            self.storage_class = "Standard"
+
+        # Updating storage class is only available at the objects endpoint
+        self.storage_class = storage_class
+        self.save()
+
+        if follow:
+            self.dataset.activity(follow=True)

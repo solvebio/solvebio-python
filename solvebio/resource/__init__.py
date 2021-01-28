@@ -11,6 +11,8 @@ from .datasetmigration import DatasetMigration
 from .datasettemplate import DatasetTemplate
 from .vault_sync_task import VaultSyncTask
 from .object_copy_task import ObjectCopyTask
+from .dataset_restore_task import DatasetRestoreTask
+from .dataset_snapshot_task import DatasetSnapshotTask
 from .manifest import Manifest
 from .object import Object
 from .vault import Vault
@@ -33,6 +35,8 @@ types = {
     'DatasetMigration': DatasetMigration,
     'DatasetTemplate': DatasetTemplate,
     'DatasetField': DatasetField,
+    'DatasetRestoreTask': DatasetRestoreTask,
+    'DatasetSnapshotTask': DatasetSnapshotTask,
     'Group': Group,
     'Manifest': Manifest,
     'Object': Object,

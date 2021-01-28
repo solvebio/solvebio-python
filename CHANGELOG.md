@@ -1,5 +1,47 @@
 # Changelog
 
+## [v2.15.0](https://github.com/solvebio/solvebio-python/tree/v2.15.0) (2021-01-08)
+
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.14.1...v2.15.0)
+
+**Closed issues:**
+
+- Dataset/File query raises an error when it has been sliced and a stop param is set to float\('inf'\) [\#385](https://github.com/solvebio/solvebio-python/issues/385)
+
+**Merged pull requests:**
+
+- Handle parallel migrations [\#387](https://github.com/solvebio/solvebio-python/pull/387) ([davidhpark](https://github.com/davidhpark))
+- Handle a query slicing when the potential number of returned records in the query is larger than the number of records left in the dataset/file [\#386](https://github.com/solvebio/solvebio-python/pull/386) ([nikolamaric](https://github.com/nikolamaric))
+- Enable using filters, fields, exclude\_fields for a QueryFile object. [\#382](https://github.com/solvebio/solvebio-python/pull/382) ([nikolamaric](https://github.com/nikolamaric))
+
+## [v2.14.1](https://github.com/solvebio/solvebio-python/tree/v2.14.1) (2020-12-04)
+
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.14.0...v2.14.1)
+
+**Closed issues:**
+
+- Don't change data types to object in joins for list fields [\#380](https://github.com/solvebio/solvebio-python/issues/380)
+
+**Merged pull requests:**
+
+- Flatten lists of lists instead of using "object" data type in joins [\#379](https://github.com/solvebio/solvebio-python/pull/379) ([davecap](https://github.com/davecap))
+
+## [v2.14.0](https://github.com/solvebio/solvebio-python/tree/v2.14.0) (2020-12-01)
+
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.13.1...v2.14.0)
+
+**Closed issues:**
+
+- Test is creating a DatasetTemplate on every run [\#362](https://github.com/solvebio/solvebio-python/issues/362)
+
+**Merged pull requests:**
+
+- Use a different fake dataset ID [\#378](https://github.com/solvebio/solvebio-python/pull/378) ([davecap](https://github.com/davecap))
+- Add support for archiving and restoring datasets [\#377](https://github.com/solvebio/solvebio-python/pull/377) ([jsh2134](https://github.com/jsh2134))
+- Update mock [\#376](https://github.com/solvebio/solvebio-python/pull/376) ([jsh2134](https://github.com/jsh2134))
+- Update Travis to Ubuntu 18.04 [\#375](https://github.com/solvebio/solvebio-python/pull/375) ([damnjanovictanja](https://github.com/damnjanovictanja))
+- Update to newest HGNC [\#374](https://github.com/solvebio/solvebio-python/pull/374) ([damnjanovictanja](https://github.com/damnjanovictanja))
+
 ## [v2.13.1](https://github.com/solvebio/solvebio-python/tree/v2.13.1) (2020-10-14)
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.13.0...v2.13.1)
@@ -33,6 +75,7 @@
 - Add solvebio-recipes tool [\#364](https://github.com/solvebio/solvebio-python/pull/364) ([damnjanovictanja](https://github.com/damnjanovictanja))
 - Issue 324 metadata is str after saving empty dict [\#356](https://github.com/solvebio/solvebio-python/pull/356) ([nikolamaric](https://github.com/nikolamaric))
 - Issue 276 dict attributes not save updates [\#355](https://github.com/solvebio/solvebio-python/pull/355) ([nikolamaric](https://github.com/nikolamaric))
+- Dataset.get\_or\_create\_by\_full\_path should always return Dataset object [\#338](https://github.com/solvebio/solvebio-python/pull/338) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.12.0](https://github.com/solvebio/solvebio-python/tree/v2.12.0) (2020-08-03)
 
@@ -74,7 +117,6 @@
 
 **Merged pull requests:**
 
-- Dataset.get\_or\_create\_by\_full\_path should always return Dataset object [\#338](https://github.com/solvebio/solvebio-python/pull/338) ([jsh2134](https://github.com/jsh2134))
 - do not expect that error contains json [\#337](https://github.com/solvebio/solvebio-python/pull/337) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.10.0](https://github.com/solvebio/solvebio-python/tree/v2.10.0) (2020-04-24)
@@ -166,7 +208,6 @@
 **Merged pull requests:**
 
 - Task Activity improvements [\#306](https://github.com/solvebio/solvebio-python/pull/306) ([jsh2134](https://github.com/jsh2134))
-- Add ability for scripts to customize the user-agent [\#305](https://github.com/solvebio/solvebio-python/pull/305) ([davecap](https://github.com/davecap))
 
 ## [v2.8.6](https://github.com/solvebio/solvebio-python/tree/v2.8.6) (2019-07-03)
 
@@ -237,6 +278,7 @@
 
 **Merged pull requests:**
 
+- Add ability for scripts to customize the user-agent [\#305](https://github.com/solvebio/solvebio-python/pull/305) ([davecap](https://github.com/davecap))
 - Retry uploads up to 5 times [\#292](https://github.com/solvebio/solvebio-python/pull/292) ([davecap](https://github.com/davecap))
 - Handle case where Query iterator has not been initialized \(closes \#286\) [\#288](https://github.com/solvebio/solvebio-python/pull/288) ([davecap](https://github.com/davecap))
 - Dont expose the token in \_\_repr\_\_ [\#284](https://github.com/solvebio/solvebio-python/pull/284) ([davecap](https://github.com/davecap))
@@ -431,7 +473,6 @@
 **Merged pull requests:**
 
 - add DownloadableAPIResource mixin to Object resource and add support for Object download response to the mixin [\#213](https://github.com/solvebio/solvebio-python/pull/213) ([davecap](https://github.com/davecap))
-- use the provided app\_url instead of flask's url\_root \(fixes \#210\) [\#211](https://github.com/solvebio/solvebio-python/pull/211) ([davecap](https://github.com/davecap))
 - add required args to create\_folder and create\_dataset [\#209](https://github.com/solvebio/solvebio-python/pull/209) ([davecap](https://github.com/davecap))
 - use cross-platform /dev/null \(closes \#189\) [\#190](https://github.com/solvebio/solvebio-python/pull/190) ([davecap](https://github.com/davecap))
 
@@ -442,10 +483,6 @@
 **Closed issues:**
 
 - Release Version 2.3.1 to pypi [\#205](https://github.com/solvebio/solvebio-python/issues/205)
-
-**Merged pull requests:**
-
-- \[Bug\] method turned property bug [\#206](https://github.com/solvebio/solvebio-python/pull/206) ([jsh2134](https://github.com/jsh2134))
 
 ## [v2.3.1](https://github.com/solvebio/solvebio-python/tree/v2.3.1) (2017-11-22)
 
@@ -473,16 +510,14 @@
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.2.0...v2.2.1)
 
-**Implemented enhancements:**
-
-- When an export is complete, add a message to indicate that the user should download the file [\#164](https://github.com/solvebio/solvebio-python/issues/164)
-
 **Fixed bugs:**
 
 - Task resource does not use local SolveClient [\#197](https://github.com/solvebio/solvebio-python/issues/197)
 
 **Merged pull requests:**
 
+- use the provided app\_url instead of flask's url\_root \(fixes \#210\) [\#211](https://github.com/solvebio/solvebio-python/pull/211) ([davecap](https://github.com/davecap))
+- \[Bug\] method turned property bug [\#206](https://github.com/solvebio/solvebio-python/pull/206) ([jsh2134](https://github.com/jsh2134))
 - fix issue where task method did not pass client through [\#198](https://github.com/solvebio/solvebio-python/pull/198) ([davecap](https://github.com/davecap))
 
 ## [v2.2.0](https://github.com/solvebio/solvebio-python/tree/v2.2.0) (2017-10-05)
@@ -526,6 +561,7 @@
 
 **Implemented enhancements:**
 
+- When an export is complete, add a message to indicate that the user should download the file [\#164](https://github.com/solvebio/solvebio-python/issues/164)
 - Allow `solvebio import` shortcut to take an upload id [\#120](https://github.com/solvebio/solvebio-python/issues/120)
 - HTTP Caching support for data query requests [\#11](https://github.com/solvebio/solvebio-python/issues/11)
 
@@ -564,7 +600,6 @@
 - use new travis distribution: Ubuntu 14 [\#171](https://github.com/solvebio/solvebio-python/pull/171) ([jsh2134](https://github.com/jsh2134))
 - Test case updates [\#170](https://github.com/solvebio/solvebio-python/pull/170) ([jsh2134](https://github.com/jsh2134))
 - handle max export limit case [\#169](https://github.com/solvebio/solvebio-python/pull/169) ([jsh2134](https://github.com/jsh2134))
-- move commit follow\(\) into commit resource [\#168](https://github.com/solvebio/solvebio-python/pull/168) ([jsh2134](https://github.com/jsh2134))
 
 ## [v1.17.0](https://github.com/solvebio/solvebio-python/tree/v1.17.0) (2017-05-04)
 
@@ -662,6 +697,7 @@
 - import shortcut examples [\#129](https://github.com/solvebio/solvebio-python/pull/129) ([dandanxu](https://github.com/dandanxu))
 - add commit mode as an import option [\#128](https://github.com/solvebio/solvebio-python/pull/128) ([jsh2134](https://github.com/jsh2134))
 - update genome builds upon get\_or\_create, add new create-dataset command [\#126](https://github.com/solvebio/solvebio-python/pull/126) ([davecap](https://github.com/davecap))
+- add invalid file path name in error  [\#122](https://github.com/solvebio/solvebio-python/pull/122) ([jsh2134](https://github.com/jsh2134))
 
 ## [v1.15.0](https://github.com/solvebio/solvebio-python/tree/v1.15.0) (2016-12-19)
 
@@ -674,16 +710,12 @@
 **Merged pull requests:**
 
 - add file wrapper to show upload progress bar \(closes \#119\) [\#123](https://github.com/solvebio/solvebio-python/pull/123) ([davecap](https://github.com/davecap))
-- add invalid file path name in error  [\#122](https://github.com/solvebio/solvebio-python/pull/122) ([jsh2134](https://github.com/jsh2134))
 - fix issue where solvebio cli did not open in python3 [\#121](https://github.com/solvebio/solvebio-python/pull/121) ([davecap](https://github.com/davecap))
+- remove trailing commas that broke things, read GZipped template files [\#118](https://github.com/solvebio/solvebio-python/pull/118) ([jsh2134](https://github.com/jsh2134))
 
 ## [v1.14.2](https://github.com/solvebio/solvebio-python/tree/v1.14.2) (2016-12-13)
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v1.14.1...v1.14.2)
-
-**Merged pull requests:**
-
-- remove trailing commas that broke things, read GZipped template files [\#118](https://github.com/solvebio/solvebio-python/pull/118) ([jsh2134](https://github.com/jsh2134))
 
 ## [v1.14.1](https://github.com/solvebio/solvebio-python/tree/v1.14.1) (2016-12-12)
 
@@ -834,6 +866,7 @@
 - add XLSX exporter [\#90](https://github.com/solvebio/solvebio-python/pull/90) ([davecap](https://github.com/davecap))
 - Recursively process listed, nested dicts [\#89](https://github.com/solvebio/solvebio-python/pull/89) ([davecap](https://github.com/davecap))
 - Adds export functionality closes \#3 [\#88](https://github.com/solvebio/solvebio-python/pull/88) ([davecap](https://github.com/davecap))
+- test\_cases\_changelog [\#84](https://github.com/solvebio/solvebio-python/pull/84) ([eyalfoni](https://github.com/eyalfoni))
 
 ## [v1.9.0](https://github.com/solvebio/solvebio-python/tree/v1.9.0) (2016-02-01)
 
@@ -862,7 +895,6 @@
 - fixes a bug where Query buffering didn't always use the slice starting offset [\#87](https://github.com/solvebio/solvebio-python/pull/87) ([davecap](https://github.com/davecap))
 - added sbid lookup support in datasets - closes \#81 [\#86](https://github.com/solvebio/solvebio-python/pull/86) ([eyalfoni](https://github.com/eyalfoni))
 - fixes multiple queries with wrong filter closes \#78 [\#85](https://github.com/solvebio/solvebio-python/pull/85) ([eyalfoni](https://github.com/eyalfoni))
-- test\_cases\_changelog [\#84](https://github.com/solvebio/solvebio-python/pull/84) ([eyalfoni](https://github.com/eyalfoni))
 
 ## [v1.8.1](https://github.com/solvebio/solvebio-python/tree/v1.8.1) (2015-07-22)
 
@@ -999,6 +1031,7 @@
 **Merged pull requests:**
 
 - \_ask\_for\_credentials: default\_email is put in prompt \*only\* if it is str... [\#48](https://github.com/solvebio/solvebio-python/pull/48) ([rocky](https://github.com/rocky))
+- Inside solvebio shell allow solvebio.Dataset, solvebio.Depository..., tabulate [\#32](https://github.com/solvebio/solvebio-python/pull/32) ([rocky](https://github.com/rocky))
 
 ## [1.6.0](https://github.com/solvebio/solvebio-python/tree/1.6.0) (2014-10-31)
 
@@ -1017,7 +1050,6 @@
 - Add Annotate and Sample download; some refactoring [\#37](https://github.com/solvebio/solvebio-python/pull/37) ([rocky](https://github.com/rocky))
 - Feature/annotate download part2 [\#36](https://github.com/solvebio/solvebio-python/pull/36) ([rocky](https://github.com/rocky))
 - Add flake8 testing from travis [\#35](https://github.com/solvebio/solvebio-python/pull/35) ([rocky](https://github.com/rocky))
-- Inside solvebio shell allow solvebio.Dataset, solvebio.Depository..., tabulate [\#32](https://github.com/solvebio/solvebio-python/pull/32) ([rocky](https://github.com/rocky))
 - Feature/annotate broken [\#31](https://github.com/solvebio/solvebio-python/pull/31) ([rocky](https://github.com/rocky))
 - Sync what we have. There will be a few more updates... [\#30](https://github.com/solvebio/solvebio-python/pull/30) ([rocky](https://github.com/rocky))
 - Redo tabulate sorting to add as a parameter. [\#28](https://github.com/solvebio/solvebio-python/pull/28) ([rocky](https://github.com/rocky))
@@ -1061,7 +1093,7 @@
 
 **Merged pull requests:**
 
-- Add SolveBio API test to SolveBio CLI and add pretty printing for xml fields [\#14](https://github.com/solvebio/solvebio-python/pull/14) ([andrewmillspaugh](https://github.com/andrewmillspaugh))
+- Add SolveBio API test to SolveBio CLI and add pretty printing for xml fields [\#14](https://github.com/solvebio/solvebio-python/pull/14) ([spaugh](https://github.com/spaugh))
 
 ## [1.4.0](https://github.com/solvebio/solvebio-python/tree/1.4.0) (2014-07-24)
 
@@ -1069,7 +1101,7 @@
 
 **Merged pull requests:**
 
-- Improvements to SolveArgumentParser [\#13](https://github.com/solvebio/solvebio-python/pull/13) ([andrewmillspaugh](https://github.com/andrewmillspaugh))
+- Improvements to SolveArgumentParser [\#13](https://github.com/solvebio/solvebio-python/pull/13) ([spaugh](https://github.com/spaugh))
 
 ## [1.3.4](https://github.com/solvebio/solvebio-python/tree/1.3.4) (2014-07-17)
 

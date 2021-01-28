@@ -250,15 +250,33 @@ class Dataset(CreateableAPIResource,
         except AttributeError:
             target_id = target
 
-        migration = DatasetMigration.create(
+        migration_resp = DatasetMigration.create(
             source_id=self['id'],
             target_id=target_id,
             **kwargs)
 
         if follow:
-            migration.follow()
+            # If migration was created with the parallel flag, then multiple
+            # migration objects will be returned.
+            if "data" in migration_resp:
+                for migration in migration_resp["data"]:
+                    migration.follow()
+            else:
+                migration_resp.follow()
 
-        return migration
+        return migration_resp
+
+    def archive(self, storage_class=None, follow=False):
+        """
+        Archive this dataset
+        """
+        return self.vault_object.archive(storage_class=storage_class, follow=follow)
+
+    def restore(self, storage_class=None, follow=False, **kwargs):
+        """
+        Restore this dataset
+        """
+        return self.vault_object.restore(storage_class=storage_class, follow=follow)
 
     def activity(self, follow=False, limit=1,
                  sleep_seconds=Task.SLEEP_WAIT_DEFAULT):
