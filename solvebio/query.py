@@ -1159,10 +1159,11 @@ class QueryFile(QueryBase):
                      format(self._response['took'], self._response['total']))
         return _params, self._response
 
-    def fields(self):
+    def fields(self, sorted_fields=False):
         """Returns all expected fields that will be found in the results."""
 
-        fields = [f for f in self._client.get(self._fields_url, {})['fields']]
+        fields = [f for f in self._client.get(self._fields_url,
+                                              {'sorted_fields': sorted_fields})['fields']]
         if self._fields:
             fields = [f for f in fields if f in self._fields]
         if self._exclude_fields:
