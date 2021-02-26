@@ -289,10 +289,16 @@ class QueryBase(object):
         if len(self) == 0:
             return 'Query returned 0 results.'
 
-        return '\n%s\n\n... %s more results.' % (
-            tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
-                     aligns=['right', 'left'], sort=True),
-            pretty_int(len(self) - 1))
+        if self._output_format == "json":
+            return '\n%s\n\n... %s more results.' % (
+                tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
+                         aligns=['right', 'left'], sort=True),
+                pretty_int(len(self) - 1))
+        else:
+            return '\n%s\n\n... %s more results.' % (
+                tabulate(list(enumerate(self._buffer[:10])), ['Row', 'Data'],
+                         aligns=['right', 'left']),
+                pretty_int(len(self) - 1))
 
     def __getattr__(self, key):
         if self._response is None:
