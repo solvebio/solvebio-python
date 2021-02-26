@@ -289,16 +289,24 @@ class QueryBase(object):
         if len(self) == 0:
             return 'Query returned 0 results.'
 
-        if self._output_format == "json":
+        if not getattr(self, '_output_format', None) or self._output_format == "json":
             return '\n%s\n\n... %s more results.' % (
                 tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
                          aligns=['right', 'left'], sort=True),
                 pretty_int(len(self) - 1))
         else:
-            return '\n%s\n\n... %s more results.' % (
+            is_tsv = self._output_format == 'tsv'
+
+            placeholder = 'many more results (total unknown)'
+
+            # this is the only case when we know teh exact number of total records
+            if len(self) < self._limit:
+                placeholder = '{} more results'.format(pretty_int(max(len(self) - 9, 0)))
+
+            return '\n%s\n\n... %s.' % (
                 tabulate(list(enumerate(self._buffer[:10])), ['Row', 'Data'],
-                         aligns=['right', 'left']),
-                pretty_int(len(self) - 1))
+                         aligns=['right', 'left'], is_tsv=is_tsv),
+                placeholder)
 
     def __getattr__(self, key):
         if self._response is None:
@@ -1037,6 +1045,7 @@ class QueryFile(QueryBase):
             debug=False,
             error=None,
             output_format='json',
+            header=True,
             **kwargs):
         """
         Creates a new QueryFile object.
@@ -1050,6 +1059,7 @@ class QueryFile(QueryBase):
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
           - `debug` (optional): Sends debug information to the API.
+          - `header` (optional): Returns header in response if output_format is 'csv' or 'tsv'
           - `output_format` (optional): Format of query results (json, csv or tsv)
         """
         self._file_id = file_id
@@ -1062,6 +1072,7 @@ class QueryFile(QueryBase):
         self._exclude_fields = exclude_fields
         self._filters = filters
         self._output_format = output_format
+        self._header = header
 
         if filters:
             if isinstance(filters, Filter):
@@ -1103,6 +1114,7 @@ class QueryFile(QueryBase):
                              result_class=self._result_class,
                              debug=self._debug,
                              output_format=self._output_format,
+                             header=self._header,
                              client=self._client,)
 
         new._filters += self._filters
@@ -1161,6 +1173,16 @@ class QueryFile(QueryBase):
         # If the request results in a SolveError (ie bad filter) set the error.
         try:
             self._response = self._client.post(self._data_url, _params)
+
+            if getattr(self, '_header', None) and self._output_format in ('csv', 'tsv') \
+                    and not getattr(self, '_header_fields', None):
+                self._header_fields = self.fields()
+
+                separator_mappings = {'csv': ',', 'tsv': '\t'}
+                sep = separator_mappings[self._output_format]
+
+                self._response['results'].insert(0, sep.join(self._header_fields))
+
         except SolveError as e:
             self._error = e
             raise

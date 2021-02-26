@@ -561,7 +561,7 @@ def _format_table(fmt, headers, rows, colwidths, colaligns):
 
 
 def tabulate(tabular_data, headers=[], tablefmt="orgmode",
-             floatfmt="g", aligns=[], missingval="", sort=True):
+             floatfmt="g", aligns=[], missingval="", sort=True, is_tsv=False):
     list_of_lists, headers = _normalize_tabular_data(tabular_data, headers,
                                                      sort=sort)
 
@@ -608,9 +608,14 @@ def tabulate(tabular_data, headers=[], tablefmt="orgmode",
     if not isinstance(tablefmt, TableFormat):
         tablefmt = _table_formats.get(tablefmt, _table_formats["orgmode"])
 
-    # make sure values don't have newlines or tabs in them
-    rows = [[str(c).replace('\n', '').replace('\t', '').replace('\r', '')
-            for c in r] for r in rows]
+    if is_tsv:
+        # for tsv files we have to add spaces in order to 'simulate' tab separators
+        rows = [[str(c).replace('\n', '').replace('\t', ' ').replace('\r', '')
+                 for c in r] for r in rows]
+    else:
+        # make sure values don't have newlines or tabs in them
+        rows = [[str(c).replace('\n', '').replace('\t', '').replace('\r', '')
+                for c in r] for r in rows]
     return _format_table(tablefmt, headers, rows, minwidths, aligns)
 
 
