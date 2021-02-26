@@ -1,0 +1,39 @@
+name: SolveBio Python Package
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [2.7, 3.6, 3.7, 3.8, pypy2, pypy3]
+    env:
+      SOLVEBIO_API_HOST: ${{ secrets.SOLVEBIO_API_HOST }}
+      SOLVEBIO_API_KEY: ${{ secrets.SOLVEBIO_API_KEY }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Export pythonpath
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+      - name: Install Tox and any other packages
+        run: |
+          pip install -U wheel --user
+          pip install setuptools
+          pip install nose flake8 pytest
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-dev.txt
+          pip install PyVCF==0.6.8 XlsxWriter===0.9.3
+      - name: Scripts
+        run: |
+          nosetests -e test_solvebio_auth -e recipes
+          python -m pytest recipes/tests/test_recipes_sync.py
+          python -m flake8 solvebio
