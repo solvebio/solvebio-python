@@ -398,7 +398,7 @@ class BaseQueryTest(SolveBioTestCase):
                     self.assertEqual(value, None)
 
     def test_join_multiple_join(self):
-        query_a = self.dataset2.query(fields=['gene'], limit=1).filter(gene='MAN2B1')
+        query_a = self.dataset2.query(fields=['gene']).filter(gene='MAN2B1')
         query_b = self.dataset2.query(fields=['gene'])
         query_c = self.dataset2.query(fields=['gene'])
 

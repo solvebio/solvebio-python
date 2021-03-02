@@ -413,11 +413,17 @@ class QueryBase(object):
             self.__iter__()
 
         # len(self) returns `min(limit, total)` results
-        if self._cursor == len(self):
-            raise StopIteration
+        if not getattr(self, '_is_join', False):
+            if self._cursor == len(self):
+                raise StopIteration
 
         if self._buffer_idx == len(self._buffer):
-            self.execute(self._page_offset + self._buffer_idx)
+            if getattr(self, '_is_join', False):
+                if self._is_limit_reached and self._next_offset > self._limit:
+                    raise StopIteration
+                self.execute(self._next_offset)
+            else:
+                self.execute(self._page_offset + self._buffer_idx)
             self._buffer_idx = 0
 
         if not self._buffer:
@@ -543,6 +549,8 @@ class Query(QueryBase):
         self._error = error
         self._target_fields = target_fields
         self._annotator_params = annotator_params
+        self._is_join = False
+        self._is_limit_reached = False
         if filters:
             if isinstance(filters, Filter):
                 filters = [filters]
@@ -717,6 +725,11 @@ class Query(QueryBase):
             offset=self._page_offset,
             limit=min(self._page_size, self._limit)
         )
+
+        if getattr(self, '_is_join', False):
+            _params['limit'] = min(self._page_size, abs(self._limit - self._page_offset))
+            self._next_offset = self._page_offset + min(self._page_size, self._limit)
+            self._is_limit_reached = _params['limit'] <= self._page_size
 
         logger.debug('executing query. from/limit: %6d/%d' %
                      (_params['offset'], _params['limit']))
