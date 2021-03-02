@@ -289,7 +289,14 @@ class QueryBase(object):
         if len(self) == 0:
             return 'Query returned 0 results.'
 
-        if not getattr(self, '_output_format', None) or self._output_format == "json":
+        placeholder = 'many more results (total unknown)'
+
+        if getattr(self, '_is_join', False):
+            return '\n%s\n\n... %s.' % (
+                tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
+                         aligns=['right', 'left'], sort=True),
+                placeholder)
+        elif not getattr(self, '_output_format', False):
             return '\n%s\n\n... %s more results.' % (
                 tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
                          aligns=['right', 'left'], sort=True),
@@ -297,9 +304,7 @@ class QueryBase(object):
         else:
             is_tsv = self._output_format == 'tsv'
 
-            placeholder = 'many more results (total unknown)'
-
-            # this is the only case when we know teh exact number of total records
+            # this is the only case when we know the exact number of total records
             if len(self) < self._limit:
                 placeholder = '{} more results'.format(pretty_int(max(len(self) - 9, 0)))
 
@@ -427,13 +432,12 @@ class QueryBase(object):
             self.__iter__()
 
         # len(self) returns `min(limit, total)` results
-        if not getattr(self, '_is_join', False):
-            if self._cursor == len(self):
-                raise StopIteration
+        if not self._is_join and self._cursor == len(self):
+            raise StopIteration
 
         if self._buffer_idx == len(self._buffer):
-            if getattr(self, '_is_join', False):
-                if self._is_limit_reached and self._next_offset > self._limit:
+            if self._is_join:
+                if self._next_offset >= self._limit:
                     raise StopIteration
                 self.execute(self._next_offset)
             else:
@@ -564,7 +568,7 @@ class Query(QueryBase):
         self._target_fields = target_fields
         self._annotator_params = annotator_params
         self._is_join = False
-        self._is_limit_reached = False
+
         if filters:
             if isinstance(filters, Filter):
                 filters = [filters]
@@ -677,7 +681,7 @@ class Query(QueryBase):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
-        if getattr(self, '_is_join', False):
+        if self._is_join:
             return len(self._buffer)
 
         return super(Query, self).__len__()
@@ -740,10 +744,13 @@ class Query(QueryBase):
             limit=min(self._page_size, self._limit)
         )
 
-        if getattr(self, '_is_join', False):
+        if self._is_join:
+            # We do not know the exact total number of records in join because it
+            # is dynamically calculated in internal expression in target_fields in
+            # join() method, therefore we have to change limit in the last
+            # subsequent request in order to get the given number of records from query_a
             _params['limit'] = min(self._page_size, abs(self._limit - self._page_offset))
             self._next_offset = self._page_offset + min(self._page_size, self._limit)
-            self._is_limit_reached = _params['limit'] <= self._page_size
 
         logger.debug('executing query. from/limit: %6d/%d' %
                      (_params['offset'], _params['limit']))
