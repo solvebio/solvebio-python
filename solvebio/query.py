@@ -432,11 +432,11 @@ class QueryBase(object):
             self.__iter__()
 
         # len(self) returns `min(limit, total)` results
-        if not self._is_join and self._cursor == len(self):
+        if not getattr(self, '_is_join', False) and self._cursor == len(self):
             raise StopIteration
 
         if self._buffer_idx == len(self._buffer):
-            if self._is_join:
+            if getattr(self, '_is_join', False):
                 if self._next_offset >= self._limit:
                     raise StopIteration
                 self.execute(self._next_offset)
