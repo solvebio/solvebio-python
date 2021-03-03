@@ -431,7 +431,7 @@ class QueryBase(object):
             # Iterator not initialized yet
             self.__iter__()
 
-        # check if a current object is the join query
+        # Check if a current object is the join query
         _is_join = getattr(self, '_is_join', False)
 
         # len(self) returns `min(limit, total)` results
@@ -441,6 +441,8 @@ class QueryBase(object):
         if self._buffer_idx == len(self._buffer):
             if _is_join:
                 if self._next_offset >= self._limit:
+                    # Since joins can return more results than we expect (due to `explode`)
+                    # manually ensure that we haven't gone above the requested limit (default inf)
                     raise StopIteration
                 self.execute(self._next_offset)
             else:
