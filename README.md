@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/solvebio/solvebio-python.svg?branch=master)](http://travis-ci.org/solvebio/solvebio-python)
+![SolveBio Python Package](https://github.com/solvebio/solvebio-python/workflows/SolveBio%20Python%20Package/badge.svg)
 
 
 SolveBio Python Client
