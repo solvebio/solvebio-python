@@ -536,7 +536,6 @@ class Query(QueryBase):
             target_fields=None,
             annotator_params=None,
             debug=False,
-            error=None,
             **kwargs):
         """
         Creates a new Query object.
@@ -569,7 +568,7 @@ class Query(QueryBase):
         self._target_fields = target_fields
         self._annotator_params = annotator_params
         self._debug = debug
-        self._error = error
+        self._error = None
         self._is_join = False
 
         if filters:
@@ -1087,6 +1086,7 @@ class QueryFile(QueryBase):
         self._exclude_fields = exclude_fields
         self._output_format = output_format
         self._header = header
+        self._error = None
 
         if filters:
             if isinstance(filters, Filter):
