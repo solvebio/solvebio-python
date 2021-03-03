@@ -228,8 +228,11 @@ class QueryBase(object):
     common methods for Query and QueryFile classes.
     """
 
-    # The maximum number of results fetched in one go.
+    # The default number of records fetched in one go.
     DEFAULT_PAGE_SIZE = 100
+
+    # The maximum number of records fetched in one go.
+    MAX_PAGE_SIZE = 10 * 1000
 
     # INF represents an integer version of 'float('inf')'
     # because it could not be typecasted to integer
@@ -599,8 +602,9 @@ class Query(QueryBase):
         if self._limit < 0:
             raise Exception('\'limit\' parameter must be >= 0')
 
-        if self._page_size <= 0:
-            raise Exception('\'page_size\' parameter must be > 0')
+        if not 0 < self._page_size <= self.MAX_PAGE_SIZE:
+            raise Exception('\'page_size\' parameter must be in '
+                            'range [1, {}]'.format(self.MAX_PAGE_SIZE))
 
         # Set up the SolveClient
         # (kwargs overrides pre-set, which overrides global)
@@ -1054,7 +1058,7 @@ class QueryFile(QueryBase):
     A QueryFile API request wrapper that generates a request for an object content query,
     and can iterate through streaming result sets.
     """
-    # The maximum number of results fetched in one go.
+    # The default number of records fetched in one go.
     DEFAULT_PAGE_SIZE = 1000
 
     def __init__(
@@ -1116,6 +1120,10 @@ class QueryFile(QueryBase):
         # parameter error checking
         if self._limit < 0:
             raise Exception('\'limit\' parameter must be >= 0')
+
+        if not 0 < self._page_size <= self.MAX_PAGE_SIZE:
+            raise Exception('\'page_size\' parameter must be in '
+                            'range [1, {}]'.format(self.MAX_PAGE_SIZE))
 
         # Set up the SolveClient
         # (kwargs overrides pre-set, which overrides global)
