@@ -453,3 +453,15 @@ class BaseQueryTest(SolveBioTestCase):
             self.assertFalse(isinstance(i['clinical_significance'], list))
             self.assertFalse(isinstance(i['b_clinical_significance'], list))
             self.assertTrue('_errors' not in i)
+
+    def test_join_pagination(self):
+        # 50 records total
+        query_a = self.dataset2.query(fields=['gene'], limit=50, page_size=10).filter(gene='MAN2B1')
+        # 367 records total which have gene='MAN2B1'
+        query_b = self.dataset2.query(fields=['gene'])
+
+        join_query = query_a.join(query_b, key='gene', prefix='b_')
+
+        self.assertEqual(len(query_a), 50)
+        self.assertEqual(len(query_b.filter(gene='MAN2B1')), 367)
+        self.assertEqual(len(list(join_query)), 50 * 367)

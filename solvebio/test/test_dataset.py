@@ -64,7 +64,7 @@ class DatasetTests(SolveBioTestCase):
                             'is_list', 'entity_type', 'expression',
                             'name', 'updated_at', 'is_read_only',
                             'depends_on',
-                            'id', 'url', 'vault_id'])
+                            'id', 'url', 'vault_id', 'url_template'])
         self.assertSetEqual(set(dataset_field.keys()), check_fields)
 
     def test_dataset_facets(self):

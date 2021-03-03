@@ -292,10 +292,29 @@ class QueryBase(object):
         if len(self) == 0:
             return 'Query returned 0 results.'
 
-        return '\n%s\n\n... %s more results.' % (
-            tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
-                     aligns=['right', 'left'], sort=True),
-            pretty_int(len(self) - 1))
+        placeholder = 'many more results (total unknown)'
+
+        if getattr(self, '_is_join', False):
+            return '\n%s\n\n... %s.' % (
+                tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
+                         aligns=['right', 'left'], sort=True),
+                placeholder)
+        elif not hasattr(self, '_output_format'):
+            return '\n%s\n\n... %s more results.' % (
+                tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
+                         aligns=['right', 'left'], sort=True),
+                pretty_int(len(self) - 1))
+        else:
+            is_tsv = self._output_format == 'tsv'
+
+            # this is the only case when we know the exact number of total records
+            if len(self) < self._limit:
+                placeholder = '{} more results'.format(pretty_int(max(len(self) - 9, 0)))
+
+            return '\n%s\n\n... %s.' % (
+                tabulate(list(enumerate(self._buffer[:10])), ['Row', 'Data'],
+                         aligns=['right', 'left'], is_tsv=is_tsv),
+                placeholder)
 
     def __getattr__(self, key):
         if self._response is None:
@@ -415,12 +434,22 @@ class QueryBase(object):
             # Iterator not initialized yet
             self.__iter__()
 
+        # Check if a current object is the join query
+        _is_join = getattr(self, '_is_join', False)
+
         # len(self) returns `min(limit, total)` results
-        if self._cursor == len(self):
+        if not _is_join and self._cursor == len(self):
             raise StopIteration
 
         if self._buffer_idx == len(self._buffer):
-            self.execute(self._page_offset + self._buffer_idx)
+            if _is_join:
+                if self._next_offset >= self._limit:
+                    # Since joins can return more results than we expect (due to `explode`)
+                    # manually ensure that we haven't gone above the requested limit (default inf)
+                    raise StopIteration
+                self.execute(self._next_offset)
+            else:
+                self.execute(self._page_offset + self._buffer_idx)
             self._buffer_idx = 0
 
         if not self._buffer:
@@ -512,7 +541,6 @@ class Query(QueryBase):
             target_fields=None,
             annotator_params=None,
             debug=False,
-            error=None,
             **kwargs):
         """
         Creates a new Query object.
@@ -521,14 +549,14 @@ class Query(QueryBase):
           - `dataset_id`: Unique ID of dataset to query.
           - `query` (optional): An optional query string.
           - `genome_build`: The genome build to use for the query.
-          - `result_class` (optional): Class of object returned by query.
+          - `filters` (optional): Filter or List of filter objects.
           - `fields` (optional): List of specific fields to retrieve.
           - `exclude_fields` (optional): List of specific fields to exclude.
           - `entities` (optional): List of entity tuples to filter on.
           - `ordering` (optional): List of fields to order the results by.
-          - `filters` (optional): Filter or List of filter objects.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
+          - `result_class` (optional): Class of object returned by query.
           - `target_fields` (optional): Add target fields to annotate the query results.
           - `annotator_params` (optional): For use with `target_fields` to adjust annotator parameters.
           - `debug` (optional): Sends debug information to the API.
@@ -537,15 +565,17 @@ class Query(QueryBase):
         self._data_url = '/v2/datasets/{0}/data'.format(dataset_id)
         self._query = query
         self._genome_build = genome_build
-        self._result_class = result_class
         self._fields = fields
         self._exclude_fields = exclude_fields
         self._entities = entities
         self._ordering = ordering
-        self._debug = debug
-        self._error = error
+        self._result_class = result_class
         self._target_fields = target_fields
         self._annotator_params = annotator_params
+        self._debug = debug
+        self._error = None
+        self._is_join = False
+
         if filters:
             if isinstance(filters, Filter):
                 filters = [filters]
@@ -659,7 +689,7 @@ class Query(QueryBase):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
-        if getattr(self, '_is_join', False):
+        if self._is_join:
             return len(self._buffer)
 
         return super(Query, self).__len__()
@@ -721,6 +751,14 @@ class Query(QueryBase):
             offset=self._page_offset,
             limit=min(self._page_size, self._limit)
         )
+
+        if self._is_join:
+            # We do not know the exact total number of records in join because it
+            # is dynamically calculated in internal expression in target_fields in
+            # join() method, therefore we have to change limit in the last
+            # subsequent request in order to get the given number of records from query_a
+            _params['limit'] = min(self._page_size, abs(self._limit - self._page_offset))
+            self._next_offset = self._page_offset + min(self._page_size, self._limit)
 
         logger.debug('executing query. from/limit: %6d/%d' %
                      (_params['offset'], _params['limit']))
@@ -1031,9 +1069,8 @@ class QueryFile(QueryBase):
             filters=None,
             limit=QueryBase.INF,
             page_size=DEFAULT_PAGE_SIZE,
-            result_class=dict,
-            debug=False,
-            error=None,
+            output_format='json',
+            header=True,
             **kwargs):
         """
         Creates a new QueryFile object.
@@ -1043,20 +1080,19 @@ class QueryFile(QueryBase):
           - `fields` (optional): List of specific fields to retrieve.
           - `exclude_fields` (optional): List of specific fields to exclude.
           - `filters` (optional): Filter or List of filter objects.
-          - `result_class` (optional): Class of object returned by query.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
-          - `debug` (optional): Sends debug information to the API.
+          - `output_format` (optional): Format of query results (json, csv or tsv)
+          - `header` (optional): Returns header in response if output_format is 'csv' or 'tsv'
         """
         self._file_id = file_id
         self._data_url = '/v2/objects/{0}/data'.format(file_id)
         self._fields_url = '/v2/objects/{0}/fields'.format(file_id)
-        self._result_class = result_class
-        self._debug = debug
-        self._error = error
         self._fields = fields
         self._exclude_fields = exclude_fields
-        self._filters = filters
+        self._output_format = output_format
+        self._header = header
+        self._error = None
 
         if filters:
             if isinstance(filters, Filter):
@@ -1099,9 +1135,9 @@ class QueryFile(QueryBase):
                              fields=self._fields,
                              exclude_fields=self._exclude_fields,
                              page_size=self._page_size,
-                             result_class=self._result_class,
-                             debug=self._debug,
-                             client=self._client)
+                             output_format=self._output_format,
+                             header=self._header,
+                             client=self._client,)
 
         new._filters += self._filters
 
@@ -1114,7 +1150,7 @@ class QueryFile(QueryBase):
         return new
 
     def _build_query(self, **kwargs):
-        q = {}
+        q = {'output_format': self._output_format}
 
         if self._filters:
             filters = self._process_filters(self._filters)
@@ -1128,9 +1164,6 @@ class QueryFile(QueryBase):
 
         if self._exclude_fields is not None:
             q['exclude_fields'] = self._exclude_fields
-
-        if self._debug:
-            q['debug'] = 'True'
 
         # Add or modify query parameters
         # (used by BatchQuery and facets)
@@ -1159,6 +1192,16 @@ class QueryFile(QueryBase):
         # If the request results in a SolveError (ie bad filter) set the error.
         try:
             self._response = self._client.post(self._data_url, _params)
+
+            if getattr(self, '_header', None) and self._output_format in ('csv', 'tsv') \
+                    and not getattr(self, '_header_fields', None):
+                self._header_fields = self.fields()
+
+                separator_mappings = {'csv': ',', 'tsv': '\t'}
+                sep = separator_mappings[self._output_format]
+
+                self._response['results'].insert(0, sep.join(self._header_fields))
+
         except SolveError as e:
             self._error = e
             raise
