@@ -431,12 +431,15 @@ class QueryBase(object):
             # Iterator not initialized yet
             self.__iter__()
 
+        # check if a current object is the join query
+        _is_join = getattr(self, '_is_join', False)
+
         # len(self) returns `min(limit, total)` results
-        if not getattr(self, '_is_join', False) and self._cursor == len(self):
+        if not _is_join and self._cursor == len(self):
             raise StopIteration
 
         if self._buffer_idx == len(self._buffer):
-            if getattr(self, '_is_join', False):
+            if _is_join:
                 if self._next_offset >= self._limit:
                     raise StopIteration
                 self.execute(self._next_offset)
@@ -542,14 +545,14 @@ class Query(QueryBase):
           - `dataset_id`: Unique ID of dataset to query.
           - `query` (optional): An optional query string.
           - `genome_build`: The genome build to use for the query.
-          - `result_class` (optional): Class of object returned by query.
+          - `filters` (optional): Filter or List of filter objects.
           - `fields` (optional): List of specific fields to retrieve.
           - `exclude_fields` (optional): List of specific fields to exclude.
           - `entities` (optional): List of entity tuples to filter on.
           - `ordering` (optional): List of fields to order the results by.
-          - `filters` (optional): Filter or List of filter objects.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
+          - `result_class` (optional): Class of object returned by query.
           - `target_fields` (optional): Add target fields to annotate the query results.
           - `annotator_params` (optional): For use with `target_fields` to adjust annotator parameters.
           - `debug` (optional): Sends debug information to the API.
@@ -558,15 +561,15 @@ class Query(QueryBase):
         self._data_url = '/v2/datasets/{0}/data'.format(dataset_id)
         self._query = query
         self._genome_build = genome_build
-        self._result_class = result_class
         self._fields = fields
         self._exclude_fields = exclude_fields
         self._entities = entities
         self._ordering = ordering
-        self._debug = debug
-        self._error = error
+        self._result_class = result_class
         self._target_fields = target_fields
         self._annotator_params = annotator_params
+        self._debug = debug
+        self._error = error
         self._is_join = False
 
         if filters:
@@ -1061,9 +1064,6 @@ class QueryFile(QueryBase):
             filters=None,
             limit=QueryBase.INF,
             page_size=DEFAULT_PAGE_SIZE,
-            result_class=dict,
-            debug=False,
-            error=None,
             output_format='json',
             header=True,
             **kwargs):
@@ -1075,22 +1075,16 @@ class QueryFile(QueryBase):
           - `fields` (optional): List of specific fields to retrieve.
           - `exclude_fields` (optional): List of specific fields to exclude.
           - `filters` (optional): Filter or List of filter objects.
-          - `result_class` (optional): Class of object returned by query.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
-          - `debug` (optional): Sends debug information to the API.
-          - `header` (optional): Returns header in response if output_format is 'csv' or 'tsv'
           - `output_format` (optional): Format of query results (json, csv or tsv)
+          - `header` (optional): Returns header in response if output_format is 'csv' or 'tsv'
         """
         self._file_id = file_id
         self._data_url = '/v2/objects/{0}/data'.format(file_id)
         self._fields_url = '/v2/objects/{0}/fields'.format(file_id)
-        self._result_class = result_class
-        self._debug = debug
-        self._error = error
         self._fields = fields
         self._exclude_fields = exclude_fields
-        self._filters = filters
         self._output_format = output_format
         self._header = header
 
@@ -1131,8 +1125,6 @@ class QueryFile(QueryBase):
                              fields=self._fields,
                              exclude_fields=self._exclude_fields,
                              page_size=self._page_size,
-                             result_class=self._result_class,
-                             debug=self._debug,
                              output_format=self._output_format,
                              header=self._header,
                              client=self._client,)
@@ -1162,9 +1154,6 @@ class QueryFile(QueryBase):
 
         if self._exclude_fields is not None:
             q['exclude_fields'] = self._exclude_fields
-
-        if self._debug:
-            q['debug'] = 'True'
 
         # Add or modify query parameters
         # (used by BatchQuery and facets)
