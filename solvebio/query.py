@@ -299,7 +299,7 @@ class QueryBase(object):
                 tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
                          aligns=['right', 'left'], sort=True),
                 placeholder)
-        elif not getattr(self, '_output_format', False):
+        elif not hasattr(self, '_output_format'):
             return '\n%s\n\n... %s more results.' % (
                 tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
                          aligns=['right', 'left'], sort=True),
