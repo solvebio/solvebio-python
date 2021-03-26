@@ -30,7 +30,7 @@ else:
 
 # solvebio-recipes requires additional packages
 recipes_requires = [
-    'pyyaml==5.3.1',
+    'pyyaml==5.4',
     'click==7.1.2',
     'ruamel.yaml==0.16.12'
 ]
