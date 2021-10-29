@@ -24,7 +24,7 @@ class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):
     OAUTH2_TOKEN_URL = "/v1/oauth2/token"
     OAUTH2_REVOKE_TOKEN_URL = "/v1/oauth2/revoke_token"
 
-    def __init__(self, client_id: str, client_secret: str, name: str = "solvebio"):
+    def __init__(self, client_id, client_secret, name="solvebio"):
         super().__init__(
             client_id,
             client_secret,
@@ -36,7 +36,7 @@ class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):
             name=name,
         )
 
-    async def get_authorization_url(self, redirect_uri: str) -> str:
+    async def get_authorization_url(self, redirect_uri):
         """Creates authorization url for OAuth2"""
 
         params = {
@@ -45,4 +45,4 @@ class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):
             "redirect_uri": redirect_uri,
         }
 
-        return f"{self.authorize_endpoint}/authorize?{urlencode(params)}"
+        return "{}/authorize?{}".format(self.authorize_endpoint, urlencode(params))

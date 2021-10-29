@@ -25,13 +25,15 @@ class SolveBioStreamlit:
 
         st.title("Secure Streamlit App")
         st.write(
-            f"""
+            """
             <h4>
-                <a target="_self" href="{authorization_url}">Log in to SolveBio to continue</a>
+                <a target="_self" href="{}">Log in to SolveBio to continue</a>
             </h4>
             This app requires a SolveBio account. <br>
             <a href="mailto:support@solvebio.com">Contact Support</a>
-            """,
+            """.format(
+                authorization_url
+            ),
             unsafe_allow_html=True,
         )
 

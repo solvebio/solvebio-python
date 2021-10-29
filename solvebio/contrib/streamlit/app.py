@@ -29,7 +29,7 @@ def streamlit_demo_app():
 
     # SolveBio user
     user = solve_client.User.retrieve()
-    st.header(f"{user['first_name']}'s personal vault overview:")
+    st.header("{}'s personal vault overview:".format(user["first_name"]))
 
     # Personal vault
     vault = solve_client.Vault.get_personal_vault()
@@ -54,13 +54,13 @@ def streamlit_demo_app():
     option = st.radio("Select SolveBio platform:", ("Files", "Folders", "Datasets"))
     if option == "Files":
         for item in files:
-            st.markdown(f"- {item['filename']}")
+            st.markdown("- {}".format(item["filename"]))
     elif option == "Folders":
         for item in folders:
-            st.markdown(f"- {item['filename']}")
+            st.markdown("- {}".format(item["filename"]))
     elif option == "Datasets":
         for item in datasets:
-            st.markdown(f"- {item['filename']}")
+            st.markdown("- {}".format(item["filename"]))
 
 
 # Wrapping Streamlit app with SolveBio OAuth2
