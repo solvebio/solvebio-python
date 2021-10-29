@@ -9,7 +9,7 @@ selenium
 dash
 dash_auth
 dash_core_components
-dash_html_components
+dash_html_components==1.1.2
 dash_renderer
 solvebio==2.12.0
 pyyaml==5.3.1
