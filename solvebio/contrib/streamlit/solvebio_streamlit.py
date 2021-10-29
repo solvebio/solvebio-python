@@ -44,7 +44,7 @@ class SolveBioStreamlit:
         if "token" not in st.session_state:
             token = None
         else:
-            token = st.session_state["token"]
+            token = st.session_state.token
 
         return token
 
@@ -52,17 +52,17 @@ class SolveBioStreamlit:
         """SolveBio OAuth2 wrapper around streamlit app"""
 
         # SolveBio OAuth2 client
-        client = SolveBioOAuth2(self.SOLVEBIO_CLIENT_ID, self.SOLVEBIO_SECRET)
+        oauth_client = SolveBioOAuth2(self.SOLVEBIO_CLIENT_ID, self.SOLVEBIO_SECRET)
         authorization_url = asyncio.run(
-            client.get_authorization_url(
+            oauth_client.get_authorization_url(
                 self.redirect_uri,
             )
         )
 
         # Authorization token from Streamlit session state
-        token = self.get_token_from_session()
+        oauth_token = self.get_token_from_session()
 
-        if token is None:
+        if oauth_token is None:
             # User is not authrized to use the app
             try:
                 # Trying to get the authorization token from the url if successfully authorized
@@ -73,8 +73,8 @@ class SolveBioStreamlit:
             else:
                 try:
                     # Getting the token from token API by sending the authorization code
-                    token = asyncio.run(
-                        client.get_access_token(code, self.redirect_uri)
+                    oauth_token = asyncio.run(
+                        oauth_client.get_access_token(code, self.redirect_uri)
                     )
                 except:
                     st.error(
@@ -83,17 +83,22 @@ class SolveBioStreamlit:
                     self.solvebio_login_component(authorization_url)
                 else:
                     # Check if token has expired:
-                    if token.is_expired():
+                    if oauth_token.is_expired():
                         st.error("Login session has ended. Please login again.")
                         self.solvebio_login_component(authorization_url)
                     else:
                         # User is now authenticated and authorized to use the app
-                        # Saving token and solvebio client to the Streamlit session state
-                        solvebio_client = solvebio.SolveClient(
-                            token=token, token_type="Bearer"
+
+                        # SolveClient to acces API
+                        solve_client = solvebio.SolveClient(
+                            token=oauth_token["access_token"],
+                            token_type=oauth_token["token_type"],
                         )
-                        st.session_state.solvebio = solvebio_client
-                        st.session_state.token = token
+
+                        # Saving token and solvebio client to the Streamlit session state
+                        st.session_state.solve_client = solve_client
+                        st.session_state.token = oauth_token
+
                         streamlit_app()
         else:
             # User is authorized to the the app
