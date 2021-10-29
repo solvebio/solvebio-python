@@ -55,10 +55,8 @@ class SolveBioStreamlit:
 
         # SolveBio OAuth2 client
         oauth_client = SolveBioOAuth2(self.SOLVEBIO_CLIENT_ID, self.SOLVEBIO_SECRET)
-        authorization_url = asyncio.run(
-            oauth_client.get_authorization_url(
-                self.redirect_uri,
-            )
+        authorization_url = oauth_client.get_authorization_url(
+            self.redirect_uri,
         )
 
         # Authorization token from Streamlit session state

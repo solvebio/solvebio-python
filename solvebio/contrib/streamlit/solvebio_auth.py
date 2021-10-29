@@ -36,7 +36,7 @@ class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):
             name=name,
         )
 
-    async def get_authorization_url(self, redirect_uri):
+    def get_authorization_url(self, redirect_uri):
         """Creates authorization url for OAuth2"""
 
         params = {
