@@ -28,7 +28,7 @@ class SolveBioStreamlit:
             f"""
             <h4>
                 <a target="_self" href="{authorization_url}">Log in to SolveBio to continue</a>
-            </h4>    
+            </h4>
             This app requires a SolveBio account. <br>
             <a href="mailto:support@solvebio.com">Contact Support</a>
             """,
