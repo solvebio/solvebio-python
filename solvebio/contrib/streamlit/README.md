@@ -4,25 +4,38 @@ This module provides OAuth2-based login support for Streamlit apps.
 
 About Streamlit: [https://streamlit.io/](https://streamlit.io/)
 
-License: MIT
 
-### SolveBio secure Streamlit app demo
+### Securing Streamlit app
 
-Wrapping Streamlit apps with SolveBio OAuth2:
+Create a new app in SolveBio RUO and copy app's client id and secret to .env file.
+
+`SolveBioStreamlit` class is used to wrap Streamlit apps with SolveBio OAuth2. Once the user is successfully authenticated, OAuth2 token and the initialised SolveClient are save to Streamlit's session state. You can access them:
+```python
+st.session_state.solve_client
+st.session_state.token
+```
+
+Wrapping Streamlit app:
+
 ```python
 def streamlit_demo_app():
-    st.title("Solvebio app")
-    st.write("Restricting access to the Streamlit app.")
+    # Getting the sovle client from the Streamlit session state
+    solve_client = st.session_state.solve_client
+    user = solve_client.User.retrieve()
 
+    st.title("Solvebio app")
+    st.header(f"Welcome back {user['first_name']}!")
+
+# Wrapping Streamlit app with SolveBio OAuth2
 secure_app = SolveBioStreamlit()
 secure_app.wrap(streamlit_app=streamlit_demo_app)
 ```
 
-Create a new app in SolveBio RUO and copy app's client id and secret to .env file.
+
+### SolveBio secure Streamlit app demo
 
 To run streamlit demo app:
 ```bash
 streamlit run app.py
 ```
-
 ![streamlit-secure-app-demo](streamlit-secure-app-demo.gif)
