@@ -9,7 +9,7 @@ About Streamlit: [https://streamlit.io/](https://streamlit.io/)
 
 Create a new app in SolveBio RUO and copy app's client id and secret to .env file.
 
-`SolveBioStreamlit` class is used to wrap Streamlit apps with SolveBio OAuth2. Once the user is successfully authenticated, OAuth2 token and the initialised SolveClient are save to Streamlit's session state. You can access them:
+`SolveBioStreamlit` class is used to wrap Streamlit apps with SolveBio OAuth2. Once the user is successfully authenticated, OAuth2 `token` and the initialised `SolveClient` are saved to the Streamlit's session state. You can access them:
 ```python
 st.session_state.solve_client
 st.session_state.token
