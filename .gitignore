@@ -19,3 +19,4 @@ tests/.coverage
 .tox
 .eggs/
 venv*
+settings.json

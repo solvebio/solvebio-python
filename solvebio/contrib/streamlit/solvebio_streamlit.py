@@ -2,8 +2,14 @@ import asyncio
 import os
 
 import streamlit as st
+import solvebio
+from dotenv import load_dotenv
 
 from solvebio_auth import SolveBioOAuth2
+
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class SolveBioStreamlit:
@@ -22,7 +28,7 @@ class SolveBioStreamlit:
             f"""
             <h4>
                 <a target="_self" href="{authorization_url}">Log in to SolveBio to continue</a>
-            </h4>
+            </h4>    
             This app requires a SolveBio account. <br>
             <a href="mailto:support@solvebio.com">Contact Support</a>
             """,
@@ -82,7 +88,11 @@ class SolveBioStreamlit:
                         self.solvebio_login_component(authorization_url)
                     else:
                         # User is now authenticated and authorized to use the app
-                        # Saving token to the Streamlit session state
+                        # Saving token and solvebio client to the Streamlit session state
+                        solvebio_client = solvebio.SolveClient(
+                            token=token, token_type="Bearer"
+                        )
+                        st.session_state.solvebio = solvebio_client
                         st.session_state.token = token
                         streamlit_app()
         else:
