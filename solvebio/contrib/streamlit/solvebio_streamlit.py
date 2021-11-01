@@ -67,6 +67,11 @@ class SolveBioStreamlit:
             try:
                 # Trying to get the authorization token from the url if successfully authorized
                 code = st.experimental_get_query_params()["code"]
+
+                # Remove authorization token from the url params
+                params = {}
+                st.experimental_set_query_params(**params)
+
             except:
                 # Display SolveBio login until user is successfully authorized
                 self.solvebio_login_component(authorization_url)
@@ -90,13 +95,13 @@ class SolveBioStreamlit:
                         # User is now authenticated and authorized to use the app
 
                         # SolveClient to acces API
-                        solve_client = solvebio.SolveClient(
+                        solvebio_client = solvebio.SolveClient(
                             token=oauth_token["access_token"],
                             token_type=oauth_token["token_type"],
                         )
 
                         # Saving token and solvebio client to the Streamlit session state
-                        st.session_state.solve_client = solve_client
+                        st.session_state.solvebio_client = solvebio_client
                         st.session_state.token = oauth_token
 
                         streamlit_app()

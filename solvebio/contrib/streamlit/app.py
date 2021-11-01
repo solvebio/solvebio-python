@@ -23,16 +23,16 @@ def streamlit_demo_app():
     """
 
     # Getting the sovle client from the Streamlit session state
-    solve_client = st.session_state.solve_client
+    solvebio_client = st.session_state.solvebio_client
 
     st.title("Solvebio app")
 
     # SolveBio user
-    user = solve_client.User.retrieve()
+    user = solvebio_client.User.retrieve()
     st.header("{}'s personal vault overview:".format(user["first_name"]))
 
     # Personal vault
-    vault = solve_client.Vault.get_personal_vault()
+    vault = solvebio_client.Vault.get_personal_vault()
     st.write(vault["description"])
 
     files, folders, datasets = get_personal_vault_items(vault)

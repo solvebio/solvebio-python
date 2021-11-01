@@ -11,7 +11,7 @@ Create a new app in SolveBio RUO and copy app's client id and secret to .env fil
 
 `SolveBioStreamlit` class is used to wrap Streamlit apps with SolveBio OAuth2. Once the user is successfully authenticated, OAuth2 `token` and the initialised `SolveClient` are saved to the Streamlit's session state. You can access them:
 ```python
-st.session_state.solve_client
+st.session_state.solvebio_client
 st.session_state.token
 ```
 
@@ -20,8 +20,8 @@ Wrapping Streamlit app:
 ```python
 def streamlit_demo_app():
     # Getting the sovle client from the Streamlit session state
-    solve_client = st.session_state.solve_client
-    user = solve_client.User.retrieve()
+    solvebio_client = st.session_state.solvebio_client
+    user = solvebio_client.User.retrieve()
 
     st.title("Solvebio app")
     st.header(f"Welcome back {user['first_name']}!")
