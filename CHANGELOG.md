@@ -1,5 +1,13 @@
 # Changelog
 
+## [v2.17.0](https://github.com/solvebio/solvebio-python/tree/v2.17.0) (2021-11-01)
+
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.16.0...v2.17.0)
+
+**Merged pull requests:**
+
+- SolveBio OAuth2 wrapper for Streamlit apps [\#404](https://github.com/solvebio/solvebio-python/pull/404) ([krivi95](https://github.com/krivi95))
+
 ## [v2.16.0](https://github.com/solvebio/solvebio-python/tree/v2.16.0) (2021-03-03)
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.15.0...v2.16.0)
@@ -89,11 +97,13 @@
 
 **Merged pull requests:**
 
+- Fix for multiple join errors [\#371](https://github.com/solvebio/solvebio-python/pull/371) ([nikolamaric](https://github.com/nikolamaric))
 - add version and name to recipes script [\#368](https://github.com/solvebio/solvebio-python/pull/368) ([jsh2134](https://github.com/jsh2134))
 - Sync recipes command refactoring [\#367](https://github.com/solvebio/solvebio-python/pull/367) ([damnjanovictanja](https://github.com/damnjanovictanja))
 - Add solvebio-recipes tool [\#364](https://github.com/solvebio/solvebio-python/pull/364) ([damnjanovictanja](https://github.com/damnjanovictanja))
 - Issue 324 metadata is str after saving empty dict [\#356](https://github.com/solvebio/solvebio-python/pull/356) ([nikolamaric](https://github.com/nikolamaric))
 - Issue 276 dict attributes not save updates [\#355](https://github.com/solvebio/solvebio-python/pull/355) ([nikolamaric](https://github.com/nikolamaric))
+- Object tagging updates [\#353](https://github.com/solvebio/solvebio-python/pull/353) ([nikolamaric](https://github.com/nikolamaric))
 
 ## [v2.12.0](https://github.com/solvebio/solvebio-python/tree/v2.12.0) (2020-08-03)
 
@@ -111,7 +121,6 @@
 
 **Merged pull requests:**
 
-- Object tagging updates [\#353](https://github.com/solvebio/solvebio-python/pull/353) ([nikolamaric](https://github.com/nikolamaric))
 - Add protocol resolving logic [\#348](https://github.com/solvebio/solvebio-python/pull/348) ([nikolamaric](https://github.com/nikolamaric))
 - handle case where the error message contains a list of dicts [\#343](https://github.com/solvebio/solvebio-python/pull/343) ([jsh2134](https://github.com/jsh2134))
 
@@ -257,6 +266,10 @@
 
 - Installing from pypi breaks interactive shell \(urllib.parse import\)  [\#299](https://github.com/solvebio/solvebio-python/issues/299)
 
+**Merged pull requests:**
+
+- Use six.moves to eliminate 2to3 issues \(closes \#299\) [\#300](https://github.com/solvebio/solvebio-python/pull/300) ([davecap](https://github.com/davecap))
+
 ## [v2.8.3](https://github.com/solvebio/solvebio-python/tree/v2.8.3) (2019-03-22)
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.8.2...v2.8.3)
@@ -320,7 +333,6 @@
 
 **Merged pull requests:**
 
-- Use six.moves to eliminate 2to3 issues \(closes \#299\) [\#300](https://github.com/solvebio/solvebio-python/pull/300) ([davecap](https://github.com/davecap))
 - Update Task objects and add shortcut to cancel tasks [\#273](https://github.com/solvebio/solvebio-python/pull/273) ([jsh2134](https://github.com/jsh2134))
 - add annotator\_params to annotate endpoint [\#272](https://github.com/solvebio/solvebio-python/pull/272) ([jsh2134](https://github.com/jsh2134))
 - add support for saving credentials with your api key [\#270](https://github.com/solvebio/solvebio-python/pull/270) ([davecap](https://github.com/davecap))
@@ -584,6 +596,10 @@
 - Allow `solvebio import` shortcut to take an upload id [\#120](https://github.com/solvebio/solvebio-python/issues/120)
 - HTTP Caching support for data query requests [\#11](https://github.com/solvebio/solvebio-python/issues/11)
 
+**Fixed bugs:**
+
+- Check for existence in depository.latest\_version\(\) [\#124](https://github.com/solvebio/solvebio-python/issues/124)
+
 **Closed issues:**
 
 - Add "upload" command-line sub-command [\#149](https://github.com/solvebio/solvebio-python/issues/149)
@@ -710,7 +726,6 @@
 - add capacity argument to create-dataset command \(closes \#135\) [\#137](https://github.com/solvebio/solvebio-python/pull/137) ([davecap](https://github.com/davecap))
 - Provide help message on curl-config error \(\#131\) [\#132](https://github.com/solvebio/solvebio-python/pull/132) ([jhuttner](https://github.com/jhuttner))
 - some error responses were not being parsed correctly; this simplifies [\#130](https://github.com/solvebio/solvebio-python/pull/130) ([davecap](https://github.com/davecap))
-- import shortcut examples [\#129](https://github.com/solvebio/solvebio-python/pull/129) ([dandanxu](https://github.com/dandanxu))
 - add commit mode as an import option [\#128](https://github.com/solvebio/solvebio-python/pull/128) ([jsh2134](https://github.com/jsh2134))
 - update genome builds upon get\_or\_create, add new create-dataset command [\#126](https://github.com/solvebio/solvebio-python/pull/126) ([davecap](https://github.com/davecap))
 
@@ -724,6 +739,7 @@
 
 **Merged pull requests:**
 
+- import shortcut examples [\#129](https://github.com/solvebio/solvebio-python/pull/129) ([dandanxu](https://github.com/dandanxu))
 - add file wrapper to show upload progress bar \(closes \#119\) [\#123](https://github.com/solvebio/solvebio-python/pull/123) ([davecap](https://github.com/davecap))
 - add invalid file path name in error  [\#122](https://github.com/solvebio/solvebio-python/pull/122) ([jsh2134](https://github.com/jsh2134))
 - fix issue where solvebio cli did not open in python3 [\#121](https://github.com/solvebio/solvebio-python/pull/121) ([davecap](https://github.com/davecap))
@@ -756,7 +772,6 @@
 
 **Fixed bugs:**
 
-- Check for existence in depository.latest\_version\(\) [\#124](https://github.com/solvebio/solvebio-python/issues/124)
 - \[Export\] Export should support the query fields parameter instead of always exporting all fields [\#91](https://github.com/solvebio/solvebio-python/issues/91)
 
 **Merged pull requests:**
@@ -1035,7 +1050,6 @@
 - Rework login. Don't store credentials in .netrc. [\#64](https://github.com/solvebio/solvebio-python/pull/64) ([rocky](https://github.com/rocky))
 - Redo how len\(\) works. len\(\) is number of things one can iterate over. .count\(\) is the total number of items. The old "paging" mode is no more, although one can still set a "page\_size". [\#63](https://github.com/solvebio/solvebio-python/pull/63) ([rocky](https://github.com/rocky))
 - tabulate dataset fields in printing \(\_\_str\_\_\) [\#57](https://github.com/solvebio/solvebio-python/pull/57) ([rocky](https://github.com/rocky))
-- Login/Logout via IPython [\#45](https://github.com/solvebio/solvebio-python/pull/45) ([rocky](https://github.com/rocky))
 
 ## [1.6.1](https://github.com/solvebio/solvebio-python/tree/1.6.1) (2014-11-03)
 
@@ -1064,6 +1078,7 @@
 **Merged pull requests:**
 
 - Address issue \#43 and possibly \#21 [\#46](https://github.com/solvebio/solvebio-python/pull/46) ([rocky](https://github.com/rocky))
+- Login/Logout via IPython [\#45](https://github.com/solvebio/solvebio-python/pull/45) ([rocky](https://github.com/rocky))
 - Depository, DepositoryVersion, Dataset, DatasetField tests. Note: also [\#40](https://github.com/solvebio/solvebio-python/pull/40) ([rocky](https://github.com/rocky))
 - Travis testing on Python 2.6 [\#39](https://github.com/solvebio/solvebio-python/pull/39) ([rocky](https://github.com/rocky))
 - Add Annotate and Sample download; some refactoring [\#37](https://github.com/solvebio/solvebio-python/pull/37) ([rocky](https://github.com/rocky))
