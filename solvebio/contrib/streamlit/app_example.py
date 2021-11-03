@@ -3,6 +3,11 @@ import pandas as pd
 
 from solvebio_streamlit import SolveBioStreamlit
 
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 
 @st.cache
 def get_personal_vault_items(vault):
