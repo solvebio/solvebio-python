@@ -3,13 +3,8 @@ import os
 
 import streamlit as st
 import solvebio
-from dotenv import load_dotenv
 
 from solvebio_auth import SolveBioOAuth2
-
-
-# Load environment variables from .env file
-load_dotenv()
 
 
 class SolveBioStreamlit:

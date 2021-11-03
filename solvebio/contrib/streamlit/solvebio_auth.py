@@ -5,13 +5,8 @@ from urllib.parse import urlencode
 from urllib.parse import urljoin
 
 import solvebio
-from dotenv import load_dotenv
 
 from httpx_oauth.oauth2 import BaseOAuth2
-
-
-# Load environment variables from .env file
-load_dotenv()
 
 
 class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):

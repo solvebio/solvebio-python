@@ -1,7 +1,13 @@
 import streamlit as st
 import pandas as pd
 
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 from solvebio_streamlit import SolveBioStreamlit
+# from solvebio.contrib.streamlit.solvebio_streamlit import SolveBioStreamlit
 
 
 @st.cache
