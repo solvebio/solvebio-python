@@ -11,9 +11,9 @@ class SolveBioStreamlit:
     """SolveBio OAuth2 wrapper for restricting access to Streamlit apps"""
 
     # App settings loaded from environment variables or .env file
-    SOLVEBIO_CLIENT_ID = os.environ.get("SOLVEBIO_CLIENT_ID", "Application (client) Id")
-    SOLVEBIO_SECRET = os.environ.get("SOLVEBIO_SECRET", "Application (client) secret")
-    redirect_uri = os.environ.get("REDIRECT_URI", "http://localhost:8501")
+    CLIENT_ID = os.environ.get("CLIENT_ID", "Application (client) Id")
+    CLIENT_SECRET = os.environ.get("CLIENT_SECRET", "Application (client) secret")
+    APP_URL = os.environ.get("APP_URL", "http://localhost:5000")
 
     def solvebio_login_component(self, authorization_url):
         """Streamlit component for logging into SolveBio"""
@@ -49,9 +49,9 @@ class SolveBioStreamlit:
         """SolveBio OAuth2 wrapper around streamlit app"""
 
         # SolveBio OAuth2 client
-        oauth_client = SolveBioOAuth2(self.SOLVEBIO_CLIENT_ID, self.SOLVEBIO_SECRET)
+        oauth_client = SolveBioOAuth2(self.CLIENT_ID, self.CLIENT_SECRET)
         authorization_url = oauth_client.get_authorization_url(
-            self.redirect_uri,
+            self.APP_URL,
         )
 
         # Authorization token from Streamlit session state
@@ -74,7 +74,7 @@ class SolveBioStreamlit:
                 try:
                     # Getting the token from token API by sending the authorization code
                     oauth_token = asyncio.run(
-                        oauth_client.get_access_token(code, self.redirect_uri)
+                        oauth_client.get_access_token(code, self.APP_URL)
                     )
                 except:
                     st.error(
