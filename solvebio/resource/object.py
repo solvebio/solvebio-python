@@ -592,13 +592,9 @@ class Object(CreateableAPIResource,
         if not self.is_dataset:
             raise SolveError("Only datasets can be restored.")
 
-        # The default storage class for most accounts is Standard
-        # This is simplest for now. We could also:
-        #   - choose the Vault.default_storage_class if set
-        #   - the Account.default_storage_class if set (and exposed?)
-        #   - get the most recent Dataset snapshot task and pull config from there
+        # By default, datasets will be restored to Standard-IA
         if not storage_class:
-            self.storage_class = "Standard"
+            storage_class = "Standard-IA"
 
         # Updating storage class is only available at the objects endpoint
         self.storage_class = storage_class
