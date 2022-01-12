@@ -148,40 +148,9 @@ class GlobalSearch(Query):
 
         return q
 
-    def execute(self, offset=0, **query):
-        """
-        Executes a query. Additional query parameters can be passed
-        as keyword arguments.
-
-        Returns: The request parameters and the raw query response.
-        """
-        _params = self._build_query(**query)
-        self._page_offset = offset
-
-        _params.update(
-            offset=self._page_offset,
-            limit=min(self._page_size, self._limit)
-        )
-
-        if self._is_join:
-            # We do not know the exact total number of records in join because it
-            # is dynamically calculated in internal expression in target_fields in
-            # join() method, therefore we have to change limit in the last
-            # subsequent request in order to get the given number of records from query_a
-            _params['limit'] = min(self._page_size, abs(self._limit - self._page_offset))
-            self._next_offset = self._page_offset + min(self._page_size, self._limit)
-
-        logger.debug('executing query. from/limit: %6d/%d' %
-                     (_params['offset'], _params['limit']))
-
-        # If the request results in a SolveError (ie bad filter) set the error.
-        try:
-            self._response = self._client.post(self._data_url, _params)
-        except SolveError as e:
-            self._error = e
-            raise
-
-        logger.debug('query response took: %(took)d ms, total: %(total)d'
-                     % self._response)
-        return _params, self._response
-    
+    def subjects(self):
+        """If entity seaarch is performed returns the list of subjects"""
+        if not self._entities:
+            return None
+        
+        return self._response['subjects']
