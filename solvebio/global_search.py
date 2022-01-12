@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 from .client import client
-from .errors import SolveError
 from .query import QueryBase
 from .query import Query
 from .query import Filter
@@ -152,7 +151,7 @@ class GlobalSearch(Query):
         """If entity seaarch is performed returns the list of subjects"""
         if not self._entities:
             return None
-        
+
         # Executes a query to get a full API response which contains subjects list
         self.execute()
 

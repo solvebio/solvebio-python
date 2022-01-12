@@ -187,6 +187,7 @@ __all__ = [
     'DatasetSnapshotTask',
     'Filter',
     'GenomicFilter',
+    'GlobalSearch',
     'Group',
     'Manifest',
     'Object',
