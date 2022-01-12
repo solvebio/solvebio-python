@@ -32,9 +32,9 @@ class GlobalSearch(Query):
         Creates a new Query object.
 
         :Parameters:
-          - `query` (optional): An optional query string.
+          - `query` (optional): An optional query string (advanced search).
           - `filters` (optional): Filter or List of filter objects.
-          - `entities` (optional): List of entity tuples to filter on.
+          - `entities` (optional): List of entity tuples to filter on (entity type, entity).
           - `ordering` (optional): List of fields to order the results by.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
@@ -153,4 +153,7 @@ class GlobalSearch(Query):
         if not self._entities:
             return None
         
-        return self._response['subjects']
+        # Executes a query to get a full API response which contains subjects list
+        self.execute()
+
+        return self._response.get('subjects')
