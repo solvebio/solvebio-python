@@ -150,8 +150,6 @@ class GlobalSearch(Query):
 
     def subjects(self):
         """If entity seaarch is performed returns the list of subjects"""
-        if not self._entities:
-            return None
 
         # Executes a query to get a full API response which contains subjects list
         self.execute()
