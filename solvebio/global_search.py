@@ -158,7 +158,6 @@ class GlobalSearch(Query):
         return q
 
     def execute(self, offset=0, **query):
-        # super(Query, self).execute(offset, **query)
         # Call superclass method execute
         Query.execute(self, offset, **query)
 
