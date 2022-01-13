@@ -84,7 +84,7 @@ class GlobalSearch(Query):
         # (kwargs overrides pre-set, which overrides global)
         self._client = kwargs.get('client') or self._client or client
 
-    def _clone(self, filters=None, limit=None):
+    def _clone(self, filters=None, entities=None, limit=None):
         new = self.__class__(query=self._query,
                              limit=self._limit,
                              entities=self._entities,
@@ -94,6 +94,9 @@ class GlobalSearch(Query):
                              debug=self._debug,
                              client=self._client)
         new._filters += self._filters
+
+        if entities:
+            new._entities = entities
 
         if filters:
             new._filters += filters
@@ -148,6 +151,23 @@ class GlobalSearch(Query):
 
         return q
 
+    def entity(self, **kwargs):
+        """
+        Returns GlobalSearch instance with the query args combined with
+        existing set with AND.
+
+        kwargs can contain only one entity, entity_type as parameter name and entity as its value.
+        If entity is already set for the GlobalSearch, it will be overridden.
+        """
+
+        if not kwargs:
+            raise AttributeError('Faceting requires at least one field')
+
+        if len(kwargs) > 1:
+            raise AttributeError('Only one entity is supported for search')
+
+        return self._clone(entities=kwargs.items())
+
     def subjects(self):
         """If entity seaarch is performed returns the list of subjects"""
 
@@ -155,3 +175,12 @@ class GlobalSearch(Query):
         self.execute()
 
         return self._response.get('subjects')
+
+    def subjects_count(self):
+        """If entity seaarch is performed returns the list of subjects"""
+
+        # Executes a query to get a full API response which contains subjects list
+        self.execute()
+
+        return self._response.get('subjects_count')
+
