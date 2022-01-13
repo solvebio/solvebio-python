@@ -183,4 +183,3 @@ class GlobalSearch(Query):
         self.execute()
 
         return self._response.get('subjects_count')
-
