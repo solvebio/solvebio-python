@@ -180,10 +180,7 @@ class GlobalSearch(Query):
         if not kwargs:
             raise AttributeError('Faceting requires at least one field')
 
-        if len(kwargs) > 1:
-            raise AttributeError('Only one entity is supported for search')
-
-        return self._clone(entities=kwargs.items())
+        return self._clone(entities=list(kwargs.items()))
 
     def subjects(self):
         """If entity seaarch is performed returns the list of subjects"""
