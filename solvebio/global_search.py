@@ -40,6 +40,7 @@ class GlobalSearch(Query):
           - `result_class` (optional): Class of object returned by query.
           - `debug` (optional): Sends debug information to the API.
         """
+        super(GlobalSearch, self).__init__(None)
         self._data_url = '/v2/search'
         self._query = query
         self._entities = entities
