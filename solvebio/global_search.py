@@ -28,7 +28,7 @@ class GlobalSearch(Query):
             page_size=QueryBase.DEFAULT_PAGE_SIZE,
             result_class=dict,
             debug=False,
-            raw_response=False,
+            raw_results=False,
             **kwargs):
         """
         Creates a new Query object.
@@ -42,7 +42,7 @@ class GlobalSearch(Query):
           - `page_size` (optional): Number of results to fetch per query page.
           - `result_class` (optional): Class of object returned by query.
           - `debug` (optional): Sends debug information to the API.
-          - `raw_response` (optional): Whether to use raw API response or to cast logical
+          - `raw_results` (optional): Whether to use raw API response or to cast logical
              objects to Vault and Object instances.
         """
         super(GlobalSearch, self).__init__(None)
@@ -52,7 +52,7 @@ class GlobalSearch(Query):
         self._ordering = ordering
         self._result_class = result_class
         self._debug = debug
-        self._raw_response = raw_response
+        self._raw_results = raw_results
         self._error = None
         self._is_join = False
 
@@ -162,7 +162,7 @@ class GlobalSearch(Query):
         Query.execute(self, offset, **query)
 
         # Cast logical objects from response to Object/Vault instances
-        if not self._raw_response:
+        if not self._raw_results:
             self._response['results'] = [Vault.construct_from(result) if result['type'] == 'vault'
                                             else Object.construct_from(result)
                                             for result in self._response['results']]
