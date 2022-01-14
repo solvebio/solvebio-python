@@ -1,5 +1,23 @@
 # Changelog
 
+## [v2.18.0](https://github.com/solvebio/solvebio-python/tree/v2.18.0) (2022-01-14)
+
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.17.1...v2.18.0)
+
+**Fixed bugs:**
+
+- Bug in restore dataset functionality [\#407](https://github.com/solvebio/solvebio-python/issues/407)
+
+**Closed issues:**
+
+- Add Global Beacon support [\#409](https://github.com/solvebio/solvebio-python/issues/409)
+- Possible improvement: update description/expression if field was updated via migration [\#360](https://github.com/solvebio/solvebio-python/issues/360)
+
+**Merged pull requests:**
+
+- Add Global Search and Global Beacon support [\#410](https://github.com/solvebio/solvebio-python/pull/410) ([davecap](https://github.com/davecap))
+- fix default restore storage class issue and change to Standard-IA instead of Standard [\#408](https://github.com/solvebio/solvebio-python/pull/408) ([davecap](https://github.com/davecap))
+
 ## [v2.17.1](https://github.com/solvebio/solvebio-python/tree/v2.17.1) (2021-11-04)
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.17.0...v2.17.1)
