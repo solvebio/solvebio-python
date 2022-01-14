@@ -92,6 +92,7 @@ _init_logging()
 from .version import VERSION  # noqa
 from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
+from .global_search import GlobalSearch
 from .annotate import Annotator, Expression
 from .client import SolveClient
 from .resource import (
@@ -186,6 +187,7 @@ __all__ = [
     'DatasetSnapshotTask',
     'Filter',
     'GenomicFilter',
+    'GlobalSearch',
     'Group',
     'Manifest',
     'Object',

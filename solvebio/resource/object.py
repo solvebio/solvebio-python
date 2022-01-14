@@ -602,3 +602,30 @@ class Object(CreateableAPIResource,
 
         if follow:
             self.dataset.activity(follow=True)
+
+    def enable_global_beacon(self):
+        """
+        Enable Global Beacon for this object (datasets only).
+        """
+        if not self.is_dataset:
+            raise SolveError("Only dataset objects can be Global Beacons.")
+
+        return self._client.post(self.instance_url() + '/beacon', {})
+
+    def disable_global_beacon(self):
+        """
+        Disable Global Beacon for this object (datasets only).
+        """
+        if not self.is_dataset:
+            raise SolveError("Only dataset objects can be Global Beacons.")
+
+        return self._client.delete(self.instance_url() + '/beacon', {})
+
+    def get_global_beacon_status(self):
+        """
+        Retrieves the Global Beacon status for this object (datasets only).
+        """
+        if not self.is_dataset:
+            raise SolveError("Only dataset objects can be Global Beacons.")
+
+        return self._client.get(self.instance_url() + '/beacon', {})
