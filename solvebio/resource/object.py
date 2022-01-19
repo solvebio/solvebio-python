@@ -630,7 +630,7 @@ class Object(CreateableAPIResource,
 
         try:
             response = self._client.get(self.instance_url() + '/beacon', {})
-        except SolveError as e:
+        except SolveError:
             if not raise_on_disabled:
                 response = None
             else:
