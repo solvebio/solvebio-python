@@ -159,7 +159,7 @@ class GlobalSearch(Query):
 
     def execute(self, offset=0, **query):
         # Call superclass method execute
-        Query.execute(self, offset, **query)
+        super(GlobalSearch, self).execute(offset, **query)
 
         # Cast logical objects from response to Object/Vault instances
         if not self._raw_results:
@@ -193,6 +193,6 @@ class GlobalSearch(Query):
         """If entity seaarch is performed returns the list of subjects"""
 
         # Executes a query to get a full API response which contains subjects list
-        self.execute(include_subjects=True, limit=0)
+        self.execute(limit=0)
 
         return self._response.get('subjects_count')
