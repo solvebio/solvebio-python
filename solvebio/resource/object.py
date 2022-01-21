@@ -629,11 +629,8 @@ class Object(CreateableAPIResource,
             raise SolveError("Only dataset objects can be Global Beacons.")
 
         try:
-            response = self._client.get(self.instance_url() + '/beacon', {})
+            return self._client.get(self.instance_url() + '/beacon', {})
         except SolveError:
-            if not raise_on_disabled:
-                response = None
-            else:
+            if raise_on_disabled:
                 raise
-
-        return response
+            return None
