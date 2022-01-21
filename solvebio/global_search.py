@@ -107,7 +107,7 @@ class GlobalSearch(Query):
         if filters:
             new._filters += filters
 
-        if limit:
+        if limit is not None:
             new._limit = limit
 
         return new
@@ -159,7 +159,7 @@ class GlobalSearch(Query):
 
     def execute(self, offset=0, **query):
         # Call superclass method execute
-        Query.execute(self, offset, **query)
+        super(GlobalSearch, self).execute(offset, **query)
 
         # Cast logical objects from response to Object/Vault instances
         if not self._raw_results:
@@ -182,17 +182,19 @@ class GlobalSearch(Query):
         return self._clone(entities=list(kwargs.items()))
 
     def subjects(self):
-        """If entity seaarch is performed returns the list of subjects"""
+        """Returns the list of subjects"""
 
         # Executes a query to get a full API response which contains subjects list
-        self.execute()
+        gs = self.limit(0)
+        gs.execute(include_subjects=True)
 
-        return self._response.get('subjects')
+        return gs._response.get('subjects')
 
     def subjects_count(self):
-        """If entity seaarch is performed returns the list of subjects"""
+        """Returns the number of subjects"""
 
         # Executes a query to get a full API response which contains subjects list
-        self.execute()
+        gs = self.limit(0)
+        gs.execute()
 
-        return self._response.get('subjects_count')
+        return gs._response.get('subjects_count')

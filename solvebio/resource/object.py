@@ -621,11 +621,16 @@ class Object(CreateableAPIResource,
 
         return self._client.delete(self.instance_url() + '/beacon', {})
 
-    def get_global_beacon_status(self):
+    def get_global_beacon_status(self, raise_on_disabled=False):
         """
         Retrieves the Global Beacon status for this object (datasets only).
         """
         if not self.is_dataset:
             raise SolveError("Only dataset objects can be Global Beacons.")
 
-        return self._client.get(self.instance_url() + '/beacon', {})
+        try:
+            return self._client.get(self.instance_url() + '/beacon', {})
+        except SolveError:
+            if raise_on_disabled:
+                raise
+            return None
