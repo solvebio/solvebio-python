@@ -182,7 +182,7 @@ class GlobalSearch(Query):
         return self._clone(entities=list(kwargs.items()))
 
     def subjects(self):
-        """If entity seaarch is performed returns the list of subjects"""
+        """Returns the list of subjects"""
 
         # Executes a query to get a full API response which contains subjects list
         self.execute(include_subjects=True, limit=0)
@@ -190,7 +190,7 @@ class GlobalSearch(Query):
         return self._response.get('subjects')
 
     def subjects_count(self):
-        """If entity seaarch is performed returns the list of subjects"""
+        """Returns the number of subjects"""
 
         # Executes a query to get a full API response which contains subjects list
         self.execute(limit=0)
