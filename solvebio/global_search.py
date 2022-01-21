@@ -185,7 +185,7 @@ class GlobalSearch(Query):
         """If entity seaarch is performed returns the list of subjects"""
 
         # Executes a query to get a full API response which contains subjects list
-        self.execute()
+        self.execute(include_subjects=True, limit=0)
 
         return self._response.get('subjects')
 
@@ -193,6 +193,6 @@ class GlobalSearch(Query):
         """If entity seaarch is performed returns the list of subjects"""
 
         # Executes a query to get a full API response which contains subjects list
-        self.execute()
+        self.execute(include_subjects=True, limit=0)
 
         return self._response.get('subjects_count')
