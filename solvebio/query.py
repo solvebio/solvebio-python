@@ -630,7 +630,7 @@ class Query(QueryBase):
         if filters:
             new._filters += filters
 
-        if limit:
+        if limit is not None:
             new._limit = limit
 
         return new
@@ -1144,7 +1144,7 @@ class QueryFile(QueryBase):
         if filters:
             new._filters += filters
 
-        if limit:
+        if limit is not None:
             new._limit = limit
 
         return new

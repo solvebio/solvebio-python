@@ -28,6 +28,10 @@ from solvebio import Task  # noqa
 from solvebio import VaultSyncTask  # noqa
 from solvebio import ObjectCopyTask  # noqa
 from solvebio import SavedQuery  # noqa
+from solvebio import DatasetRestoreTask  # noqa
+from solvebio import DatasetSnapshotTask  # noqa
+from solvebio import GlobalSearch  # noqa
+from solvebio import Group  # noqa
 from solvebio.utils.printing import pager  # noqa
 
 # Add some convenience functions to the interactive shell

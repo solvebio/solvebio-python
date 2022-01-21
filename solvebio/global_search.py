@@ -107,7 +107,7 @@ class GlobalSearch(Query):
         if filters:
             new._filters += filters
 
-        if limit:
+        if limit is not None:
             new._limit = limit
 
         return new
@@ -185,14 +185,16 @@ class GlobalSearch(Query):
         """Returns the list of subjects"""
 
         # Executes a query to get a full API response which contains subjects list
-        self.execute(include_subjects=True, limit=0)
+        gs = self.limit(0)
+        gs.execute(include_subjects=True)
 
-        return self._response.get('subjects')
+        return gs._response.get('subjects')
 
     def subjects_count(self):
         """Returns the number of subjects"""
 
         # Executes a query to get a full API response which contains subjects list
-        self.execute(limit=0)
+        gs = self.limit(0)
+        gs.execute()
 
-        return self._response.get('subjects_count')
+        return gs._response.get('subjects_count')
