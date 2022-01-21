@@ -317,3 +317,21 @@ class Dataset(CreateableAPIResource,
     def vault_object(self):
         from solvebio import Object
         return Object.retrieve(self['vault_object_id'], client=self._client)
+
+    def enable_global_beacon(self):
+        """
+        Enable Global Beacon for this dataset.
+        """
+        return self.vault_object.enable_global_beacon()
+
+    def disable_global_beacon(self):
+        """
+        Disable Global Beacon for this dataset.
+        """
+        return self.vault_object.disable_global_beacon()
+
+    def get_global_beacon_status(self, raise_on_disabled=False):
+        """
+        Retrieves the Global Beacon status for this dataset.
+        """
+        return self.vault_object.get_global_beacon_status(raise_on_disabled)
