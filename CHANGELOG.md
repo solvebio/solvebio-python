@@ -1,5 +1,13 @@
 # Changelog
 
+## [v2.18.1](https://github.com/solvebio/solvebio-python/tree/v2.18.1) (2022-01-24)
+
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.18.0...v2.18.1)
+
+**Merged pull requests:**
+
+- Global Beacon interface update [\#411](https://github.com/solvebio/solvebio-python/pull/411) ([krivi95](https://github.com/krivi95))
+
 ## [v2.18.0](https://github.com/solvebio/solvebio-python/tree/v2.18.0) (2022-01-14)
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.17.1...v2.18.0)
