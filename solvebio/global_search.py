@@ -23,14 +23,14 @@ class GlobalSearch(Query):
             query=None,
             filters=None,
             entities=None,
+            entities_match='any',
+            vault_scope='all',
             ordering=None,
             limit=float('inf'),
             page_size=QueryBase.DEFAULT_PAGE_SIZE,
             result_class=dict,
             debug=False,
             raw_results=False,
-            vault_scope='all',
-            entities_match='any',
             **kwargs):
         """
         Creates a new Query object.
@@ -39,6 +39,8 @@ class GlobalSearch(Query):
           - `query` (optional): An optional query string (advanced search).
           - `filters` (optional): Filter or List of filter objects.
           - `entities` (optional): List of entity tuples to filter on (entity type, entity).
+          - `entities_match` (optional): Can be 'all' or 'any' (match any provided entity).
+          - `vault_scope` (optional): Can be 'all' or 'access'.
           - `ordering` (optional): List of fields to order the results by.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
@@ -51,9 +53,9 @@ class GlobalSearch(Query):
         self._data_url = '/v2/search'
         self._query = query
         self._entities = entities
-        self._ordering = ordering
-        self._vault_scope = vault_scope
         self._entities_match = entities_match
+        self._vault_scope = vault_scope
+        self._ordering = ordering
         self._result_class = result_class
         self._debug = debug
         self._raw_results = raw_results
