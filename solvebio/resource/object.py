@@ -440,7 +440,7 @@ class Object(CreateableAPIResource,
         try:
             return self[name]
         except KeyError as err:
-            if name in valid_dataset_attrs and self.is_dataset:
+            if name in valid_dataset_attrs and self['object_type'] == "dataset":
                 return getattr(
                     Dataset(self['id'], client=self._client), name)
 
