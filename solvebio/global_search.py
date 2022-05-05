@@ -29,6 +29,8 @@ class GlobalSearch(Query):
             result_class=dict,
             debug=False,
             raw_results=False,
+            vault_scope='all',
+            entities_match='any',
             **kwargs):
         """
         Creates a new Query object.
@@ -50,11 +52,12 @@ class GlobalSearch(Query):
         self._query = query
         self._entities = entities
         self._ordering = ordering
+        self._vault_scope = vault_scope
+        self._entities_match = entities_match
         self._result_class = result_class
         self._debug = debug
         self._raw_results = raw_results
         self._error = None
-        self._is_join = False
 
         if filters:
             if isinstance(filters, Filter):
@@ -97,6 +100,8 @@ class GlobalSearch(Query):
                              ordering=self._ordering,
                              page_size=self._page_size,
                              result_class=self._result_class,
+                             vault_scope=self._vault_scope,
+                             entities_match=self._entities_match,
                              debug=self._debug,
                              client=self._client)
         new._filters += self._filters
@@ -124,9 +129,6 @@ class GlobalSearch(Query):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
-        if self._is_join:
-            return len(self._buffer)
-
         return super(GlobalSearch, self).__len__()
 
     def _build_query(self, **kwargs):
@@ -147,6 +149,12 @@ class GlobalSearch(Query):
 
         if self._ordering is not None:
             q['ordering'] = self._ordering
+
+        if self._vault_scope is not None:
+            q['vault_scope'] = self._vault_scope
+
+        if self._entities_match is not None:
+            q['entities_match'] = self._entities_match
 
         if self._debug:
             q['debug'] = 'True'
@@ -198,3 +206,12 @@ class GlobalSearch(Query):
         gs.execute()
 
         return gs._response.get('subjects_count')
+
+    def vaults(self):
+        """Returns the list of vaults"""
+
+        # Executes a query to get a full API response which contains vaults list
+        gs = self.limit(0)
+        gs.execute(include_vaults=True)
+
+        return gs._response.get('vaults')
