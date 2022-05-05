@@ -23,6 +23,8 @@ class GlobalSearch(Query):
             query=None,
             filters=None,
             entities=None,
+            entities_match='any',
+            vault_scope='all',
             ordering=None,
             limit=float('inf'),
             page_size=QueryBase.DEFAULT_PAGE_SIZE,
@@ -37,6 +39,8 @@ class GlobalSearch(Query):
           - `query` (optional): An optional query string (advanced search).
           - `filters` (optional): Filter or List of filter objects.
           - `entities` (optional): List of entity tuples to filter on (entity type, entity).
+          - `entities_match` (optional): Can be 'all' or 'any' (match any provided entity).
+          - `vault_scope` (optional): Can be 'all' or 'access'.
           - `ordering` (optional): List of fields to order the results by.
           - `limit` (optional): Maximum number of query results to return.
           - `page_size` (optional): Number of results to fetch per query page.
@@ -49,12 +53,13 @@ class GlobalSearch(Query):
         self._data_url = '/v2/search'
         self._query = query
         self._entities = entities
+        self._entities_match = entities_match
+        self._vault_scope = vault_scope
         self._ordering = ordering
         self._result_class = result_class
         self._debug = debug
         self._raw_results = raw_results
         self._error = None
-        self._is_join = False
 
         if filters:
             if isinstance(filters, Filter):
@@ -97,6 +102,8 @@ class GlobalSearch(Query):
                              ordering=self._ordering,
                              page_size=self._page_size,
                              result_class=self._result_class,
+                             vault_scope=self._vault_scope,
+                             entities_match=self._entities_match,
                              debug=self._debug,
                              client=self._client)
         new._filters += self._filters
@@ -124,9 +131,6 @@ class GlobalSearch(Query):
                  SELECT * FROM <table> [WHERE condition] [LIMIT number]
               )
         """
-        if self._is_join:
-            return len(self._buffer)
-
         return super(GlobalSearch, self).__len__()
 
     def _build_query(self, **kwargs):
@@ -148,6 +152,12 @@ class GlobalSearch(Query):
         if self._ordering is not None:
             q['ordering'] = self._ordering
 
+        if self._vault_scope is not None:
+            q['vault_scope'] = self._vault_scope
+
+        if self._entities_match is not None:
+            q['entities_match'] = self._entities_match
+
         if self._debug:
             q['debug'] = 'True'
 
@@ -158,14 +168,20 @@ class GlobalSearch(Query):
         return q
 
     def execute(self, offset=0, **query):
+        def _process_result(result):
+            # Internally the client uses object_type, not type
+            result['object_type'] = result['type']
+            if result['object_type'] == 'vault':
+                return Vault.construct_from(result)
+            else:
+                return Object.construct_from(result)
+
         # Call superclass method execute
         super(GlobalSearch, self).execute(offset, **query)
 
         # Cast logical objects from response to Object/Vault instances
         if not self._raw_results:
-            self._response['results'] = [Vault.construct_from(result) if result['type'] == 'vault'
-                                            else Object.construct_from(result)
-                                            for result in self._response['results']]
+            self._response['results'] = [_process_result(i) for i in self._response['results']]
 
     def entity(self, **kwargs):
         """
@@ -198,3 +214,12 @@ class GlobalSearch(Query):
         gs.execute()
 
         return gs._response.get('subjects_count')
+
+    def vaults(self):
+        """Returns the list of vaults"""
+
+        # Executes a query to get a full API response which contains vaults list
+        gs = self.limit(0)
+        gs.execute(include_vaults=True)
+
+        return gs._response.get('vaults')

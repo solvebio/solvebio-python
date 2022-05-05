@@ -440,12 +440,9 @@ class Object(CreateableAPIResource,
         try:
             return self[name]
         except KeyError as err:
-            # If the Object has a dataset_id, it is of object_type "dataset"
-            # If there is no dataset_id, either this Object is a file or folder
-            # or the resource has not yet been retrieved from the API.
-            if name in valid_dataset_attrs and self.dataset_id:
+            if name in valid_dataset_attrs and self['object_type'] == "dataset":
                 return getattr(
-                    Dataset(self.dataset_id, client=self._client), name)
+                    Dataset(self['id'], client=self._client), name)
 
             raise AttributeError(*err.args)
 
@@ -458,7 +455,7 @@ class Object(CreateableAPIResource,
                 "Only dataset objects have a Dataset resource. This is a {}"
                 .format(self.object_type))
 
-        return Dataset.retrieve(self.dataset_id, client=self._client)
+        return Dataset.retrieve(self['id'], client=self._client)
 
     @property
     def parent(self):
@@ -560,7 +557,7 @@ class Object(CreateableAPIResource,
         from solvebio.query import QueryFile
 
         if self.is_dataset:
-            return Dataset(self.dataset_id, client=self._client).query(**params)
+            return Dataset(self['id'], client=self._client).query(**params)
         elif self.is_file:
             return QueryFile(self['id'], client=self._client, **params)
         else:

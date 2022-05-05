@@ -117,10 +117,10 @@ class TestDatasetMigrations(SolveBioTestCase):
         """Target is an Object of object_type=dataset"""
         Create.side_effect = fake_migration_create
 
-        source = self.client.Object(1, object_type='dataset')
-        source.dataset_id = source.id
-        target = self.client.Object(2, object_type='dataset')
-        target.dataset_id = target.id
+        source = self.client.Object(1)
+        source['object_type'] = 'dataset'
+        target = self.client.Object(2)
+        target['object_type'] = 'dataset'
         migration = source.migrate(target=target, follow=False)
         self.assertEqual(migration.source_id, source.id)
         self.assertEqual(migration.target_id, target.id)
