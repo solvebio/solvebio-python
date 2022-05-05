@@ -1,5 +1,13 @@
 # Changelog
 
+## [v2.19.0](https://github.com/solvebio/solvebio-python/tree/v2.19.0) (2022-05-05)
+
+[Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.18.1...v2.19.0)
+
+**Merged pull requests:**
+
+- add new global search params \(vault\_scope and entities\_match\) [\#414](https://github.com/solvebio/solvebio-python/pull/414) ([davecap](https://github.com/davecap))
+
 ## [v2.18.1](https://github.com/solvebio/solvebio-python/tree/v2.18.1) (2022-01-24)
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.18.0...v2.18.1)
