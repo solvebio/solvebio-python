@@ -166,14 +166,20 @@ class GlobalSearch(Query):
         return q
 
     def execute(self, offset=0, **query):
+        def _process_result(result):
+            # Internally the client uses object_type, not type
+            result['object_type'] = result['type']
+            if result['object_type'] == 'vault':
+                return Vault.construct_from(result)
+            else:
+                return Object.construct_from(result)
+
         # Call superclass method execute
         super(GlobalSearch, self).execute(offset, **query)
 
         # Cast logical objects from response to Object/Vault instances
         if not self._raw_results:
-            self._response['results'] = [Vault.construct_from(result) if result['type'] == 'vault'
-                                            else Object.construct_from(result)
-                                            for result in self._response['results']]
+            self._response['results'] = [_process_result(i) for i in self._response['results']]
 
     def entity(self, **kwargs):
         """
