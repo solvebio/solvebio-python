@@ -20,6 +20,7 @@ from solvebio import Dataset
 from solvebio import DatasetImport
 from solvebio import DatasetTemplate
 from solvebio.utils.files import check_gzip_path
+from solvebio.utils.md5sum import md5sum
 from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 
@@ -503,6 +504,96 @@ def _download(full_path, local_folder_path, dry_run=False):
 
         print('Downloaded: {} to {}/{}'.format(
             file_.full_path, local_folder_path, file_.filename))
+
+
+def sync(args):
+    """
+    Given a folder or file, download all the files contained
+    within it (not recursive)
+    """
+    return _sync(args.full_path, args.local_path, dry_run=args.dry_run)
+
+
+def _get_remote_directory_recursive(full_path, local_folder_path, remote_files=[]):
+    objects = Object.all(glob=full_path, limit=1000)
+    for object_ in objects:
+        if object_.is_dataset:
+            continue
+        object_.local_path = os.path.join(local_folder_path, object_.filename)
+        remote_files.append(object_)
+        if object_.is_folder:
+            _get_remote_directory_recursive(
+                    full_path=object_.full_path + "/*",
+                    local_folder_path=object_.local_path,
+                    remote_files=remote_files)
+    return remote_files
+
+
+def _get_local_directory_recursive(local_folder_path):
+    local_files = []
+    for root, dirs, files in os.walk(local_folder_path):
+        for file_ in files:
+            path = os.path.join(root, file_)
+            md5 = md5sum(path)
+            local_files.append(dict(
+                path=os.path.join(root, file_), file_type="file", md5=md5))
+        for dir_ in dirs:
+            local_files.append(dict(
+                path=os.path.join(root, dir_), file_type="folder"))
+    return local_files
+
+
+
+
+def _sync(full_path, local_folder_path, dry_run=False, delete_local=False):
+    print("Syncing from {} to {}".format(
+            full_path, local_folder_path))
+
+    if dry_run:
+        print('Running in dry run mode. Not downloading any files.')
+
+    local_folder_path = os.path.expanduser(local_folder_path)
+    if not os.path.exists(local_folder_path):
+        print("Creating local download folder {}".format(local_folder_path))
+        if not dry_run:
+            if not os.path.exists(local_folder_path):
+                os.makedirs(local_folder_path)
+
+    remote_files = _get_remote_directory_recursive(full_path, local_folder_path)
+    for file_ in remote_files:
+        print(file_)
+
+    local_file_map = {x.local_path:dict(remote=x) for x in remote_files}
+    local_files = _get_local_directory_recursive(local_folder_path)
+    for local_file in local_files:
+        local_path = local_file['path']
+        if local_path in local_file_map:
+            local_file_map[local_path]['local'] = local_file
+        else:
+            """
+            if delete and not dry_run:
+                os.unlink(local_file)
+            """
+            pass
+
+    updates = []
+    for local_path, file_obj_map in local_file_map.items():
+        print(file_obj_map)
+        remote_file = file_obj_map['remote']
+
+        if remote_file.object_type == "folder":
+            os.makedirs(local_path, exist_ok=True)
+            continue
+
+        if "local" in file_obj_map:
+            if file_obj_map['remote']['md5'] != file_obj_map['local']['md5']:
+                print("Skipping {}, already in sync".format(file_obj_map['local']['path']))
+                continue
+        updates.append((local_path, remote_file))
+    print("Downloading {} files".format(len(updates)))
+
+    for local_path, file_obj in updates:
+        file_obj.download(local_path)
 
 
 def should_tag_by_object_type(args, object_):
