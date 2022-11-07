@@ -272,6 +272,12 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'action': 'store_true'
                 },
                 {
+                    'flags': '--exclude',
+                    'help': 'Paths to files or folder to be excluded from '
+                    'sync. Unix shell-style wildcards are supported.',
+                    'action': 'append'
+                },
+                {
                     'flags': 'full_path',
                     'help': 'The full path to the files on SolveBio. Supports '
                     'Unix style globs in order to download multiple files. '

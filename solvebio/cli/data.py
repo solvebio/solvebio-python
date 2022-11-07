@@ -558,6 +558,10 @@ def _sync(full_path, local_folder_path, dry_run=False, delete_local=False):
     print("Syncing from {} to {}".format(
             full_path, local_folder_path))
 
+
+    if "**" in full_path:
+        raise Exception("sync is already recursive, don't supply recursive flags")
+
     if dry_run:
         print('Running in dry run mode. Not downloading any files.')
 
