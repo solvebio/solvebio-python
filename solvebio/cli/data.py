@@ -523,8 +523,8 @@ def _get_remote_directory_recursive(full_path, local_folder_path, remote_files=[
     """
     objects = Object.all(glob=full_path, limit=1000)
     for object_ in objects:
-        # TODO: Skip dataset objects for now?
         if object_.is_dataset:
+            print("Skipping dataset object: {}".format(object_.full_path))
             continue
         # add local download path
         object_.local_path = os.path.join(local_folder_path, object_.filename)
@@ -558,6 +558,37 @@ def _sync(full_path, local_folder_path, dry_run=False, delete_local=False):
     print("Syncing from {} to {}".format(
             full_path, local_folder_path))
 
+    actions = []
+    class Action(object):
+        """Enables binding key actions to a list of calls
+        that can then be executed downstream according to
+        user parameters.
+
+        e.g. filter out 'delete_file' actions if users
+        do not specify '--delete'
+
+
+        Args:
+            action (function): A lambda style (or regular) function
+                to be called.
+            action_type (str): The name or type of action.
+            message (str): A description of the action.
+        """
+        
+        action_types = {
+                'makedirs',
+                'download_file',
+                'delete_file'
+        }
+
+        def __init__(self, action, action_type, message=None):
+            self.action = action
+            self.action_type = action_type
+            self.message = message
+
+        def __call__(self):
+            self.action()
+
 
     if "**" in full_path:
         raise Exception("sync is already recursive, don't supply recursive flags")
@@ -567,15 +598,10 @@ def _sync(full_path, local_folder_path, dry_run=False, delete_local=False):
 
     local_folder_path = os.path.expanduser(local_folder_path)
     if not os.path.exists(local_folder_path):
-        print("Creating local download folder {}".format(local_folder_path))
-        if not dry_run:
-            if not os.path.exists(local_folder_path):
-                os.makedirs(local_folder_path)
+        actions.append(Action(lambda x=local_folder_path: os.makedirs(x), 'makedirs'))
 
     # Get all remote files
     remote_files = _get_remote_directory_recursive(full_path, local_folder_path)
-    for file_ in remote_files:
-        print(file_)
 
     # Map remote files to their local file path
     local_file_map = {x.local_path:dict(remote=x) for x in remote_files}
@@ -586,12 +612,8 @@ def _sync(full_path, local_folder_path, dry_run=False, delete_local=False):
         if local_path in local_file_map:
             local_file_map[local_path]['local'] = local_file
         else:
-            # Delete any files not necessary?
-            """
-            if delete and not dry_run:
-                os.unlink(local_file)
-            """
-            pass
+            if delete:
+                actions.append(Action(lambda x=local_file: os.remove(x), 'delete_file'))
 
     # Loop through the map of local file paths
     # and identify:
@@ -599,20 +621,39 @@ def _sync(full_path, local_folder_path, dry_run=False, delete_local=False):
     # - files to download
     updates = []
     for local_path, file_obj_map in local_file_map.items():
-        print(file_obj_map)
         remote_file = file_obj_map['remote']
 
         if remote_file.object_type == "folder":
-            os.makedirs(local_path, exist_ok=True)
+            actions.append(Action(lambda x=local_path: os.makedirs(x, exist_ok=True), 'makedirs'))
             continue
 
         if "local" in file_obj_map:
             if file_obj_map['remote']['md5'] != file_obj_map['local']['md5']:
                 print("Skipping {}, already in sync".format(file_obj_map['local']['path']))
                 continue
-        updates.append((local_path, remote_file))
-    print("Downloading {} files".format(len(updates)))
+        actions.append(Action(lambda x=remote_file, y=local_path: x.download(local_path), 'download_file'))
 
+
+    makedir_actions = [x for x in actions if x.action_type == "makedirs"]
+    if not dry_run:
+        for makedir_action in makedir_actions:
+            makedir_action()
+    else:
+        print('[Dry Run]')
+
+    download_actions = [x for x in actions if x.action_type == "download_file"]
+    if not dry_run:
+        for download_action in download_actions:
+            download_action()
+
+
+    delete_actions = [x for x in actions if x.action_type == "delete_file"]
+    if delete_local and not dry_run:
+        for delete_action in delete_actions:
+            delete_action()
+
+
+    print("Downloading {} files".format(len(updates)))
     for local_path, file_obj in updates:
         file_obj.download(local_path)
 
