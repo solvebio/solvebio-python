@@ -260,37 +260,6 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 }
             ]
         },
-        'sync': {
-            'func': data.sync,
-            'help': 'Downloads and synchronizes local files with a '
-                    'SolveBio Vault directory.',
-            'arguments': [
-                {
-                    'flags': '--dry-run',
-                    'help': 'Dry run mode will not download any files or '
-                    'create any folders.',
-                    'action': 'store_true'
-                },
-                {
-                    'flags': '--exclude',
-                    'help': 'Paths to files or folder to be excluded from '
-                    'sync. Unix shell-style wildcards are supported.',
-                    'action': 'append'
-                },
-                {
-                    'flags': 'full_path',
-                    'help': 'The full path to the files on SolveBio. Supports '
-                    'Unix style globs in order to download multiple files. '
-                    'Note: Downloads are not recursive.',
-                    'action': TildeFixStoreAction
-                },
-                {
-                    'name': 'local_path',
-                    'help': 'The path to the local directory where '
-                            'to download files.',
-                }
-            ]
-        },
         'download': {
             'func': data.download,
             'help': 'Download one or more files from a SolveBio Vault.',
@@ -305,14 +274,32 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': 'full_path',
                     'help': 'The full path to the files on SolveBio. Supports '
                     'Unix style globs in order to download multiple files. '
-                    'Note: Downloads are not recursive.',
+                    'Note: Downloads are not recursive unless --recursive '
+                    'flag is used.',
                     'action': TildeFixStoreAction
                 },
                 {
                     'name': 'local_path',
                     'help': 'The path to the local directory where '
                             'to download files.',
-                }
+                },
+                {
+                    'flags': '--recursive',
+                    'help': 'Downloads files recursively',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--exclude',
+                    'help': 'Paths to files or folder to be excluded from '
+                    'download. Unix shell-style wildcards are supported.',
+                    'action': 'append'
+                },
+                {
+                    'flags': '--include',
+                    'help': 'Paths to files or folder to be include from '
+                    'download. Unix shell-style wildcards are supported.',
+                    'action': 'append'
+                },
             ]
         },
         'tag': {

@@ -19,8 +19,8 @@ from solvebio import Object
 from solvebio import Dataset
 from solvebio import DatasetImport
 from solvebio import DatasetTemplate
+from solvebio import GlobalSearch
 from solvebio.utils.files import check_gzip_path
-from solvebio.utils.md5sum import md5sum
 from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 
@@ -60,24 +60,26 @@ def _create_folder(vault, full_path, tags=None):
     return new_obj
 
 
-def should_exclude(path, exclude_paths, dry_run=False):
+def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
     if not exclude_paths:
         return False
 
     for exclude_path in exclude_paths:
 
         if fnmatch(path, exclude_path):
-            print("{}WARNING: Excluding path {} (via --exclude {})"
-                  .format('[Dry Run] ' if dry_run else '', path, exclude_path))
+            if print_logs:
+                print("{}WARNING: Excluding path {} (via --exclude {})"
+                      .format('[Dry Run] ' if dry_run else '', path, exclude_path))
             return True
 
         # An exclude path may be a directory, strip trailing slash and add /*
         # if not already there.
         if not exclude_path.endswith('/*') and \
                 fnmatch(path, exclude_path.rstrip('/') + '/*'):
-            print("{}WARNING: Excluding path {} (via --exclude {})"
-                  .format('[Dry Run] ' if dry_run else '',
-                          path, exclude_path.rstrip('/') + '/*'))
+            if print_logs:
+                print("{}WARNING: Excluding path {} (via --exclude {})"
+                      .format('[Dry Run] ' if dry_run else '',
+                              path, exclude_path.rstrip('/') + '/*'))
             return True
 
     return False
@@ -471,13 +473,16 @@ def download(args):
     Given a folder or file, download all the files contained
     within it (not recursive).
     """
-    return _download(args.full_path, args.local_path, dry_run=args.dry_run)
+    return _download(args.full_path, args.local_path,
+            dry_run=args.dry_run, recursive=args.recursive,
+            excludes=args.exclude, includes=args.include)
 
 
-def _download(full_path, local_folder_path, dry_run=False):
+def _download(full_path, local_folder_path, dry_run=False, recursive=False,
+        excludes=[], includes=[]):
     """
     Given a folder or file, download all the files contained
-    within it (not recursive).
+    within it.
     """
     if dry_run:
         print('Running in dry run mode. Not downloading any files.')
@@ -488,6 +493,11 @@ def _download(full_path, local_folder_path, dry_run=False):
         if not dry_run:
             if not os.path.exists(local_folder_path):
                 os.makedirs(local_folder_path)
+
+    if recursive:
+        _download_recursive(full_path, local_folder_path, dry_run, excludes, includes)
+        return
+
 
     # API will determine depth based on number of "/" in the glob
     # Add */** to match in any vault (recursive)
@@ -506,156 +516,52 @@ def _download(full_path, local_folder_path, dry_run=False):
             file_.full_path, local_folder_path, file_.filename))
 
 
-def sync(args):
-    """
-    Given a folder or file, download all the files contained
-    within it (not recursive)
-    """
-    return _sync(args.full_path, args.local_path, dry_run=args.dry_run)
 
-
-def _get_remote_directory_recursive(full_path, local_folder_path, remote_files=[]):
-    """Queries a SolveBio Vault path and recursively finds all files.
-
-    full_path (str): SolveBio path where data will be downloaded from.
-    local_folder_path (str): Local folder path where data will be downloaded to.
-    remote_files (list): List used to store queried files in recursive search.
-    """
-    objects = Object.all(glob=full_path, limit=1000)
-    for object_ in objects:
-        if object_.is_dataset:
-            print("Skipping dataset object: {}".format(object_.full_path))
-            continue
-        # add local download path
-        object_.local_path = os.path.join(local_folder_path, object_.filename)
-        remote_files.append(object_)
-        if object_.is_folder:
-            _get_remote_directory_recursive(
-                    full_path=object_.full_path + "/*",
-                    local_folder_path=object_.local_path,
-                    remote_files=remote_files)
-    return remote_files
-
-
-def _get_local_directory_recursive(local_folder_path):
-    """Queries local directory to find all files"""
-    local_files = []
-    for root, dirs, files in os.walk(local_folder_path):
-        for file_ in files:
-            path = os.path.join(root, file_)
-            md5 = md5sum(path)
-            local_files.append(dict(
-                path=os.path.join(root, file_), file_type="file", md5=md5))
-        for dir_ in dirs:
-            local_files.append(dict(
-                path=os.path.join(root, dir_), file_type="folder"))
-    return local_files
-
-
-
-
-def _sync(full_path, local_folder_path, dry_run=False, delete_local=False):
-    print("Syncing from {} to {}".format(
-            full_path, local_folder_path))
-
-    actions = []
-    class Action(object):
-        """Enables binding key actions to a list of calls
-        that can then be executed downstream according to
-        user parameters.
-
-        e.g. filter out 'delete_file' actions if users
-        do not specify '--delete'
-
-
-        Args:
-            action (function): A lambda style (or regular) function
-                to be called.
-            action_type (str): The name or type of action.
-            message (str): A description of the action.
-        """
-        
-        action_types = {
-                'makedirs',
-                'download_file',
-                'delete_file'
-        }
-
-        def __init__(self, action, action_type, message=None):
-            self.action = action
-            self.action_type = action_type
-            self.message = message
-
-        def __call__(self):
-            self.action()
-
+def _download_recursive(full_path, local_folder_path, dry_run=False,
+        excludes=[], includes=[]):
 
     if "**" in full_path:
-        raise Exception("sync is already recursive, don't supply recursive flags")
+        raise Exception('Paths containing ** are not compatible with the --recursive flag.')
 
-    if dry_run:
-        print('Running in dry run mode. Not downloading any files.')
+    full_path, parts = Object.validate_full_path(full_path)
+    results = GlobalSearch().filter(path__prefix=full_path)
+    num_files = len([x for x in results if x.get('object_type') == "file"])
+    print('Found {} files to download.'.format(num_files))
+    if num_files == 0:
+        return
 
-    local_folder_path = os.path.expanduser(local_folder_path)
-    if not os.path.exists(local_folder_path):
-        actions.append(Action(lambda x=local_folder_path: os.makedirs(x), 'makedirs'))
+    remote_objects = []
+    for file_obj in results:
+        depth = len(file_obj.path.split("/"))
+        file_obj.depth = depth
+        remote_objects.append(file_obj)
 
-    # Get all remote files
-    remote_files = _get_remote_directory_recursive(full_path, local_folder_path)
 
-    # Map remote files to their local file path
-    local_file_map = {x.local_path:dict(remote=x) for x in remote_files}
-    local_files = _get_local_directory_recursive(local_folder_path)
-    for local_file in local_files:
-        # For each local file, add to the map
-        local_path = local_file['path']
-        if local_path in local_file_map:
-            local_file_map[local_path]['local'] = local_file
-        else:
-            if delete:
-                actions.append(Action(lambda x=local_file: os.remove(x), 'delete_file'))
+    min_depth = min([x.depth for x in remote_objects])
+    num_at_min_depth = len([x for x in remote_objects if x.depth == min_depth])
+    if num_at_min_depth == 1:
+        base_folder_depth = min_depth
+    else:
+        base_folder_depth = min_depth - 1
 
-    # Loop through the map of local file paths
-    # and identify:
-    # - directories to create
-    # - files to download
-    updates = []
-    for local_path, file_obj_map in local_file_map.items():
-        remote_file = file_obj_map['remote']
+    remote_files = [x for x in remote_objects if x.get('object_type') == "file"]
+    for remote_file in remote_files:
+        rel_parts = remote_file.path.split("/")[base_folder_depth:]
+        relative_file_path = os.path.join(*rel_parts)
+        local_path = os.path.join(local_folder_path, relative_file_path)
 
-        if remote_file.object_type == "folder":
-            actions.append(Action(lambda x=local_path: os.makedirs(x, exist_ok=True), 'makedirs'))
+
+        # Skip over files that are excluded (not recovered by include)
+        if should_exclude(local_path, excludes, print_logs=False) and \
+                not should_exclude(local_path, includes, print_logs=False):
             continue
 
-        if "local" in file_obj_map:
-            if file_obj_map['remote']['md5'] != file_obj_map['local']['md5']:
-                print("Skipping {}, already in sync".format(file_obj_map['local']['path']))
-                continue
-        actions.append(Action(lambda x=remote_file, y=local_path: x.download(local_path), 'download_file'))
 
+        parent_dir = os.path.dirname(local_path)
+        if not dry_run:
+            os.makedirs(parent_dir, exist_ok=True)
+            remote_file.download(local_path)
 
-    makedir_actions = [x for x in actions if x.action_type == "makedirs"]
-    if not dry_run:
-        for makedir_action in makedir_actions:
-            makedir_action()
-    else:
-        print('[Dry Run]')
-
-    download_actions = [x for x in actions if x.action_type == "download_file"]
-    if not dry_run:
-        for download_action in download_actions:
-            download_action()
-
-
-    delete_actions = [x for x in actions if x.action_type == "delete_file"]
-    if delete_local and not dry_run:
-        for delete_action in delete_actions:
-            delete_action()
-
-
-    print("Downloading {} files".format(len(updates)))
-    for local_path, file_obj in updates:
-        file_obj.download(local_path)
 
 
 def should_tag_by_object_type(args, object_):

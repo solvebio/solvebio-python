@@ -412,71 +412,75 @@ class DownloadTests(CLITests):
             self._test_download_file(args, download_success=False)
 
 
-
-class SyncTests(CLITests):
-
-
-    @mock.patch('solvebio.resource.Object.all')
+    @mock.patch('solvebio.global_search.GlobalSearch.filter')
     @mock.patch('solvebio.resource.apiresource.DownloadableAPIResource.download')
     @mock.patch('os.makedirs')
-    def _test_sync_folder(self, args, MakeDirs, Download, ObjectAll, download_success=True):
-        ObjectAll.side_effect = [
-                fake_object_all(filename='test-folder', object_type='folder'),
-                fake_object_all(filename='test-folder/subfolder', object_type='folder'),
-                fake_object_all(filename='test-folder/subfolder/file.txt', object_type='file'),
+    def _test_download_folder(self, args, MakeDirs, Download, GlobalSearch,
+            download_success=True, expected_downloads=2):
+        remote_objects = [
+                fake_object_create(filename='test-folder', object_type='folder'),
+                fake_object_create(filename='test-folder/subfolder', object_type='folder'),
+                fake_object_create(filename='test-folder/subfolder/file.txt', object_type='file'),
+                fake_object_create(filename='test-folder/subfolder/file2.csv', object_type='file'),
         ]
+        GlobalSearch.return_value = remote_objects
 
         if download_success:
             Download.side_effect = lambda x: True
         else:
             Download.side_effect = Exception('Mock Download Fail')
 
+
         # returns (imports_list, dataset)
         main.main(args)
 
-        # Recursively calls ObjectAll until a file object is found
-        self.assertEqual(ObjectAll.call_count, 3)
-
-
         # Only downloads 'file.txt', folders are ignored
-        self.assertEqual(Download.call_count, 1)
+        self.assertEqual(Download.call_count, expected_downloads)
 
 
-        # Creates 'test-folder' and 'test-folder/subfolder'
-        self.assertEqual(MakeDirs.call_count, 2)
-
-
-    def test_sync_folder(self):
-        args = ['sync', 'solvebio:mock_vault:/test-folder', '.']
-        self._test_sync_folder(args)
+    def test_download_folder(self):
+        args = ['download', '--recursive', 'solvebio:mock_vault:/test-folder', '.']
+        self._test_download_folder(args)
         self.assertFalse(os.path.exists('./test-folder'))
 
-        args = ['sync', 'solvebio:mock_vault:/test-folder', '.']
-        self._test_sync_folder(args)
-        self.assertFalse(os.path.exists('./test-folder'))
+        # Exclude all files
+        args = ['download', '--recursive', '--exclude', '*', 'solvebio:mock_vault:/test-folder/', '.']
+        self._test_download_folder(args, expected_downloads=0)
 
-        args = ['sync', 'solvebio:mock_vault:/test-folder/*', '.']
-        self._test_sync_folder(args)
-        self.assertFalse(os.path.exists('./test-folder'))
+        # Exclude suffix
+        args = ['download', '--recursive', '--exclude', '*txt', 'solvebio:mock_vault:/test-folder/', '.']
+        self._test_download_folder(args, expected_downloads=1)
+
+        # exclude folder name
+        args = ['download', '--recursive', '--exclude', '*subfolder*', 'solvebio:mock_vault:/test-folder/', '.']
+        self._test_download_folder(args, expected_downloads=0)
+
+        # Exclude all files, then includes txt files
+        args = ['download', '--recursive', '--exclude', '*',
+                '--include', '*.txt',
+                'solvebio:mock_vault:/test-folder/', '.']
+        self._test_download_folder(args, expected_downloads=1)
 
         # args needed
-        args = ['sync']
+        args = ['download', '--recursive']
         with self.assertRaises(SystemExit):
-            self._test_sync_folder(args)
+            self._test_download_folder(args)
 
         # full path required
-        args = ['sync', 'mypath']
+        args = ['download', '--recursive', 'mypath']
         with self.assertRaises(SystemExit):
-            self._test_sync_folder(args)
+            self._test_download_folder(args)
 
         # local path required
-        args = ['sync', 'my-vault:/mypath']
+        args = ['download', '--recursive', 'my-vault:/mypath']
         with self.assertRaises(SystemExit):
-            self._test_sync_folder(args)
+            self._test_download_folder(args)
 
-        args = ['sync', 'solvebio:mock_vault:/test-file/*', '.']
+        args = ['download', '--recursive', 'solvebio:mock_vault:/test-file/*', '.']
         with self.assertRaises(Exception):
-            self._test_sync_folder(args, download_success=False)
+            self._test_download_folder(args, download_success=False)
+
+
 
 class QueueTests(CLITests):
     def test_show_queue(self):
