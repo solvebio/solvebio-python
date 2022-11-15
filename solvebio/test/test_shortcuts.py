@@ -511,6 +511,33 @@ class DownloadTests(CLITests):
 
 
 
+
+class LsTests(CLITests):
+
+    @mock.patch('solvebio.resource.object.Object.all')
+    @mock.patch('builtins.print')
+    def _test_ls(self, args, Print, ObjectAll, fake_objects=[]):
+        ObjectAll.return_value = fake_objects
+        main.main(args)
+        return Print
+
+
+    def test_download_folder(self):
+
+        remote_objects = [
+            fake_object_create(last_modified="2020", filename='folder', object_type='folder'),
+            fake_object_create(last_modified="2021", filename='old-file', object_type='file'),
+            fake_object_create(last_modified="2022", filename='new-file', object_type='file'),
+        ]
+        args = ['ls', '~']
+        mock_print = self._test_ls(args, fake_objects=remote_objects)
+        self.assertEqual(mock_print.call_count, len(remote_objects))
+
+        mock_print = self._test_ls(args, fake_objects=[])
+        self.assertEqual(mock_print.call_count, 1)
+        self.assertIn("No file(s) found", mock_print.call_args[0][0])
+
+
 class QueueTests(CLITests):
     def test_show_queue(self):
         """Simple test to print the queue"""

@@ -260,6 +260,19 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 }
             ]
         },
+        'ls': {
+            'func': data.ls,
+            'help': 'List files and directories in a SolveBio Vault',
+            'arguments':[
+                {
+                    'name': 'full_path',
+                    'help': 'The full path where the files and folders should '
+                    'be listed from, defaults to the root of your personal vault',
+                    'action': TildeFixStoreAction,
+                    'default': '~/'
+                },
+            ]
+        },
         'download': {
             'func': data.download,
             'help': 'Download one or more files from a SolveBio Vault.',
