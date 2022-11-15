@@ -415,20 +415,38 @@ class DownloadTests(CLITests):
     @mock.patch('solvebio.global_search.GlobalSearch.filter')
     @mock.patch('solvebio.resource.apiresource.DownloadableAPIResource.download')
     @mock.patch('os.makedirs')
-    def _test_download_folder(self, args, MakeDirs, Download, GlobalSearch,
-            download_success=True, expected_downloads=2):
+    @mock.patch('solvebio.resource.object.Object.retrieve')
+    @mock.patch('os.walk')
+    @mock.patch('os.rmdir')
+    @mock.patch('os.remove')
+    @mock.patch('os.listdir')
+    def _test_download_folder(self, args, ListDir, Remove, RmDir, Walk,
+            ObjectRetrieve, MakeDirs, Download, GlobalSearch, download_success=True,
+            expected_downloads=2, expected_delete_files=0, expected_delete_folders=0):
+
+        # Create GlobalSearch return objects
         remote_objects = [
-                fake_object_create(filename='test-folder', object_type='folder'),
-                fake_object_create(filename='test-folder/subfolder', object_type='folder'),
-                fake_object_create(filename='test-folder/subfolder/file.txt', object_type='file'),
-                fake_object_create(filename='test-folder/subfolder/file2.csv', object_type='file'),
+                fake_object_create(id=1, filename='test-folder', object_type='folder'),
+                fake_object_create(id=2, filename='test-folder/subfolder', object_type='folder'),
+                fake_object_create(id=3, filename='test-folder/subfolder/file.txt', object_type='file'),
+                fake_object_create(id=4, filename='test-folder/subfolder/file2.csv', object_type='file'),
         ]
         GlobalSearch.return_value = remote_objects
 
+        # Mock query to API to get md5
+        def object_retrieve_side_effect(file_id):
+            return [x for x in remote_objects if x.id == file_id][0]
+        ObjectRetrieve.side_effect = object_retrieve_side_effect
+
+        # Fail on demand
         if download_success:
             Download.side_effect = lambda x: True
         else:
             Download.side_effect = Exception('Mock Download Fail')
+
+        # Create files that would be deleted by --delete
+        Walk.return_value = [('/sample/root/dir', ['empty_folder'], ['local_file'])]
+        ListDir.return_value = []
 
 
         # returns (imports_list, dataset)
@@ -436,6 +454,8 @@ class DownloadTests(CLITests):
 
         # Only downloads 'file.txt', folders are ignored
         self.assertEqual(Download.call_count, expected_downloads)
+        self.assertEqual(Remove.call_count, expected_delete_files)
+        self.assertEqual(RmDir.call_count, expected_delete_folders)
 
 
     def test_download_folder(self):
@@ -460,6 +480,15 @@ class DownloadTests(CLITests):
                 '--include', '*.txt',
                 'solvebio:mock_vault:/test-folder/', '.']
         self._test_download_folder(args, expected_downloads=1)
+
+        # Test dry run
+        args = ['download', '--recursive', '--dry-run', 'solvebio:mock_vault:/test-folder', '.']
+        self._test_download_folder(args, expected_downloads=0)
+
+        # Test delete
+        args = ['download', '--recursive', '--delete', 'solvebio:mock_vault:/test-folder', '.']
+        self._test_download_folder(args, expected_delete_files=1, expected_delete_folders=1)
+
 
         # args needed
         args = ['download', '--recursive']

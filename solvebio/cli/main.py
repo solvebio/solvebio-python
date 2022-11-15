@@ -267,7 +267,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'flags': '--dry-run',
                     'help': 'Dry run mode will not download any files or '
-                    'create any folders.',
+                    'create any folders. Use this mode before using the '
+                    '--delete flag.',
                     'action': 'store_true'
                 },
                 {
@@ -299,6 +300,14 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Paths to files or folder to be include from '
                     'download. Unix shell-style wildcards are supported.',
                     'action': 'append'
+                },
+                {
+                    'flags': '--delete',
+                    'help': 'Deletes local files not found in remote full_path. '
+                    'Warning, this is dangerous and will delete any files found in '
+                    'local_path. Do not use a top level local_path such as "/" and '
+                    'always use the --dry-run mode to evaluate any changes.',
+                    'action': 'store_true'
                 },
             ]
         },

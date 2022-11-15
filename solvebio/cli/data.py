@@ -21,6 +21,7 @@ from solvebio import DatasetImport
 from solvebio import DatasetTemplate
 from solvebio import GlobalSearch
 from solvebio.utils.files import check_gzip_path
+from solvebio.utils.md5sum import md5sum
 from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 
@@ -475,11 +476,12 @@ def download(args):
     """
     return _download(args.full_path, args.local_path,
             dry_run=args.dry_run, recursive=args.recursive,
-            excludes=args.exclude, includes=args.include)
+            excludes=args.exclude, includes=args.include,
+            delete=args.delete)
 
 
 def _download(full_path, local_folder_path, dry_run=False, recursive=False,
-        excludes=[], includes=[]):
+        excludes=[], includes=[], delete=False):
     """
     Given a folder or file, download all the files contained
     within it.
@@ -495,7 +497,8 @@ def _download(full_path, local_folder_path, dry_run=False, recursive=False,
                 os.makedirs(local_folder_path)
 
     if recursive:
-        _download_recursive(full_path, local_folder_path, dry_run, excludes, includes)
+        _download_recursive(full_path, local_folder_path, dry_run,
+                excludes, includes, delete)
         return
 
 
@@ -518,7 +521,7 @@ def _download(full_path, local_folder_path, dry_run=False, recursive=False,
 
 
 def _download_recursive(full_path, local_folder_path, dry_run=False,
-        excludes=[], includes=[]):
+        excludes=[], includes=[], delete=False):
 
     if "**" in full_path:
         raise Exception('Paths containing ** are not compatible with the --recursive flag.')
@@ -534,6 +537,10 @@ def _download_recursive(full_path, local_folder_path, dry_run=False,
     for file_obj in results:
         depth = len(file_obj.path.split("/"))
         file_obj.depth = depth
+        # MD5 not retrieved by GlobalSearch so
+        # separate API call is needed
+        file_obj = Object.retrieve(file_obj.id)
+        file_obj.depth = depth
         remote_objects.append(file_obj)
 
 
@@ -544,23 +551,57 @@ def _download_recursive(full_path, local_folder_path, dry_run=False,
     else:
         base_folder_depth = min_depth - 1
 
+
+    downloaded_files = set()
+
     remote_files = [x for x in remote_objects if x.get('object_type') == "file"]
     for remote_file in remote_files:
         rel_parts = remote_file.path.split("/")[base_folder_depth:]
         relative_file_path = os.path.join(*rel_parts)
         local_path = os.path.join(local_folder_path, relative_file_path)
 
-
         # Skip over files that are excluded (not recovered by include)
         if should_exclude(local_path, excludes, print_logs=False) and \
                 not should_exclude(local_path, includes, print_logs=False):
             continue
 
+        # Keep track of remote files to delete locally
+        downloaded_files.add(os.path.abspath(local_path))
+
+        # Skip over files that match remote md5 checksum
+        if os.path.exists(local_path):
+            remote_md5 = remote_file.get('md5')
+            if remote_md5 and remote_md5 == md5sum(local_path)[0]:
+                print("Skipping {} already in sync".format(local_path))
+                continue
 
         parent_dir = os.path.dirname(local_path)
+        print("{}Downloading file {}".format(
+            "[Dry run] " if dry_run else "", local_path))
         if not dry_run:
             os.makedirs(parent_dir, exist_ok=True)
             remote_file.download(local_path)
+
+    if not delete:
+        return
+    print("[Warning] Deleting local files not found in remote vault")
+    for root, folders, files in os.walk(local_folder_path):
+        for file_ in files:
+            local_abs_path = os.path.abspath(os.path.join(root, file_))
+            if local_abs_path in downloaded_files:
+                continue
+            print("{}Deleting file {}".format(
+                "[Dry run] " if dry_run else "", local_abs_path))
+            if not dry_run:
+                os.remove(local_abs_path)
+
+        for folder in folders:
+            local_abs_path = os.path.abspath(os.path.join(root, folder))
+            if len(os.listdir(local_abs_path)) == 0:
+                print("{}Deleting folder {}".format(
+                    "[Dry run] " if dry_run else "", local_abs_path))
+                os.rmdir(local_abs_path)
+
 
 
 
