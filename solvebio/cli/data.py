@@ -531,6 +531,9 @@ def _download_recursive(full_path, local_folder_path, dry_run=False,
     num_files = len([x for x in results if x.get('object_type') == "file"])
     print('Found {} files to download.'.format(num_files))
     if num_files == 0:
+        if full_path.endswith("/*"):
+            print("Folder names ending with '/*' are not supported with "
+                "the --recursive flag, try again with only the folder name.")
         return
 
     remote_objects = []

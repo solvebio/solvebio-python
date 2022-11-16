@@ -299,19 +299,28 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     'flags': '--recursive',
-                    'help': 'Downloads files recursively',
+                    'help': 'Downloads files recursively. Note that empty '
+                    'folders will be ignored.',
                     'action': 'store_true'
                 },
                 {
                     'flags': '--exclude',
-                    'help': 'Paths to files or folder to be excluded from '
-                    'download. Unix shell-style wildcards are supported.',
+                    'help': 'Pattern to match against full paths '
+                    'of files to be excluded for downloading. '
+                    'This pattern is only used when --recursive is toggled. '
+                    'Unix shell-style wildcards are supported. '
+                    'Exclude patterms will always be superseded by include '
+                    'patterns.',
                     'action': 'append'
                 },
                 {
                     'flags': '--include',
-                    'help': 'Paths to files or folder to be include from '
-                    'download. Unix shell-style wildcards are supported.',
+                    'help': 'Pattern to match against full paths '
+                    'of files to be included for downloading. '
+                    'This pattern is only used when --recursive is toggled. '
+                    'Unix shell-style wildcards are supported. '
+                    'Include patterms will always supersede exclude '
+                    'patterns.',
                     'action': 'append'
                 },
                 {
@@ -319,7 +328,8 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'help': 'Deletes local files not found in remote full_path. '
                     'Warning, this is dangerous and will delete any files found in '
                     'local_path. Do not use a top level local_path such as "/" and '
-                    'always use the --dry-run mode to evaluate any changes.',
+                    'always use the --dry-run mode to evaluate any changes. '
+                    'Empty folders will be deleted',
                     'action': 'store_true'
                 },
             ]
