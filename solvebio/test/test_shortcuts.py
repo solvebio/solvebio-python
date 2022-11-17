@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import sys
 import os
 import json
 import tempfile
@@ -636,9 +637,18 @@ class DownloadTests(CLITests):
 
 class LsTests(CLITests):
     @mock.patch("solvebio.resource.object.Object.all")
-    @mock.patch("builtins.print")
-    def _test_ls(self, args, Print, ObjectAll, fake_objects=[]):
+    def _test_ls(self, args, ObjectAll, fake_objects=[]):
         ObjectAll.return_value = fake_objects
+
+        # Mocking print function is different in
+        # python 2 and 3
+        if sys.version_info.major == 3:
+            builtin_module_name = 'builtins.print'
+        else:
+            builtin_module_name = '__builtin__.print'
+        with mock.patch(builtin_module_name) as Print:
+            main.main(args)
+
         main.main(args)
         return Print
 
