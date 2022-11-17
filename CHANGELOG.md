@@ -1,5 +1,11 @@
 # Changelog
 
+## [v2.20.0](https://github.com/solvebio/solvebio-python/tree/v2.20.0) (2022-11-17)
+
+- Added recursive data download support in cli command (#418)
+- Added ls data cli command (#418)
+
+
 ## [v2.19.0](https://github.com/solvebio/solvebio-python/tree/v2.19.0) (2022-05-05)
 
 [Full Changelog](https://github.com/solvebio/solvebio-python/compare/v2.18.1...v2.19.0)
