@@ -306,10 +306,10 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'flags': '--exclude',
                     'help': 'Pattern to match against full paths '
-                    'of files to be excluded for downloading. '
-                    'This pattern is only used when --recursive is toggled. '
+                    'of files to be excluded from downloading. '
+                    'This pattern is only used when --recursive is used. '
                     'Unix shell-style wildcards are supported. '
-                    'Exclude patterms will always be superseded by include '
+                    'Exclude patterns will always be superseded by include '
                     'patterns.',
                     'action': 'append'
                 },
@@ -317,19 +317,19 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     'flags': '--include',
                     'help': 'Pattern to match against full paths '
                     'of files to be included for downloading. '
-                    'This pattern is only used when --recursive is toggled. '
+                    'This pattern is only used when --recursive is used. '
                     'Unix shell-style wildcards are supported. '
-                    'Include patterms will always supersede exclude '
+                    'Include patterns will always supersede exclude '
                     'patterns.',
                     'action': 'append'
                 },
                 {
                     'flags': '--delete',
-                    'help': 'Deletes local files not found in remote full_path. '
+                    'help': 'Deletes local files not found in remote full path. '
                     'Warning, this is dangerous and will delete any files found in '
-                    'local_path. Do not use a top level local_path such as "/" and '
+                    'local path. Do not use a top-level local path such as "/" and '
                     'always use the --dry-run mode to evaluate any changes. '
-                    'Empty folders will be deleted',
+                    'Empty folders will be deleted.',
                     'action': 'store_true'
                 },
             ]
