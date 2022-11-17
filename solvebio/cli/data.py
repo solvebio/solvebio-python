@@ -28,35 +28,37 @@ from solvebio.errors import NotFoundError
 
 def _create_folder(vault, full_path, tags=None):
     """Create a folder if not exists"""
-    full_path, path_dict = \
-        Object.validate_full_path(full_path)
-    folder_name = path_dict['filename']
+    full_path, path_dict = Object.validate_full_path(full_path)
+    folder_name = path_dict["filename"]
 
     try:
         new_obj = Object.get_by_full_path(full_path)
         if not new_obj.is_folder:
-            raise SolveError('Object type {} already exists at location: {}'
-                             .format(new_obj.object_type, full_path))
+            raise SolveError(
+                "Object type {} already exists at location: {}".format(
+                    new_obj.object_type, full_path
+                )
+            )
     except NotFoundError:
         # Create the folder
-        if path_dict['parent_path'] == '/':
+        if path_dict["parent_path"] == "/":
             parent_object_id = None
         else:
-            parent = Object.get_by_full_path(path_dict['parent_full_path'],
-                                             assert_type='folder')
+            parent = Object.get_by_full_path(
+                path_dict["parent_full_path"], assert_type="folder"
+            )
             parent_object_id = parent.id
 
         # Make the API call
         new_obj = Object.create(
             vault_id=vault.id,
             parent_object_id=parent_object_id,
-            object_type='folder',
+            object_type="folder",
             filename=folder_name,
-            tags=tags or []
+            tags=tags or [],
         )
 
-        print('Notice: Folder created for {0} at {1}'
-              .format(folder_name, new_obj.path))
+        print("Notice: Folder created for {0} at {1}".format(folder_name, new_obj.path))
 
     return new_obj
 
@@ -69,38 +71,52 @@ def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
 
         if fnmatch(path, exclude_path):
             if print_logs:
-                print("{}WARNING: Excluding path {} (via --exclude {})"
-                      .format('[Dry Run] ' if dry_run else '', path, exclude_path))
+                print(
+                    "{}WARNING: Excluding path {} (via --exclude {})".format(
+                        "[Dry Run] " if dry_run else "", path, exclude_path
+                    )
+                )
             return True
 
         # An exclude path may be a directory, strip trailing slash and add /*
         # if not already there.
-        if not exclude_path.endswith('/*') and \
-                fnmatch(path, exclude_path.rstrip('/') + '/*'):
+        if not exclude_path.endswith("/*") and fnmatch(
+            path, exclude_path.rstrip("/") + "/*"
+        ):
             if print_logs:
-                print("{}WARNING: Excluding path {} (via --exclude {})"
-                      .format('[Dry Run] ' if dry_run else '',
-                              path, exclude_path.rstrip('/') + '/*'))
+                print(
+                    "{}WARNING: Excluding path {} (via --exclude {})".format(
+                        "[Dry Run] " if dry_run else "",
+                        path,
+                        exclude_path.rstrip("/") + "/*",
+                    )
+                )
             return True
 
     return False
 
 
-def _upload_folder(domain, vault, base_remote_path, base_local_path,
-                   local_start, exclude_paths=None, dry_run=False):
+def _upload_folder(
+    domain,
+    vault,
+    base_remote_path,
+    base_local_path,
+    local_start,
+    exclude_paths=None,
+    dry_run=False,
+):
 
     # Create the upload root folder if it does not exist on the remote
     try:
         upload_root_path, _ = Object.validate_full_path(
             os.path.join(base_remote_path, local_start)
         )
-        Object.get_by_full_path(upload_root_path, assert_type='folder')
+        Object.get_by_full_path(upload_root_path, assert_type="folder")
     except NotFoundError:
-        base_remote_path, path_dict = \
-            Object.validate_full_path(base_remote_path)
+        base_remote_path, path_dict = Object.validate_full_path(base_remote_path)
         base_folder_path = os.path.join(base_remote_path, local_start)
         if dry_run:
-            print('[Dry Run] Creating folder {}'.format(base_folder_path))
+            print("[Dry Run] Creating folder {}".format(base_folder_path))
         else:
             _create_folder(vault, base_folder_path)
 
@@ -110,26 +126,23 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
         # Strips off the local path and adds the parent directory at
         # each phase of the loop
         local_parent_path = re.sub(
-            '^' + os.path.dirname(base_local_path), '', abs_local_parent_path
-        ).lstrip('/')
+            "^" + os.path.dirname(base_local_path), "", abs_local_parent_path
+        ).lstrip("/")
 
-        if should_exclude(abs_local_parent_path, exclude_paths,
-                          dry_run=dry_run):
+        if should_exclude(abs_local_parent_path, exclude_paths, dry_run=dry_run):
             continue
 
-        remote_folder_full_path = \
-            os.path.join(base_remote_path, local_parent_path)
+        remote_folder_full_path = os.path.join(base_remote_path, local_parent_path)
 
         # Create folders
         for folder in folders:
             new_folder_path = os.path.join(abs_local_parent_path, folder)
-            if should_exclude(new_folder_path, exclude_paths,
-                              dry_run=dry_run):
+            if should_exclude(new_folder_path, exclude_paths, dry_run=dry_run):
                 continue
 
             remote_path = os.path.join(remote_folder_full_path, folder)
             if dry_run:
-                print('[Dry Run] Creating folder {}'.format(remote_path))
+                print("[Dry Run] Creating folder {}".format(remote_path))
             else:
                 _create_folder(vault, remote_path)
 
@@ -140,20 +153,23 @@ def _upload_folder(domain, vault, base_remote_path, base_local_path,
                 continue
 
             if dry_run:
-                print('[Dry Run] Uploading {} to {}'
-                      .format(local_file_path, remote_folder_full_path))
+                print(
+                    "[Dry Run] Uploading {} to {}".format(
+                        local_file_path, remote_folder_full_path
+                    )
+                )
             else:
                 remote_parent = Object.get_by_full_path(
-                    remote_folder_full_path, assert_type='folder')
-                Object.upload_file(local_file_path, remote_parent.path,
-                                   vault.full_path)
+                    remote_folder_full_path, assert_type="folder"
+                )
+                Object.upload_file(local_file_path, remote_parent.path, vault.full_path)
 
 
 def _create_template_from_file(template_file, dry_run=False):
-    mode = 'r'
+    mode = "r"
     fopen = open
     if check_gzip_path(template_file):
-        mode = 'rb'
+        mode = "rb"
         fopen = gzip.open
 
     # Validate the template file
@@ -161,18 +177,18 @@ def _create_template_from_file(template_file, dry_run=False):
         try:
             template_json = json.load(fp)
         except:
-            print('Template file {0} could not be loaded. Please '
-                  'pass valid JSON'.format(template_file))
+            print(
+                "Template file {0} could not be loaded. Please "
+                "pass valid JSON".format(template_file)
+            )
             sys.exit(1)
 
     if dry_run:
         template = DatasetTemplate(**template_json)
-        print("A new dataset template will be created from: {0}"
-              .format(template_file))
+        print("A new dataset template will be created from: {0}".format(template_file))
     else:
         template = DatasetTemplate.create(**template_json)
-        print("A new dataset template was created with id: {0}"
-              .format(template.id))
+        print("A new dataset template was created with id: {0}".format(template.id))
 
     return template
 
@@ -198,8 +214,8 @@ def create_dataset(args, template=None):
 
     try:
         # Fail if a dataset already exists.
-        Object.get_by_full_path(full_path, assert_type='dataset')
-        print('A dataset already exists at path: {0}'.format(full_path))
+        Object.get_by_full_path(full_path, assert_type="dataset")
+        print("A dataset already exists at path: {0}".format(full_path))
         sys.exit(1)
     except NotFoundError:
         pass
@@ -223,11 +239,13 @@ def create_dataset(args, template=None):
         template = None
 
     if template:
-        print("Creating new dataset {0} using the template '{1}'."
-              .format(full_path, template.name))
+        print(
+            "Creating new dataset {0} using the template '{1}'.".format(
+                full_path, template.name
+            )
+        )
         fields = template.fields
-        description = 'Created with dataset template: {0}' \
-            .format(str(template.id))
+        description = "Created with dataset template: {0}".format(str(template.id))
     else:
         fields = []
         description = None
@@ -237,24 +255,29 @@ def create_dataset(args, template=None):
     # that with any other key/value pairs passed in to --metadata
     metadata = {}
     if args.metadata and args.metadata_json_file:
-        print('WARNING: Received --metadata and --metadata-json-file. '
-              'Will update the JSON file values with the --metadata values')
+        print(
+            "WARNING: Received --metadata and --metadata-json-file. "
+            "Will update the JSON file values with the --metadata values"
+        )
 
     if args.metadata_json_file:
-        with open(args.metadata_json_file, 'r') as fp:
+        with open(args.metadata_json_file, "r") as fp:
             try:
                 metadata = json.load(fp)
             except:
-                print('Metadata JSON file {0} could not be loaded. Please '
-                      'pass valid JSON'.format(args.metadata_json_file))
+                print(
+                    "Metadata JSON file {0} could not be loaded. Please "
+                    "pass valid JSON".format(args.metadata_json_file)
+                )
                 sys.exit(1)
 
     if args.metadata:
         metadata.update(args.metadata)
 
     if args.dry_run:
-        print("Creating new '{}' capacity dataset at {}"
-              .format(args.capacity, full_path))
+        print(
+            "Creating new '{}' capacity dataset at {}".format(args.capacity, full_path)
+        )
         if description:
             print("Description: {}".format(description))
         if fields:
@@ -285,23 +308,23 @@ def upload(args):
     base_remote_path, path_dict = Object.validate_full_path(args.full_path)
 
     # Assert the vault exists and is accessible
-    vault = Vault.get_by_full_path(path_dict['vault_full_path'])
+    vault = Vault.get_by_full_path(path_dict["vault_full_path"])
 
     # If not the vault root, validate remote path exists and is a folder
-    if path_dict['path'] != '/':
+    if path_dict["path"] != "/":
         try:
-            Object.get_by_full_path(base_remote_path, assert_type='folder')
+            Object.get_by_full_path(base_remote_path, assert_type="folder")
         except:
             if not args.create_full_path:
                 raise
 
             if args.dry_run:
-                print('[Dry Run] Creating {}'.format(base_remote_path))
+                print("[Dry Run] Creating {}".format(base_remote_path))
             else:
                 # Create the destination path (including subfolders)
                 # if not found
-                parent_folder_path = vault.full_path + ':'
-                folders = path_dict['path'].lstrip('/').split('/')
+                parent_folder_path = vault.full_path + ":"
+                folders = path_dict["path"].lstrip("/").split("/")
                 for folder in folders:
                     folder_full_path = os.path.join(parent_folder_path, folder)
                     parent_folder = _create_folder(vault, folder_full_path)
@@ -311,20 +334,22 @@ def upload(args):
     # exclude paths are not absolute
     base_exclude_paths = args.exclude or []
     if base_exclude_paths and len(args.local_path) > 1:
-        rel_exclude_paths = [p for p in base_exclude_paths
-                             if not os.path.isabs(p)]
-        local_path_parents = set([os.path.dirname(os.path.abspath(p))
-                                  for p in args.local_path])
+        rel_exclude_paths = [p for p in base_exclude_paths if not os.path.isabs(p)]
+        local_path_parents = set(
+            [os.path.dirname(os.path.abspath(p)) for p in args.local_path]
+        )
         if rel_exclude_paths and len(local_path_parents) > 1:
-            sys.exit('Exiting. Cannot apply the --exclude relative paths when '
-                     'multiple upload paths with different parent directories '
-                     'are specified. Make --exclude paths absolute or run '
-                     'upload paths one at a time.')
+            sys.exit(
+                "Exiting. Cannot apply the --exclude relative paths when "
+                "multiple upload paths with different parent directories "
+                "are specified. Make --exclude paths absolute or run "
+                "upload paths one at a time."
+            )
 
     for local_path in args.local_path:
 
         # Expand local path and strip trailing slash
-        local_path = os.path.abspath(local_path).rstrip('/')
+        local_path = os.path.abspath(local_path).rstrip("/")
         local_name = os.path.basename(local_path)
 
         # add basepath to excludes
@@ -334,17 +359,22 @@ def upload(args):
         ]
 
         if os.path.isdir(local_path):
-            _upload_folder(path_dict['domain'], vault,
-                           base_remote_path, local_path,
-                           local_name, exclude_paths=exclude_paths,
-                           dry_run=args.dry_run)
+            _upload_folder(
+                path_dict["domain"],
+                vault,
+                base_remote_path,
+                local_path,
+                local_name,
+                exclude_paths=exclude_paths,
+                dry_run=args.dry_run,
+            )
         else:
             if args.dry_run:
-                print('[Dry Run] Uploading {} to {}'
-                      .format(local_path, path_dict['path']))
+                print(
+                    "[Dry Run] Uploading {} to {}".format(local_path, path_dict["path"])
+                )
             else:
-                Object.upload_file(local_path, path_dict['path'],
-                                   vault.full_path)
+                Object.upload_file(local_path, path_dict["path"], vault.full_path)
 
 
 def import_file(args):
@@ -381,8 +411,11 @@ def import_file(args):
         for file_fp in args.file:
             files_ = list(Object.all(glob=file_fp, limit=1000))
             if not files_:
-                print("Did not find any {}files at path {}".format(
-                    'remote ' if args.remote_source else '', file_fp))
+                print(
+                    "Did not find any {}files at path {}".format(
+                        "remote " if args.remote_source else "", file_fp
+                    )
+                )
             else:
                 for file_ in files_:
                     print("Found file: {}".format(file_.full_path))
@@ -396,9 +429,11 @@ def import_file(args):
         files_list = [fp for fp in args.file]
 
     if not files_list:
-        print("Exiting. No files were found at the following {}paths: {}"
-              .format('remote ' if args.remote_source else '',
-                      ', '.join(args.file)))
+        print(
+            "Exiting. No files were found at the following {}paths: {}".format(
+                "remote " if args.remote_source else "", ", ".join(args.file)
+            )
+        )
         sys.exit(1)
 
     if args.template_id:
@@ -419,16 +454,14 @@ def import_file(args):
         dataset = create_dataset(args, template=template)
     else:
         try:
-            dataset = Object.get_by_full_path(full_path, assert_type='dataset')
+            dataset = Object.get_by_full_path(full_path, assert_type="dataset")
         except solvebio.errors.NotFoundError:
             print("Dataset not found: {0}".format(full_path))
-            print("Tip: use the --create-dataset flag "
-                  "to create one from a template")
+            print("Tip: use the --create-dataset flag " "to create one from a template")
             sys.exit(1)
 
     if args.dry_run:
-        print("Importing the following files/paths into dataset: {}"
-              .format(full_path))
+        print("Importing the following files/paths into dataset: {}".format(full_path))
         for file_ in files_list:
             if args.remote_source:
                 print(file_.full_path)
@@ -452,9 +485,7 @@ def import_file(args):
 
         # Create the import
         import_ = DatasetImport.create(
-            dataset_id=dataset.id,
-            commit_mode=args.commit_mode,
-            **kwargs
+            dataset_id=dataset.id, commit_mode=args.commit_mode, **kwargs
         )
 
         imports.append(import_)
@@ -462,9 +493,8 @@ def import_file(args):
     if args.follow:
         dataset.activity(follow=True)
     else:
-        mesh_url = 'https://my.solvebio.com/activity/'
-        print("Your import has been submitted, view details at: {0}"
-              .format(mesh_url))
+        mesh_url = "https://my.solvebio.com/activity/"
+        print("Your import has been submitted, view details at: {0}".format(mesh_url))
 
     return imports, dataset
 
@@ -474,20 +504,32 @@ def download(args):
     Given a folder or file, download all the files contained
     within it (not recursive).
     """
-    return _download(args.full_path, args.local_path,
-            dry_run=args.dry_run, recursive=args.recursive,
-            excludes=args.exclude, includes=args.include,
-            delete=args.delete)
+    return _download(
+        args.full_path,
+        args.local_path,
+        dry_run=args.dry_run,
+        recursive=args.recursive,
+        excludes=args.exclude,
+        includes=args.include,
+        delete=args.delete,
+    )
 
 
-def _download(full_path, local_folder_path, dry_run=False, recursive=False,
-        excludes=[], includes=[], delete=False):
+def _download(
+    full_path,
+    local_folder_path,
+    dry_run=False,
+    recursive=False,
+    excludes=[],
+    includes=[],
+    delete=False,
+):
     """
     Given a folder or file, download all the files contained
     within it.
     """
     if dry_run:
-        print('Running in dry run mode. Not downloading any files.')
+        print("Running in dry run mode. Not downloading any files.")
 
     local_folder_path = os.path.expanduser(local_folder_path)
     if not os.path.exists(local_folder_path):
@@ -497,43 +539,51 @@ def _download(full_path, local_folder_path, dry_run=False, recursive=False,
                 os.makedirs(local_folder_path)
 
     if recursive:
-        _download_recursive(full_path, local_folder_path, dry_run,
-                excludes, includes, delete)
+        _download_recursive(
+            full_path, local_folder_path, dry_run, excludes, includes, delete
+        )
         return
-
 
     # API will determine depth based on number of "/" in the glob
     # Add */** to match in any vault (recursive)
-    files = Object.all(glob=full_path, limit=1000, object_type='file')
+    files = Object.all(glob=full_path, limit=1000, object_type="file")
     if not files:
-        print("No file(s) found at --full-path {}\nIf attempting to download "
-              "multiple files, try using a glob 'vault:/path/folder/*'"
-              .format(full_path))
+        print(
+            "No file(s) found at --full-path {}\nIf attempting to download "
+            "multiple files, try using a glob 'vault:/path/folder/*'".format(full_path)
+        )
 
     for file_ in files:
 
         if not dry_run:
             file_.download(local_folder_path)
 
-        print('Downloaded: {} to {}/{}'.format(
-            file_.full_path, local_folder_path, file_.filename))
+        print(
+            "Downloaded: {} to {}/{}".format(
+                file_.full_path, local_folder_path, file_.filename
+            )
+        )
 
 
-
-def _download_recursive(full_path, local_folder_path, dry_run=False,
-        excludes=[], includes=[], delete=False):
+def _download_recursive(
+    full_path, local_folder_path, dry_run=False, excludes=[], includes=[], delete=False
+):
 
     if "**" in full_path:
-        raise Exception('Paths containing ** are not compatible with the --recursive flag.')
+        raise Exception(
+            "Paths containing ** are not compatible with the --recursive flag."
+        )
 
     full_path, parts = Object.validate_full_path(full_path)
     results = GlobalSearch().filter(path__prefix=full_path)
-    num_files = len([x for x in results if x.get('object_type') == "file"])
-    print('Found {} files to download.'.format(num_files))
+    num_files = len([x for x in results if x.get("object_type") == "file"])
+    print("Found {} files to download.".format(num_files))
     if num_files == 0:
         if full_path.endswith("/*"):
-            print("Folder names ending with '/*' are not supported with "
-                "the --recursive flag, try again with only the folder name.")
+            print(
+                "Folder names ending with '/*' are not supported with "
+                "the --recursive flag, try again with only the folder name."
+            )
         return
 
     remote_objects = []
@@ -547,7 +597,6 @@ def _download_recursive(full_path, local_folder_path, dry_run=False,
         file_obj.depth = depth
         remote_objects.append(file_obj)
 
-
     min_depth = min([x.depth for x in remote_objects])
     num_at_min_depth = len([x for x in remote_objects if x.depth == min_depth])
     if num_at_min_depth == 1:
@@ -555,18 +604,18 @@ def _download_recursive(full_path, local_folder_path, dry_run=False,
     else:
         base_folder_depth = min_depth - 1
 
-
     downloaded_files = set()
 
-    remote_files = [x for x in remote_objects if x.get('object_type') == "file"]
+    remote_files = [x for x in remote_objects if x.get("object_type") == "file"]
     for remote_file in remote_files:
         rel_parts = remote_file.path.split("/")[base_folder_depth:]
         relative_file_path = os.path.join(*rel_parts)
         local_path = os.path.join(local_folder_path, relative_file_path)
 
         # Skip over files that are excluded (not recovered by include)
-        if should_exclude(local_path, excludes, print_logs=False) and \
-                not should_exclude(local_path, includes, print_logs=False):
+        if should_exclude(
+            local_path, excludes, print_logs=False
+        ) and not should_exclude(local_path, includes, print_logs=False):
             continue
 
         # Keep track of remote files to delete locally
@@ -574,14 +623,15 @@ def _download_recursive(full_path, local_folder_path, dry_run=False,
 
         # Skip over files that match remote md5 checksum
         if os.path.exists(local_path):
-            remote_md5 = remote_file.get('md5')
+            remote_md5 = remote_file.get("md5")
             if remote_md5 and remote_md5 == md5sum(local_path)[0]:
                 print("Skipping {} already in sync".format(local_path))
                 continue
 
         parent_dir = os.path.dirname(local_path)
-        print("{}Downloading file {}".format(
-            "[Dry run] " if dry_run else "", local_path))
+        print(
+            "{}Downloading file {}".format("[Dry run] " if dry_run else "", local_path)
+        )
         if not dry_run:
             os.makedirs(parent_dir, exist_ok=True)
             remote_file.download(local_path)
@@ -594,16 +644,22 @@ def _download_recursive(full_path, local_folder_path, dry_run=False,
             local_abs_path = os.path.abspath(os.path.join(root, file_))
             if local_abs_path in downloaded_files:
                 continue
-            print("{}Deleting file {}".format(
-                "[Dry run] " if dry_run else "", local_abs_path))
+            print(
+                "{}Deleting file {}".format(
+                    "[Dry run] " if dry_run else "", local_abs_path
+                )
+            )
             if not dry_run:
                 os.remove(local_abs_path)
 
         for folder in folders:
             local_abs_path = os.path.abspath(os.path.join(root, folder))
             if len(os.listdir(local_abs_path)) == 0:
-                print("{}Deleting folder {}".format(
-                    "[Dry run] " if dry_run else "", local_abs_path))
+                print(
+                    "{}Deleting folder {}".format(
+                        "[Dry run] " if dry_run else "", local_abs_path
+                    )
+                )
                 os.rmdir(local_abs_path)
 
 
@@ -612,6 +668,7 @@ def ls(args):
     Given a SolveBio remote path, list the files and folders
     """
     return _ls(args.full_path)
+
 
 def _ls(full_path):
 
@@ -623,16 +680,17 @@ def _ls(full_path):
     if len(files) == 1 and files[0].is_folder:
         files = Object.all(glob=files[0].full_path + "/*")
     for file_ in files:
-        print("{}  {}  {}".format(
-            file_.last_modified,
-            file_.object_type.ljust(8),
-            file_.full_path))
+        print(
+            "{}  {}  {}".format(
+                file_.last_modified, file_.object_type.ljust(8), file_.full_path
+            )
+        )
 
     if len(files) == 0:
-        print('No file(s) found at --full-path {}, '
-            'try using a glob instead:  "vault:/path/folder/*'.format(full_path))
-
-
+        print(
+            "No file(s) found at --full-path {}, "
+            'try using a glob instead:  "vault:/path/folder/*'.format(full_path)
+        )
 
 
 def should_tag_by_object_type(args, object_):
@@ -648,9 +706,13 @@ def should_tag_by_object_type(args, object_):
         valid = False
 
     if not valid:
-        print("{}WARNING: Excluding {} {} by object_type".format(
-            '[Dry Run] ' if args.dry_run else '',
-            object_.object_type, object_.full_path))
+        print(
+            "{}WARNING: Excluding {} {} by object_type".format(
+                "[Dry Run] " if args.dry_run else "",
+                object_.object_type,
+                object_.full_path,
+            )
+        )
 
     return valid
 
@@ -662,8 +724,7 @@ def tag(args):
     for full_path in args.full_path:
         # API will determine depth based on number of "/" in the glob
         # Add */** to match in any vault (recursive)
-        objects.extend(list(Object.all(
-            glob=full_path, permission='write', limit=1000)))
+        objects.extend(list(Object.all(glob=full_path, permission="write", limit=1000)))
 
     seen_vaults = {}
     taggable_objects = []
@@ -673,8 +734,7 @@ def tag(args):
     # taking exclusions and object_type filters into account.
     for object_ in objects:
 
-        if should_exclude(object_.full_path, exclusions,
-                          dry_run=args.dry_run):
+        if should_exclude(object_.full_path, exclusions, dry_run=args.dry_run):
             continue
 
         if should_tag_by_object_type(args, object_):
@@ -682,34 +742,35 @@ def tag(args):
             seen_vaults[object_.vault_id] = 1
 
     if not taggable_objects:
-        print('No taggable objects found at provided locations.')
+        print("No taggable objects found at provided locations.")
         return
 
     # If args.no_input, changes will be applied immediately.
     # Otherwise, prints the objects and if tags will be applied or not
     for object_ in taggable_objects:
         object_.tag(
-            args.tag, remove=args.remove,
-            dry_run=args.dry_run, apply_save=args.no_input)
+            args.tag, remove=args.remove, dry_run=args.dry_run, apply_save=args.no_input
+        )
 
     # Prompts for confirmation and then runs with apply_save=True
     if not args.no_input:
 
-        print('')
+        print("")
         res = raw_input(
-            'Are you sure you want to apply the above changes to '
-            '{} object(s) in {} vault(s)? [y/N] '
-            .format(len(taggable_objects), len(seen_vaults.keys()))
+            "Are you sure you want to apply the above changes to "
+            "{} object(s) in {} vault(s)? [y/N] ".format(
+                len(taggable_objects), len(seen_vaults.keys())
+            )
         )
-        print('')
-        if res.strip().lower() != 'y':
-            print('Not applying changes.')
+        print("")
+        if res.strip().lower() != "y":
+            print("Not applying changes.")
             return
 
         for object_ in taggable_objects:
             object_.tag(
-                args.tag, remove=args.remove,
-                dry_run=args.dry_run, apply_save=True)
+                args.tag, remove=args.remove, dry_run=args.dry_run, apply_save=True
+            )
 
 
 def show_queue(args):
@@ -717,7 +778,7 @@ def show_queue(args):
     queue()
 
 
-def queue(statuses=['running', 'queued']):
+def queue(statuses=["running", "queued"]):
     """
     Get all running and queued Tasks for an account
     and groups them by User and status.
@@ -725,7 +786,7 @@ def queue(statuses=['running', 'queued']):
     will be evaluated.
     """
     task_map = {}
-    tasks = Task.all(status=','.join(statuses))
+    tasks = Task.all(status=",".join(statuses))
     for task in tasks:
         if task.user.id not in task_map:
             task_map[task.user.id] = []
