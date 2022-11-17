@@ -36,7 +36,7 @@ class KeyValueDictAppendAction(argparse.Action):
     on the first = and append to a dictionary.
     """
     def __call__(self, parser, args, values, option_string=None):
-        assert(len(values) == 1)
+        assert len(values) == 1
         try:
             (k, v) = values[0].split("=", 2)
         except ValueError:
@@ -263,7 +263,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
         'ls': {
             'func': data.ls,
             'help': 'List files and directories in a SolveBio Vault',
-            'arguments':[
+            'arguments': [
                 {
                     'name': 'full_path',
                     'help': 'The full path where the files and folders should '

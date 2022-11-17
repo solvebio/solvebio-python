@@ -475,13 +475,13 @@ def download(args):
     within it (not recursive).
     """
     return _download(args.full_path, args.local_path,
-            dry_run=args.dry_run, recursive=args.recursive,
-            excludes=args.exclude, includes=args.include,
-            delete=args.delete)
+                     dry_run=args.dry_run, recursive=args.recursive,
+                     excludes=args.exclude, includes=args.include,
+                     delete=args.delete)
 
 
 def _download(full_path, local_folder_path, dry_run=False, recursive=False,
-        excludes=[], includes=[], delete=False):
+              excludes=[], includes=[], delete=False):
     """
     Given a folder or file, download all the files contained
     within it.
@@ -498,9 +498,8 @@ def _download(full_path, local_folder_path, dry_run=False, recursive=False,
 
     if recursive:
         _download_recursive(full_path, local_folder_path, dry_run,
-                excludes, includes, delete)
+                            excludes, includes, delete)
         return
-
 
     # API will determine depth based on number of "/" in the glob
     # Add */** to match in any vault (recursive)
@@ -519,9 +518,8 @@ def _download(full_path, local_folder_path, dry_run=False, recursive=False,
             file_.full_path, local_folder_path, file_.filename))
 
 
-
 def _download_recursive(full_path, local_folder_path, dry_run=False,
-        excludes=[], includes=[], delete=False):
+                        excludes=[], includes=[], delete=False):
 
     if "**" in full_path:
         raise Exception('Paths containing ** are not compatible with the --recursive flag.')
@@ -533,7 +531,7 @@ def _download_recursive(full_path, local_folder_path, dry_run=False,
     if num_files == 0:
         if full_path.endswith("/*"):
             print("Folder names ending with '/*' are not supported with "
-                "the --recursive flag, try again with only the folder name.")
+                  "the --recursive flag, try again with only the folder name.")
         return
 
     remote_objects = []
@@ -547,7 +545,6 @@ def _download_recursive(full_path, local_folder_path, dry_run=False,
         file_obj.depth = depth
         remote_objects.append(file_obj)
 
-
     min_depth = min([x.depth for x in remote_objects])
     num_at_min_depth = len([x for x in remote_objects if x.depth == min_depth])
     if num_at_min_depth == 1:
@@ -555,9 +552,7 @@ def _download_recursive(full_path, local_folder_path, dry_run=False,
     else:
         base_folder_depth = min_depth - 1
 
-
     downloaded_files = set()
-
     remote_files = [x for x in remote_objects if x.get('object_type') == "file"]
     for remote_file in remote_files:
         rel_parts = remote_file.path.split("/")[base_folder_depth:]
@@ -613,6 +608,7 @@ def ls(args):
     """
     return _ls(args.full_path)
 
+
 def _ls(full_path):
 
     if "**" in full_path:
@@ -630,9 +626,7 @@ def _ls(full_path):
 
     if len(files) == 0:
         print('No file(s) found at --full-path {}, '
-            'try using a glob instead:  "vault:/path/folder/*'.format(full_path))
-
-
+              'try using a glob instead:  "vault:/path/folder/*'.format(full_path))
 
 
 def should_tag_by_object_type(args, object_):

@@ -411,7 +411,6 @@ class DownloadTests(CLITests):
         with self.assertRaises(Exception):
             self._test_download_file(args, download_success=False)
 
-
     @mock.patch('solvebio.global_search.GlobalSearch.filter')
     @mock.patch('solvebio.resource.apiresource.DownloadableAPIResource.download')
     @mock.patch('os.makedirs')
@@ -421,15 +420,16 @@ class DownloadTests(CLITests):
     @mock.patch('os.remove')
     @mock.patch('os.listdir')
     def _test_download_folder(self, args, ListDir, Remove, RmDir, Walk,
-            ObjectRetrieve, MakeDirs, Download, GlobalSearch, download_success=True,
-            expected_downloads=2, expected_delete_files=0, expected_delete_folders=0):
+                              ObjectRetrieve, MakeDirs, Download, GlobalSearch,
+                              download_success=True, expected_downloads=2,
+                              expected_delete_files=0, expected_delete_folders=0):
 
         # Create GlobalSearch return objects
         remote_objects = [
-                fake_object_create(id=1, filename='test-folder', object_type='folder'),
-                fake_object_create(id=2, filename='test-folder/subfolder', object_type='folder'),
-                fake_object_create(id=3, filename='test-folder/subfolder/file.txt', object_type='file'),
-                fake_object_create(id=4, filename='test-folder/subfolder/file2.csv', object_type='file'),
+            fake_object_create(id=1, filename='test-folder', object_type='folder'),
+            fake_object_create(id=2, filename='test-folder/subfolder', object_type='folder'),
+            fake_object_create(id=3, filename='test-folder/subfolder/file.txt', object_type='file'),
+            fake_object_create(id=4, filename='test-folder/subfolder/file2.csv', object_type='file'),
         ]
         GlobalSearch.return_value = remote_objects
 
@@ -448,7 +448,6 @@ class DownloadTests(CLITests):
         Walk.return_value = [('/sample/root/dir', ['empty_folder'], ['local_file'])]
         ListDir.return_value = []
 
-
         # returns (imports_list, dataset)
         main.main(args)
 
@@ -456,7 +455,6 @@ class DownloadTests(CLITests):
         self.assertEqual(Download.call_count, expected_downloads)
         self.assertEqual(Remove.call_count, expected_delete_files)
         self.assertEqual(RmDir.call_count, expected_delete_folders)
-
 
     def test_download_folder(self):
         args = ['download', '--recursive', 'solvebio:mock_vault:/test-folder', '.']
@@ -489,7 +487,6 @@ class DownloadTests(CLITests):
         args = ['download', '--recursive', '--delete', 'solvebio:mock_vault:/test-folder', '.']
         self._test_download_folder(args, expected_delete_files=1, expected_delete_folders=1)
 
-
         # args needed
         args = ['download', '--recursive']
         with self.assertRaises(SystemExit):
@@ -510,8 +507,6 @@ class DownloadTests(CLITests):
             self._test_download_folder(args, download_success=False)
 
 
-
-
 class LsTests(CLITests):
 
     @mock.patch('solvebio.resource.object.Object.all')
@@ -521,9 +516,7 @@ class LsTests(CLITests):
         main.main(args)
         return Print
 
-
     def test_download_folder(self):
-
         remote_objects = [
             fake_object_create(last_modified="2020", filename='folder', object_type='folder'),
             fake_object_create(last_modified="2021", filename='old-file', object_type='file'),
