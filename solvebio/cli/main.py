@@ -260,6 +260,19 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 }
             ]
         },
+        'ls': {
+            'func': data.ls,
+            'help': 'List files and directories in a SolveBio Vault',
+            'arguments':[
+                {
+                    'name': 'full_path',
+                    'help': 'The full path where the files and folders should '
+                    'be listed from, defaults to the root of your personal vault',
+                    'action': TildeFixStoreAction,
+                    'default': '~/'
+                },
+            ]
+        },
         'download': {
             'func': data.download,
             'help': 'Download one or more files from a SolveBio Vault.',
@@ -267,21 +280,58 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 {
                     'flags': '--dry-run',
                     'help': 'Dry run mode will not download any files or '
-                    'create any folders.',
+                    'create any folders. Use this mode before using the '
+                    '--delete flag.',
                     'action': 'store_true'
                 },
                 {
                     'flags': 'full_path',
                     'help': 'The full path to the files on SolveBio. Supports '
                     'Unix style globs in order to download multiple files. '
-                    'Note: Downloads are not recursive.',
+                    'Note: Downloads are not recursive unless --recursive '
+                    'flag is used.',
                     'action': TildeFixStoreAction
                 },
                 {
                     'name': 'local_path',
                     'help': 'The path to the local directory where '
                             'to download files.',
-                }
+                },
+                {
+                    'flags': '--recursive',
+                    'help': 'Downloads files recursively. Note that empty '
+                    'folders will be ignored.',
+                    'action': 'store_true'
+                },
+                {
+                    'flags': '--exclude',
+                    'help': 'Pattern to match against full paths '
+                    'of files to be excluded from downloading. '
+                    'This pattern is only used when --recursive is used. '
+                    'Unix shell-style wildcards are supported. '
+                    'Exclude patterns will always be superseded by include '
+                    'patterns.',
+                    'action': 'append'
+                },
+                {
+                    'flags': '--include',
+                    'help': 'Pattern to match against full paths '
+                    'of files to be included for downloading. '
+                    'This pattern is only used when --recursive is used. '
+                    'Unix shell-style wildcards are supported. '
+                    'Include patterns will always supersede exclude '
+                    'patterns.',
+                    'action': 'append'
+                },
+                {
+                    'flags': '--delete',
+                    'help': 'Deletes local files not found in remote full path. '
+                    'Warning, this is dangerous and will delete any files found in '
+                    'local path. Do not use a top-level local path such as "/" and '
+                    'always use the --dry-run mode to evaluate any changes. '
+                    'Empty folders will be deleted.',
+                    'action': 'store_true'
+                },
             ]
         },
         'tag': {

@@ -19,7 +19,9 @@ from solvebio import Object
 from solvebio import Dataset
 from solvebio import DatasetImport
 from solvebio import DatasetTemplate
+from solvebio import GlobalSearch
 from solvebio.utils.files import check_gzip_path
+from solvebio.utils.md5sum import md5sum
 from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 
@@ -59,24 +61,26 @@ def _create_folder(vault, full_path, tags=None):
     return new_obj
 
 
-def should_exclude(path, exclude_paths, dry_run=False):
+def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
     if not exclude_paths:
         return False
 
     for exclude_path in exclude_paths:
 
         if fnmatch(path, exclude_path):
-            print("{}WARNING: Excluding path {} (via --exclude {})"
-                  .format('[Dry Run] ' if dry_run else '', path, exclude_path))
+            if print_logs:
+                print("{}WARNING: Excluding path {} (via --exclude {})"
+                      .format('[Dry Run] ' if dry_run else '', path, exclude_path))
             return True
 
         # An exclude path may be a directory, strip trailing slash and add /*
         # if not already there.
         if not exclude_path.endswith('/*') and \
                 fnmatch(path, exclude_path.rstrip('/') + '/*'):
-            print("{}WARNING: Excluding path {} (via --exclude {})"
-                  .format('[Dry Run] ' if dry_run else '',
-                          path, exclude_path.rstrip('/') + '/*'))
+            if print_logs:
+                print("{}WARNING: Excluding path {} (via --exclude {})"
+                      .format('[Dry Run] ' if dry_run else '',
+                              path, exclude_path.rstrip('/') + '/*'))
             return True
 
     return False
@@ -470,13 +474,17 @@ def download(args):
     Given a folder or file, download all the files contained
     within it (not recursive).
     """
-    return _download(args.full_path, args.local_path, dry_run=args.dry_run)
+    return _download(args.full_path, args.local_path,
+            dry_run=args.dry_run, recursive=args.recursive,
+            excludes=args.exclude, includes=args.include,
+            delete=args.delete)
 
 
-def _download(full_path, local_folder_path, dry_run=False):
+def _download(full_path, local_folder_path, dry_run=False, recursive=False,
+        excludes=[], includes=[], delete=False):
     """
     Given a folder or file, download all the files contained
-    within it (not recursive).
+    within it.
     """
     if dry_run:
         print('Running in dry run mode. Not downloading any files.')
@@ -487,6 +495,12 @@ def _download(full_path, local_folder_path, dry_run=False):
         if not dry_run:
             if not os.path.exists(local_folder_path):
                 os.makedirs(local_folder_path)
+
+    if recursive:
+        _download_recursive(full_path, local_folder_path, dry_run,
+                excludes, includes, delete)
+        return
+
 
     # API will determine depth based on number of "/" in the glob
     # Add */** to match in any vault (recursive)
@@ -503,6 +517,122 @@ def _download(full_path, local_folder_path, dry_run=False):
 
         print('Downloaded: {} to {}/{}'.format(
             file_.full_path, local_folder_path, file_.filename))
+
+
+
+def _download_recursive(full_path, local_folder_path, dry_run=False,
+        excludes=[], includes=[], delete=False):
+
+    if "**" in full_path:
+        raise Exception('Paths containing ** are not compatible with the --recursive flag.')
+
+    full_path, parts = Object.validate_full_path(full_path)
+    results = GlobalSearch().filter(path__prefix=full_path)
+    num_files = len([x for x in results if x.get('object_type') == "file"])
+    print('Found {} files to download.'.format(num_files))
+    if num_files == 0:
+        if full_path.endswith("/*"):
+            print("Folder names ending with '/*' are not supported with "
+                "the --recursive flag, try again with only the folder name.")
+        return
+
+    remote_objects = []
+    for file_obj in results:
+        depth = len(file_obj.path.split("/"))
+        file_obj.depth = depth
+        # MD5 not retrieved by GlobalSearch so
+        # separate API call is needed
+        if file_obj.is_file:
+            file_obj = Object.retrieve(file_obj.id)
+        file_obj.depth = depth
+        remote_objects.append(file_obj)
+
+
+    min_depth = min([x.depth for x in remote_objects])
+    num_at_min_depth = len([x for x in remote_objects if x.depth == min_depth])
+    if num_at_min_depth == 1:
+        base_folder_depth = min_depth
+    else:
+        base_folder_depth = min_depth - 1
+
+
+    downloaded_files = set()
+
+    remote_files = [x for x in remote_objects if x.get('object_type') == "file"]
+    for remote_file in remote_files:
+        rel_parts = remote_file.path.split("/")[base_folder_depth:]
+        relative_file_path = os.path.join(*rel_parts)
+        local_path = os.path.join(local_folder_path, relative_file_path)
+
+        # Skip over files that are excluded (not recovered by include)
+        if should_exclude(local_path, excludes, print_logs=False) and \
+                not should_exclude(local_path, includes, print_logs=False):
+            continue
+
+        # Keep track of remote files to delete locally
+        downloaded_files.add(os.path.abspath(local_path))
+
+        # Skip over files that match remote md5 checksum
+        if os.path.exists(local_path):
+            remote_md5 = remote_file.get('md5')
+            if remote_md5 and remote_md5 == md5sum(local_path)[0]:
+                print("Skipping {} already in sync".format(local_path))
+                continue
+
+        parent_dir = os.path.dirname(local_path)
+        print("{}Downloading file {}".format(
+            "[Dry run] " if dry_run else "", local_path))
+        if not dry_run:
+            os.makedirs(parent_dir, exist_ok=True)
+            remote_file.download(local_path)
+
+    if not delete:
+        return
+    print("[Warning] Deleting local files not found in remote vault")
+    for root, folders, files in os.walk(local_folder_path):
+        for file_ in files:
+            local_abs_path = os.path.abspath(os.path.join(root, file_))
+            if local_abs_path in downloaded_files:
+                continue
+            print("{}Deleting file {}".format(
+                "[Dry run] " if dry_run else "", local_abs_path))
+            if not dry_run:
+                os.remove(local_abs_path)
+
+        for folder in folders:
+            local_abs_path = os.path.abspath(os.path.join(root, folder))
+            if len(os.listdir(local_abs_path)) == 0:
+                print("{}Deleting folder {}".format(
+                    "[Dry run] " if dry_run else "", local_abs_path))
+                os.rmdir(local_abs_path)
+
+
+def ls(args):
+    """
+    Given a SolveBio remote path, list the files and folders
+    """
+    return _ls(args.full_path)
+
+def _ls(full_path):
+
+    if "**" in full_path:
+        print("Recursive paths containing ** are not supported by `ls`")
+        return
+
+    files = list(Object.all(glob=full_path, limit=1000))
+    if len(files) == 1 and files[0].is_folder:
+        files = Object.all(glob=files[0].full_path + "/*")
+    for file_ in files:
+        print("{}  {}  {}".format(
+            file_.last_modified,
+            file_.object_type.ljust(8),
+            file_.full_path))
+
+    if len(files) == 0:
+        print('No file(s) found at --full-path {}, '
+            'try using a glob instead:  "vault:/path/folder/*'.format(full_path))
+
+
 
 
 def should_tag_by_object_type(args, object_):
