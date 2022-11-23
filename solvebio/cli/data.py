@@ -64,8 +64,6 @@ def _create_folder(vault, full_path, tags=None):
     return new_obj
 
 
-
-
 def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
     if not exclude_paths:
         return False
@@ -126,7 +124,6 @@ def _upload_folder(
         else:
             all_folders.append((vault, base_folder_path))
 
-
     # Create folders and upload files
     for abs_local_parent_path, folders, files in os.walk(base_local_path):
         # Strips off the local path and adds the parent directory at
@@ -167,7 +164,6 @@ def _upload_folder(
             else:
                 all_files.append((local_file_path, remote_folder_full_path, vault.full_path))
 
-
     # Identify which remote folders already exist
     upload_root_path, _ = Object.validate_full_path(
         os.path.join(base_remote_path, local_start)
@@ -183,7 +179,6 @@ def _upload_folder(
             if folder_full_path not in remote_folders_existing and not folder_full_path.endswith(":"):
                 all_folder_parts.add(folder_full_path)
             parent_folder_path = folder_full_path
-
 
     if not dry_run:
         # Create folders serially since these require
