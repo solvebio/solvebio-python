@@ -109,7 +109,7 @@ def _check_uploaded_folders(base_remote_path, local_start, all_folders):
     Args:
         base_remote_path: Base remote parent folder full path to upload to.
         local_start: The name of the base folder to upload.
-        all_folders: A list of remote folders to potentially create in full path format
+        all_folders: A list of remote folders to potentially create in full path format.
     Returns:
         all_folder_parts (set): A unique set of folder parts to create that do
             not already exist.
@@ -230,16 +230,16 @@ def _create_file_job(args):
     Args:
         args[0] (local_file_path): Path to local file.
         args[1] (remote_folder_path): Path to remote parent folder.
-        args[2] (vault_path): Path to remote vault
-        args[3] (dry_run): Whether to performa dry run
+        args[2] (vault_path): Path to remote vault.
+        args[3] (dry_run): Whether to performa dry run.
     Returns:
-        None or Exception if exception is raised
+        None or Exception if exception is raised.
     """
     try:
         local_file_path, remote_folder_full_path, vault_path, dry_run = args
         if dry_run:
             print("[Dry Run] Uploading {} to {}".format(
-                    local_file_path, remote_folder_full_path))
+                local_file_path, remote_folder_full_path))
             return
         remote_parent = Object.get_by_full_path(
             remote_folder_full_path, assert_type="folder"
