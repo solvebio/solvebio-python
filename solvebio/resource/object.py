@@ -277,6 +277,17 @@ class Object(CreateableAPIResource,
                              client=_client,
                              **kwargs)
 
+    def _archive_file(self, archive_full_path):
+
+        # Get new parent folder ID
+
+        # Get current date
+
+        # Format name with date
+
+        # Save changes
+        pass
+
     @classmethod
     def upload_file(cls, local_path, remote_path, vault_full_path, **kwargs):
         from solvebio import Vault
@@ -314,10 +325,13 @@ class Object(CreateableAPIResource,
                           'not uploading'.format(full_path, local_md5))
                     return obj
                 else:
-                    print('WARNING: File {} exists on SolveBio with different '
-                          'md5sum (local: {} vs remote: {}) Uploading anyway, '
-                          'but not overwriting.'
-                          .format(full_path, local_md5, obj.md5))
+                    if kwargs.get('archive_folder'):
+                        obj._archive_file(kwargs['archive_folder'])
+                    else:
+                        print('WARNING: File {} exists on SolveBio with different '
+                              'md5sum (local: {} vs remote: {}) Uploading anyway, '
+                              'but not overwriting.'
+                              .format(full_path, local_md5, obj.md5))
         except NotFoundError:
             pass
 
