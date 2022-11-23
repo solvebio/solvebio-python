@@ -288,15 +288,18 @@ class ImportTests(CLITests):
 
 
 class UploadTests(CLITests):
+
     @mock.patch("solvebio.resource.apiresource.ListableAPIResource._retrieve_helper")
     @mock.patch("solvebio.resource.Vault.get_by_full_path")
     @mock.patch("solvebio.resource.Vault.all")
     @mock.patch("solvebio.resource.Object.all")
     @mock.patch("solvebio.resource.Object.create")
     @mock.patch("solvebio.resource.Object.upload_file")
+    @mock.patch("solvebio.global_search.GlobalSearch.filter")
     def _test_upload_command(
         self,
         args,
+        GlobalSearch,
         ObjectUpload,
         ObjectCreate,
         ObjectAll,
@@ -306,6 +309,7 @@ class UploadTests(CLITests):
         **kwargs
     ):
 
+        GlobalSearch.side_effect = fake_object_all
         ObjectUpload.side_effect = fake_object_create
         ObjectAll.side_effect = fake_object_all
         ObjectCreate.side_effect = fake_object_create
