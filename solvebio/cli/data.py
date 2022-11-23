@@ -11,6 +11,7 @@ import json
 from fnmatch import fnmatch
 from collections import defaultdict
 import multiprocessing
+import signal
 
 import solvebio
 
@@ -97,6 +98,43 @@ def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
     return False
 
 
+def _check_uploaded_folders(base_remote_path, local_start, all_folders):
+    """Identifies which remote folders already exist so that we can optimize
+    which folders to create in the upload workflow.
+
+    Note, due to the asynchronous nature of GlobalSearch, returned folders
+    may sometimes already exist. A subsequent exact check is required before
+    uploading (as implemented in `_create_folder`).
+
+    Args:
+        base_remote_path: Base remote parent folder full path to upload to.
+        local_start: The name of the base folder to upload.
+        all_folders: A list of remote folders to potentially create in full path format
+    Returns:
+        all_folder_parts (set): A unique set of folder parts to create that do
+            not already exist.
+
+    """
+    upload_root_path, _ = Object.validate_full_path(
+        os.path.join(base_remote_path, local_start)
+    )
+    results = GlobalSearch().filter(path__prefix=upload_root_path, type="folder")
+    remote_folders_existing = set([x.full_path for x in results])
+    all_folder_parts = set()
+    for vault, remote_folder_path in all_folders:
+        subfolders = remote_folder_path.lstrip("/").split("/")
+        parent_folder_path = subfolders[0]
+        # Split each folder into parts and check if these exist
+        # Skip root folder as we don't need to create this
+        for folder in subfolders[1:]:
+            folder_full_path = os.path.join(parent_folder_path, folder)
+            if folder_full_path not in remote_folders_existing:
+                all_folder_parts.add(folder_full_path)
+            parent_folder_path = folder_full_path
+
+    return all_folder_parts
+
+
 def _upload_folder(
     domain,
     vault,
@@ -144,57 +182,44 @@ def _upload_folder(
                 continue
 
             remote_path = os.path.join(remote_folder_full_path, folder)
-            if dry_run:
-                print("[Dry Run] Creating folder {}".format(remote_path))
-            else:
-                all_folders.append((vault, remote_path))
+            all_folders.append((vault, remote_path))
 
         # Upload the files that do not yet exist on the remote
         for f in files:
             local_file_path = os.path.join(abs_local_parent_path, f)
             if should_exclude(local_file_path, exclude_paths, dry_run=dry_run):
                 continue
+            all_files.append((local_file_path, remote_folder_full_path, vault.full_path, dry_run))
 
-            if dry_run:
-                print(
-                    "[Dry Run] Uploading {} to {}".format(
-                        local_file_path, remote_folder_full_path
-                    )
-                )
-            else:
-                all_files.append((local_file_path, remote_folder_full_path, vault.full_path))
+    if num_processes > 1:
+        # Only perform optimization if parallelization is requested by the user
+        all_folder_parts = _check_uploaded_folders(base_remote_path, local_start, all_folders)
+    else:
+        all_folder_parts = set([x[1] for x in all_folders])
 
-    # Identify which remote folders already exist
-    upload_root_path, _ = Object.validate_full_path(
-        os.path.join(base_remote_path, local_start)
-    )
-    results = GlobalSearch().filter(path__prefix=upload_root_path, type="folder")
-    remote_folders_existing = set([x.full_path for x in results])
-    all_folder_parts = set()
-    for vault, remote_folder_path in all_folders:
-        subfolders = remote_folder_path.lstrip("/").split("/")
-        parent_folder_path = ""
-        for folder in subfolders:
-            folder_full_path = os.path.join(parent_folder_path, folder)
-            if folder_full_path not in remote_folders_existing and not folder_full_path.endswith(":"):
-                all_folder_parts.add(folder_full_path)
-            parent_folder_path = folder_full_path
+    # Create folders serially since these require
+    # previous folders to be created so that parent_object_id can
+    # be populated
+    all_folder_parts = sorted(all_folder_parts, key=lambda x: len(x.split("/")))
+    for folder in all_folder_parts:
+        print("{}Creating folder {}".format(
+            "[Dry Run] " if dry_run else "", folder))
+        _create_folder(vault, folder)
 
-    if not dry_run:
-        # Create folders serially since these require
-        # previous folders to be created so that parent_object_id can
-        # be populated
-        all_folder_parts = sorted(all_folder_parts, key=lambda x: len(x.split("/")))
-        for folder in all_folder_parts:
-            _create_folder(vault, folder)
-
-        # Create files in parallel
-        pool = multiprocessing.Pool(num_processes)
+    # Create files in parallel
+    # Signal handling allows for graceful exit upon KeyboardInterrupt
+    original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+    pool = multiprocessing.Pool(num_processes)
+    signal.signal(signal.SIGINT, original_sigint_handler)
+    try:
         for result in pool.imap_unordered(_create_file_job, all_files):
             # Check if an exception was raised by the pool worker
-            # which is returned at the end of the tuple
-            if len(result) == 4:
-                raise result[-1]
+            if isinstance(result, Exception):
+                raise result
+    except KeyboardInterrupt:
+        print("Caught KeyboardInterrupt, terminating workers and cancelling upload.")
+        pool.terminate()
+    else:
         pool.close()
 
 
@@ -206,19 +231,25 @@ def _create_file_job(args):
         args[0] (local_file_path): Path to local file.
         args[1] (remote_folder_path): Path to remote parent folder.
         args[2] (vault_path): Path to remote vault
+        args[3] (dry_run): Whether to performa dry run
     Returns:
-        Returns args as supplied. If an exception is raised,
-        an exception object is returned as args[3].
+        None or Exception if exception is raised
     """
-    local_file_path, remote_folder_full_path, vault_path = args
     try:
+        local_file_path, remote_folder_full_path, vault_path, dry_run = args
+        if dry_run:
+            print("[Dry Run] Uploading {} to {}".format(
+                    local_file_path, remote_folder_full_path))
+            return
         remote_parent = Object.get_by_full_path(
             remote_folder_full_path, assert_type="folder"
         )
         Object.upload_file(local_file_path, remote_parent.path, vault_path)
-        return (local_file_path, remote_folder_full_path, vault_path)
+        return
+    except KeyboardInterrupt as e:
+        raise e
     except Exception as e:
-        return (local_file_path, remote_folder_full_path, vault_path, e)
+        return e
 
 
 def _create_template_from_file(template_file, dry_run=False):
