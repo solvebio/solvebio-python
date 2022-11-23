@@ -297,6 +297,9 @@ class Object(CreateableAPIResource,
         mimetype = mime_tuple[1] if mime_tuple[1] else mime_tuple[0]
         # Get file size
         size = os.path.getsize(local_path)
+        if size == 0:
+            print('WARNING: skipping empty object: {}'.format(local_path))
+            return False
 
         # Check if object exists already and compare md5sums
         full_path, path_dict = Object.validate_full_path(

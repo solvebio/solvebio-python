@@ -10,6 +10,7 @@ import gzip
 import json
 from fnmatch import fnmatch
 from collections import defaultdict
+import multiprocessing
 
 import solvebio
 
@@ -63,6 +64,8 @@ def _create_folder(vault, full_path, tags=None):
     return new_obj
 
 
+
+
 def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
     if not exclude_paths:
         return False
@@ -104,7 +107,10 @@ def _upload_folder(
     local_start,
     exclude_paths=None,
     dry_run=False,
+    num_processes=1
 ):
+    all_folders = []
+    all_files = []
 
     # Create the upload root folder if it does not exist on the remote
     try:
@@ -118,11 +124,11 @@ def _upload_folder(
         if dry_run:
             print("[Dry Run] Creating folder {}".format(base_folder_path))
         else:
-            _create_folder(vault, base_folder_path)
+            all_folders.append((vault, base_folder_path))
+
 
     # Create folders and upload files
     for abs_local_parent_path, folders, files in os.walk(base_local_path):
-
         # Strips off the local path and adds the parent directory at
         # each phase of the loop
         local_parent_path = re.sub(
@@ -144,7 +150,7 @@ def _upload_folder(
             if dry_run:
                 print("[Dry Run] Creating folder {}".format(remote_path))
             else:
-                _create_folder(vault, remote_path)
+                all_folders.append((vault, remote_path))
 
         # Upload the files that do not yet exist on the remote
         for f in files:
@@ -159,10 +165,65 @@ def _upload_folder(
                     )
                 )
             else:
-                remote_parent = Object.get_by_full_path(
-                    remote_folder_full_path, assert_type="folder"
-                )
-                Object.upload_file(local_file_path, remote_parent.path, vault.full_path)
+                all_files.append((local_file_path, remote_folder_full_path, vault.full_path))
+
+
+    # Identify which remote folders already exist
+    upload_root_path, _ = Object.validate_full_path(
+        os.path.join(base_remote_path, local_start)
+    )
+    results = GlobalSearch().filter(path__prefix=upload_root_path, type="folder")
+    remote_folders_existing = set([x.full_path for x in results])
+    all_folder_parts = set()
+    for vault, remote_folder_path in all_folders:
+        subfolders = remote_folder_path.lstrip("/").split("/")
+        parent_folder_path = ""
+        for folder in subfolders:
+            folder_full_path = os.path.join(parent_folder_path, folder)
+            if folder_full_path not in remote_folders_existing and not folder_full_path.endswith(":"):
+                all_folder_parts.add(folder_full_path)
+            parent_folder_path = folder_full_path
+
+
+    if not dry_run:
+        # Create folders serially since these require
+        # previous folders to be created so that parent_object_id can
+        # be populated
+        all_folder_parts = sorted(all_folder_parts, key=lambda x: len(x.split("/")))
+        for folder in all_folder_parts:
+            _create_folder(vault, folder)
+
+        # Create files in parallel
+        pool = multiprocessing.Pool(num_processes)
+        for result in pool.imap_unordered(_create_file_job, all_files):
+            # Check if an exception was raised by the pool worker
+            # which is returned at the end of the tuple
+            if len(result) == 4:
+                raise result[-1]
+        pool.close()
+
+
+def _create_file_job(args):
+    """Uploads a single file from local storage to EDP. Args are
+    packed into a single tuple to facilitate multiprocessing.
+
+    Args:
+        args[0] (local_file_path): Path to local file.
+        args[1] (remote_folder_path): Path to remote parent folder.
+        args[2] (vault_path): Path to remote vault
+    Returns:
+        Returns args as supplied. If an exception is raised,
+        an exception object is returned as args[3].
+    """
+    local_file_path, remote_folder_full_path, vault_path = args
+    try:
+        remote_parent = Object.get_by_full_path(
+            remote_folder_full_path, assert_type="folder"
+        )
+        Object.upload_file(local_file_path, remote_parent.path, vault_path)
+        return (local_file_path, remote_folder_full_path, vault_path)
+    except Exception as e:
+        return (local_file_path, remote_folder_full_path, vault_path, e)
 
 
 def _create_template_from_file(template_file, dry_run=False):
@@ -367,6 +428,7 @@ def upload(args):
                 local_name,
                 exclude_paths=exclude_paths,
                 dry_run=args.dry_run,
+                num_processes=args.num_processes
             )
         else:
             if args.dry_run:

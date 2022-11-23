@@ -232,6 +232,14 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "default": "~/",
                 },
                 {
+                    "flags": "--num-processes",
+                    "help": "Number of uploads to process in parallel. Defaults "
+                    "to 1, but can be set much higher than CPU count since the "
+                    "upload process is IO bound, not CPU bound.",
+                    "default": 1,
+                    "type": int
+                },
+                {
                     "flags": "--create-full-path",
                     "help": "Creates --full-path location if it does "
                     "not exist. NOTE: This will not create new vaults.",
