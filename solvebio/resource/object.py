@@ -279,12 +279,15 @@ class Object(CreateableAPIResource,
                              client=_client,
                              **kwargs)
 
+    @staticmethod
+    def _get_timestamp(date_format="%Y-%m-%d_%Hh%Mm%Ss_%Z"):
+        return datetime.now().strftime(date_format)
+
     def _archive(self, archive_folder):
         from solvebio.cli.data import _create_folder
 
         # Create timestamped archive filename
-        date_format = "%Y-%m-%d_%Hh%Mm%Ss_%Z"
-        timestamp = datetime.now().strftime(date_format)
+        timestamp = self._get_timestamp()
         base_filename, file_extension = os.path.splitext(self.filename)
         if file_extension in COMPRESSIONS and "." in base_filename:
             compression = file_extension

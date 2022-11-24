@@ -1,10 +1,14 @@
 from __future__ import absolute_import
 
 import uuid
+import os
+import shutil
+import logging
+import requests
 
 import mock
 
-from .helper import SolveBioTestCase
+from .helper import SolveBioTestCase, MockResponse
 from solvebio.test.client_mocks import fake_object_create, fake_object_save
 from solvebio.test.client_mocks import fake_dataset_create
 
@@ -312,3 +316,77 @@ class ObjectTests(SolveBioTestCase):
         resp = file.query()
 
         self.assertEqual(list(resp), valid_response['results'])
+
+
+class ObjectUploadTests(SolveBioTestCase):
+
+    def setUp(self):
+        super(ObjectUploadTests, self).setUp()
+        self.tempdir = "/tmp/solvebio-tests"
+        if not os.path.exists(self.tempdir):
+            os.makedirs(self.tempdir)
+
+        self.vault = self.client.Vault.create(name=str(uuid.uuid4()))
+
+    def tearDown(self):
+        shutil.rmtree(self.tempdir)
+        self.vault.delete(force=True)
+
+    def test_upload_file(self):
+        local_path = os.path.join(self.tempdir, "file.txt")
+        with open(local_path, "w") as fp:
+            fp.write("sample file")
+        remote_path = "/"
+
+        self.client.Object.upload_file(local_path, remote_path, self.vault.full_path)
+
+        expected_remote_path = self.vault.full_path + ":/" + os.path.basename(local_path)
+        obj = self.client.Object.get_by_full_path(expected_remote_path)
+        self.assertEqual(obj.full_path, expected_remote_path)
+
+        download_url = obj.download_url()
+        response = requests.request(method='get', url=download_url)
+        self.assertEqual(response.content, "sample file")
+
+    def test_skip_md5_match(self):
+        local_path = os.path.join(self.tempdir, "file.txt")
+        with open(local_path, "w") as fp:
+            fp.write("sample file")
+        remote_path = "/"
+        self.client.Object.upload_file(local_path, remote_path, self.vault.full_path)
+
+        with mock.patch("solvebio.resource.Object.create") as ObjectCreate:
+            self.client.Object.upload_file(local_path, remote_path, self.vault.full_path)
+            self.assertEqual(ObjectCreate.call_count, 0)
+
+    @mock.patch('solvebio.resource.object.Object._get_timestamp')
+    def test_archive_if_updated(self, TimeStamp):
+        local_path = os.path.join(self.tempdir, "file.txt.gz")
+        with open(local_path, "w") as fp:
+            fp.write("sample file")
+        remote_path = "/"
+        self.client.Object.upload_file(local_path, remote_path, self.vault.full_path)
+
+        with open(local_path, "w") as fp:
+            fp.write("sample file updated")
+
+        TimeStamp.return_value = "timestamp_string"
+
+        self.client.Object.upload_file(local_path, remote_path, self.vault.full_path, archive_folder="archive")
+
+        expected_archive_dir = self.vault.full_path + ":/" + os.path.join("archive", remote_path.lstrip("/"))
+        dir_object = self.client.Object.get_by_full_path(expected_archive_dir)
+        self.assertEqual(dir_object.object_type, 'folder')
+
+        expected_archive_full_path = self.vault.full_path + ":/archive/file_timestamp_string.txt.gz"
+        archive_obj = self.client.Object.get_by_full_path(expected_archive_full_path)
+        download_url = archive_obj.download_url()
+        response = requests.request(method='get', url=download_url)
+        self.assertEqual(response.content, "sample file")
+
+        expected_new_path = self.vault.full_path + ":/file.txt.gz"
+        new_obj = self.client.Object.get_by_full_path(expected_new_path)
+        download_url = new_obj.download_url()
+        response = requests.request(method='get', url=download_url)
+        self.assertEqual(response.content, "sample file updated")
+
