@@ -3,12 +3,11 @@ from __future__ import absolute_import
 import uuid
 import os
 import shutil
-import logging
 import requests
 
 import mock
 
-from .helper import SolveBioTestCase, MockResponse
+from .helper import SolveBioTestCase
 from solvebio.test.client_mocks import fake_object_create, fake_object_save
 from solvebio.test.client_mocks import fake_dataset_create
 
@@ -389,4 +388,3 @@ class ObjectUploadTests(SolveBioTestCase):
         download_url = new_obj.download_url()
         response = requests.request(method='get', url=download_url)
         self.assertEqual(response.content, "sample file updated")
-

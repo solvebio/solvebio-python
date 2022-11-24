@@ -295,14 +295,12 @@ class Object(CreateableAPIResource,
         else:
             compression = ''
         archive_filename = u'{base_filename}_{timestamp}{extension}{compression}'.format(
-                base_filename=base_filename,
-                timestamp=timestamp,
-                extension=file_extension,
-                compression=compression)
-
+            base_filename=base_filename,
+            timestamp=timestamp,
+            extension=file_extension,
+            compression=compression)
 
         # Create parent archive nested directory paths
-        parent_archive_path = os.path.dirname(self.path)
         archive_path = os.path.join(archive_folder, os.path.dirname(self.path).lstrip("/"), archive_filename)
 
         # Ensure no errors with archive full path

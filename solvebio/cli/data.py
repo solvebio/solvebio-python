@@ -164,7 +164,7 @@ def _upload_folder(
                     remote_folder_full_path, assert_type="folder"
                 )
                 Object.upload_file(local_file_path, remote_parent.path,
-                        vault.full_path, archive_folder=archive_folder)
+                                    vault.full_path, archive_folder=archive_folder)
 
 
 def _create_template_from_file(template_file, dry_run=False):

@@ -383,12 +383,6 @@ class UploadTests(CLITests):
         f = _create_folder(vault, full_path)
         self.assertEqual(f.full_path, full_path)
 
-
-    def test_archive_file(self):
-
-        vault = Vault.create("test-vault")
-
-
     def test_should_exclude(self):
         exclude = ["~/test", "~/test2"]
         self.assertFalse(should_exclude("~/test3/file.txt", exclude))
