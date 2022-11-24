@@ -15,6 +15,7 @@ from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 from solvebio.errors import FileUploadError
 from solvebio.utils.md5sum import md5sum
+from solvebio.utils.files import COMPRESSIONS
 
 from ..client import client
 
@@ -290,7 +291,7 @@ class Object(CreateableAPIResource,
             base_filename, file_extension = os.path.splitext(base_filename)
         else:
             compression = ''
-        archive_filename = u'{base_filename}_{timestamp}.{extension}{compression}'.(
+        archive_filename = u'{base_filename}_{timestamp}.{extension}{compression}'.format(
                 base_filename=base_filename,
                 timestamp=timestamp,
                 extension=extension,

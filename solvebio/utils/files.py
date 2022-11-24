@@ -1,5 +1,7 @@
 import mimetypes
 
+COMPRESSIONS = ('.gz', '.gzip', '.bz2', '.z', '.zip', '.bgz')
+
 
 def check_gzip_path(file_path):
     """Check if we have a gzipped file path"""
