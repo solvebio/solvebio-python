@@ -291,10 +291,10 @@ class Object(CreateableAPIResource,
             base_filename, file_extension = os.path.splitext(base_filename)
         else:
             compression = ''
-        archive_filename = u'{base_filename}_{timestamp}.{extension}{compression}'.format(
+        archive_filename = u'{base_filename}_{timestamp}{extension}{compression}'.format(
                 base_filename=base_filename,
                 timestamp=timestamp,
-                extension=extension,
+                extension=file_extension,
                 compression=compression)
 
 
