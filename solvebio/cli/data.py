@@ -162,7 +162,8 @@ def _upload_folder(
                 remote_parent = Object.get_by_full_path(
                     remote_folder_full_path, assert_type="folder"
                 )
-                Object.upload_file(local_file_path, remote_parent.path, vault.full_path)
+                Object.upload_file(local_file_path, remote_parent.path,
+                        vault.full_path, archive_folder=archive_folder)
 
 
 def _create_template_from_file(template_file, dry_run=False):
@@ -367,6 +368,7 @@ def upload(args):
                 local_name,
                 exclude_paths=exclude_paths,
                 dry_run=args.dry_run,
+                archive_folder=args.archive_folder
             )
         else:
             if args.dry_run:
@@ -374,7 +376,7 @@ def upload(args):
                     "[Dry Run] Uploading {} to {}".format(local_path, path_dict["path"])
                 )
             else:
-                Object.upload_file(local_path, path_dict["path"], vault.full_path)
+                Object.upload_file(local_path, path_dict["path"], vault.full_path, archive_folder=args.archive_folder)
 
 
 def import_file(args):

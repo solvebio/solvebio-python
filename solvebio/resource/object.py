@@ -5,6 +5,7 @@ import re
 import base64
 import binascii
 import mimetypes
+from datetime import datetime
 
 import requests
 import six
@@ -277,16 +278,42 @@ class Object(CreateableAPIResource,
                              client=_client,
                              **kwargs)
 
-    def _archive_file(self, archive_full_path):
+    def _archive(self, archive_folder):
+        from solvebio.cli.data import _create_folder
 
-        # Get new parent folder ID
+        # Create timestamped archive filename
+        date_format = "%Y-%m-%d_%Hh%Mm%Ss_%Z"
+        timestamp = datetime.now().strftime(date_format)
+        file_extension = self.filename.split(".")[-1]
+        archive_filename = ".".join(self.filename.split(".")[:-1]) \
+                + "_" + timestamp + "." + file_extension
 
-        # Get current date
+        # Create parent archive nested directory paths
+        parent_archive_path = os.path.dirname(self.path)
+        archive_path = os.path.join(archive_folder, os.path.dirname(self.path).lstrip("/"), archive_filename)
 
-        # Format name with date
+        # Ensure no errors with archive full path
+        Object.validate_full_path(self.vault.full_path + ":/" + archive_path)
 
-        # Save changes
-        pass
+        # Create all parent folders if they don't already exist
+        archive_parent_folder = os.path.dirname(archive_path).lstrip("/")
+        if archive_parent_folder != "":
+            folders = archive_parent_folder.split("/")
+            parent_folder_path = self.vault.full_path + ":"
+            for folder in folders:
+                folder_full_path = os.path.join(parent_folder_path, folder)
+                parent_folder = _create_folder(self.vault, folder_full_path)
+                parent_folder_path = parent_folder.full_path
+            self.parent_object_id = parent_folder.id
+        else:
+            self.parent_object_id = None
+
+        print("Archiving file {} to {}".format(self.full_path, archive_path))
+        # Multiple saves are needed as parent object ID
+        # and filename cannot be updated in the same API call
+        self.save()
+        self.filename = archive_filename
+        return self.save()
 
     @classmethod
     def upload_file(cls, local_path, remote_path, vault_full_path, **kwargs):
@@ -326,7 +353,7 @@ class Object(CreateableAPIResource,
                     return obj
                 else:
                     if kwargs.get('archive_folder'):
-                        obj._archive_file(kwargs['archive_folder'])
+                        obj._archive(kwargs['archive_folder'])
                     else:
                         print('WARNING: File {} exists on SolveBio with different '
                               'md5sum (local: {} vs remote: {}) Uploading anyway, '

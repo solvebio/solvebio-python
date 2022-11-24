@@ -255,7 +255,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "If a folder is supplied, instead of overwriting "
                     "or creating an incremented filename, the original "
                     "remote file will be moved to this archive folder "
-                    "with a timestamp."
+                    "with a timestamp.",
                     "action": TildeFixStoreAction,
                 },
                 {
