@@ -284,9 +284,18 @@ class Object(CreateableAPIResource,
         # Create timestamped archive filename
         date_format = "%Y-%m-%d_%Hh%Mm%Ss_%Z"
         timestamp = datetime.now().strftime(date_format)
-        file_extension = self.filename.split(".")[-1]
-        archive_filename = ".".join(self.filename.split(".")[:-1]) \
-                + "_" + timestamp + "." + file_extension
+        base_filename, file_extension = os.path.splitext(self.filename)
+        if file_extension in COMPRESSIONS and "." in base_filename:
+            compression = file_extension
+            base_filename, file_extension = os.path.splitext(base_filename)
+        else:
+            compression = ''
+        archive_filename = u'{base_filename}_{timestamp}.{extension}{compression}'.(
+                base_filename=base_filename,
+                timestamp=timestamp,
+                extension=extension,
+                compression=compression)
+
 
         # Create parent archive nested directory paths
         parent_archive_path = os.path.dirname(self.path)

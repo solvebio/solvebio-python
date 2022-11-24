@@ -104,6 +104,7 @@ def _upload_folder(
     local_start,
     exclude_paths=None,
     dry_run=False,
+    archive_folder=None
 ):
 
     # Create the upload root folder if it does not exist on the remote
