@@ -1,5 +1,11 @@
 # Changelog
 
+## [v2.21.0](https://github.com/solvebio/solvebio-python/tree/v2.21.0) (2022-11-25)
+
+- Add parallel upload support upload CLI command (#422)
+- Add "archive" support to upload CLI command (#423)
+
+
 ## [v2.20.0](https://github.com/solvebio/solvebio-python/tree/v2.20.0) (2022-11-17)
 
 - Added recursive data download support in cli command (#418)
