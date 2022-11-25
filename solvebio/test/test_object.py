@@ -11,6 +11,9 @@ from .helper import SolveBioTestCase
 from solvebio.test.client_mocks import fake_object_create, fake_object_save
 from solvebio.test.client_mocks import fake_dataset_create
 
+def get_uuid_str():
+    return str(uuid.uuid4())
+
 
 class ObjectTests(SolveBioTestCase):
 
@@ -325,7 +328,8 @@ class ObjectUploadTests(SolveBioTestCase):
         if not os.path.exists(self.tempdir):
             os.makedirs(self.tempdir)
 
-        self.vault = self.client.Vault.create(name=str(uuid.uuid4()))
+        vault_name = "ObjectUploadTests"
+        self.vault = self.client.Vault.get_or_create_by_full_path(vault_name)
 
     def tearDown(self):
         shutil.rmtree(self.tempdir)
@@ -346,13 +350,13 @@ class ObjectUploadTests(SolveBioTestCase):
             dataset_object._archive('archive_folder')
 
     def test_create_folder(self):
-        folder_full_path = self.vault.full_path + ":/test-folder"
+        folder_full_path = self.vault.full_path + ":/{}-test-folder".format(get_uuid_str())
         self.client.Object.create_folder(self.vault, folder_full_path)
         obj = self.client.Object.get_by_full_path(folder_full_path)
         self.assertEqual(obj.object_type, 'folder')
 
     def test_upload_file(self):
-        local_path = os.path.join(self.tempdir, "file.txt")
+        local_path = os.path.join(self.tempdir, "{}-file.txt".format(get_uuid_str()))
         with open(local_path, "w") as fp:
             fp.write("sample file")
         remote_path = "/"
@@ -368,7 +372,7 @@ class ObjectUploadTests(SolveBioTestCase):
         self.assertEqual(response.content.decode('utf-8'), "sample file")
 
     def test_skip_md5_match(self):
-        local_path = os.path.join(self.tempdir, "file.txt")
+        local_path = os.path.join(self.tempdir, "{}-file.txt".format(get_uuid_str()))
         with open(local_path, "w") as fp:
             fp.write("sample file")
         remote_path = "/"
@@ -380,7 +384,9 @@ class ObjectUploadTests(SolveBioTestCase):
 
     @mock.patch('solvebio.resource.object.Object._get_timestamp')
     def test_archive_if_updated(self, TimeStamp):
-        local_path = os.path.join(self.tempdir, "file.txt.gz")
+        filename = "{}-file.txt.gz".format(get_uuid_str())
+        filename_base = filename.split(".")[0]
+        local_path = os.path.join(self.tempdir, filename)
         with open(local_path, "w") as fp:
             fp.write("sample file")
         remote_path = "/"
@@ -397,13 +403,13 @@ class ObjectUploadTests(SolveBioTestCase):
         dir_object = self.client.Object.get_by_full_path(expected_archive_dir)
         self.assertEqual(dir_object.object_type, 'folder')
 
-        expected_archive_full_path = self.vault.full_path + ":/archive/file_timestamp_string.txt.gz"
+        expected_archive_full_path = self.vault.full_path + ":/archive/{}_timestamp_string.txt.gz".format(filename_base)
         archive_obj = self.client.Object.get_by_full_path(expected_archive_full_path)
         download_url = archive_obj.download_url()
         response = requests.request(method='get', url=download_url)
         self.assertEqual(response.content.decode('utf-8'), "sample file")
 
-        expected_new_path = self.vault.full_path + ":/file.txt.gz"
+        expected_new_path = self.vault.full_path + ":/" + filename
         new_obj = self.client.Object.get_by_full_path(expected_new_path)
         download_url = new_obj.download_url()
         response = requests.request(method='get', url=download_url)
