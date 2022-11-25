@@ -13,8 +13,8 @@ import solvebio
 from solvebio.cli import main
 from solvebio import DatasetTemplate
 from solvebio import Vault
+from solvebio.resource.object import Object
 from solvebio.errors import NotFoundError
-from solvebio.cli.data import _create_folder
 from solvebio.cli.data import should_exclude
 from solvebio.test.client_mocks import fake_vault_all
 from solvebio.test.client_mocks import fake_vault_create
@@ -288,15 +288,18 @@ class ImportTests(CLITests):
 
 
 class UploadTests(CLITests):
+
     @mock.patch("solvebio.resource.apiresource.ListableAPIResource._retrieve_helper")
     @mock.patch("solvebio.resource.Vault.get_by_full_path")
     @mock.patch("solvebio.resource.Vault.all")
     @mock.patch("solvebio.resource.Object.all")
     @mock.patch("solvebio.resource.Object.create")
     @mock.patch("solvebio.resource.Object.upload_file")
+    @mock.patch("solvebio.global_search.GlobalSearch.filter")
     def _test_upload_command(
         self,
         args,
+        GlobalSearch,
         ObjectUpload,
         ObjectCreate,
         ObjectAll,
@@ -306,6 +309,7 @@ class UploadTests(CLITests):
         **kwargs
     ):
 
+        GlobalSearch.side_effect = fake_object_all
         ObjectUpload.side_effect = fake_object_create
         ObjectAll.side_effect = fake_object_all
         ObjectCreate.side_effect = fake_object_create
@@ -364,6 +368,18 @@ class UploadTests(CLITests):
         ]
         self._test_upload_command(args)
 
+        # Test multiprocess
+        args = [
+            "upload",
+            "--num-processes",
+            "2",
+            "--full-path",
+            "solvebio:test_vault:/test-folder-upload",
+            folder_,
+        ]
+        with self.assertRaises(NotFoundError):
+            self._test_upload_command(args, fail_lookup=True)
+
     @mock.patch("solvebio.resource.apiresource.ListableAPIResource._retrieve_helper")
     @mock.patch("solvebio.resource.Object.all")
     @mock.patch("solvebio.resource.Object.create")
@@ -380,7 +396,7 @@ class UploadTests(CLITests):
 
         RetrieveHelper.side_effect = fake_object_retrieve
         full_path = vault.full_path + ":/new_folder"
-        f = _create_folder(vault, full_path)
+        f = Object.create_folder(vault, full_path)
         self.assertEqual(f.full_path, full_path)
 
     def test_should_exclude(self):

@@ -284,8 +284,6 @@ class Object(CreateableAPIResource,
         return datetime.now().strftime(date_format)
 
     def _archive(self, archive_folder):
-        from solvebio.cli.data import _create_folder
-
         if not self.object_type == "file":
             raise NotImplementedError("Object archiving is only supported for files, not {}".format(self.object_type))
 
@@ -312,7 +310,7 @@ class Object(CreateableAPIResource,
             parent_folder_path = self.vault.full_path + ":"
             for folder in folders:
                 folder_full_path = os.path.join(parent_folder_path, folder)
-                parent_folder = _create_folder(self.vault, folder_full_path)
+                parent_folder = Object.create_folder(self.vault, folder_full_path)
                 parent_folder_path = parent_folder.full_path
             self.parent_object_id = parent_folder.id
         else:
@@ -324,6 +322,58 @@ class Object(CreateableAPIResource,
         self.save()
         self.filename = archive_filename
         return self.save()
+
+    @classmethod
+    def create_folder(cls, vault, full_path, tags=None, **kwargs):
+        """Create a folder if not exists.
+
+        Args:
+            vault (Vault): A Vault object.
+            full_path (str): Full path including vault name.
+            tags (list[str]): List of tags to put on folder.
+            client: SolveBio client configuration to use.
+        Returns:
+            Object: New folder object
+        Raises:
+            SolveError: if a file or dataset object already exists
+                at the given full_path.
+        """
+        _client = kwargs.pop('client', None) or cls._client or client
+
+        full_path, path_dict = Object.validate_full_path(full_path, client=_client)
+        folder_name = path_dict["filename"]
+
+        try:
+            new_obj = Object.get_by_full_path(full_path, client=_client)
+            if not new_obj.is_folder:
+                raise SolveError(
+                    "Object type {} already exists at location: {}".format(
+                        new_obj.object_type, full_path
+                    )
+                )
+        except NotFoundError:
+            # Create the folder
+            if path_dict["parent_path"] == "/":
+                parent_object_id = None
+            else:
+                parent = Object.get_by_full_path(
+                    path_dict["parent_full_path"], assert_type="folder", client=_client
+                )
+                parent_object_id = parent.id
+
+            # Make the API call
+            new_obj = Object.create(
+                vault_id=vault.id,
+                parent_object_id=parent_object_id,
+                object_type="folder",
+                filename=folder_name,
+                tags=tags or [],
+                client=_client
+            )
+
+            print("Notice: Folder created for {0} at {1}".format(folder_name, new_obj.path))
+
+        return new_obj
 
     @classmethod
     def upload_file(cls, local_path, remote_path, vault_full_path, **kwargs):
@@ -345,6 +395,9 @@ class Object(CreateableAPIResource,
         mimetype = mime_tuple[1] if mime_tuple[1] else mime_tuple[0]
         # Get file size
         size = os.path.getsize(local_path)
+        if size == 0:
+            print('WARNING: skipping empty object: {}'.format(local_path))
+            return False
 
         # Check if object exists already and compare md5sums
         full_path, path_dict = Object.validate_full_path(
