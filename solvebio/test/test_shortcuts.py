@@ -368,6 +368,18 @@ class UploadTests(CLITests):
         ]
         self._test_upload_command(args)
 
+        # Test multiprocess
+        args = [
+            "upload",
+            "--num-processes",
+            "2",
+            "--full-path",
+            "solvebio:test_vault:/test-folder-upload",
+            folder_,
+        ]
+        with self.assertRaises(NotFoundError):
+            self._test_upload_command(args, fail_lookup=True)
+
     @mock.patch("solvebio.resource.apiresource.ListableAPIResource._retrieve_helper")
     @mock.patch("solvebio.resource.Object.all")
     @mock.patch("solvebio.resource.Object.create")

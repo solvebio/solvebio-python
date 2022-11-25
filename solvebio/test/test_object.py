@@ -11,6 +11,7 @@ from .helper import SolveBioTestCase
 from solvebio.test.client_mocks import fake_object_create, fake_object_save
 from solvebio.test.client_mocks import fake_dataset_create
 
+
 def get_uuid_str():
     return str(uuid.uuid4())
 
