@@ -345,7 +345,7 @@ class ObjectUploadTests(SolveBioTestCase):
 
         download_url = obj.download_url()
         response = requests.request(method='get', url=download_url)
-        self.assertEqual(response.content, "sample file")
+        self.assertEqual(response.content.decode('utf-8'), "sample file")
 
     def test_skip_md5_match(self):
         local_path = os.path.join(self.tempdir, "file.txt")
@@ -381,10 +381,10 @@ class ObjectUploadTests(SolveBioTestCase):
         archive_obj = self.client.Object.get_by_full_path(expected_archive_full_path)
         download_url = archive_obj.download_url()
         response = requests.request(method='get', url=download_url)
-        self.assertEqual(response.content, "sample file")
+        self.assertEqual(response.content.decode('utf-8'), "sample file")
 
         expected_new_path = self.vault.full_path + ":/file.txt.gz"
         new_obj = self.client.Object.get_by_full_path(expected_new_path)
         download_url = new_obj.download_url()
         response = requests.request(method='get', url=download_url)
-        self.assertEqual(response.content, "sample file updated")
+        self.assertEqual(response.content.decode('utf-8'), "sample file updated")
