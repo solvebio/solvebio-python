@@ -15,7 +15,7 @@ from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 from solvebio.errors import FileUploadError
 from solvebio.utils.md5sum import md5sum
-from solvebio.utils.files import COMPRESSIONS
+from solvebio.utils.files import separate_filename_extension
 
 from ..client import client
 
@@ -288,12 +288,8 @@ class Object(CreateableAPIResource,
 
         # Create timestamped archive filename
         timestamp = self._get_timestamp()
-        base_filename, file_extension = os.path.splitext(self.filename)
-        if file_extension in COMPRESSIONS and "." in base_filename:
-            compression = file_extension
-            base_filename, file_extension = os.path.splitext(base_filename)
-        else:
-            compression = ''
+
+        base_filename, file_extension, compression = separate_filename_extension(self.filename)
         archive_filename = u'{base_filename}_{timestamp}{extension}{compression}'.format(
             base_filename=base_filename,
             timestamp=timestamp,
