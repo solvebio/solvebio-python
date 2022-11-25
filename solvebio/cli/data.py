@@ -251,18 +251,6 @@ def _create_file_job(args):
         raise e
     except Exception as e:
         return e
-            if dry_run:
-                print(
-                    "[Dry Run] Uploading {} to {}".format(
-                        local_file_path, remote_folder_full_path
-                    )
-                )
-            else:
-                remote_parent = Object.get_by_full_path(
-                    remote_folder_full_path, assert_type="folder"
-                )
-                Object.upload_file(local_file_path, remote_parent.path,
-                                    vault.full_path, archive_folder=archive_folder)
 
 
 def _create_template_from_file(template_file, dry_run=False):
