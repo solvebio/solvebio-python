@@ -328,12 +328,14 @@ class ObjectUploadTests(SolveBioTestCase):
         if not os.path.exists(self.tempdir):
             os.makedirs(self.tempdir)
 
+        # Do not delete vault at end of
+        # test as other tests run in
+        # parallel and may expect files
         vault_name = "ObjectUploadTests"
         self.vault = self.client.Vault.get_or_create_by_full_path(vault_name)
 
     def tearDown(self):
         shutil.rmtree(self.tempdir)
-        self.vault.delete(force=True)
 
     @mock.patch('solvebio.resource.Dataset.create')
     @mock.patch('solvebio.resource.Object.create')
