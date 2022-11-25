@@ -153,7 +153,7 @@ def _upload_folder(
             local_file_path = os.path.join(abs_local_parent_path, f)
             if should_exclude(local_file_path, exclude_paths, dry_run=dry_run):
                 continue
-            all_files.append((local_file_path, remote_folder_full_path, vault.full_path, dry_run))
+            all_files.append((local_file_path, remote_folder_full_path, vault.full_path, dry_run, archive_folder))
 
     if num_processes > 1:
         # Only perform optimization if parallelization is requested by the user
@@ -200,7 +200,7 @@ def _create_file_job(args):
         None or Exception if exception is raised.
     """
     try:
-        local_file_path, remote_folder_full_path, vault_path, dry_run = args
+        local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder = args
         if dry_run:
             print("[Dry Run] Uploading {} to {}".format(
                 local_file_path, remote_folder_full_path))
@@ -208,7 +208,7 @@ def _create_file_job(args):
         remote_parent = Object.get_by_full_path(
             remote_folder_full_path, assert_type="folder"
         )
-        Object.upload_file(local_file_path, remote_parent.path, vault_path)
+        Object.upload_file(local_file_path, remote_parent.path, vault_path, archive_folder=archive_folder)
         return
     except KeyboardInterrupt as e:
         raise e
