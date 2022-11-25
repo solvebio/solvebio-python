@@ -13,8 +13,8 @@ import solvebio
 from solvebio.cli import main
 from solvebio import DatasetTemplate
 from solvebio import Vault
+from solvebio.resource.object import Object
 from solvebio.errors import NotFoundError
-from solvebio.cli.data import _create_folder
 from solvebio.cli.data import should_exclude
 from solvebio.test.client_mocks import fake_vault_all
 from solvebio.test.client_mocks import fake_vault_create
@@ -384,7 +384,7 @@ class UploadTests(CLITests):
 
         RetrieveHelper.side_effect = fake_object_retrieve
         full_path = vault.full_path + ":/new_folder"
-        f = _create_folder(vault, full_path)
+        f = Object.create_folder(vault, full_path)
         self.assertEqual(f.full_path, full_path)
 
     def test_should_exclude(self):

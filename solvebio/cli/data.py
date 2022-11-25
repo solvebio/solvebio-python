@@ -28,41 +28,6 @@ from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 
 
-def _create_folder(vault, full_path, tags=None):
-    """Create a folder if not exists"""
-    full_path, path_dict = Object.validate_full_path(full_path)
-    folder_name = path_dict["filename"]
-
-    try:
-        new_obj = Object.get_by_full_path(full_path)
-        if not new_obj.is_folder:
-            raise SolveError(
-                "Object type {} already exists at location: {}".format(
-                    new_obj.object_type, full_path
-                )
-            )
-    except NotFoundError:
-        # Create the folder
-        if path_dict["parent_path"] == "/":
-            parent_object_id = None
-        else:
-            parent = Object.get_by_full_path(
-                path_dict["parent_full_path"], assert_type="folder"
-            )
-            parent_object_id = parent.id
-
-        # Make the API call
-        new_obj = Object.create(
-            vault_id=vault.id,
-            parent_object_id=parent_object_id,
-            object_type="folder",
-            filename=folder_name,
-            tags=tags or [],
-        )
-
-        print("Notice: Folder created for {0} at {1}".format(folder_name, new_obj.path))
-
-    return new_obj
 
 
 def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
@@ -104,7 +69,7 @@ def _check_uploaded_folders(base_remote_path, local_start, all_folders):
 
     Note, due to the asynchronous nature of GlobalSearch, returned folders
     may sometimes already exist. A subsequent exact check is required before
-    uploading (as implemented in `_create_folder`).
+    uploading (as implemented in `Object.create_folder`).
 
     Args:
         base_remote_path: Base remote parent folder full path to upload to.
@@ -205,7 +170,7 @@ def _upload_folder(
     for folder in all_folder_parts:
         print("{}Creating folder {}".format(
             "[Dry Run] " if dry_run else "", folder))
-        _create_folder(vault, folder)
+        Object.create_folder(vault, folder)
 
     # Create files in parallel
     # Signal handling allows for graceful exit upon KeyboardInterrupt
@@ -415,7 +380,7 @@ def upload(args):
                 folders = path_dict["path"].lstrip("/").split("/")
                 for folder in folders:
                     folder_full_path = os.path.join(parent_folder_path, folder)
-                    parent_folder = _create_folder(vault, folder_full_path)
+                    parent_folder = Object.create_folder(vault, folder_full_path)
                     parent_folder_path = parent_folder.full_path
 
     # Exit if there are multiple local paths and the
