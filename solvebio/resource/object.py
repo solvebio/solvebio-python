@@ -286,6 +286,9 @@ class Object(CreateableAPIResource,
     def _archive(self, archive_folder):
         from solvebio.cli.data import _create_folder
 
+        if not self.object_type == "file":
+            raise NotImplementedError("Object archiving is only supported for files, not {}".format(self.object_type))
+
         # Create timestamped archive filename
         timestamp = self._get_timestamp()
 

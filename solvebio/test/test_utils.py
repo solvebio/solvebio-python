@@ -26,6 +26,7 @@ FILENAME_PARAMS = [
     },
 ]
 
+
 class FilenameTests(SolveBioTestCase, TestCase):
 
     def test_extract_filename(self):

@@ -5,7 +5,7 @@ COMPRESSIONS = ('.gz', '.gzip', '.bz2', '.z', '.zip', '.bgz')
 
 
 def separate_filename_extension(filename):
-    """Separates filename into base name 
+    """Separates filename into base name
     and extension while handling compressed
     filename extensions.
 
@@ -27,7 +27,6 @@ def separate_filename_extension(filename):
     else:
         compression = ''
     return base_filename, file_extension, compression
-
 
 
 def check_gzip_path(file_path):

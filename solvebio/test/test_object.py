@@ -331,6 +331,20 @@ class ObjectUploadTests(SolveBioTestCase):
         shutil.rmtree(self.tempdir)
         self.vault.delete(force=True)
 
+    @mock.patch('solvebio.resource.Dataset.create')
+    @mock.patch('solvebio.resource.Object.create')
+    def test_archive_non_files(self, DatasetCreate, ObjectCreate):
+        DatasetCreate.side_effect = fake_object_create
+        ObjectCreate.side_effect = fake_object_create
+
+        folder_object = self.client.Object.create(name='foo_folder', object_type='folder')
+        with self.assertRaises(NotImplementedError):
+            folder_object._archive('archive_folder')
+
+        dataset_object = self.client.Object.create(name='foo_dataset', object_type='dataset')
+        with self.assertRaises(NotImplementedError):
+            dataset_object._archive('archive_folder')
+
     def test_upload_file(self):
         local_path = os.path.join(self.tempdir, "file.txt")
         with open(local_path, "w") as fp:
