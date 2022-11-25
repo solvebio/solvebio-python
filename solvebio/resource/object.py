@@ -5,6 +5,7 @@ import re
 import base64
 import binascii
 import mimetypes
+from datetime import datetime
 
 import requests
 import six
@@ -14,6 +15,7 @@ from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 from solvebio.errors import FileUploadError
 from solvebio.utils.md5sum import md5sum
+from solvebio.utils.files import separate_filename_extension
 
 from ..client import client
 
@@ -277,6 +279,52 @@ class Object(CreateableAPIResource,
                              client=_client,
                              **kwargs)
 
+    @staticmethod
+    def _get_timestamp(date_format="%Y-%m-%d_%Hh%Mm%Ss_%Z"):
+        return datetime.now().strftime(date_format)
+
+    def _archive(self, archive_folder):
+        from solvebio.cli.data import _create_folder
+
+        if not self.object_type == "file":
+            raise NotImplementedError("Object archiving is only supported for files, not {}".format(self.object_type))
+
+        # Create timestamped archive filename
+        timestamp = self._get_timestamp()
+
+        base_filename, file_extension, compression = separate_filename_extension(self.filename)
+        archive_filename = u'{base_filename}_{timestamp}{extension}{compression}'.format(
+            base_filename=base_filename,
+            timestamp=timestamp,
+            extension=file_extension,
+            compression=compression)
+
+        # Create parent archive nested directory paths
+        archive_path = os.path.join(archive_folder, os.path.dirname(self.path).lstrip("/"), archive_filename)
+
+        # Ensure no errors with archive full path
+        Object.validate_full_path(self.vault.full_path + ":/" + archive_path)
+
+        # Create all parent folders if they don't already exist
+        archive_parent_folder = os.path.dirname(archive_path).lstrip("/")
+        if archive_parent_folder != "":
+            folders = archive_parent_folder.split("/")
+            parent_folder_path = self.vault.full_path + ":"
+            for folder in folders:
+                folder_full_path = os.path.join(parent_folder_path, folder)
+                parent_folder = _create_folder(self.vault, folder_full_path)
+                parent_folder_path = parent_folder.full_path
+            self.parent_object_id = parent_folder.id
+        else:
+            self.parent_object_id = None
+
+        print("Archiving file {} to {}".format(self.full_path, archive_path))
+        # Multiple saves are needed as parent object ID
+        # and filename cannot be updated in the same API call
+        self.save()
+        self.filename = archive_filename
+        return self.save()
+
     @classmethod
     def upload_file(cls, local_path, remote_path, vault_full_path, **kwargs):
         from solvebio import Vault
@@ -314,10 +362,13 @@ class Object(CreateableAPIResource,
                           'not uploading'.format(full_path, local_md5))
                     return obj
                 else:
-                    print('WARNING: File {} exists on SolveBio with different '
-                          'md5sum (local: {} vs remote: {}) Uploading anyway, '
-                          'but not overwriting.'
-                          .format(full_path, local_md5, obj.md5))
+                    if kwargs.get('archive_folder'):
+                        obj._archive(kwargs['archive_folder'])
+                    else:
+                        print('WARNING: File {} exists on SolveBio with different '
+                              'md5sum (local: {} vs remote: {}) Uploading anyway, '
+                              'but not overwriting.'
+                              .format(full_path, local_md5, obj.md5))
         except NotFoundError:
             pass
 

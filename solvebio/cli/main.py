@@ -250,6 +250,15 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "action": "store_true",
                 },
                 {
+                    "flags": "--archive-folder",
+                    "help": "Path to archive files that already exist. "
+                    "If a folder is supplied, instead of overwriting "
+                    "or creating an incremented filename, the original "
+                    "remote file will be moved to this archive folder "
+                    "with a timestamp.",
+                    "action": TildeFixStoreAction,
+                },
+                {
                     "name": "local_path",
                     "help": "The path to the local file or directory " "to upload",
                     "nargs": "+",
