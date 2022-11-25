@@ -347,10 +347,9 @@ class ObjectUploadTests(SolveBioTestCase):
 
     def test_create_folder(self):
         folder_full_path = self.vault.full_path + ":/test-folder"
-        folder_obj = self.client.Object.create_folder(self.vault, folder_full_path)
+        self.client.Object.create_folder(self.vault, folder_full_path)
         obj = self.client.Object.get_by_full_path(folder_full_path)
         self.assertEqual(obj.object_type, 'folder')
-
 
     def test_upload_file(self):
         local_path = os.path.join(self.tempdir, "file.txt")

@@ -28,8 +28,6 @@ from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 
 
-
-
 def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
     if not exclude_paths:
         return False

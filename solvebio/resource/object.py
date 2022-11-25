@@ -340,11 +340,11 @@ class Object(CreateableAPIResource,
         """
         _client = kwargs.pop('client', None) or cls._client or client
 
-        full_path, path_dict = Object.validate_full_path(full_path, client=client)
+        full_path, path_dict = Object.validate_full_path(full_path, client=_client)
         folder_name = path_dict["filename"]
 
         try:
-            new_obj = Object.get_by_full_path(full_path, client=client)
+            new_obj = Object.get_by_full_path(full_path, client=_client)
             if not new_obj.is_folder:
                 raise SolveError(
                     "Object type {} already exists at location: {}".format(
@@ -357,7 +357,7 @@ class Object(CreateableAPIResource,
                 parent_object_id = None
             else:
                 parent = Object.get_by_full_path(
-                    path_dict["parent_full_path"], assert_type="folder", client=client
+                    path_dict["parent_full_path"], assert_type="folder", client=_client
                 )
                 parent_object_id = parent.id
 
@@ -368,13 +368,12 @@ class Object(CreateableAPIResource,
                 object_type="folder",
                 filename=folder_name,
                 tags=tags or [],
-                client=client
+                client=_client
             )
 
             print("Notice: Folder created for {0} at {1}".format(folder_name, new_obj.path))
 
         return new_obj
-
 
     @classmethod
     def upload_file(cls, local_path, remote_path, vault_full_path, **kwargs):
