@@ -720,13 +720,14 @@ def ls(args):
     """
     Given a SolveBio remote path, list the files and folders
     """
-    return _ls(args.full_path)
+    return _ls(args.full_path, silent=args.silent)
 
 
-def _ls(full_path):
+def _ls(full_path, silent=False):
 
     if "**" in full_path:
-        print("Recursive paths containing ** are not supported by `ls`")
+        if not silent:
+            print("Recursive paths containing ** are not supported by `ls`")
         return
 
     files = list(Object.all(glob=full_path, limit=1000))
@@ -740,10 +741,11 @@ def _ls(full_path):
         )
 
     if len(files) == 0:
-        print(
-            "No file(s) found at --full-path {}, "
-            'try using a glob instead:  "vault:/path/folder/*'.format(full_path)
-        )
+        if not silent:
+            print(
+                "No file(s) found at --full-path {}, "
+                'try using a glob instead:  "vault:/path/folder/*'.format(full_path)
+            )
 
 
 def should_tag_by_object_type(args, object_):

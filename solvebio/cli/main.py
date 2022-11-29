@@ -284,6 +284,12 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "action": TildeFixStoreAction,
                     "default": "~/",
                 },
+                {
+                    "flags": "--silent",
+                    "help": "Only print found files, without any warnings "
+                    "or hints. Useful when used programatically.",
+                    "action": "store_true",
+                },
             ],
         },
         "download": {
