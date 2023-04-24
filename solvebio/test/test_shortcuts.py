@@ -531,6 +531,10 @@ class DownloadTests(CLITests):
             fake_object_create(
                 id=4, filename="test-folder/subfolder/file2.csv", object_type="file"
             ),
+            fake_vault_create(
+                id=5, full_path="test-folder/subfolder/vault", name="vault", class_name="Vault",
+                path='test-folder/subfolder/vault'
+            ),
         ]
         GlobalSearch.return_value = remote_objects
 
@@ -573,6 +577,15 @@ class DownloadTests(CLITests):
             ".",
         ]
         self._test_download_folder(args, expected_downloads=0)
+
+        # ignore vaults
+        args = [
+            "download",
+            "--recursive",
+            "solvebio:mock_vault:/test-folder/",
+            ".",
+        ]
+        self._test_download_folder(args, expected_downloads=2)
 
         # Exclude suffix
         args = [

@@ -645,6 +645,8 @@ def _download_recursive(
         file_obj.depth = depth
         # MD5 not retrieved by GlobalSearch so
         # separate API call is needed
+        if file_obj.class_name() == "Vault":
+            continue
         if file_obj.is_file:
             file_obj = Object.retrieve(file_obj.id)
         file_obj.depth = depth
