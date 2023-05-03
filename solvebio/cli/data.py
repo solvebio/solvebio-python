@@ -647,7 +647,7 @@ def _download_recursive(
         # separate API call is needed
         if file_obj.class_name() == "Vault":
             continue
-        if file_obj.is_file:
+        if file_obj.is_file and not file_obj.get('md5'):
             file_obj = Object.retrieve(file_obj.id)
         file_obj.depth = depth
         remote_objects.append(file_obj)
@@ -688,7 +688,8 @@ def _download_recursive(
             "{}Downloading file {}".format("[Dry run] " if dry_run else "", local_path)
         )
         if not dry_run:
-            os.makedirs(parent_dir, exist_ok=True)
+            if not os.path.exists(parent_dir):
+                os.makedirs(parent_dir)
             remote_file.download(local_path)
 
     if not delete:
