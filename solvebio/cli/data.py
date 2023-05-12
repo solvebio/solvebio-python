@@ -155,12 +155,14 @@ def _upload_folder(
                 continue
             all_files.append((local_file_path, remote_folder_full_path, vault.full_path, dry_run, archive_folder))
 
+    all_folder_parts = set([x[1] for x in all_folders])
+    """  # TODO: need more investigation about GlobalSearch API results, below code does not working with api results
     if num_processes > 1:
         # Only perform optimization if parallelization is requested by the user
         all_folder_parts = _check_uploaded_folders(base_remote_path, local_start, all_folders)
     else:
         all_folder_parts = set([x[1] for x in all_folders])
-
+    """
     # Create folders serially since these require
     # previous folders to be created so that parent_object_id can
     # be populated
