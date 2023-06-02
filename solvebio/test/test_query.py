@@ -465,3 +465,20 @@ class BaseQueryTest(SolveBioTestCase):
         self.assertEqual(len(query_a), 50)
         self.assertEqual(len(query_b.filter(gene='MAN2B1')), 367)
         self.assertEqual(len(list(join_query)), 50 * 367)
+
+    def test_join_query_with_key_b(self):
+        query_a = self.dataset.query(
+            fields=['agr', 'gene_symbol'],
+            limit=50, page_size=10
+        )
+        query_b = self.dataset2.query(
+            fields=['gene', 'variant']
+        )
+        join_query = query_a.join(
+            query_b, key='gene', key_b='variant', always_prefix=True
+        )
+        for record in join_query:
+            self.assertTrue('agr' in record)
+            self.assertTrue('gene_symbol' in record)
+            self.assertTrue('b_gene' in record)
+            self.assertTrue('b_variant' in record)

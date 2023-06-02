@@ -957,7 +957,7 @@ class Query(QueryBase):
                            query_params.get('entities'),
                            query_b._limit if isinstance(query_b._limit, int) else 100000,
                            query_b._ordering,
-                           key_b)
+                           key)
             }
         ]
 
