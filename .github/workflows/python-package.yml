@@ -7,7 +7,8 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8, pypy2, pypy3]
+        # 2.7, 3.6,
+        python-version: [3.7, 3.8, pypy2, pypy3]
     env:
       SOLVEBIO_API_HOST: ${{ secrets.SOLVEBIO_API_HOST }}
       SOLVEBIO_API_KEY: ${{ secrets.SOLVEBIO_API_KEY }}

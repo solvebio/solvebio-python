@@ -1,5 +1,12 @@
 # Changelog
 
+## [v2.22.0](https://github.com/solvebio/solvebio-python/tree/v2.22.0) (2023-06-12)
+
+- Fix issue with Query.join() where join keys are not the same (#432)
+- Disable concurrent file uploads (#430)
+- Fix issue with download command involving vaults (#429)
+
+
 ## [v2.21.0](https://github.com/solvebio/solvebio-python/tree/v2.21.0) (2022-11-25)
 
 - Add parallel upload support upload CLI command (#422)
