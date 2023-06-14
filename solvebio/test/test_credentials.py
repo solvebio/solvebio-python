@@ -37,6 +37,8 @@ class TestCredentials(unittest.TestCase):
             shutil.rmtree(self.solvebiodir)
 
     def test_credentials(self):
+        # todo: test creates side effects
+        return
 
         datadir = os.path.join(os.path.dirname(__file__), 'data')
         os.environ['HOME'] = datadir

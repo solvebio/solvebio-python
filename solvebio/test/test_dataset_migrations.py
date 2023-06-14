@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import mock
 
-from .helper import SolveBioTestCase
+from solvebio.test.helper import SolveBioTestCase
 
 from solvebio.test.client_mocks import fake_migration_create
 

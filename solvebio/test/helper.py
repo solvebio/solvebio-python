@@ -5,6 +5,8 @@ import os
 import re
 import sys
 
+from solvebio.credentials_provider import EDPClientCredentialsProvider
+
 if (sys.version_info >= (2, 7, 0)):
     import unittest   # NOQA
 else:
@@ -20,9 +22,8 @@ class SolveBioTestCase(unittest.TestCase):
 
     def setUp(self):
         super(SolveBioTestCase, self).setUp()
-        api_key = os.environ.get('SOLVEBIO_API_KEY', None)
-        api_host = os.environ.get('SOLVEBIO_API_HOST', None)
-        self.client = solvebio.SolveClient(host=api_host, token=api_key)
+
+        self.client = solvebio.SolveClient(**EDPClientCredentialsProvider().as_dict)
 
     def check_response(self, response, expect, msg):
         subset = [(key, response[key]) for

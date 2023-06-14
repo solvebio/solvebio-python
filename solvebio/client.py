@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 import json
+import os
 import time
 import inspect
 
@@ -34,6 +35,7 @@ except ImportError:
     pass
 
 logger = logging.getLogger('solvebio')
+EDP_DEV = os.environ.get('EDP_DEV', False)
 
 
 def _handle_api_error(response):
@@ -106,7 +108,7 @@ class SolveClient(object):
         # Use a session with a retry policy to handle
         # intermittent connection errors.
         retries = Retry(
-            total=5,
+            total=5 if not EDP_DEV else 1,
             backoff_factor=0.1,
             status_forcelist=[
                 codes.bad_gateway,

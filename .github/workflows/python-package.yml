@@ -27,7 +27,7 @@ jobs:
         run: |
           pip install -U wheel --user
           pip install setuptools
-          pip install nose flake8 pytest
+          pip install flake8 pytest
       - name: Install dependencies
         run: |
           pip install -r requirements-dev.txt

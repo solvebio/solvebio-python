@@ -65,7 +65,7 @@ setup(
     url='https://github.com/solvebio/solvebio-python',
     packages=find_packages(),
     package_dir={'solvebio': 'solvebio', 'recipes': 'recipes'},
-    test_suite='nose.collector',
+    test_suite='solvebio.test',
     include_package_data=True,
     install_requires=install_requires,
     platforms='any',

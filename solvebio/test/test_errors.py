@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from .helper import SolveBioTestCase
+from solvebio.test.helper import SolveBioTestCase
 from solvebio.errors import SolveError
 from solvebio.resource import DatasetImport
 from solvebio.client import client

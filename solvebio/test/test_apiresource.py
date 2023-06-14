@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import uuid
 
-from .helper import SolveBioTestCase
+from solvebio.test.helper import SolveBioTestCase
 
 
 class APIResourceTests(SolveBioTestCase):

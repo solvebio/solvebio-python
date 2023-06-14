@@ -7,7 +7,7 @@ import tempfile
 
 import mock
 
-from .helper import SolveBioTestCase
+from solvebio.test.helper import SolveBioTestCase
 
 import solvebio
 from solvebio.cli import main
