@@ -5,7 +5,7 @@ SolveBio Python Client
 ======================
 
 This is the SolveBio Python package and command-line interface (CLI).
-This module is tested against Python 2.7, 3.6, 3.7, 3.8, PyPy and PyPy3.
+This module is tested against Python 2.7, 3.6, 3.7, 3.8, 3.10, PyPy and PyPy3.
 
 Developer documentation is available at [docs.solvebio.com](https://docs.solvebio.com). For more information about SolveBio visit [www.solvebio.com](https://www.solvebio.com).
 

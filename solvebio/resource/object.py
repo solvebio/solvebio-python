@@ -1,10 +1,10 @@
 """Solvebio Object API resource"""
-import collections
 import os
 import re
 import base64
 import binascii
 import mimetypes
+import sys
 from datetime import datetime
 
 import requests
@@ -25,6 +25,11 @@ from .apiresource import SearchableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
 from .apiresource import DownloadableAPIResource
+
+if sys.version_info >= (3, 9, 0):
+    from collections.abc import Iterable
+else:
+    from collections import Iterable # noqa
 
 
 class Object(CreateableAPIResource,
@@ -605,8 +610,7 @@ class Object(CreateableAPIResource,
         def is_iterable_non_string(arg):
             """python2/python3 compatible way to check if arg is an iterable but not string"""
 
-            return (isinstance(arg, collections.Iterable) and
-                    not isinstance(arg, six.string_types))
+            return isinstance(arg, Iterable) and not isinstance(arg, six.string_types)
 
         if not is_iterable_non_string(tags):
             tags = [str(tags)]
