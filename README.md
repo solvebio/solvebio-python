@@ -46,10 +46,6 @@ Development
     cd solve-python/
     python setup.py develop
 
-To run tests use `nosetest`:
-
-    nosetests solvebio.test.test_dataset
-
 
 Or install `tox` and run:
 
