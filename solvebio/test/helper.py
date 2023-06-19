@@ -23,7 +23,10 @@ class SolveBioTestCase(unittest.TestCase):
     def setUp(self):
         super(SolveBioTestCase, self).setUp()
 
-        self.client = solvebio.SolveClient(**EDPClientCredentialsProvider().as_dict)
+        api_key = os.environ.get('SOLVEBIO_API_KEY', None)
+        api_host = os.environ.get('SOLVEBIO_API_HOST', None)
+        self.client = solvebio.SolveClient(host=api_host, token=api_key)
+        #self.client = solvebio.SolveClient(**EDPClientCredentialsProvider().as_dict)
 
     def check_response(self, response, expect, msg):
         subset = [(key, response[key]) for

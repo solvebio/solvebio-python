@@ -58,7 +58,6 @@ class netrc(_netrc):
                 rep = rep + "\taccount " + six.text_type(attrs[1]) + "\n"
             rep = rep + "\tpassword " + six.text_type(attrs[2]) + "\n"
 
-        print("Writing back", rep)
         f = open(path, 'w')
         f.write(rep)
         f.close()
@@ -94,7 +93,6 @@ def get_credentials():
     # If the preferred host is not the global default, don't try
     # to select any other.
     if host != 'api.solvebio.com':
-        print("!!!!!!!!!!! not api solvebio host")
         return None
 
     # If there are no stored credentials for the default host,

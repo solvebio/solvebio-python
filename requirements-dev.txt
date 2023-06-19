@@ -5,6 +5,7 @@ six
 flask
 percy
 selenium
+itsdangerous==2.0.1
 dash==1.19.0
 dash_auth==1.4.1
 dash_core_components==1.15.0
