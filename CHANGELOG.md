@@ -1,5 +1,12 @@
 # Changelog
 
+## [v2.23.0](https://github.com/solvebio/solvebio-python/tree/v2.22.0) (2023-07-05)
+
+- Add support for Python 3.10
+- Remove nosetests (replace with pytest)
+- Remove deprecated VCF parser code
+
+
 ## [v2.22.0](https://github.com/solvebio/solvebio-python/tree/v2.22.0) (2023-06-12)
 
 - Fix issue with Query.join() where join keys are not the same (#432)
