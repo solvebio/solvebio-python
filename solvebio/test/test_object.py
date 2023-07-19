@@ -459,4 +459,3 @@ class ObjectUploadTests(SolveBioTestCase):
         download_url = new_obj.download_url()
         response = requests.request(method='get', url=download_url)
         self.assertEqual(response.content.decode('utf-8'), "sample file updated")
-        
