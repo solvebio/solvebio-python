@@ -226,11 +226,7 @@ class DownloadableAPIResource(APIResource):
         return path
 
     def download_url(self, **kwargs):
-        download_url = self.instance_url()
-        if 'version_id' in kwargs:
-            download_url += '/versions/{}'.format(kwargs['version_id'])
-        else:
-            download_url += '/download'
+        download_url = self.instance_url() + '/download'
         # Don't redirect, just return the signed S3 URL
         kwargs.update({'redirect': ''})
         response = self.request(
@@ -255,6 +251,7 @@ class ListableAPIResource(APIResource):
             if list_fields:
                 fields, headers = list(zip(*list_fields))
                 results.set_tabulate(fields, headers=headers, sort=False)
+
         return results
 
     @classmethod

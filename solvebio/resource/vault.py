@@ -179,18 +179,6 @@ class Vault(CreateableAPIResource,
         })
         return self._object_list_helper(**params)
 
-    def enable_versioning(self):
-        self['versioning'] = 'enabled'
-        self.save()
-
-    def disable_versioning(self):
-        self['versioning'] = 'disabled'
-        self.save()
-
-    def suspend_versioning(self):
-        self['versioning'] = 'suspended'
-        self.save()
-
     @classmethod
     def get_by_full_path(cls, full_path, **kwargs):
         _client = kwargs.pop('client', None) or cls._client or client
