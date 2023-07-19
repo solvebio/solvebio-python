@@ -72,3 +72,27 @@ class VaultTests(SolveBioTestCase):
         for case in error_test_cases:
             with self.assertRaises(Exception):
                 v, v_paths = self.client.Vault.validate_full_path(case)
+
+    def test_vault_versioning(self):
+        vault = self.client.Vault.get_personal_vault()
+        initial_versioning_status = vault["versioning"]
+        assert initial_versioning_status in ["enabled", "disabled", "suspended"]
+
+        self.addCleanup(VaultTests.clean_up_after_vault_versioning, vault, initial_versioning_status)
+
+        vault.enable_versioning()
+        assert "enabled" == vault["versioning"]
+        vault.disable_versioning()
+        assert "disabled" == vault["versioning"]
+        vault.suspend_versioning()
+        assert "suspended" == vault["versioning"]
+
+    @staticmethod
+    def clean_up_after_vault_versioning(vault, versioning_status):
+        if versioning_status == "enabled":
+            vault.enable_versioning()
+        elif versioning_status == "disabled":
+            vault.disable_versioning()
+        elif versioning_status == "suspended":
+            vault.suspend_versioning()
+        assert versioning_status == vault["versioning"]
