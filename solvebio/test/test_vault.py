@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import unittest
+
 from .helper import SolveBioTestCase
 
 
@@ -73,6 +75,7 @@ class VaultTests(SolveBioTestCase):
             with self.assertRaises(Exception):
                 v, v_paths = self.client.Vault.validate_full_path(case)
 
+    @unittest.skip("Skip because API Host on GH pipelines doesn't support versioning.")
     def test_vault_versioning(self):
         vault = self.client.Vault.get_personal_vault()
         initial_versioning_status = vault["versioning"]

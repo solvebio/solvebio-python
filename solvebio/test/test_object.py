@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import unittest
 import uuid
 import os
 import shutil
@@ -321,6 +322,7 @@ class ObjectTests(SolveBioTestCase):
 
         self.assertEqual(list(resp), valid_response['results'])
 
+    @unittest.skip("Skip because API Host on GH pipelines doesn't support versioning.")
     def test_object_versioning(self):
         vault = self.client.Vault.get_personal_vault()
         initial_versioning_status = vault["versioning"]
