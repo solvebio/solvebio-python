@@ -19,6 +19,8 @@ from solvebio.utils.files import separate_filename_extension
 
 from ..client import client
 
+from .solveobject import convert_to_solve_object
+
 from .apiresource import CreateableAPIResource
 from .apiresource import ListableAPIResource
 from .apiresource import SearchableAPIResource
@@ -739,3 +741,59 @@ class Object(CreateableAPIResource,
             if raise_on_disabled:
                 raise
             return None
+
+    def list_versions(self, include_deleted=True):
+        """
+        Returns all the versions for this object.
+        Only file objects can have versions.
+        """
+        if not self.is_file:
+            raise SolveError("Only file objects can have versions.")
+
+        _client = self._client
+        url = self.instance_url() + '/versions'
+        params = {"show_deleted": include_deleted}
+        response = _client.get(url, params)
+        results = convert_to_solve_object(response, client=_client)
+        # set up tabulate:
+        if len(results.data) > 0:
+            list_fields = getattr(results.data[0], 'LIST_FIELDS', None)
+            if list_fields:
+                fields, headers = list(zip(*list_fields))
+                results.set_tabulate(fields, headers=headers, sort=False)
+        return results
+
+    def delete_version(self, version_id):
+        """
+        Marks the specified version as deleted.
+        Only file objects can have versions.
+        """
+        if not self.is_file:
+            raise SolveError("Only file objects can have versions.")
+
+        url = self.instance_url() + '/versions/{}'.format(version_id)
+        return self._client.delete(url, {})
+
+    def undelete_version(self, version_id):
+        """
+        Marks the specified version as not deleted.
+        Only file objects can have versions.
+        """
+        if not self.is_file:
+            raise SolveError("Only file objects can have versions.")
+
+        url = self.instance_url() + '/versions/{}'.format(version_id)
+        return self._client.request('PUT', url)
+
+    def restore_version(self, version_id):
+        """
+        Sets the current version to the specified version.
+        This is done by creating a new version with the same content as the specified version.
+        Only file objects can have versions.
+        """
+        if not self.is_file:
+            raise SolveError("Only file objects can have versions.")
+
+        url = self.instance_url() + '/versions/current'
+        data = {"version_id": version_id}
+        return self._client.post(url, data=data)

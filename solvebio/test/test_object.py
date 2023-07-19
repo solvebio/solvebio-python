@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import unittest
 import uuid
 import os
 import shutil
@@ -320,6 +321,48 @@ class ObjectTests(SolveBioTestCase):
         resp = file.query()
 
         self.assertEqual(list(resp), valid_response['results'])
+
+    @unittest.skip("Skip because API Host on GH pipelines doesn't support versioning.")
+    def test_object_versioning(self):
+        vault = self.client.Vault.get_personal_vault()
+        initial_versioning_status = vault["versioning"]
+        vault.enable_versioning()
+
+        file = self.client.Object.create(filename='solvebio-py-test.txt',
+                                         object_type='file',
+                                         vault_id=vault.id)
+
+        self.addCleanup(ObjectTests.clean_up_after_object_versioning, vault, file, initial_versioning_status)
+
+        assert file['version_count'] == 1
+
+        file = self.client.Object.create(filename='solvebio-py-test.txt',
+                                         object_type='file',
+                                         vault_id=vault.id)
+
+        assert file['version_count'] == 2
+
+        versions = file.list_versions()
+        assert len(versions['data']) == 2
+
+        version_id_1 = versions['data'][0]['id']
+
+        file.delete_version(version_id_1)
+        versions = file.list_versions(include_deleted=False)
+        assert len(versions['data']) == 1
+
+        versions = file.list_versions()
+        assert versions['data'][0]['is_deleted']
+
+        file.undelete_version(version_id_1)
+        versions = file.list_versions()
+        assert not versions['data'][0]['is_deleted']
+
+    @staticmethod
+    def clean_up_after_object_versioning(vault, file, versioning_status):
+        from .test_vault import VaultTests
+        file.delete(force=True)
+        VaultTests.clean_up_after_vault_versioning(vault, versioning_status)
 
 
 class ObjectUploadTests(SolveBioTestCase):
