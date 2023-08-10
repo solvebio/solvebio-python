@@ -725,10 +725,10 @@ def ls(args):
     """
     Given a SolveBio remote path, list the files and folders
     """
-    return _ls(args.full_path)
+    return _ls(args.full_path, recursive=args.recursive)
 
 
-def _ls(full_path):
+def _ls(full_path, recursive=False):
 
     if "**" in full_path:
         print("Recursive paths containing ** are not supported by `ls`")
@@ -743,6 +743,8 @@ def _ls(full_path):
                 file_.last_modified, file_.object_type.ljust(8), file_.full_path
             )
         )
+        if recursive and file_.object_type == "folder":
+            _ls(file_.full_path + "/*", recursive=True)
 
     if len(files) == 0:
         print(
