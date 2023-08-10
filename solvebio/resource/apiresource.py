@@ -92,7 +92,7 @@ class ListObject(SolveObject):
         return convert_to_solve_object(self['data'], client=self._client)
 
     def set_tabulate(self, fields, **kwargs):
-        self._tabulate = lambda data:\
+        self._tabulate = lambda data: \
             tabulate([[d[i] for i in fields] for d in data], **kwargs)
 
     def __len__(self):
