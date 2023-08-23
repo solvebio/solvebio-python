@@ -729,7 +729,7 @@ def ls(args):
     if "**" in args.full_path:
         print("Recursive paths containing '**' are not supported by `ls`. "
               "Try the --recursive flag instead.")
-        return False
+        return True
 
     files = _ls(args.full_path, recursive=args.recursive)
 
@@ -738,9 +738,7 @@ def ls(args):
             "No file(s) found at '{}'. "
             'Try using glob syntax (vault:/folder/*)'.format(args.full_path)
         )
-        return False
-
-    return True
+        return True
 
 
 def _ls(full_path, recursive=False):
