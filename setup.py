@@ -23,6 +23,7 @@ if sys.version_info < (2, 6):
     install_requires.append('requests >= 0.8.8, < 0.10.1')
     install_requires.append('ssl')
 elif sys.version_info < (2, 7):
+    install_requires.append('brotli==1.0.9')
     install_requires.append('ordereddict')
 else:
     install_requires.append('requests>=2.0.0')
