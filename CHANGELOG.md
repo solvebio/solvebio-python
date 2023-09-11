@@ -1,5 +1,10 @@
 # Changelog
 
+## [v2.24.1](https://github.com/solvebio/solvebio-python/tree/v2.24.1) (2023-09-11)
+
+- Fixed connection issue with parallel upload command (EDPDEV-1000)
+
+
 ## [v2.24.0](https://github.com/solvebio/solvebio-python/tree/v2.24.0) (2023-08-22)
 
 - Add vault file versioning support
