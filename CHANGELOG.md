@@ -1,6 +1,12 @@
 # Changelog
 
-## [v2.23.0](https://github.com/solvebio/solvebio-python/tree/v2.22.0) (2023-07-05)
+## [v2.24.0](https://github.com/solvebio/solvebio-python/tree/v2.24.0) (2023-08-22)
+
+- Add vault file versioning support
+- Add `--recursive` option to `ls` command
+
+
+## [v2.23.0](https://github.com/solvebio/solvebio-python/tree/v2.23.0) (2023-07-05)
 
 - Add support for Python 3.10
 - Remove nosetests (replace with pytest)
