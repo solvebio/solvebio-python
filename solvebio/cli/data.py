@@ -207,14 +207,17 @@ def _create_file_job(args):
             return
         client = SolveClient()
         remote_parent = Object.get_by_full_path(
-            remote_folder_full_path, assert_type="folder", debug=True,
+            remote_folder_full_path,
+            assert_type="folder",
             client=client
         )
-        Object.upload_file(local_file_path,
-                           remote_parent.path,
-                           vault_path,
-                           archive_folder=archive_folder,
-                           client=client)
+        Object.upload_file(
+            local_file_path,
+            remote_parent.path,
+            vault_path,
+            archive_folder=archive_folder,
+            client=client
+        )
         return
     except KeyboardInterrupt as e:
         raise e
