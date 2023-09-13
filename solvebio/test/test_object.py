@@ -364,6 +364,33 @@ class ObjectTests(SolveBioTestCase):
         file.delete(force=True)
         VaultTests.clean_up_after_vault_versioning(vault, versioning_status)
 
+    @unittest.skip("Skip because API Host on GH pipelines doesn't support shortcuts.")
+    def test_shortcuts(self):
+        vault = self.client.Vault.get_personal_vault()
+
+        folder_full_path = vault.full_path + ":/{}-test-folder".format(get_uuid_str())
+        folder = self.client.Object.create_folder(vault, folder_full_path)
+
+        file = self.client.Object.create(filename='shorcut-test.txt',
+                                         object_type='file',
+                                         parent_object_id=folder.id,
+                                         vault_id=vault.id)
+
+        shortcut_folder_full_path = vault.full_path + ":/{}-test-shortcut-folder".format(get_uuid_str())
+        shortcut_folder = self.client.Object.create_shortcut(vault, shortcut_folder_full_path, 'folder', folder.id)
+        self.assertTrue(shortcut_folder.is_shortcut)
+        self.assertEqual(shortcut_folder.shortcut_target_object.id, folder.id)
+
+        shortcut_file_full_path = vault.full_path + ":/{}-test-shortcut-file".format(get_uuid_str())
+        shortcut_file = self.client.Object.create_shortcut(vault, shortcut_file_full_path, 'file', file.id)
+        self.assertTrue(shortcut_file.is_shortcut)
+        self.assertEqual(shortcut_file.shortcut_target_object.id, folder.id)
+
+        shortcut_url_full_path = vault.full_path + ":/{}-test-shortcut-url".format(get_uuid_str())
+        shortcut_url = self.client.Object.create_shortcut(vault, shortcut_url_full_path, 'url', 'www.google.com')
+        self.assertTrue(shortcut_url.is_shortcut)
+        self.assertEqual(shortcut_url.shortcut_target_object, 'www.google.com')
+
 
 class ObjectUploadTests(SolveBioTestCase):
 

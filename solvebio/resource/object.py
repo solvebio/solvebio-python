@@ -383,6 +383,66 @@ class Object(CreateableAPIResource,
         return new_obj
 
     @classmethod
+    def create_shortcut(cls, vault, full_path, target_type, target_id, tags=None, **kwargs):
+        """Create a shortcut.
+
+        Args:
+            vault (Vault): A Vault object.
+            full_path (str): Full path including vault name.
+            target_type (str): Type of the target object. Can be 'vault', 'file', 'dataset', 'folder', 'url'.
+            target_id (str): ID of the target object or url in the case of target_type 'url'.
+            tags (list[str]): List of tags to put on folder.
+            client: SolveBio client configuration to use.
+        Returns:
+            Object: New shortcut object
+        Raises:
+            SolveError: if a object already exists at the given full_path.
+        """
+        _client = kwargs.pop('client', None) or cls._client or client
+
+        full_path, path_dict = Object.validate_full_path(full_path, client=_client)
+        shortcut_name = path_dict["filename"]
+
+        try:
+            new_obj = Object.get_by_full_path(full_path, client=_client)
+            if not new_obj.is_folder:
+                raise SolveError(
+                    "Object type {} already exists at location: {}".format(
+                        new_obj.object_type, full_path
+                    )
+                )
+        except NotFoundError:
+            # Create the folder
+            if path_dict["parent_path"] == "/":
+                parent_object_id = None
+            else:
+                parent = Object.get_by_full_path(
+                    path_dict["parent_full_path"], assert_type="folder", client=_client
+                )
+                parent_object_id = parent.id
+
+            target = {'object_type': target_type}
+            if target_type == 'url':
+                target['url'] = target_id
+            else:
+                target['id'] = target_id
+
+            # Make the API call
+            new_obj = Object.create(
+                vault_id=vault.id,
+                parent_object_id=parent_object_id,
+                object_type="shortcut",
+                filename=shortcut_name,
+                tags=tags or [],
+                target=target,
+                client=_client
+            )
+
+            print("Notice: Shortcut created at {}".format(new_obj.path))
+
+        return new_obj
+
+    @classmethod
     def upload_file(cls, local_path, remote_path, vault_full_path, **kwargs):
         from solvebio import Vault
         from solvebio import Object
@@ -593,6 +653,35 @@ class Object(CreateableAPIResource,
     @property
     def is_file(self):
         return self.object_type == 'file'
+
+    @property
+    def is_shortcut(self):
+        return self.object_type == 'shortcut'
+
+    @property
+    def shortcut_target(self):
+        if not self.is_shortcut:
+            raise SolveError(
+                "Only shortcut objects have a Target resource. This is a {}"
+                .format(self.object_type))
+
+        target = {
+            'id': self['target']['id'],
+            'object_type': self['target']['object_type'],
+            'url': self['target']['url']
+        }
+        return target
+
+    @property
+    def shortcut_target_object(self):
+        target = self.shortcut_target
+        if target['object_type'] == 'url':
+            return target['url']
+        elif target['object_type'] == 'vault':
+            from . import Vault
+            return Vault.retrieve(target['id'], client=self._client)
+        else:
+            return Object.retrieve(target['id'], client=self._client)
 
     @property
     def data_url(self):
