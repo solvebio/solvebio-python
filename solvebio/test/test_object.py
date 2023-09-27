@@ -364,7 +364,7 @@ class ObjectTests(SolveBioTestCase):
         file.delete(force=True)
         VaultTests.clean_up_after_vault_versioning(vault, versioning_status)
 
-    # @unittest.skip("Skip because API Host on GH pipelines doesn't support shortcuts.")
+    @unittest.skip("Skip because API Host on GH pipelines doesn't support shortcuts.")
     def test_shortcuts(self):
         vault = self.client.Vault.get_personal_vault()
 
