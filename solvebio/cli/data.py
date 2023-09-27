@@ -609,6 +609,7 @@ def _download(
     # API will determine depth based on number of "/" in the glob
     # Add */** to match in any vault (recursive)
     files = Object.all(glob=full_path, limit=1000, object_type="file")
+    shortcuts = Object.all(glob=full_path, limit=1000, object_type="shortcut")
     if not files:
         print(
             "No file(s) found at --full-path {}\nIf attempting to download "
@@ -626,6 +627,22 @@ def _download(
             )
         )
 
+    for shortcut_ in shortcuts:
+        if shortcut_.shortcut_target["object_type"] != 'file':
+            continue
+
+        if not dry_run:
+            target = shortcut_.shortcut_target_object
+            if not target:
+                continue
+            target.filename = shortcut_.filename
+            target.download(local_folder_path)
+            print(
+                "Downloaded from shortcut: {} to {}/{}".format(
+                    shortcut_.full_path, local_folder_path, shortcut_.filename
+                )
+            )
+
 
 def _download_recursive(
     full_path, local_folder_path, dry_run=False, excludes=[], includes=[], delete=False
@@ -636,17 +653,7 @@ def _download_recursive(
             "Paths containing ** are not compatible with the --recursive flag."
         )
 
-    full_path, parts = Object.validate_full_path(full_path)
-    results = GlobalSearch().filter(path__prefix=full_path)
-    num_files = len([x for x in results if x.get("object_type") == "file"])
-    print("Found {} files to download.".format(num_files))
-    if num_files == 0:
-        if full_path.endswith("/*"):
-            print(
-                "Folder names ending with '/*' are not supported with "
-                "the --recursive flag, try again with only the folder name."
-            )
-        return
+    results = list(_resolve_shortcuts_and_get_files(full_path=full_path, visited_folders=set()))
 
     remote_objects = []
     for file_obj in results:
@@ -654,7 +661,7 @@ def _download_recursive(
         file_obj.depth = depth
         # MD5 not retrieved by GlobalSearch so
         # separate API call is needed
-        if file_obj.class_name() == "Vault":
+        if file_obj.class_name() == "Vault" or file_obj.is_shortcut:
             continue
         if file_obj.is_file and not file_obj.get('md5'):
             file_obj = Object.retrieve(file_obj.id)
@@ -726,6 +733,64 @@ def _download_recursive(
                     )
                 )
                 os.rmdir(local_abs_path)
+
+
+def _resolve_shortcuts_and_get_files(full_path, visited_folders, download_path=None):
+    if not download_path:
+        download_path = full_path
+    full_path, parts = Object.validate_full_path(full_path)
+    results = GlobalSearch().filter(path__prefix=full_path)
+
+    if full_path.endswith("/*"):
+        print(
+            "Folder names ending with '/*' are not supported with "
+            "the --recursive flag, try again with only the folder name."
+        )
+        return set()
+
+    files = []
+    for x in results:
+        if x.get("object_type") == "file":
+            x.full_path = download_path + _get_relative_download_path(base_path=full_path,
+                                                                      sub_path=x.full_path,
+                                                                      filename=x.filename)
+            files.append(x)
+
+    num_files = len(files)
+    print("Found {} files to download.".format(num_files))
+    files_to_download = set(files)
+
+    shortcuts = [o for o in results if o.class_name() != "Vault" and o.is_shortcut]
+    num_shortcuts = len(shortcuts)
+    print("Found {} shortcuts to resolve.".format(num_shortcuts))
+
+    resolved_shortcuts = set()
+    for shortcut in shortcuts:
+        target_object = shortcut.shortcut_target_object
+        if not target_object:
+            continue
+        if target_object.is_folder:
+            if target_object.id in visited_folders:
+                # skip over folders that have already been visited
+                # to avoid circular shortcut resolution
+                continue
+            visited_folders.add(target_object.id)
+            resolved_shortcuts |= _resolve_shortcuts_and_get_files(full_path=target_object.full_path,
+                                                                   visited_folders=visited_folders,
+                                                                   download_path=download_path+"/"+shortcut.filename)
+        else:
+            # set filename and path for download - keep shortcut structure
+            target_object.filename = shortcut.filename
+            target_object.full_path = download_path + _get_relative_download_path(base_path=full_path,
+                                                                                  sub_path=target_object.full_path,
+                                                                                  filename=target_object.filename)
+            resolved_shortcuts.add(target_object)
+
+    return resolved_shortcuts | files_to_download
+
+
+def _get_relative_download_path(base_path, sub_path, filename):
+    return os.path.relpath(sub_path, base_path) + "/" + filename
 
 
 def ls(args):

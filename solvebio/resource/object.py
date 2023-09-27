@@ -679,13 +679,17 @@ class Object(CreateableAPIResource,
     @property
     def shortcut_target_object(self):
         target = self.shortcut_target
-        if target['object_type'] == 'url':
-            return target['url']
-        elif target['object_type'] == 'vault':
-            from . import Vault
-            return Vault.retrieve(target['id'], client=self._client)
-        else:
-            return Object.retrieve(target['id'], client=self._client)
+        try:
+            if target['object_type'] == 'url':
+                return target['url']
+            elif target['object_type'] == 'vault':
+                from . import Vault
+                return Vault.retrieve(target['id'], client=self._client)
+            else:
+                return Object.retrieve(target['id'], client=self._client)
+        except SolveError:
+            print("Target specified by shortcut: {} does not exist".format(self.full_path))
+            return None
 
     @property
     def data_url(self):
