@@ -368,8 +368,10 @@ class ObjectTests(SolveBioTestCase):
     def test_shortcuts(self):
         vault = self.client.Vault.get_personal_vault()
 
-        folder_full_path = vault.full_path + ":/{}-test-folder".format(get_uuid_str())
-        folder = self.client.Object.create_folder(vault, folder_full_path)
+        folder_name = "{}-test-folder".format(str(uuid.uuid4()))
+        folder = self.client.Object.create(filename=folder_name,
+                                           object_type='folder',
+                                           vault_id=vault.id)
 
         file = self.client.Object.create(filename='shorcut-test.txt',
                                          object_type='file',
