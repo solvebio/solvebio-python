@@ -775,9 +775,11 @@ def _resolve_shortcuts_and_get_files(full_path, visited_folders, download_path=N
                 # to avoid circular shortcut resolution
                 continue
             visited_folders.add(target_object.id)
-            resolved_shortcuts |= _resolve_shortcuts_and_get_files(full_path=target_object.full_path,
-                                                                   visited_folders=visited_folders,
-                                                                   download_path=download_path+"/"+shortcut.filename)
+            resolved_shortcuts |= _resolve_shortcuts_and_get_files(
+                full_path=target_object.full_path,
+                visited_folders=visited_folders,
+                download_path=download_path + "/" + shortcut.filename
+            )
         else:
             # set filename and path for download - keep shortcut structure
             target_object.filename = shortcut.filename
