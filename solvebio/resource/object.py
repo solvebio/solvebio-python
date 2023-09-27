@@ -391,7 +391,7 @@ class Object(CreateableAPIResource,
             full_path (str): Full path including vault name.
             target_type (str): Type of the target object. Can be 'vault', 'file', 'dataset', 'folder', 'url'.
             target_id (str): ID of the target object or url in the case of target_type 'url'.
-            tags (list[str]): List of tags to put on folder.
+            tags (list[str]): List of tags to put on shortcut.
             client: SolveBio client configuration to use.
         Returns:
             Object: New shortcut object
@@ -405,14 +405,18 @@ class Object(CreateableAPIResource,
 
         try:
             new_obj = Object.get_by_full_path(full_path, client=_client)
-            if not new_obj.is_folder:
+            if new_obj:
                 raise SolveError(
                     "Object type {} already exists at location: {}".format(
                         new_obj.object_type, full_path
                     )
                 )
-        except NotFoundError:
-            # Create the folder
+        except SolveError as e:
+            # Create the shortcut if an object doesn't exist on the path
+            # If any error other than 404 Not Found is caught - propagate it further
+            if "404" not in e.message:
+                raise e
+
             if path_dict["parent_path"] == "/":
                 parent_object_id = None
             else:

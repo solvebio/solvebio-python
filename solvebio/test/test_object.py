@@ -364,7 +364,7 @@ class ObjectTests(SolveBioTestCase):
         file.delete(force=True)
         VaultTests.clean_up_after_vault_versioning(vault, versioning_status)
 
-    @unittest.skip("Skip because API Host on GH pipelines doesn't support shortcuts.")
+    # @unittest.skip("Skip because API Host on GH pipelines doesn't support shortcuts.")
     def test_shortcuts(self):
         vault = self.client.Vault.get_personal_vault()
 
@@ -385,7 +385,7 @@ class ObjectTests(SolveBioTestCase):
         shortcut_file_full_path = vault.full_path + ":/{}-test-shortcut-file".format(get_uuid_str())
         shortcut_file = self.client.Object.create_shortcut(vault, shortcut_file_full_path, 'file', file.id)
         self.assertTrue(shortcut_file.is_shortcut)
-        self.assertEqual(shortcut_file.shortcut_target_object.id, folder.id)
+        self.assertEqual(shortcut_file.shortcut_target_object.id, file.id)
 
         shortcut_url_full_path = vault.full_path + ":/{}-test-shortcut-url".format(get_uuid_str())
         shortcut_url = self.client.Object.create_shortcut(vault, shortcut_url_full_path, 'url', 'www.google.com')
