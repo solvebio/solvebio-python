@@ -200,6 +200,8 @@ def _create_file_job(args):
         args[1] (remote_folder_path): Path to remote parent folder.
         args[2] (vault_path): Path to remote vault.
         args[3] (dry_run): Whether to performa dry run.
+        args[4] (archive_folder): An archive folder to move existing files into
+        args[5] (client_auth): Tuple containing API host, token, and token type
     Returns:
         None or Exception if exception is raised.
     """
