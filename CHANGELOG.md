@@ -1,5 +1,9 @@
 # Changelog
 
+## [v2.24.2](https://github.com/solvebio/solvebio-python/tree/v2.24.2) (2023-10-05)
+
+- Fixed another connection issue with parallel upload command that used the wrong global credentials (EDPDEV-1049)
+
 ## [v2.24.1](https://github.com/solvebio/solvebio-python/tree/v2.24.1) (2023-09-11)
 
 - Fixed connection issue with parallel upload command (EDPDEV-1000)
