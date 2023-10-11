@@ -378,19 +378,25 @@ class ObjectTests(SolveBioTestCase):
                                          vault_id=vault.id)
 
         shortcut_folder_full_path = vault.full_path + ":/{}-test-shortcut-folder".format(get_uuid_str())
-        shortcut_folder = self.client.Object.create_shortcut(vault, shortcut_folder_full_path, 'folder', folder.id)
+        shortcut_folder = folder.create_shortcut(shortcut_folder_full_path)
         self.assertTrue(shortcut_folder.is_shortcut)
-        self.assertEqual(shortcut_folder.shortcut_target_object.id, folder.id)
+        self.assertEqual(shortcut_folder.get_target().id, folder.id)
 
         shortcut_file_full_path = vault.full_path + ":/{}-test-shortcut-file".format(get_uuid_str())
-        shortcut_file = self.client.Object.create_shortcut(vault, shortcut_file_full_path, 'file', file.id)
+        shortcut_file = file.create_shortcut(shortcut_file_full_path)
         self.assertTrue(shortcut_file.is_shortcut)
-        self.assertEqual(shortcut_file.shortcut_target_object.id, file.id)
+        self.assertEqual(shortcut_file.get_target().id, file.id)
 
-        shortcut_url_full_path = vault.full_path + ":/{}-test-shortcut-url".format(get_uuid_str())
-        shortcut_url = self.client.Object.create_shortcut(vault, shortcut_url_full_path, 'url', 'www.google.com')
+        shortcut_url_name = "{}-test-shortcut-url".format(get_uuid_str())
+        shortcut_url = self.client.Object.create(filename=shortcut_url_name,
+                                                 object_type='shortcut',
+                                                 vault_id=vault.id,
+                                                 target={
+                                                     'url': 'www.google.com',
+                                                     'object_type': 'url',
+                                                 })
         self.assertTrue(shortcut_url.is_shortcut)
-        self.assertEqual(shortcut_url.shortcut_target_object, 'www.google.com')
+        self.assertEqual(shortcut_url.get_target(), 'www.google.com')
 
 
 class ObjectUploadTests(SolveBioTestCase):
