@@ -410,6 +410,8 @@ class Object(CreateableAPIResource,
             # If any error other than 404 Not Found is caught - propagate it further
             if isinstance(e, NotFoundError) or "404" in e.message:
                 pass
+            else:
+                raise e
 
             target = {
                 'id': self.id,
@@ -418,7 +420,8 @@ class Object(CreateableAPIResource,
 
             shortcut = Object.get_or_create_by_full_path(full_path=shortcut_full_path,
                                                          object_type="shortcut",
-                                                         target=target)
+                                                         target=target,
+                                                         client=_client)
 
             print("Notice: Shortcut created at {}".format(shortcut.path))
 
@@ -640,10 +643,16 @@ class Object(CreateableAPIResource,
     def is_shortcut(self):
         return self.object_type == 'shortcut'
 
-    def get_target(self):
+    def get_target(self, return_none_target=True):
         if not self.is_shortcut:
             raise SolveError("Only shortcut objects have a target resource. This is a {}".format(self.object_type))
         target = self['target']
+        if not target:
+            if return_none_target:
+                return None
+            else:
+                raise SolveError("Shortcut target is None.")
+
         if target['object_type'] == 'url':
             return target['url']
         elif target['object_type'] == 'vault':
