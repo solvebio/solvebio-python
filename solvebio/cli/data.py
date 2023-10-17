@@ -845,6 +845,7 @@ def queue(statuses=["running", "queued"]):
     """
     task_map = {}
     tasks = Task.all(status=",".join(statuses))
+    print('\n',tasks)
     for task in tasks:
         if task.user.id not in task_map:
             task_map[task.user.id] = []

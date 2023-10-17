@@ -9,17 +9,17 @@ from solvebio.client import client
 class ErrorTests(SolveBioTestCase):
 
     def test_solve_error(self):
+        ds_id = '510113719950913753'
         try:
             # two errors get raised
             DatasetImport.create(
-                dataset_id='510113719950913753',
+                dataset_id=ds_id,
                 manifest=dict(files=[dict(filename='soemthing.md')])
             )
         except SolveError as e:
-            self.assertTrue('Error (dataset_id):' in str(e), e)
-            self.assertTrue('Invalid dataset' in str(e), e)
-            self.assertTrue('Error (manifest):' in str(e), e)
-            self.assertTrue('Each file must' in str(e), e)
+            resp = e.json_body
+            self.assertIn(f'Invalid pk "{ds_id}" - object does not exist.', resp.get('dataset_id'))
+            self.assertIn(f"Each file must have an URL.", resp.get('manifest'))
 
 
 class ErrorTestsAuth(SolveBioTestCase):

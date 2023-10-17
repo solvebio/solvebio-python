@@ -262,6 +262,7 @@ class SolveClient(object):
             return self.request(method, url, **kwargs)
 
         if not (200 <= response.status_code < 400):
+            print("\n@@ERR@@\n", method, url, opts, '\n', response.status_code, response.content)
             _handle_api_error(response)
 
         # 204 is used on deletion. There is no JSON here.

@@ -26,6 +26,11 @@ from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
 from .apiresource import DownloadableAPIResource
 
+try:
+    from collections import Iterable
+except:
+    from typing import Iterable
+
 
 class Object(CreateableAPIResource,
              ListableAPIResource,
@@ -605,7 +610,7 @@ class Object(CreateableAPIResource,
         def is_iterable_non_string(arg):
             """python2/python3 compatible way to check if arg is an iterable but not string"""
 
-            return (isinstance(arg, collections.Iterable) and
+            return (isinstance(arg, Iterable) and
                     not isinstance(arg, six.string_types))
 
         if not is_iterable_non_string(tags):

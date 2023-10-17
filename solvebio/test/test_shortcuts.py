@@ -34,6 +34,7 @@ def raise_not_found(*args, **kwargs):
 def upload_path(*args, **kwargs):
     return "/"
 
+VAULT_DOMAIN = 'admin-qb-int-dev'
 
 class CLITests(SolveBioTestCase):
     def setUp(self):
@@ -62,7 +63,7 @@ class CreateDatasetTests(CLITests):
     def test_create_dataset(self):
         args = [
             "create-dataset",
-            "solvebio:test_vault:/test-dataset",
+            f"{VAULT_DOMAIN}:test_vault:/test-dataset",
             "--capacity",
             "small",
         ]
@@ -73,7 +74,7 @@ class CreateDatasetTests(CLITests):
     def test_create_dataset_by_filename(self):
         args = [
             "create-dataset",
-            "solvebio:test_vault:/test-dataset-filename",
+            f"{VAULT_DOMAIN}:test_vault:/test-dataset-filename",
             "--capacity",
             "small",
             "--tag",
@@ -105,7 +106,7 @@ class CreateDatasetTests(CLITests):
         template_path = os.path.join(os.path.dirname(__file__), "data/template.json")
         args = [
             "create-dataset",
-            "solvebio:test_vault:/test-dataset",
+            f"{VAULT_DOMAIN}:test_vault:/test-dataset",
             "--template-file",
             template_path,
             "--capacity",
@@ -126,7 +127,7 @@ class CreateDatasetTests(CLITests):
         tpl = DatasetTemplate.create(**tpl_json)
         args = [
             "create-dataset",
-            "solvebio:test_vault:/test-dataset",
+            f"{VAULT_DOMAIN}:test_vault:/test-dataset",
             "--template-id",
             str(tpl.id),
             "--capacity",
@@ -191,12 +192,12 @@ class ImportTests(CLITests):
             "--follow",
             "--commit-mode",
             "overwrite",
-            "solvebio:mock_vault:/test-dataset",
+            f"{VAULT_DOMAIN}:mock_vault:/test-dataset",
             file_,
         ]
 
         imports, ds = self._test_import_file(args)
-        self.assertEqual(ds.full_path, "solvebio:mock_vault:/test-dataset")
+        self.assertEqual(ds.full_path, f"{VAULT_DOMAIN}:mock_vault:/test-dataset")
         self.assertEqual(ds.tags, ["hello"])
 
         # should be a manifest with a single file
@@ -210,7 +211,7 @@ class ImportTests(CLITests):
             "--tag",
             "hello",
             "--follow",
-            "solvebio:mock_vault:/test-dataset",
+            f"{VAULT_DOMAIN}:mock_vault:/test-dataset",
             "not/a/real/path/file.txt",
         ]
 
@@ -239,13 +240,13 @@ class ImportTests(CLITests):
             "--tag",
             "hello",
             "--remote-source",
-            "solvebio:mock_vault:/test-dataset",
+            f"{VAULT_DOMAIN}:mock_vault:/test-dataset",
             "/this/is/a/remote/file",
             "/this/remote/*/path",
         ]
 
         imports, ds = self._test_import_file(args)
-        self.assertEqual(ds.full_path, "solvebio:mock_vault:/test-dataset")
+        self.assertEqual(ds.full_path, f"{VAULT_DOMAIN}:mock_vault:/test-dataset")
         self.assertEqual(ds.tags, ["hello"])
         # should be two imports
         self.assertEqual(len(imports), 2)
@@ -264,12 +265,12 @@ class ImportTests(CLITests):
             "--template-file",
             template_path,
             "--remote-source",
-            "solvebio:mock_vault:/test-dataset",
+            f"{VAULT_DOMAIN}:mock_vault:/test-dataset",
             "/this/is/a/remote/file",
         ]
 
         imports, ds = self._test_import_file(args)
-        self.assertEqual(ds.full_path, "solvebio:mock_vault:/test-dataset")
+        self.assertEqual(ds.full_path, f"{VAULT_DOMAIN}:mock_vault:/test-dataset")
         self.assertEqual(ds.tags, ["hello"])
         self.assertEqual(len(imports), 1)
         import_ = imports[0]
@@ -328,7 +329,7 @@ class UploadTests(CLITests):
         with open(file_, "w") as fp:
             fp.write("blargh")
 
-        args = ["upload", "--full-path", "solvebio:test_vault:/test-folder", file_]
+        args = ["upload", "--full-path", f"{VAULT_DOMAIN}:test_vault:/test-folder", file_]
         with self.assertRaises(NotFoundError):
             self._test_upload_command(args, fail_lookup=True)
 
@@ -336,7 +337,7 @@ class UploadTests(CLITests):
         args = [
             "upload",
             "--full-path",
-            "solvebio:test_vault:/test-folder",
+            f"{VAULT_DOMAIN}:test_vault:/test-folder",
             "--create-full-path",
             file_,
         ]
@@ -352,7 +353,7 @@ class UploadTests(CLITests):
         args = [
             "upload",
             "--full-path",
-            "solvebio:test_vault:/test-folder-upload",
+            f"{VAULT_DOMAIN}:test_vault:/test-folder-upload",
             folder_,
         ]
         with self.assertRaises(NotFoundError):
@@ -362,7 +363,7 @@ class UploadTests(CLITests):
         args = [
             "upload",
             "--full-path",
-            "solvebio:test_vault:/test-folder-upload",
+            f"{VAULT_DOMAIN}:test_vault:/test-folder-upload",
             "--create-full-path",
             folder_,
         ]
@@ -374,7 +375,7 @@ class UploadTests(CLITests):
             "--num-processes",
             "2",
             "--full-path",
-            "solvebio:test_vault:/test-folder-upload",
+            f"{VAULT_DOMAIN}:test_vault:/test-folder-upload",
             folder_,
         ]
         with self.assertRaises(NotFoundError):
@@ -467,11 +468,11 @@ class DownloadTests(CLITests):
         return main.main(args)
 
     def test_download_file(self):
-        args = ["download", "solvebio:mock_vault:/test-file", "."]
+        args = ["download", f"{VAULT_DOMAIN}:mock_vault:/test-file", "."]
         self._test_download_file(args)
         self.assertFalse(os.path.exists(".test-file"))
 
-        args = ["download", "solvebio:mock_vault:/test-file/*", "."]
+        args = ["download", f"{VAULT_DOMAIN}:mock_vault:/test-file/*", "."]
         self._test_download_file(args)
         self.assertFalse(os.path.exists(".test-file"))
 
@@ -490,7 +491,7 @@ class DownloadTests(CLITests):
         with self.assertRaises(SystemExit):
             self._test_download_file(args)
 
-        args = ["download", "solvebio:mock_vault:/test-file/*", "."]
+        args = ["download", f"{VAULT_DOMAIN}:mock_vault:/test-file/*", "."]
         with self.assertRaises(Exception):
             self._test_download_file(args, download_success=False)
 
@@ -563,7 +564,7 @@ class DownloadTests(CLITests):
         self.assertEqual(RmDir.call_count, expected_delete_folders)
 
     def test_download_folder(self):
-        args = ["download", "--recursive", "solvebio:mock_vault:/test-folder", "."]
+        args = ["download", "--recursive", f"{VAULT_DOMAIN}:mock_vault:/test-folder", "."]
         self._test_download_folder(args)
         self.assertFalse(os.path.exists("./test-folder"))
 
@@ -573,7 +574,7 @@ class DownloadTests(CLITests):
             "--recursive",
             "--exclude",
             "*",
-            "solvebio:mock_vault:/test-folder/",
+            f"{VAULT_DOMAIN}:mock_vault:/test-folder/",
             ".",
         ]
         self._test_download_folder(args, expected_downloads=0)
@@ -582,7 +583,7 @@ class DownloadTests(CLITests):
         args = [
             "download",
             "--recursive",
-            "solvebio:mock_vault:/test-folder/",
+            f"{VAULT_DOMAIN}:mock_vault:/test-folder/",
             ".",
         ]
         self._test_download_folder(args, expected_downloads=2)
@@ -593,7 +594,7 @@ class DownloadTests(CLITests):
             "--recursive",
             "--exclude",
             "*txt",
-            "solvebio:mock_vault:/test-folder/",
+            f"{VAULT_DOMAIN}:mock_vault:/test-folder/",
             ".",
         ]
         self._test_download_folder(args, expected_downloads=1)
@@ -604,7 +605,7 @@ class DownloadTests(CLITests):
             "--recursive",
             "--exclude",
             "*subfolder*",
-            "solvebio:mock_vault:/test-folder/",
+            f"{VAULT_DOMAIN}:mock_vault:/test-folder/",
             ".",
         ]
         self._test_download_folder(args, expected_downloads=0)
@@ -617,7 +618,7 @@ class DownloadTests(CLITests):
             "*",
             "--include",
             "*.txt",
-            "solvebio:mock_vault:/test-folder/",
+            f"{VAULT_DOMAIN}:mock_vault:/test-folder/",
             ".",
         ]
         self._test_download_folder(args, expected_downloads=1)
@@ -627,7 +628,7 @@ class DownloadTests(CLITests):
             "download",
             "--recursive",
             "--dry-run",
-            "solvebio:mock_vault:/test-folder",
+            f"{VAULT_DOMAIN}:mock_vault:/test-folder",
             ".",
         ]
         self._test_download_folder(args, expected_downloads=0)
@@ -637,7 +638,7 @@ class DownloadTests(CLITests):
             "download",
             "--recursive",
             "--delete",
-            "solvebio:mock_vault:/test-folder",
+            f"{VAULT_DOMAIN}:mock_vault:/test-folder",
             ".",
         ]
         self._test_download_folder(
@@ -659,7 +660,7 @@ class DownloadTests(CLITests):
         with self.assertRaises(SystemExit):
             self._test_download_folder(args)
 
-        args = ["download", "--recursive", "solvebio:mock_vault:/test-file/*", "."]
+        args = ["download", "--recursive", f"{VAULT_DOMAIN}:mock_vault:/test-file/*", "."]
         with self.assertRaises(Exception):
             self._test_download_folder(args, download_success=False)
 

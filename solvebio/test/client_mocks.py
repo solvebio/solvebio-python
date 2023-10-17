@@ -55,7 +55,7 @@ class Fake201Response(object):
             )
 
         if not self.object['full_path']:
-            self.object['full_path'] = 'solvebio:{0}:{1}'.format(
+            self.object['full_path'] = 'quartzbio:{0}:{1}'.format(
                 self.object['vault_name'], self.object['path'])
 
     def update_dataset(self):
