@@ -765,6 +765,8 @@ def _resolve_shortcuts_and_get_files(full_path, visited_folders, download_path=N
     full_path, parts = Object.validate_full_path(full_path)
     if not download_path:
         download_path = full_path
+    if not download_path.endswith('/'):
+        download_path += '/'
 
     results = GlobalSearch().filter(path__prefix=full_path)
 
