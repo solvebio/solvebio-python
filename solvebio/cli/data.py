@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import print_function
+
+import threading
+
 from six.moves import input as raw_input
 
 import os
@@ -707,6 +710,7 @@ def _download_recursive(
 
     downloaded_files = set()
 
+    files_to_download = []
     remote_files = [x for x in remote_objects if x.get("object_type") == "file"]
     for remote_file in remote_files:
         rel_parts = remote_file.path.split("/")[base_folder_depth:]
@@ -736,7 +740,24 @@ def _download_recursive(
         if not dry_run:
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
-            remote_file.download(local_path)
+            d = {
+                "path": local_path,
+                "file": remote_file
+            }
+            files_to_download.append(d)
+
+    def worker_function(file_info):
+        print("downloading to: " + file_info['path'])
+        file_info.get('file').download(file_info.get('path'))
+
+    threads = []
+    for file_to_download in files_to_download:
+        thread = threading.Thread(target=worker_function, args=(file_to_download,))
+        threads.append(thread)
+        thread.start()
+
+    for thread in threads:
+        thread.join()
 
     if not delete:
         return
