@@ -27,6 +27,7 @@ from solvebio.utils.md5sum import md5sum
 from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 from solvebio.client import SolveClient
+from solvebio.client import client as global_client
 
 
 def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
@@ -150,11 +151,14 @@ def _upload_folder(
             all_folders.append((vault, remote_path))
 
         # Upload the files that do not yet exist on the remote
+        # Pass global client auth parameters to each worker to avoid using default globals
+        client_auth = (global_client._host, global_client._auth.token, global_client._auth.token_type)
         for f in files:
             local_file_path = os.path.join(abs_local_parent_path, f)
             if should_exclude(local_file_path, exclude_paths, dry_run=dry_run):
                 continue
-            all_files.append((local_file_path, remote_folder_full_path, vault.full_path, dry_run, archive_folder))
+            all_files.append((local_file_path, remote_folder_full_path, vault.full_path,
+                              dry_run, archive_folder, client_auth))
 
     if num_processes > 1:
         # Only perform optimization if parallelization is requested by the user
@@ -196,16 +200,19 @@ def _create_file_job(args):
         args[1] (remote_folder_path): Path to remote parent folder.
         args[2] (vault_path): Path to remote vault.
         args[3] (dry_run): Whether to performa dry run.
+        args[4] (archive_folder): An archive folder to move existing files into
+        args[5] (client_auth): Tuple containing API host, token, and token type
     Returns:
         None or Exception if exception is raised.
     """
     try:
-        local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder = args
+        local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder, client_auth = args
         if dry_run:
             print("[Dry Run] Uploading {} to {}".format(
                 local_file_path, remote_folder_full_path))
             return
-        client = SolveClient()
+        # Provides the global host, token, token_type
+        client = SolveClient(*client_auth)
         remote_parent = Object.get_by_full_path(
             remote_folder_full_path,
             assert_type="folder",
