@@ -676,6 +676,10 @@ def _download_recursive(
                                                     visited_folders=set(),
                                                     follow_shortcuts=follow_shortcuts))
 
+    if len(results) == 0:
+        print("No files found on path.")
+        return
+
     num_files = len(results)
     print("Found {} files to download.".format(num_files))
 
@@ -778,7 +782,7 @@ def _resolve_shortcuts_and_get_files(full_path, visited_folders, download_path=N
         return set()
 
     if not follow_shortcuts:
-        return results
+        return [r for r in results if r.class_name() != "Vault" and not r.is_shortcut]
 
     files = []
     for x in results:
