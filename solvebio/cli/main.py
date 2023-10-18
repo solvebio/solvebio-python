@@ -350,6 +350,13 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "Empty folders will be deleted.",
                     "action": "store_true",
                 },
+                {
+                    "flags": "--follow-shortcuts",
+                    "help": "Resolves shortcuts when downloading. "
+                            "If a shortcut to a file is found the target file will be downloaded "
+                            "under the shortcut name.",
+                    "action": "store_true",
+                },
             ],
         },
         "tag": {

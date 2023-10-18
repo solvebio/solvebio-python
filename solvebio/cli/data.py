@@ -581,7 +581,7 @@ def download(args):
         excludes=args.exclude,
         includes=args.include,
         delete=args.delete,
-        follow_shortcuts=True
+        follow_shortcuts=args.follow_shortcuts,
     )
 
 
