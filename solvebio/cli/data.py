@@ -581,6 +581,7 @@ def download(args):
         excludes=args.exclude,
         includes=args.include,
         delete=args.delete,
+        follow_shortcuts=False
     )
 
 
@@ -592,6 +593,7 @@ def _download(
     excludes=[],
     includes=[],
     delete=False,
+    follow_shortcuts=False,
 ):
     """
     Given a folder or file, download all the files contained
@@ -609,7 +611,7 @@ def _download(
 
     if recursive:
         _download_recursive(
-            full_path, local_folder_path, dry_run, excludes, includes, delete
+            full_path, local_folder_path, dry_run, excludes, includes, delete, follow_shortcuts
         )
         return
 
@@ -634,12 +636,22 @@ def _download(
             )
         )
 
+    if not follow_shortcuts:
+        return
+
     for shortcut_ in shortcuts:
-        if shortcut_.shortcut_target["object_type"] != 'file':
+        if not shortcut_["target"]:
+            print(
+                "None target for shortcut: {} nothing to download.".format(
+                    shortcut_.filename
+                )
+            )
+            continue
+        if shortcut_["target"]["object_type"] != 'file':
             continue
 
         if not dry_run:
-            target = shortcut_.shortcut_target_object
+            target = shortcut_.get_target()
             if not target:
                 continue
             target.filename = shortcut_.filename
@@ -652,7 +664,7 @@ def _download(
 
 
 def _download_recursive(
-    full_path, local_folder_path, dry_run=False, excludes=[], includes=[], delete=False
+    full_path, local_folder_path, dry_run=False, excludes=[], includes=[], delete=False, follow_shortcuts=False
 ):
 
     if "**" in full_path:
@@ -742,7 +754,7 @@ def _download_recursive(
                 os.rmdir(local_abs_path)
 
 
-def _resolve_shortcuts_and_get_files(full_path, visited_folders, download_path=None):
+def _resolve_shortcuts_and_get_files(full_path, visited_folders, download_path=None, follow_shortcuts=False):
     if not download_path:
         download_path = full_path
     full_path, parts = Object.validate_full_path(full_path)
@@ -755,26 +767,30 @@ def _resolve_shortcuts_and_get_files(full_path, visited_folders, download_path=N
         )
         return set()
 
+    if not follow_shortcuts:
+        return results
+
     files = []
     for x in results:
-        if x.get("object_type") == "file":
-            x.full_path = download_path + _get_relative_download_path(base_path=full_path,
-                                                                      sub_path=x.full_path,
-                                                                      filename=x.filename)
-            files.append(x)
+        x.full_path = download_path + _get_relative_download_path(base_path=full_path,
+                                                                  sub_path=x.full_path,
+                                                                  filename=x.name)
+        files.append(x)
+        # if x.get("object_type") == "file":
+        #     files.append(x)
 
     num_files = len(files)
     print("Found {} files to download.".format(num_files))
-    files_to_download = set(files)
 
     shortcuts = [o for o in results if o.class_name() != "Vault" and o.is_shortcut]
     num_shortcuts = len(shortcuts)
     print("Found {} shortcuts to resolve.".format(num_shortcuts))
 
-    resolved_shortcuts = set()
+    resolved_shortcuts = []
     for shortcut in shortcuts:
-        target_object = shortcut.shortcut_target_object
+        target_object = shortcut.get_target()
         if not target_object:
+            from pdb import set_trace; set_trace();
             continue
         if target_object.is_folder:
             if target_object.id in visited_folders:
@@ -782,7 +798,7 @@ def _resolve_shortcuts_and_get_files(full_path, visited_folders, download_path=N
                 # to avoid circular shortcut resolution
                 continue
             visited_folders.add(target_object.id)
-            resolved_shortcuts |= _resolve_shortcuts_and_get_files(
+            resolved_shortcuts += _resolve_shortcuts_and_get_files(
                 full_path=target_object.full_path,
                 visited_folders=visited_folders,
                 download_path=download_path + "/" + shortcut.filename
@@ -793,9 +809,9 @@ def _resolve_shortcuts_and_get_files(full_path, visited_folders, download_path=N
             target_object.full_path = download_path + _get_relative_download_path(base_path=full_path,
                                                                                   sub_path=target_object.full_path,
                                                                                   filename=target_object.filename)
-            resolved_shortcuts.add(target_object)
+            resolved_shortcuts.append(target_object)
 
-    return resolved_shortcuts | files_to_download
+    return resolved_shortcuts + files
 
 
 def _get_relative_download_path(base_path, sub_path, filename):
