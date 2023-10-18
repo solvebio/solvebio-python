@@ -202,9 +202,8 @@ class Object(CreateableAPIResource,
         try:
             return cls.get_by_full_path(
                 full_path, assert_type=assert_type, client=_client)
-        except (NotFoundError, SolveError) as e:
-            if isinstance(e, NotFoundError) or "404" in e.message:
-                pass
+        except NotFoundError:
+            pass
 
         # Object type required when creating Object
         object_type = kwargs.get('object_type')
@@ -405,13 +404,7 @@ class Object(CreateableAPIResource,
                         existing_object.object_type, full_path
                     )
                 )
-        except (NotFoundError, SolveError) as e:
-            # Create the shortcut if an object doesn't exist on the path
-            # If any error other than 404 Not Found is caught - propagate it further
-            if isinstance(e, NotFoundError) or "404" in e.message:
-                pass
-            else:
-                raise e
+        except NotFoundError:
 
             target = {
                 'id': self.id,
