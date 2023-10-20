@@ -17,3 +17,4 @@ pyyaml==5.3.1
 click==7.1.2
 ruamel.yaml==0.16.12
 pytest
+brotli<=1.0.9

@@ -1,5 +1,27 @@
 # Changelog
 
+## [v2.24.2](https://github.com/solvebio/solvebio-python/tree/v2.24.2) (2023-10-05)
+
+- Fixed another connection issue with parallel upload command that used the wrong global credentials (EDPDEV-1049)
+
+## [v2.24.1](https://github.com/solvebio/solvebio-python/tree/v2.24.1) (2023-09-11)
+
+- Fixed connection issue with parallel upload command (EDPDEV-1000)
+
+
+## [v2.24.0](https://github.com/solvebio/solvebio-python/tree/v2.24.0) (2023-08-22)
+
+- Add vault file versioning support
+- Add `--recursive` option to `ls` command
+
+
+## [v2.23.0](https://github.com/solvebio/solvebio-python/tree/v2.23.0) (2023-07-05)
+
+- Add support for Python 3.10
+- Remove nosetests (replace with pytest)
+- Remove deprecated VCF parser code
+
+
 ## [v2.22.0](https://github.com/solvebio/solvebio-python/tree/v2.22.0) (2023-06-12)
 
 - Fix issue with Query.join() where join keys are not the same (#432)

@@ -26,6 +26,8 @@ from solvebio.utils.files import check_gzip_path
 from solvebio.utils.md5sum import md5sum
 from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
+from solvebio.client import SolveClient
+from solvebio.client import client as global_client
 
 
 def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
@@ -149,20 +151,20 @@ def _upload_folder(
             all_folders.append((vault, remote_path))
 
         # Upload the files that do not yet exist on the remote
+        # Pass global client auth parameters to each worker to avoid using default globals
+        client_auth = (global_client._host, global_client._auth.token, global_client._auth.token_type)
         for f in files:
             local_file_path = os.path.join(abs_local_parent_path, f)
             if should_exclude(local_file_path, exclude_paths, dry_run=dry_run):
                 continue
-            all_files.append((local_file_path, remote_folder_full_path, vault.full_path, dry_run, archive_folder))
+            all_files.append((local_file_path, remote_folder_full_path, vault.full_path,
+                              dry_run, archive_folder, client_auth))
 
-    all_folder_parts = set([x[1] for x in all_folders])
-    """  # TODO: need more investigation about GlobalSearch API results, below code does not working with api results
     if num_processes > 1:
         # Only perform optimization if parallelization is requested by the user
         all_folder_parts = _check_uploaded_folders(base_remote_path, local_start, all_folders)
     else:
         all_folder_parts = set([x[1] for x in all_folders])
-    """
     # Create folders serially since these require
     # previous folders to be created so that parent_object_id can
     # be populated
@@ -198,19 +200,31 @@ def _create_file_job(args):
         args[1] (remote_folder_path): Path to remote parent folder.
         args[2] (vault_path): Path to remote vault.
         args[3] (dry_run): Whether to performa dry run.
+        args[4] (archive_folder): An archive folder to move existing files into
+        args[5] (client_auth): Tuple containing API host, token, and token type
     Returns:
         None or Exception if exception is raised.
     """
     try:
-        local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder = args
+        local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder, client_auth = args
         if dry_run:
             print("[Dry Run] Uploading {} to {}".format(
                 local_file_path, remote_folder_full_path))
             return
+        # Provides the global host, token, token_type
+        client = SolveClient(*client_auth)
         remote_parent = Object.get_by_full_path(
-            remote_folder_full_path, assert_type="folder"
+            remote_folder_full_path,
+            assert_type="folder",
+            client=client
         )
-        Object.upload_file(local_file_path, remote_parent.path, vault_path, archive_folder=archive_folder)
+        Object.upload_file(
+            local_file_path,
+            remote_parent.path,
+            vault_path,
+            archive_folder=archive_folder,
+            client=client
+        )
         return
     except KeyboardInterrupt as e:
         raise e
@@ -725,30 +739,37 @@ def ls(args):
     """
     Given a SolveBio remote path, list the files and folders
     """
-    return _ls(args.full_path)
+
+    if "**" in args.full_path:
+        print("Recursive paths containing '**' are not supported by `ls`. "
+              "Try the --recursive flag instead.")
+        return False
+
+    files = _ls(args.full_path, recursive=args.recursive)
+
+    if len(files) == 0:
+        print(
+            "No file(s) found at '{}'. "
+            'Try using glob syntax (vault:/folder/*)'.format(args.full_path)
+        )
+        return False
+
+    return True
 
 
-def _ls(full_path):
-
-    if "**" in full_path:
-        print("Recursive paths containing ** are not supported by `ls`")
-        return
-
+def _ls(full_path, recursive=False):
     files = list(Object.all(glob=full_path, limit=1000))
-    if len(files) == 1 and files[0].is_folder:
-        files = Object.all(glob=files[0].full_path + "/*")
+
     for file_ in files:
         print(
             "{}  {}  {}".format(
                 file_.last_modified, file_.object_type.ljust(8), file_.full_path
             )
         )
+        if recursive and file_.object_type == "folder":
+            _ls(file_.full_path + "/*", recursive=True)
 
-    if len(files) == 0:
-        print(
-            "No file(s) found at --full-path {}, "
-            'try using a glob instead:  "vault:/path/folder/*'.format(full_path)
-        )
+    return files
 
 
 def should_tag_by_object_type(args, object_):

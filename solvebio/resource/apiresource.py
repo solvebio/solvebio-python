@@ -92,7 +92,7 @@ class ListObject(SolveObject):
         return convert_to_solve_object(self['data'], client=self._client)
 
     def set_tabulate(self, fields, **kwargs):
-        self._tabulate = lambda data:\
+        self._tabulate = lambda data: \
             tabulate([[d[i] for i in fields] for d in data], **kwargs)
 
     def __len__(self):
@@ -226,7 +226,11 @@ class DownloadableAPIResource(APIResource):
         return path
 
     def download_url(self, **kwargs):
-        download_url = self.instance_url() + '/download'
+        download_url = self.instance_url()
+        if 'version_id' in kwargs:
+            download_url += '/versions/{}'.format(kwargs['version_id'])
+        else:
+            download_url += '/download'
         # Don't redirect, just return the signed S3 URL
         kwargs.update({'redirect': ''})
         response = self.request(
@@ -251,7 +255,6 @@ class ListableAPIResource(APIResource):
             if list_fields:
                 fields, headers = list(zip(*list_fields))
                 results.set_tabulate(fields, headers=headers, sort=False)
-
         return results
 
     @classmethod

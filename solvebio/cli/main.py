@@ -278,6 +278,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
             "help": "List files and directories in a SolveBio Vault",
             "arguments": [
                 {
+                    "flags": "--recursive",
+                    "help": "Recursively list the contents of subdirectories.",
+                    "action": "store_true",
+                },
+                {
                     "name": "full_path",
                     "help": "The full path where the files and folders should "
                     "be listed from, defaults to the root of your personal vault",
