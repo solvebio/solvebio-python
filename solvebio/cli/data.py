@@ -2,7 +2,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import threading
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 
 from six.moves import input as raw_input
 
@@ -740,24 +741,25 @@ def _download_recursive(
         if not dry_run:
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
-            d = {
+            file = {
                 "path": local_path,
                 "file": remote_file
             }
-            files_to_download.append(d)
+            files_to_download.append(file)
 
-    def worker_function(file_info):
+    def _download_worker(file_info):
         print("downloading to: " + file_info['path'])
         file_info.get('file').download(file_info.get('path'))
 
-    threads = []
-    for file_to_download in files_to_download:
-        thread = threading.Thread(target=worker_function, args=(file_to_download,))
-        threads.append(thread)
-        thread.start()
-
-    for thread in threads:
-        thread.join()
+    with ThreadPoolExecutor() as executor:
+        try:
+            executor.map(_download_worker, files_to_download)
+        except concurrent.futures.CancelledError as e:
+            print("Exception in worker thread:", e)
+        except KeyboardInterrupt:
+            print("KeyboardInterrupt: Cancelling remaining tasks.")
+            executor._threads.clear()
+            concurrent.futures.thread._thread_queues.clear()
 
     if not delete:
         return
