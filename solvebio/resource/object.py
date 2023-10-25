@@ -644,7 +644,7 @@ class Object(CreateableAPIResource,
             if return_none_target:
                 return None
             else:
-                raise SolveError("Shortcut target is None.")
+                raise SolveError("Shortcut target not found.")
 
         if target['object_type'] == 'url':
             return target['url']
