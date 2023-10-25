@@ -686,9 +686,6 @@ def _download_recursive(
         print("No files found on path.")
         return
 
-    num_files = len(results)
-    print("Found {} files to download.".format(num_files))
-
     remote_objects = []
     for file_obj in results:
         depth = len(file_obj.path.split("/"))
