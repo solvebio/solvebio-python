@@ -679,7 +679,10 @@ def _download_recursive(
                                                     visited_folders=set(),
                                                     follow_shortcuts=follow_shortcuts))
 
-    if len(results) == 0:
+    num_files = len([x for x in results if x.get("object_type") == "file"])
+    print("Found {} files to download.".format(num_files))
+
+    if num_files == 0:
         print("No files found on path.")
         return
 
