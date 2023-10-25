@@ -63,7 +63,7 @@ def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
     return False
 
 
-def _check_uploaded_folders(base_remote_path, local_start, all_folders):
+def _check_uploaded_folders(base_remote_path, local_start, all_folders, follow_shortcuts=False):
     """Identifies which remote folders already exist so that we can optimize
     which folders to create in the upload workflow.
 
@@ -75,11 +75,25 @@ def _check_uploaded_folders(base_remote_path, local_start, all_folders):
         base_remote_path: Base remote parent folder full path to upload to.
         local_start: The name of the base folder to upload.
         all_folders: A list of remote folders to potentially create in full path format.
+        follow_shortcuts: Boolean flag specifying if shortcuts on base_remote_path should be resolved.
     Returns:
         all_folder_parts (set): A unique set of folder parts to create that do
             not already exist.
 
     """
+
+    def _folder_exists(folder_full_path, remote_folders_existing, follow_shortcuts):
+        if follow_shortcuts:
+            # When following shortcuts we cannot determine which folders exist based on global search.
+            # Each folder has to be checked separately.
+            try:
+                Object.get_by_full_path(full_path=folder_full_path, follow_shortcuts=True)
+            except NotFoundError:
+                return False
+            return True
+        else:
+            return folder_full_path in remote_folders_existing
+
     upload_root_path, _ = Object.validate_full_path(
         os.path.join(base_remote_path, local_start)
     )
@@ -93,7 +107,7 @@ def _check_uploaded_folders(base_remote_path, local_start, all_folders):
         # Skip root folder as we don't need to create this
         for folder in subfolders[1:]:
             folder_full_path = os.path.join(parent_folder_path, folder)
-            if folder_full_path not in remote_folders_existing:
+            if not _folder_exists(folder_full_path, remote_folders_existing, follow_shortcuts):
                 all_folder_parts.add(folder_full_path)
             parent_folder_path = folder_full_path
 
@@ -109,7 +123,8 @@ def _upload_folder(
     exclude_paths=None,
     dry_run=False,
     num_processes=1,
-    archive_folder=None
+    archive_folder=None,
+    follow_shortcuts=False
 ):
     all_folders = []
     all_files = []
@@ -119,7 +134,7 @@ def _upload_folder(
         upload_root_path, _ = Object.validate_full_path(
             os.path.join(base_remote_path, local_start)
         )
-        Object.get_by_full_path(upload_root_path, assert_type="folder")
+        Object.get_by_full_path(upload_root_path, assert_type="folder", follow_shortcuts=follow_shortcuts)
     except NotFoundError:
         base_remote_path, path_dict = Object.validate_full_path(base_remote_path)
         base_folder_path = os.path.join(base_remote_path, local_start)
@@ -158,11 +173,11 @@ def _upload_folder(
             if should_exclude(local_file_path, exclude_paths, dry_run=dry_run):
                 continue
             all_files.append((local_file_path, remote_folder_full_path, vault.full_path,
-                              dry_run, archive_folder, client_auth))
+                              dry_run, archive_folder, client_auth, follow_shortcuts))
 
     if num_processes > 1:
         # Only perform optimization if parallelization is requested by the user
-        all_folder_parts = _check_uploaded_folders(base_remote_path, local_start, all_folders)
+        all_folder_parts = _check_uploaded_folders(base_remote_path, local_start, all_folders, follow_shortcuts)
     else:
         all_folder_parts = set([x[1] for x in all_folders])
     # Create folders serially since these require
@@ -202,11 +217,13 @@ def _create_file_job(args):
         args[3] (dry_run): Whether to performa dry run.
         args[4] (archive_folder): An archive folder to move existing files into
         args[5] (client_auth): Tuple containing API host, token, and token type
+        args[6] (follow_shortcuts): Boolean to follow shortcuts on the remote_folder_path
     Returns:
         None or Exception if exception is raised.
     """
     try:
-        local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder, client_auth = args
+        local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder, client_auth, follow_shortcuts \
+            = args
         if dry_run:
             print("[Dry Run] Uploading {} to {}".format(
                 local_file_path, remote_folder_full_path))
@@ -216,12 +233,13 @@ def _create_file_job(args):
         remote_parent = Object.get_by_full_path(
             remote_folder_full_path,
             assert_type="folder",
+            follow_shortcuts=follow_shortcuts,
             client=client
         )
         Object.upload_file(
             local_file_path,
             remote_parent.path,
-            vault_path,
+            remote_parent.vault.full_path,
             archive_folder=archive_folder,
             client=client
         )
@@ -377,10 +395,12 @@ def upload(args):
     # Assert the vault exists and is accessible
     vault = Vault.get_by_full_path(path_dict["vault_full_path"])
 
+    follow_shortcuts = True if args.follow_shortcuts else False
+
     # If not the vault root, validate remote path exists and is a folder
     if path_dict["path"] != "/":
         try:
-            Object.get_by_full_path(base_remote_path, assert_type="folder")
+            Object.get_by_full_path(base_remote_path, assert_type="folder", follow_shortcuts=follow_shortcuts)
         except:
             if not args.create_full_path:
                 raise
@@ -435,7 +455,8 @@ def upload(args):
                 exclude_paths=exclude_paths,
                 dry_run=args.dry_run,
                 num_processes=args.num_processes,
-                archive_folder=args.archive_folder
+                archive_folder=args.archive_folder,
+                follow_shortcuts=follow_shortcuts
             )
         else:
             if args.dry_run:

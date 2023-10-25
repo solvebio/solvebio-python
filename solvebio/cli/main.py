@@ -267,6 +267,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "action": TildeFixStoreAction,
                 },
                 {
+                    "flags": "--follow-shortcuts",
+                    "help": "Resolves shortcuts when Uploading.",
+                    "action": "store_true",
+                },
+                {
                     "name": "local_path",
                     "help": "The path to the local file or directory " "to upload",
                     "nargs": "+",
