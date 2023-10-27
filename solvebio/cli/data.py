@@ -753,13 +753,16 @@ def _download_recursive(
 
     with ThreadPoolExecutor() as executor:
         try:
-            executor.map(_download_worker, files_to_download)
+            for result in executor.map(_download_worker, files_to_download):
+                pass
         except concurrent.futures.CancelledError as e:
             print("Exception in worker thread:", e)
         except KeyboardInterrupt:
             print("KeyboardInterrupt: Cancelling remaining tasks.")
             executor._threads.clear()
             concurrent.futures.thread._thread_queues.clear()
+        except Exception as e:
+            print("Exception in worker thread:", e)
 
     if not delete:
         return
