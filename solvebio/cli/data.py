@@ -748,8 +748,12 @@ def _download_recursive(
             files_to_download.append(file)
 
     def _download_worker(file_info):
-        print("downloading to: " + file_info['path'])
-        file_info.get('file').download(file_info.get('path'))
+        try:
+            print("downloading to: " + file_info['path'])
+            file_info.get('file').download(file_info.get('path'))
+        except Exception as e:
+            print("Error occured while downloading file: ({}).".format(file_info.get('path')))
+            raise e
 
     with ThreadPoolExecutor() as executor:
         try:
