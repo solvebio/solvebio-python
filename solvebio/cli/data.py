@@ -682,7 +682,7 @@ def _download_recursive(
         print("No files found on path.")
         if follow_shortcuts:
             num_shortcuts = len([x for x in results if x.get("object_type") == "shortcut"])
-            print("{} shortcuts found on path. Use --follow-shortcuts flag to download.") \
+            print("{} shortcuts found on path. Use --follow-shortcuts flag to download.".format(num_shortcuts)) \
                 if num_shortcuts > 0 \
                 else print("No shortcuts found on path.")
         return
@@ -803,7 +803,17 @@ def _resolve_shortcuts_and_get_files(full_path, download_path=None, follow_short
         # Directly accessing target will always return None.
         # Call Object.retrieve() to get the full object.
         shortcut_object = Object.retrieve(shortcut.id)
-        target_object = shortcut_object.get_target()
+        try:
+            target_object = shortcut_object.get_target()
+        except (NotFoundError, SolveError) as e:
+            if isinstance(e, NotFoundError) or (isinstance(e, SolveError) and e.status_code == 404):
+                print(
+                    "[WARNING] The target object for shortcut: ({}) "
+                    "has been moved, deleted or you don't have permissions to view it."
+                    .format(shortcut.full_path))
+                continue
+            else:
+                raise e
         if not target_object:
             print("Couldn't find target object for shortcut: {}".format(shortcut.full_path))
             continue
