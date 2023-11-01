@@ -471,20 +471,25 @@ class Object(CreateableAPIResource,
             pass
 
         # Lookup parent object
-        if path_dict['parent_path'] == '/':
-            parent_object_id = None
+        if kwargs.get('follow_shortcuts') and obj:
+            vault_id = obj.vault_id
+            parent_object_id = obj.parent_object_id
         else:
-            parent_obj = Object.get_by_full_path(
-                path_dict['parent_full_path'], assert_type='folder',
-                client=_client
-            )
-            parent_object_id = parent_obj.id
+            vault_id = vault.id
+            if path_dict['parent_path'] == '/':
+                parent_object_id = None
+            else:
+                parent_obj = Object.get_by_full_path(
+                    path_dict['parent_full_path'], assert_type='folder',
+                    client=_client
+                )
+                parent_object_id = parent_obj.id
 
         description = kwargs.get('description')
 
         # Create the file, and upload it to the Upload URL
         obj = Object.create(
-            vault_id=vault.id,
+            vault_id=vault_id,
             parent_object_id=parent_object_id,
             object_type='file',
             filename=os.path.basename(local_path),
@@ -495,7 +500,6 @@ class Object(CreateableAPIResource,
             tags=kwargs.get('tags', []) or [],
             client=_client
         )
-
         print('Notice: File created for {0} at {1}'.format(local_path,
                                                            obj.path))
         print('Notice: Upload initialized')
@@ -646,13 +650,19 @@ class Object(CreateableAPIResource,
             else:
                 raise SolveError("Shortcut target not found.")
 
-        if target['object_type'] == 'url':
-            return target['url']
-        elif target['object_type'] == 'vault':
-            from . import Vault
-            return Vault.retrieve(target['id'], client=self._client)
-        else:
-            return Object.retrieve(target['id'], client=self._client)
+        try:
+            if target['object_type'] == 'url':
+                return target['url']
+            elif target['object_type'] == 'vault':
+                from . import Vault
+                return Vault.retrieve(target['id'], client=self._client)
+            else:
+                return Object.retrieve(target['id'], client=self._client)
+        except SolveError as e:
+            if e.status_code == 404:
+                raise NotFoundError
+            else:
+                raise e
 
     @property
     def data_url(self):
