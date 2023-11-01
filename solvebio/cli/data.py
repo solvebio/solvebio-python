@@ -805,15 +805,13 @@ def _resolve_shortcuts_and_get_files(full_path, download_path=None, follow_short
         shortcut_object = Object.retrieve(shortcut.id)
         try:
             target_object = shortcut_object.get_target()
-        except (NotFoundError, SolveError) as e:
-            if isinstance(e, NotFoundError) or (isinstance(e, SolveError) and e.status_code == 404):
-                print(
-                    "[WARNING] The target object for shortcut: ({}) "
-                    "has been moved, deleted or you don't have permissions to view it."
-                    .format(shortcut.full_path))
-                continue
-            else:
-                raise e
+        except NotFoundError:
+            print(
+                "[WARNING] The target object for shortcut: ({}) "
+                "has been moved, deleted or you don't have permissions to view it."
+                .format(shortcut.full_path))
+            continue
+
         if not target_object:
             print("Couldn't find target object for shortcut: {}".format(shortcut.full_path))
             continue
