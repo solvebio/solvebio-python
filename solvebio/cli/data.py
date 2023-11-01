@@ -677,7 +677,6 @@ def _download_recursive(
         )
 
     results = list(_resolve_shortcuts_and_get_files(full_path=full_path,
-                                                    visited_folders=set(),
                                                     follow_shortcuts=follow_shortcuts))
 
     num_files = len([x for x in results if x.get("object_type") == "file"])
@@ -685,6 +684,11 @@ def _download_recursive(
 
     if num_files == 0:
         print("No files found on path.")
+        if follow_shortcuts:
+            num_shortcuts = len([x for x in results if x.get("object_type") == "shortcut"])
+            print("{} shortcuts found on path. Use --follow-shortcuts flag to download.") \
+                if num_shortcuts > 0 \
+                else print("No shortcuts found on path.")
         return
 
     remote_objects = []
@@ -795,7 +799,7 @@ def _download_recursive(
                 os.rmdir(local_abs_path)
 
 
-def _resolve_shortcuts_and_get_files(full_path, visited_folders, download_path=None, follow_shortcuts=False):
+def _resolve_shortcuts_and_get_files(full_path, download_path=None, follow_shortcuts=False):
     full_path, parts = Object.validate_full_path(full_path)
     if not download_path:
         download_path = full_path
@@ -828,17 +832,26 @@ def _resolve_shortcuts_and_get_files(full_path, visited_folders, download_path=N
         # Global search doesn't return target in the response.
         # Directly accessing target will always return None.
         # Call Object.retrieve() to get the full object.
-        target_object = Object.retrieve(shortcut.id).get_target()
+        shortcut_object = Object.retrieve(shortcut.id)
+        target_object = shortcut_object.get_target()
         if not target_object:
             print("Couldn't find target object for shortcut: {}".format(shortcut.full_path))
             continue
-        if target_object.is_folder:
+        elif shortcut_object.target.object_type == "url":
+            print("Found URL shortcut at: ({}) skipping download.".format(shortcut_object.full_path))
+            continue
+        elif shortcut_object.target.object_type == "vault":
+            print("Following shortcut to vault: ({})".format(target_object.name))
+            resolved_shortcuts += _resolve_shortcuts_and_get_files(
+                full_path=target_object.full_path + ":/",
+                download_path=shortcut.path + "/" + target_object.name + "/",
+                follow_shortcuts=follow_shortcuts
+            )
+        elif target_object.is_folder:
             # todo # implement circular shortcut avoiding
             #      # note: it isn't as simple as skipping over already visited folders
-            visited_folders.add(target_object.id)
             resolved_shortcuts += _resolve_shortcuts_and_get_files(
                 full_path=target_object.full_path,
-                visited_folders=visited_folders,
                 download_path=shortcut.path + "/",
                 follow_shortcuts=follow_shortcuts
             )
