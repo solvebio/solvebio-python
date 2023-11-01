@@ -646,13 +646,19 @@ class Object(CreateableAPIResource,
             else:
                 raise SolveError("Shortcut target not found.")
 
-        if target['object_type'] == 'url':
-            return target['url']
-        elif target['object_type'] == 'vault':
-            from . import Vault
-            return Vault.retrieve(target['id'], client=self._client)
-        else:
-            return Object.retrieve(target['id'], client=self._client)
+        try:
+            if target['object_type'] == 'url':
+                return target['url']
+            elif target['object_type'] == 'vault':
+                from . import Vault
+                return Vault.retrieve(target['id'], client=self._client)
+            else:
+                return Object.retrieve(target['id'], client=self._client)
+        except SolveError as e:
+            if e.status_code == 404:
+                raise NotFoundError
+            else:
+                raise e
 
     @property
     def data_url(self):
