@@ -471,11 +471,13 @@ class Object(CreateableAPIResource,
             pass
 
         # Lookup parent object
-        if kwargs.get('follow_shortcuts') and obj:
+        if kwargs.get('follow_shortcuts') and obj and obj.is_file:
             vault_id = obj.vault_id
             parent_object_id = obj.parent_object_id
+            filename = obj.filename
         else:
             vault_id = vault.id
+            filename = os.path.basename(local_path)
             if path_dict['parent_path'] == '/':
                 parent_object_id = None
             else:
@@ -492,7 +494,7 @@ class Object(CreateableAPIResource,
             vault_id=vault_id,
             parent_object_id=parent_object_id,
             object_type='file',
-            filename=os.path.basename(local_path),
+            filename=filename,
             md5=local_md5,
             mimetype=mimetype,
             size=size,
