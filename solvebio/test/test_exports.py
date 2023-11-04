@@ -3,7 +3,7 @@ import mock
 
 from solvebio.test.client_mocks import fake_export_create
 
-from .helper import SolveBioTestCase
+from solvebio.test.helper import SolveBioTestCase
 
 
 class TestDatasetExports(SolveBioTestCase):

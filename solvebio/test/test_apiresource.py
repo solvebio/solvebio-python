@@ -2,13 +2,13 @@ from __future__ import absolute_import
 
 import uuid
 
-from .helper import SolveBioTestCase
+from solvebio.test.helper import SolveBioTestCase
 
 
 class APIResourceTests(SolveBioTestCase):
 
     def test_apiresource_iteration(self):
-        public_vault = self.client.Vault.get_by_full_path('solvebio:public')
+        public_vault = self.client.Vault.get_by_full_path('quartzbio:public')
         n_folders = len(list(public_vault.folders(depth=0)))
 
         folder_iter = public_vault.folders(depth=0)

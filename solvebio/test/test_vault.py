@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 
+from solvebio.test.helper import SolveBioTestCase
 import unittest
-
-from .helper import SolveBioTestCase
 
 
 class VaultTests(SolveBioTestCase):

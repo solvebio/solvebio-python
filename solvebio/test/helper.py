@@ -5,6 +5,8 @@ import os
 import re
 import sys
 
+from solvebio.credentials_provider import EDPClientCredentialsProvider
+
 if (sys.version_info >= (2, 7, 0)):
     import unittest   # NOQA
 else:
@@ -14,15 +16,20 @@ import solvebio
 
 
 class SolveBioTestCase(unittest.TestCase):
-    TEST_DATASET_FULL_PATH = 'solvebio:public:/HGNC/3.3.0-2020-10-29/HGNC'
-    TEST_DATASET_FULL_PATH_2 = 'solvebio:public:/ClinVar/5.1.0-20200720/Variants-GRCH38'
-    TEST_FILE_FULL_PATH = 'solvebio:public:/HGNC/3.3.0-2020-10-29/hgnc_1000_rows.txt'
+    # 'solvebio:public:/HGNC/3.3.0-2020-10-29/HGNC'
+    TEST_DATASET_FULL_PATH = 'quartzbio:Public:/HGNC/3.3.1-2021-08-25/HGNC'
+    # 'solvebio:public:/ClinVar/5.1.0-20200720/Variants-GRCH38'
+    TEST_DATASET_FULL_PATH_2 = 'quartzbio:Public:/ClinVar/5.2.0-20210110/Variants-GRCH38'
+    # 'solvebio:public:/HGNC/3.3.0-2020-10-29/hgnc_1000_rows.txt'
+    TEST_FILE_FULL_PATH = 'quartzbio:Public:/HGNC/3.3.1-2021-08-25/HGNC-3-3-1-2021-08-25-HGNC-1904014068027535892-20230418174248.json.gz'
 
     def setUp(self):
         super(SolveBioTestCase, self).setUp()
+
         api_key = os.environ.get('SOLVEBIO_API_KEY', None)
         api_host = os.environ.get('SOLVEBIO_API_HOST', None)
         self.client = solvebio.SolveClient(host=api_host, token=api_key)
+        #self.client = solvebio.SolveClient(**EDPClientCredentialsProvider().as_dict)
 
     def check_response(self, response, expect, msg):
         subset = [(key, response[key]) for

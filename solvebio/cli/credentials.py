@@ -79,6 +79,7 @@ def get_credentials():
     try:
         netrc_obj = netrc(netrc.path())
         if not netrc_obj.hosts:
+            print("!!!!!!!!!!! NO HOSTS")
             return None
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError(
@@ -103,7 +104,7 @@ def get_credentials():
             return ('https://' + h,) + netrc_obj.authenticators(h)
 
     # Return the first available
-    host = netrc_obj.hosts.keys()[0]
+    host = list(netrc_obj.hosts.keys())[0]
     return ('https://' + host,) + netrc_obj.authenticators(host)
 
 

@@ -484,8 +484,12 @@ class SolveArgumentParser(argparse.ArgumentParser):
         return value
 
 
-def main(argv=sys.argv[1:]):
+def main(argv=None):
     """Main entry point for SolveBio CLI"""
+
+    if argv is None:
+        argv = sys.argv[1:]
+
     parser = SolveArgumentParser()
     args = parser.parse_solvebio_args(argv)
 

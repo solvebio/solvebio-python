@@ -27,6 +27,8 @@ elif sys.version_info < (2, 7):
 else:
     install_requires.append('requests>=2.0.0')
 
+# TODO: tests depend on VCF parser, shouldn't it be included?
+#       PyVCF==0.6.8
 
 # solvebio-recipes requires additional packages
 recipes_requires = [

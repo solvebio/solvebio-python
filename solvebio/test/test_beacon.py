@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 
-from .helper import SolveBioTestCase
+from solvebio.test.helper import SolveBioTestCase
 
 
 class BeaconTests(SolveBioTestCase):
 
-    TEST_DATASET_FULL_PATH = 'solvebio:public:/ClinVar/3.7.4-2017-01-30/Variants-GRCh37'  # noqa
+    TEST_DATASET_FULL_PATH = 'quartzbio:Public:/ClinVar/5.2.0-20210110/Variants-GRCH38'
 
     def test_beacon_request(self):
         """

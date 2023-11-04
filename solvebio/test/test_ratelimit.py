@@ -5,7 +5,7 @@ import time
 from mock import patch
 
 import solvebio.client
-from .helper import SolveBioTestCase
+from solvebio.test.helper import SolveBioTestCase
 
 
 class FakeResponse():

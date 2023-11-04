@@ -46,6 +46,10 @@ Development
     cd solve-python/
     python setup.py develop
 
+To run tests use
+    
+    @TODO
+
 
 Or install `tox` and run:
 

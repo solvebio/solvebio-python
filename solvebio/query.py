@@ -765,6 +765,7 @@ class Query(QueryBase):
 
         # If the request results in a SolveError (ie bad filter) set the error.
         try:
+            print("@@>", self._data_url, _params)
             self._response = self._client.post(self._data_url, _params)
         except SolveError as e:
             self._error = e
@@ -1191,6 +1192,7 @@ class QueryFile(QueryBase):
 
         # If the request results in a SolveError (ie bad filter) set the error.
         try:
+            print("@@2>", self._data_url, _params)
             self._response = self._client.post(self._data_url, _params)
 
             if getattr(self, '_header', None) and self._output_format in ('csv', 'tsv') \
