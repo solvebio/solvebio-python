@@ -586,6 +586,8 @@ def download(args):
         includes=args.include,
         delete=args.delete,
         follow_shortcuts=args.follow_shortcuts,
+        parallel_download=args.parallel_download,
+        num_processes=args.num_processes,
     )
 
 
@@ -598,6 +600,8 @@ def _download(
     includes=[],
     delete=False,
     follow_shortcuts=False,
+    parallel_download=False,
+    num_processes=None,
 ):
     """
     Given a folder or file, download all the files contained
@@ -615,7 +619,15 @@ def _download(
 
     if recursive:
         _download_recursive(
-            full_path, local_folder_path, dry_run, excludes, includes, delete, follow_shortcuts
+            full_path,
+            local_folder_path,
+            dry_run,
+            excludes,
+            includes,
+            delete,
+            follow_shortcuts,
+            parallel_download,
+            num_processes
         )
         return
 
@@ -668,7 +680,15 @@ def _download(
 
 
 def _download_recursive(
-    full_path, local_folder_path, dry_run=False, excludes=[], includes=[], delete=False, follow_shortcuts=False
+    full_path,
+    local_folder_path,
+    dry_run=False,
+    excludes=[],
+    includes=[],
+    delete=False,
+    follow_shortcuts=False,
+    parallel_download=False,
+    num_processes=None,
 ):
 
     if "**" in full_path:
@@ -745,32 +765,17 @@ def _download_recursive(
         if not dry_run:
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
-            file = {
-                "path": local_path,
-                "file": remote_file
-            }
-            files_to_download.append(file)
+            if parallel_download:
+                file = {
+                    "path": local_path,
+                    "file": remote_file
+                }
+                files_to_download.append(file)
+            else:
+                remote_file.download(local_path)
 
-    def _download_worker(file_info):
-        try:
-            print("downloading to: " + file_info['path'])
-            file_info.get('file').download(file_info.get('path'))
-        except Exception as e:
-            print("Error occured while downloading file: ({}).".format(file_info.get('path')))
-            raise e
-
-    with ThreadPoolExecutor() as executor:
-        try:
-            for result in executor.map(_download_worker, files_to_download):
-                pass
-        except concurrent.futures.CancelledError as e:
-            print("Exception in worker thread:", e)
-        except KeyboardInterrupt:
-            print("KeyboardInterrupt: Cancelling remaining tasks.")
-            executor._threads.clear()
-            concurrent.futures.thread._thread_queues.clear()
-        except Exception as e:
-            print("Exception in worker thread:", e)
+    if parallel_download:
+        _download_in_parallel(files_to_download, num_processes)
 
     if not delete:
         return
@@ -797,6 +802,32 @@ def _download_recursive(
                     )
                 )
                 os.rmdir(local_abs_path)
+
+
+def _download_in_parallel(files_to_download, num_processes=None):
+    def _download_worker(file_info):
+        try:
+            print("downloading to: " + file_info['path'])
+            file_info.get('file').download(file_info.get('path'))
+        except Exception as e:
+            print("Error occured while downloading file: ({}).".format(file_info.get('path')))
+            raise e
+
+    if num_processes is None or num_processes <= 0:
+        num_processes = os.cpu_count()
+
+    with ThreadPoolExecutor(max_workers=num_processes) as executor:
+        try:
+            for result in executor.map(_download_worker, files_to_download):
+                pass
+        except concurrent.futures.CancelledError as e:
+            print("Exception in worker thread:", e)
+        except KeyboardInterrupt:
+            print("KeyboardInterrupt: Cancelling remaining tasks.")
+            executor._threads.clear()
+            concurrent.futures.thread._thread_queues.clear()
+        except Exception as e:
+            print("Exception in worker thread: ", e)
 
 
 def _resolve_shortcuts_and_get_files(full_path, download_path=None, follow_shortcuts=False):

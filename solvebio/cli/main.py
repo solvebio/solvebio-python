@@ -357,6 +357,21 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             "under the shortcut name.",
                     "action": "store_true",
                 },
+                {
+                    "flags": "--parallel-download",
+                    "help": "Downloads multiple files in parallel for increased performance. "
+                            "Can be used in combination with --num-processes to specify the level of parallelism. "
+                            "If --num-processes is not set the number of system CPUs will be used as default.",
+                    "action": "store_true",
+                },
+                {
+                    "flags": "--num-processes",
+                    "help": "Number of downloads to process in parallel. Defaults "
+                            "to the number of system CPUs, but can be set much higher than CPU count since the "
+                            "download process is IO bound, not CPU bound.",
+                    "default": None,
+                    "type": int
+                },
             ],
         },
         "tag": {
