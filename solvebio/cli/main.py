@@ -358,7 +358,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "action": "store_true",
                 },
                 {
-                    "flags": "--parallel-download",
+                    "flags": "--parallel",
                     "help": "Downloads multiple files in parallel for increased performance. "
                             "Can be used in combination with --num-processes to specify the level of parallelism. "
                             "If --num-processes is not set the number of system CPUs will be used as default.",
@@ -366,9 +366,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     "flags": "--num-processes",
-                    "help": "Number of downloads to process in parallel. Defaults "
-                            "to the number of system CPUs, but can be set much higher than CPU count since the "
-                            "download process is IO bound, not CPU bound.",
+                    "help": "Number of downloads to process in parallel. Defaults to the number of system CPUs.",
                     "default": None,
                     "type": int
                 },

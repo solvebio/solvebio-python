@@ -586,7 +586,7 @@ def download(args):
         includes=args.include,
         delete=args.delete,
         follow_shortcuts=args.follow_shortcuts,
-        parallel_download=args.parallel_download,
+        parallel=args.parallel,
         num_processes=args.num_processes,
     )
 
@@ -600,7 +600,7 @@ def _download(
     includes=[],
     delete=False,
     follow_shortcuts=False,
-    parallel_download=False,
+    parallel=False,
     num_processes=None,
 ):
     """
@@ -626,7 +626,7 @@ def _download(
             includes,
             delete,
             follow_shortcuts,
-            parallel_download,
+            parallel,
             num_processes
         )
         return
@@ -815,6 +815,8 @@ def _download_in_parallel(files_to_download, num_processes=None):
 
     if num_processes is None or num_processes <= 0:
         num_processes = os.cpu_count()
+
+    print("Downloading in parallel with {} processes.".format(num_processes))
 
     with ThreadPoolExecutor(max_workers=num_processes) as executor:
         try:
