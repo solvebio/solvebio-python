@@ -586,7 +586,6 @@ def download(args):
         includes=args.include,
         delete=args.delete,
         follow_shortcuts=args.follow_shortcuts,
-        parallel=args.parallel,
         num_processes=args.num_processes,
     )
 
@@ -600,7 +599,6 @@ def _download(
     includes=[],
     delete=False,
     follow_shortcuts=False,
-    parallel=False,
     num_processes=None,
 ):
     """
@@ -626,7 +624,6 @@ def _download(
             includes,
             delete,
             follow_shortcuts,
-            parallel,
             num_processes
         )
         return
@@ -687,7 +684,6 @@ def _download_recursive(
     includes=[],
     delete=False,
     follow_shortcuts=False,
-    parallel_download=False,
     num_processes=None,
 ):
 
@@ -765,7 +761,7 @@ def _download_recursive(
         if not dry_run:
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
-            if parallel_download:
+            if num_processes is not None:
                 file = {
                     "path": local_path,
                     "file": remote_file
@@ -774,7 +770,7 @@ def _download_recursive(
             else:
                 remote_file.download(local_path)
 
-    if parallel_download:
+    if num_processes is not None:
         _download_in_parallel(files_to_download, num_processes)
 
     if not delete:
@@ -804,17 +800,18 @@ def _download_recursive(
                 os.rmdir(local_abs_path)
 
 
-def _download_in_parallel(files_to_download, num_processes=None):
+def _download_in_parallel(files_to_download, num_processes):
     def _download_worker(file_info):
         try:
             print("downloading to: " + file_info['path'])
             file_info.get('file').download(file_info.get('path'))
         except Exception as e:
-            print("Error occured while downloading file: ({}).".format(file_info.get('path')))
+            print("Error occurred while downloading file: ({}).".format(file_info.get('path')))
             raise e
 
-    if num_processes is None or num_processes <= 0:
+    if num_processes <= 0:
         num_processes = os.cpu_count()
+        print("[Warning] num-processes cannot be less than 1. Defaulting to CPU count: ({})". format(num_processes))
 
     print("Downloading in parallel with {} processes.".format(num_processes))
 
