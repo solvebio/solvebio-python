@@ -468,6 +468,7 @@ class Object(CreateableAPIResource,
                               'but not overwriting.'
                               .format(full_path, local_md5, obj.md5))
         except NotFoundError:
+            obj = None
             pass
 
         # Lookup parent object
