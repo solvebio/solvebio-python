@@ -362,6 +362,14 @@ class SolveArgumentParser(argparse.ArgumentParser):
                             "under the shortcut name.",
                     "action": "store_true",
                 },
+                {
+                    "flags": "--num-processes",
+                    "help": "Number of downloads to process in parallel. "
+                            "If not specified downloads won't be executed in parallel."
+                            "If a number less than 1 is set defaults to the number of system CPUs.",
+                    "default": None,
+                    "type": int
+                },
             ],
         },
         "tag": {

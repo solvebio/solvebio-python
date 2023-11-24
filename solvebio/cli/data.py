@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import print_function
+
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
+
 from six.moves import input as raw_input
 
 import os
@@ -604,6 +608,7 @@ def download(args):
         includes=args.include,
         delete=args.delete,
         follow_shortcuts=args.follow_shortcuts,
+        num_processes=args.num_processes,
     )
 
 
@@ -616,6 +621,7 @@ def _download(
     includes=[],
     delete=False,
     follow_shortcuts=False,
+    num_processes=None,
 ):
     """
     Given a folder or file, download all the files contained
@@ -633,7 +639,14 @@ def _download(
 
     if recursive:
         _download_recursive(
-            full_path, local_folder_path, dry_run, excludes, includes, delete, follow_shortcuts
+            full_path,
+            local_folder_path,
+            dry_run,
+            excludes,
+            includes,
+            delete,
+            follow_shortcuts,
+            num_processes
         )
         return
 
@@ -686,7 +699,14 @@ def _download(
 
 
 def _download_recursive(
-    full_path, local_folder_path, dry_run=False, excludes=[], includes=[], delete=False, follow_shortcuts=False
+    full_path,
+    local_folder_path,
+    dry_run=False,
+    excludes=[],
+    includes=[],
+    delete=False,
+    follow_shortcuts=False,
+    num_processes=None,
 ):
 
     if "**" in full_path:
@@ -733,6 +753,7 @@ def _download_recursive(
 
     downloaded_files = set()
 
+    files_to_download = []
     remote_files = [x for x in remote_objects if x.get("object_type") == "file"]
     for remote_file in remote_files:
         rel_parts = remote_file.path.split("/")[base_folder_depth:]
@@ -762,7 +783,17 @@ def _download_recursive(
         if not dry_run:
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
-            remote_file.download(local_path)
+            if num_processes is not None:
+                file = {
+                    "path": local_path,
+                    "file": remote_file
+                }
+                files_to_download.append(file)
+            else:
+                remote_file.download(local_path)
+
+    if num_processes is not None:
+        _download_in_parallel(files_to_download, num_processes)
 
     if not delete:
         return
@@ -789,6 +820,35 @@ def _download_recursive(
                     )
                 )
                 os.rmdir(local_abs_path)
+
+
+def _download_in_parallel(files_to_download, num_processes):
+    def _download_worker(file_info):
+        try:
+            print("downloading to: " + file_info['path'])
+            file_info.get('file').download(file_info.get('path'))
+        except Exception as e:
+            print("Error occurred while downloading file: ({}).".format(file_info.get('path')))
+            raise e
+
+    if num_processes <= 0:
+        num_processes = os.cpu_count()
+        print("[Warning] num-processes cannot be less than 1. Defaulting to CPU count: ({})". format(num_processes))
+
+    print("Downloading in parallel with {} processes.".format(num_processes))
+
+    with ThreadPoolExecutor(max_workers=num_processes) as executor:
+        try:
+            for result in executor.map(_download_worker, files_to_download):
+                pass
+        except concurrent.futures.CancelledError as e:
+            print("Exception in worker thread:", e)
+        except KeyboardInterrupt:
+            print("KeyboardInterrupt: Cancelling remaining tasks.")
+            executor._threads.clear()
+            concurrent.futures.thread._thread_queues.clear()
+        except Exception as e:
+            print("Exception in worker thread: ", e)
 
 
 def _resolve_shortcuts_and_get_files(full_path, download_path=None, follow_shortcuts=False):

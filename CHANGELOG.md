@@ -1,5 +1,11 @@
 # Changelog
 
+## [v2.25.0](https://github.com/solvebio/solvebio-python/tree/v2.25.2) (2023-10-25)
+
+- Add support for creating and retrieving shortcuts (EDPDEV-896)
+- Add support for new EDP connection environment variables (EDPDEV-1075)
+
+
 ## [v2.24.2](https://github.com/solvebio/solvebio-python/tree/v2.24.2) (2023-10-05)
 
 - Fixed another connection issue with parallel upload command that used the wrong global credentials (EDPDEV-1049)
