@@ -267,6 +267,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "action": TildeFixStoreAction,
                 },
                 {
+                    "flags": "--follow-shortcuts",
+                    "help": "Resolves shortcuts when Uploading.",
+                    "action": "store_true",
+                },
+                {
                     "name": "local_path",
                     "help": "The path to the local file or directory " "to upload",
                     "nargs": "+",
@@ -323,7 +328,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     "flags": "--exclude",
-                    "help": "Pattern to match against full paths "
+                    "help": "Pattern to match against local full paths "
                     "of files to be excluded from downloading. "
                     "This pattern is only used when --recursive is used. "
                     "Unix shell-style wildcards are supported. "
@@ -349,6 +354,21 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "always use the --dry-run mode to evaluate any changes. "
                     "Empty folders will be deleted.",
                     "action": "store_true",
+                },
+                {
+                    "flags": "--follow-shortcuts",
+                    "help": "Resolves shortcuts when downloading. "
+                            "If a shortcut to a file is found the target file will be downloaded "
+                            "under the shortcut name.",
+                    "action": "store_true",
+                },
+                {
+                    "flags": "--num-processes",
+                    "help": "Number of downloads to process in parallel. "
+                            "If not specified downloads won't be executed in parallel."
+                            "If a number less than 1 is set defaults to the number of system CPUs.",
+                    "default": None,
+                    "type": int
                 },
             ],
         },
