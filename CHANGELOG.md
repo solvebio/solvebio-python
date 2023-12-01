@@ -1,6 +1,12 @@
 # Changelog
 
-## [v2.25.0](https://github.com/solvebio/solvebio-python/tree/v2.25.2) (2023-10-25)
+## [v2.26.0](https://github.com/solvebio/solvebio-python/tree/v2.26.0) (2023-12-01)
+
+- Add support for recursive uploads and downloads with shortcuts (EDPDEV-898)
+- Add support for parallel downloads (EDPDEV-938)
+
+
+## [v2.25.0](https://github.com/solvebio/solvebio-python/tree/v2.25.0) (2023-10-25)
 
 - Add support for creating and retrieving shortcuts (EDPDEV-896)
 - Add support for new EDP connection environment variables (EDPDEV-1075)
