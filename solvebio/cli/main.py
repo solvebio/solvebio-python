@@ -328,7 +328,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
                 },
                 {
                     "flags": "--exclude",
-                    "help": "Pattern to match against full paths "
+                    "help": "Pattern to match against local full paths "
                     "of files to be excluded from downloading. "
                     "This pattern is only used when --recursive is used. "
                     "Unix shell-style wildcards are supported. "
