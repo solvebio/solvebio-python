@@ -107,6 +107,7 @@ class SolveClient(object):
         # intermittent connection errors.
         retries = Retry(
             total=5,
+            connect=5,
             backoff_factor=0.1,
             status_forcelist=[
                 codes.bad_gateway,
