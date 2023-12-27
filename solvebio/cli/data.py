@@ -942,7 +942,9 @@ def ls(args):
               "Try the --recursive flag instead.")
         return False
 
-    files = _ls(args.full_path, recursive=args.recursive)
+    follow_shortcuts = True if args.follow_shortcuts else False
+
+    files = _ls(args.full_path, recursive=args.recursive, follow_shortcuts=follow_shortcuts)
 
     if len(files) == 0:
         print(
@@ -954,17 +956,35 @@ def ls(args):
     return True
 
 
-def _ls(full_path, recursive=False):
+def _ls(full_path, recursive=False, follow_shortcuts=False):        
     files = list(Object.all(glob=full_path, limit=1000))
 
     for file_ in files:
-        print(
-            "{}  {}  {}".format(
-                file_.last_modified, file_.object_type.ljust(8), file_.full_path
+        if follow_shortcuts and file_.is_shortcut:
+            shortcut = file_.full_path
+            try:
+                resolved_file = file_.get_target()
+                print(
+                    "{}  {}  {}  from shortcut: {}".format(
+                        resolved_file.last_modified, resolved_file.object_type.ljust(8), resolved_file.full_path.ljust(50), shortcut
+                    )
+                )
+            except NotFoundError:
+                print(
+                    "shortcut target not found!{}from shortcut: {}".format(
+                        "".rjust(65), shortcut
+                    )
+                )
+        else:
+            resolved_file = file_
+            print(
+                "{}  {}  {}".format(
+                    resolved_file.last_modified, resolved_file.object_type.ljust(8), resolved_file.full_path
+                )
             )
-        )
-        if recursive and file_.object_type == "folder":
-            _ls(file_.full_path + "/*", recursive=True)
+
+        if recursive and resolved_file.object_type == "folder":
+            _ls(resolved_file.full_path + "/*", recursive=True)
 
     return files
 
