@@ -113,7 +113,17 @@ class SolveClient(object):
                 codes.bad_gateway,
                 codes.service_unavailable,
                 codes.gateway_timeout
+            ],
+            allowed_methods=frozenset([
+                "HEAD",
+                "GET",
+                "PUT",
+                "POST",
+                "DELETE",
+                "OPTIONS",
+                "TRACE"
             ])
+        )
         adapter = HTTPAdapter(max_retries=retries)
         self._session = Session()
         self._session.mount(self._host, adapter)
