@@ -942,9 +942,7 @@ def ls(args):
               "Try the --recursive flag instead.")
         return False
 
-    follow_shortcuts = True if args.follow_shortcuts else False
-
-    files = _ls(args.full_path, recursive=args.recursive, follow_shortcuts=follow_shortcuts)
+    files = _ls(args.full_path, recursive=args.recursive, follow_shortcuts=args.follow_shortcuts)
 
     if len(files) == 0:
         print(
@@ -974,9 +972,8 @@ def _ls(full_path, recursive=False, follow_shortcuts=False):
                 )
             except NotFoundError:
                 print(
-                    "shortcut target not found!{}from shortcut: {}".format(
-                        "".rjust(65), shortcut
-                    )
+                    "Shortcut {} could not be resolved: "
+                    "the target may have been deleted or you may not have permission to access it".format(shortcut)
                 )
         else:
             resolved_file = file_
