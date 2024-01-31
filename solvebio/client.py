@@ -4,6 +4,7 @@ from __future__ import absolute_import
 import json
 import time
 import inspect
+import os
 
 import solvebio
 
@@ -103,26 +104,39 @@ class SolveClient(object):
         }
         self.set_user_agent()
 
+        solvebio_retry_all = os.environ.get('SOLVEBIO_RETRY_ALL')
+        if solvebio_retry_all == '1':
+            logger.info("Retries enabled for all operations.")
+            allowed_methods = frozenset([
+                "HEAD",
+                "GET",
+                "PUT",
+                "POST",
+                "PATCH",
+                "DELETE",
+                "OPTIONS",
+                "TRACE"
+            ])
+        else:
+            logger.info("Retries enabled only for idempotent operations.")
+            allowed_methods = frozenset([
+                "HEAD",
+                "GET",
+                "OPTIONS",
+                "TRACE"
+            ])
+
         # Use a session with a retry policy to handle
         # intermittent connection errors.
         retries = Retry(
             total=5,
-            connect=5,
             backoff_factor=0.1,
             status_forcelist=[
                 codes.bad_gateway,
                 codes.service_unavailable,
                 codes.gateway_timeout
             ],
-            allowed_methods=frozenset([
-                "HEAD",
-                "GET",
-                "PUT",
-                "POST",
-                "DELETE",
-                "OPTIONS",
-                "TRACE"
-            ])
+            allowed_methods=allowed_methods
         )
         adapter = HTTPAdapter(max_retries=retries)
         self._session = Session()
