@@ -105,8 +105,8 @@ class SolveClient(object):
         self.set_user_agent()
 
         solvebio_retry_all = os.environ.get('SOLVEBIO_RETRY_ALL')
-        if solvebio_retry_all == '1':
-            logger.info("Retries enabled for all operations.")
+        if bool(solvebio_retry_all):
+            logger.info("Retries enabled for all API requests")
             allowed_methods = frozenset([
                 "HEAD",
                 "GET",
@@ -118,7 +118,7 @@ class SolveClient(object):
                 "TRACE"
             ])
         else:
-            logger.info("Retries enabled only for idempotent operations.")
+            logger.info("Retries enabled for read-only API requests")
             allowed_methods = frozenset([
                 "HEAD",
                 "GET",
@@ -130,7 +130,7 @@ class SolveClient(object):
         # intermittent connection errors.
         retries = Retry(
             total=5,
-            backoff_factor=0.1,
+            backoff_factor=2,
             status_forcelist=[
                 codes.bad_gateway,
                 codes.service_unavailable,
