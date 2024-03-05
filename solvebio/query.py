@@ -1067,7 +1067,7 @@ class QueryFile(QueryBase):
             fields=None,
             exclude_fields=None,
             filters=None,
-            limit=QueryBase.INF,
+            limit=float('inf'),
             page_size=DEFAULT_PAGE_SIZE,
             output_format='json',
             header=True,
@@ -1220,3 +1220,26 @@ class QueryFile(QueryBase):
             fields = [f for f in fields if f not in self._exclude_fields]
 
         return fields
+
+    def __len__(self):
+        base_len = super(QueryFile, self).__len__()
+        if base_len == float('inf'):
+            raise TypeError(
+                'Unable to determine the number of records for the '
+                'current file-based query'
+            )
+        return base_len
+
+    def __repr__(self):
+        try:
+            super(QueryFile, self).__repr__()
+        except TypeError:
+            return 'Query returned 0 results.'
+        else:
+            return super(QueryFile, self).__repr__()
+
+    def __next__(self):
+        if self.__len__() == float('inf'):
+            pass
+        else:
+            return self.next()
