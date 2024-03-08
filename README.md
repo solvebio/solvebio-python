@@ -80,7 +80,7 @@ For all other requests, please [email SolveBio Support](mailto:support@solvebio.
 Configuring the Client
 -------
 
-The Solvebio python client can be configured by setting system environment variables.
+The SolveBio python client can be configured by setting system environment variables.
 Supported environment variables are:
 
 `SOLVEBIO_API_HOST`     
