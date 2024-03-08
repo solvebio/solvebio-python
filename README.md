@@ -84,8 +84,8 @@ The Solvebio python client can be configured by setting system environment varia
 Supported environment variables are:
 
 `SOLVEBIO_API_HOST`     
-- The URL of the target API backend.
-                          If not specified the value from the local credentials file will be used.
+- The URL of the target API backend. 
+If not specified the value from the local credentials file will be used.
 
 `SOLVEBIO_ACCESS_TOKEN` 
 - The OAuth2 access token for authenticating with the API.
@@ -100,7 +100,7 @@ The lookup order for credentials is:
 
 `SOLVEBIO_LOGLEVEL` 
 - The log level at which to log messages.
-                          If not specified the default log level will be WARN.
+If not specified the default log level will be WARN.
 
 `SOLVEBIO_LOGFILE`        
 - The file in which to write log messages. 
