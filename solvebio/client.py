@@ -94,7 +94,7 @@ class SolveClient(object):
     """A requests-based HTTP client for SolveBio API resources"""
 
     def __init__(self, host=None, token=None, token_type='Token',
-                 include_resources=True):
+                 include_resources=True, retry_all=None):
         self.set_host(host)
         self.set_token(token, token_type)
         self._headers = {
@@ -104,8 +104,10 @@ class SolveClient(object):
         }
         self.set_user_agent()
 
-        solvebio_retry_all = os.environ.get('SOLVEBIO_RETRY_ALL')
-        if bool(solvebio_retry_all):
+        if retry_all is None:
+            retry_all = bool(os.environ.get("SOLVEBIO_RETRY_ALL"))
+
+        if bool(retry_all):
             logger.info("Retries enabled for all API requests")
             allowed_methods = frozenset([
                 "HEAD",
@@ -117,27 +119,31 @@ class SolveClient(object):
                 "OPTIONS",
                 "TRACE"
             ])
+
+            retries = Retry(
+                total=5,
+                backoff_factor=2,
+                status_forcelist=[
+                    codes.bad_gateway,
+                    codes.service_unavailable,
+                    codes.gateway_timeout
+                ],
+                allowed_methods=allowed_methods
+            )
         else:
             logger.info("Retries enabled for read-only API requests")
-            allowed_methods = frozenset([
-                "HEAD",
-                "GET",
-                "OPTIONS",
-                "TRACE"
-            ])
+            retries = Retry(
+                total=5,
+                backoff_factor=2,
+                status_forcelist=[
+                    codes.bad_gateway,
+                    codes.service_unavailable,
+                    codes.gateway_timeout
+                ]
+            )
 
         # Use a session with a retry policy to handle
         # intermittent connection errors.
-        retries = Retry(
-            total=5,
-            backoff_factor=2,
-            status_forcelist=[
-                codes.bad_gateway,
-                codes.service_unavailable,
-                codes.gateway_timeout
-            ],
-            allowed_methods=allowed_methods
-        )
         adapter = HTTPAdapter(max_retries=retries)
         self._session = Session()
         self._session.mount(self._host, adapter)
