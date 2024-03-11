@@ -46,15 +46,16 @@ class SolveError(Exception):
             elif response.status_code == 404:
                 self.message = '404 Not Found ({})'.format(response.url)
 
-            # Handle other keys
-            for k, v in list(self.json_body.items()):
-                if k in ["non_field_errors", "detail"]:
-                    self.message += '\nError: '
-                else:
-                    self.message += '\nError (%s): ' % k
+            if self.json_body:
+                # Handle other keys
+                for k, v in list(self.json_body.items()):
+                    if k in ["non_field_errors", "detail"]:
+                        self.message += '\nError: '
+                    else:
+                        self.message += '\nError (%s): ' % k
 
-                # can be a list, dict, string
-                self.message += str(v)
+                    # can be a list, dict, string
+                    self.message += str(v)
 
     def __str__(self):
         return self.message
