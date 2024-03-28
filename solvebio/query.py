@@ -286,10 +286,16 @@ class QueryBase(object):
     def __repr__(self):
         # Check that Query/QueryFile object does not have any previous errors
         # otherwise, raise the error.
+        total_count = 0
+        try:
+            total_count = len(self)
+        except TypeError:
+            total_count = float("inf")
+
         if self._error:
             raise self._error
 
-        if len(self) == 0:
+        if total_count == 0:
             return 'Query returned 0 results.'
 
         placeholder = 'many more results (total unknown)'
@@ -303,13 +309,15 @@ class QueryBase(object):
             return '\n%s\n\n... %s more results.' % (
                 tabulate(list(self._buffer[0].items()), ['Fields', 'Data'],
                          aligns=['right', 'left'], sort=True),
-                pretty_int(len(self) - 1))
+                pretty_int(total_count - 1))
         else:
             is_tsv = self._output_format == 'tsv'
 
             # this is the only case when we know the exact number of total records
-            if len(self) < self._limit:
-                placeholder = '{} more results'.format(pretty_int(max(len(self) - 9, 0)))
+            if total_count < self._limit:
+                placeholder = '{} more results'.format(
+                    pretty_int(max(total_count - 9, 0))
+                )
 
             return '\n%s\n\n... %s.' % (
                 tabulate(list(enumerate(self._buffer[:10])), ['Row', 'Data'],
@@ -438,8 +446,12 @@ class QueryBase(object):
         _is_join = getattr(self, '_is_join', False)
 
         # len(self) returns `min(limit, total)` results
-        if not _is_join and self._cursor == len(self):
-            raise StopIteration
+        try:
+            if not _is_join and self._cursor == len(self):
+                raise StopIteration
+        except TypeError:
+            # len(self) is unknown so just continue normally
+            pass
 
         if self._buffer_idx == len(self._buffer):
             if _is_join:
