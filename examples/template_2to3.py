@@ -6,9 +6,32 @@ It will also show a diff of the changes detected and optionally save the changes
 
 Please install the following dependencies for best results:
 
-```
-pip install solvebio click black
-```
+
+    pip install solvebio click black
+
+
+## Usage
+
+Perform a diff of the changes detected in a template:
+
+    python template_2to3.py YOUR_TEMPLATE_ID --api-host https://API_HOST.aws.quartz.bio --diff
+
+
+Format the diff using Black:
+
+    python template_2to3.py YOUR_TEMPLATE_ID --api-host https://API_HOST.aws.quartz.bio --diff --format-diff
+
+
+Save a new copy of the template with the upgraded Python 3 expression:
+
+    python template_2to3.py YOUR_TEMPLATE_ID --api-host https://API_HOST.aws.quartz.bio --save
+
+
+Overwrite the existing template with upgraded Python 3 expression:
+
+    python template_2to3.py YOUR_TEMPLATE_ID --api-host https://API_HOST.aws.quartz.bio --save --overwrite
+
+
 """
 
 import solvebio
@@ -134,12 +157,12 @@ def convert_template(
             print(
                 f"Ovewriting existing template {template.id} with Python 3 expressions."
             )
+            template.save()
         else:
             print("Creating a new template with Python 3 expressions.")
-            template.id = None
             template.name = f"{template.name} py3"
+            solvebio.DatasetTemplate.create(**template)
 
-        template.save()
         print(f"Template {template.id} saved with Python 3 expressions.")
 
 
