@@ -1242,16 +1242,16 @@ class QueryFile(QueryBase):
             )
         return base_len
 
-    def __repr__(self):
-        try:
-            super(QueryFile, self).__repr__()
-        except TypeError:
-            return 'Query returned 0 results.'
-        else:
-            return super(QueryFile, self).__repr__()
+    # def __repr__(self):
+    #     try:
+    #         super(QueryFile, self).__repr__()
+    #     except TypeError:
+    #         return 'Query returned 0 results.'
+    #     else:
+    #         return super(QueryFile, self).__repr__()
 
-    def __next__(self):
-        if self.__len__() == float('inf'):
-            pass
-        else:
-            return self.next()
+    # def __next__(self):
+    #     if self.__len__() == float('inf'):
+    #         pass
+    #     else:
+    #         return self.next()
