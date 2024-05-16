@@ -482,3 +482,17 @@ class BaseQueryTest(SolveBioTestCase):
             self.assertTrue('gene_symbol' in record)
             self.assertTrue('b_gene' in record)
             self.assertTrue('b_variant' in record)
+
+    def test_query_large_file_into_dataframe(self):
+        import pandas as pd
+        expected_num_rows = 1015
+
+        try:
+            large_object = self.client.Object.get_by_full_path(self.TEST_LARGE_TSV_FULL_PATH)
+            query = large_object.query()
+            dataframe = pd.DataFrame(query)
+        except Exception as e:
+            self.fail(f"Exception {e} was raised while querying large object")
+        self.assertTrue(not dataframe.empty)
+        self.assertEqual(expected_num_rows, len(dataframe))
+        
