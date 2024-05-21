@@ -495,6 +495,6 @@ class BaseQueryTest(SolveBioTestCase):
             query = large_object.query()
             dataframe = pd.DataFrame(query)
         except Exception as e:
-            self.fail(f"Exception {e} was raised while querying large object")
+            self.fail("Exception {} was raised while querying large object".format(e))
         self.assertTrue(not dataframe.empty)
         self.assertEqual(expected_num_rows, len(dataframe))
