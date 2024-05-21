@@ -1241,4 +1241,3 @@ class QueryFile(QueryBase):
                 'current file-based query'
             )
         return base_len
-    

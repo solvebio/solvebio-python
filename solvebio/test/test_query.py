@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import unittest
+
 from solvebio.query import Filter
 from solvebio import SolveError
 
@@ -483,6 +485,7 @@ class BaseQueryTest(SolveBioTestCase):
             self.assertTrue('b_gene' in record)
             self.assertTrue('b_variant' in record)
 
+    @unittest.skip("Skip because API Host on GH pipelines doesn't host file at TEST_LARGE_TSV_FULL_PATH")
     def test_query_large_file_into_dataframe(self):
         import pandas as pd
         expected_num_rows = 1015
@@ -495,4 +498,3 @@ class BaseQueryTest(SolveBioTestCase):
             self.fail(f"Exception {e} was raised while querying large object")
         self.assertTrue(not dataframe.empty)
         self.assertEqual(expected_num_rows, len(dataframe))
-        
