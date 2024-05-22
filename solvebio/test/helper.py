@@ -14,9 +14,12 @@ import solvebio
 
 
 class SolveBioTestCase(unittest.TestCase):
-    TEST_DATASET_FULL_PATH = 'solvebio:public:/HGNC/3.3.0-2020-10-29/HGNC'
-    TEST_DATASET_FULL_PATH_2 = 'solvebio:public:/ClinVar/5.1.0-20200720/Variants-GRCH38'
-    TEST_FILE_FULL_PATH = 'solvebio:public:/HGNC/3.3.0-2020-10-29/hgnc_1000_rows.txt'
+    # 'solvebio:public:/HGNC/3.3.0-2020-10-29/HGNC'
+    TEST_DATASET_FULL_PATH = 'quartzbio:Public:/HGNC/3.3.1-2021-08-25/HGNC'
+    # 'solvebio:public:/ClinVar/5.1.0-20200720/Variants-GRCH38'
+    TEST_DATASET_FULL_PATH_2 = 'quartzbio:Public:/ClinVar/5.2.0-20210110/Variants-GRCH38'
+    # 'solvebio:public:/HGNC/3.3.0-2020-10-29/hgnc_1000_rows.txt'
+    TEST_FILE_FULL_PATH = 'quartzbio:Public:/HGNC/3.3.1-2021-08-25/HGNC-3-3-1-2021-08-25-HGNC-1904014068027535892-20230418174248.json.gz'  # noqa
 
     def setUp(self):
         super(SolveBioTestCase, self).setUp()
