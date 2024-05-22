@@ -75,3 +75,41 @@ Developer documentation is available at [docs.solvebio.com](https://docs.solvebi
 If you experience problems with this package, please [create a GitHub Issue](https://github.com/solvebio/solvebio-python/issues).
 
 For all other requests, please [email SolveBio Support](mailto:support@solvebio.com).
+
+
+Configuring the Client
+-------
+
+The SolveBio python client can be configured by setting system environment variables.
+Supported environment variables are:
+
+`SOLVEBIO_API_HOST`     
+- The URL of the target API backend. 
+If not specified the value from the local credentials file will be used.
+
+`SOLVEBIO_ACCESS_TOKEN` 
+- The OAuth2 access token for authenticating with the API.
+
+`SOLVEBIO_API_KEY`       
+- The API Key to use for authenticating with the API.
+
+The lookup order for credentials is:
+1. Access Token
+2. API Key
+3. Local Credentials file
+
+`SOLVEBIO_LOGLEVEL` 
+- The log level at which to log messages.
+If not specified the default log level will be WARN.
+
+`SOLVEBIO_LOGFILE`        
+- The file in which to write log messages. 
+If the file does not exist it will be created. 
+If not specified '~/.solvebio/solvebio.log' will be used by default.
+
+`SOLEVBIO_RETRY_ALL`      
+- Flag for enabling aggressive retries for failed requests to the API.
+When truthy, the client will attempt to retry a failed request regardless of the type of operation.
+This includes idempotent and nonidempotent operations:
+"HEAD", "GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS", "TRACE"
+If this value is not set it will default to false and retries will only be enabled for idempotent operations.

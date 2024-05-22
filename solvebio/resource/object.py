@@ -382,6 +382,44 @@ class Object(CreateableAPIResource,
 
         return new_obj
 
+    def create_shortcut(self, shortcut_full_path, **kwargs):
+        """Create a shortcut to the current object at shortcut_full_path
+
+        Args:
+            shortcut_full_path (str): Full path including vault name.
+            tags (list[str]): List of tags to put on shortcut.
+        Returns:
+            Object: New shortcut object
+        Raises:
+            SolveError: if a object already exists at the given shortcut_full_path.
+        """
+        _client = kwargs.pop('client', None) or self._client or client
+        full_path, path_dict = Object.validate_full_path(shortcut_full_path, client=_client)
+
+        try:
+            existing_object = Object.get_by_full_path(full_path, client=_client)
+            if existing_object:
+                raise SolveError(
+                    "Object type {} already exists at location: {}".format(
+                        existing_object.object_type, full_path
+                    )
+                )
+        except NotFoundError:
+
+            target = {
+                'id': self.id,
+                'object_type': self.object_type
+            }
+
+            shortcut = Object.get_or_create_by_full_path(full_path=shortcut_full_path,
+                                                         object_type="shortcut",
+                                                         target=target,
+                                                         client=_client)
+
+            print("Notice: Shortcut created at {}".format(shortcut.path))
+
+        return shortcut
+
     @classmethod
     def upload_file(cls, local_path, remote_path, vault_full_path, **kwargs):
         from solvebio import Vault
@@ -430,26 +468,34 @@ class Object(CreateableAPIResource,
                               'but not overwriting.'
                               .format(full_path, local_md5, obj.md5))
         except NotFoundError:
+            obj = None
             pass
 
         # Lookup parent object
-        if path_dict['parent_path'] == '/':
-            parent_object_id = None
+        if kwargs.get('follow_shortcuts') and obj and obj.is_file:
+            vault_id = obj.vault_id
+            parent_object_id = obj.parent_object_id
+            filename = obj.filename
         else:
-            parent_obj = Object.get_by_full_path(
-                path_dict['parent_full_path'], assert_type='folder',
-                client=_client
-            )
-            parent_object_id = parent_obj.id
+            vault_id = vault.id
+            filename = os.path.basename(local_path)
+            if path_dict['parent_path'] == '/':
+                parent_object_id = None
+            else:
+                parent_obj = Object.get_by_full_path(
+                    path_dict['parent_full_path'], assert_type='folder',
+                    client=_client
+                )
+                parent_object_id = parent_obj.id
 
         description = kwargs.get('description')
 
         # Create the file, and upload it to the Upload URL
         obj = Object.create(
-            vault_id=vault.id,
+            vault_id=vault_id,
             parent_object_id=parent_object_id,
             object_type='file',
-            filename=os.path.basename(local_path),
+            filename=filename,
             md5=local_md5,
             mimetype=mimetype,
             size=size,
@@ -457,7 +503,6 @@ class Object(CreateableAPIResource,
             tags=kwargs.get('tags', []) or [],
             client=_client
         )
-
         print('Notice: File created for {0} at {1}'.format(local_path,
                                                            obj.path))
         print('Notice: Upload initialized')
@@ -593,6 +638,34 @@ class Object(CreateableAPIResource,
     @property
     def is_file(self):
         return self.object_type == 'file'
+
+    @property
+    def is_shortcut(self):
+        return self.object_type == 'shortcut'
+
+    def get_target(self, return_none_target=True):
+        if not self.is_shortcut:
+            raise SolveError("Only shortcut objects have a target resource. This is a {}".format(self.object_type))
+        target = self['target']
+        if not target:
+            if return_none_target:
+                return None
+            else:
+                raise SolveError("Shortcut target not found.")
+
+        try:
+            if target['object_type'] == 'url':
+                return target['url']
+            elif target['object_type'] == 'vault':
+                from . import Vault
+                return Vault.retrieve(target['id'], client=self._client)
+            else:
+                return Object.retrieve(target['id'], client=self._client)
+        except SolveError as e:
+            if e.status_code == 404:
+                raise NotFoundError
+            else:
+                raise e
 
     @property
     def data_url(self):

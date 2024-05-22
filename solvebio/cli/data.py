@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import print_function
+
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
+
 from six.moves import input as raw_input
 
 import os
@@ -27,6 +31,7 @@ from solvebio.utils.md5sum import md5sum
 from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
 from solvebio.client import SolveClient
+from solvebio.client import client as global_client
 
 
 def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
@@ -62,7 +67,7 @@ def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
     return False
 
 
-def _check_uploaded_folders(base_remote_path, local_start, all_folders):
+def _check_uploaded_folders(base_remote_path, local_start, all_folders, follow_shortcuts=False):
     """Identifies which remote folders already exist so that we can optimize
     which folders to create in the upload workflow.
 
@@ -74,11 +79,25 @@ def _check_uploaded_folders(base_remote_path, local_start, all_folders):
         base_remote_path: Base remote parent folder full path to upload to.
         local_start: The name of the base folder to upload.
         all_folders: A list of remote folders to potentially create in full path format.
+        follow_shortcuts: Boolean flag specifying if shortcuts on base_remote_path should be resolved.
     Returns:
         all_folder_parts (set): A unique set of folder parts to create that do
             not already exist.
 
     """
+
+    def _folder_exists(folder_full_path, remote_folders_existing, follow_shortcuts):
+        if follow_shortcuts:
+            # When following shortcuts we cannot determine which folders exist based on global search.
+            # Each folder has to be checked separately.
+            try:
+                Object.get_by_full_path(full_path=folder_full_path, follow_shortcuts=True)
+            except NotFoundError:
+                return False
+            return True
+        else:
+            return folder_full_path in remote_folders_existing
+
     upload_root_path, _ = Object.validate_full_path(
         os.path.join(base_remote_path, local_start)
     )
@@ -92,7 +111,7 @@ def _check_uploaded_folders(base_remote_path, local_start, all_folders):
         # Skip root folder as we don't need to create this
         for folder in subfolders[1:]:
             folder_full_path = os.path.join(parent_folder_path, folder)
-            if folder_full_path not in remote_folders_existing:
+            if not _folder_exists(folder_full_path, remote_folders_existing, follow_shortcuts):
                 all_folder_parts.add(folder_full_path)
             parent_folder_path = folder_full_path
 
@@ -108,7 +127,8 @@ def _upload_folder(
     exclude_paths=None,
     dry_run=False,
     num_processes=1,
-    archive_folder=None
+    archive_folder=None,
+    follow_shortcuts=False
 ):
     all_folders = []
     all_files = []
@@ -118,7 +138,7 @@ def _upload_folder(
         upload_root_path, _ = Object.validate_full_path(
             os.path.join(base_remote_path, local_start)
         )
-        Object.get_by_full_path(upload_root_path, assert_type="folder")
+        Object.get_by_full_path(upload_root_path, assert_type="folder", follow_shortcuts=follow_shortcuts)
     except NotFoundError:
         base_remote_path, path_dict = Object.validate_full_path(base_remote_path)
         base_folder_path = os.path.join(base_remote_path, local_start)
@@ -150,15 +170,18 @@ def _upload_folder(
             all_folders.append((vault, remote_path))
 
         # Upload the files that do not yet exist on the remote
+        # Pass global client auth parameters to each worker to avoid using default globals
+        client_auth = (global_client._host, global_client._auth.token, global_client._auth.token_type)
         for f in files:
             local_file_path = os.path.join(abs_local_parent_path, f)
             if should_exclude(local_file_path, exclude_paths, dry_run=dry_run):
                 continue
-            all_files.append((local_file_path, remote_folder_full_path, vault.full_path, dry_run, archive_folder))
+            all_files.append((local_file_path, remote_folder_full_path, vault.full_path,
+                              dry_run, archive_folder, client_auth, follow_shortcuts))
 
     if num_processes > 1:
         # Only perform optimization if parallelization is requested by the user
-        all_folder_parts = _check_uploaded_folders(base_remote_path, local_start, all_folders)
+        all_folder_parts = _check_uploaded_folders(base_remote_path, local_start, all_folders, follow_shortcuts)
     else:
         all_folder_parts = set([x[1] for x in all_folders])
     # Create folders serially since these require
@@ -196,26 +219,33 @@ def _create_file_job(args):
         args[1] (remote_folder_path): Path to remote parent folder.
         args[2] (vault_path): Path to remote vault.
         args[3] (dry_run): Whether to performa dry run.
+        args[4] (archive_folder): An archive folder to move existing files into
+        args[5] (client_auth): Tuple containing API host, token, and token type
+        args[6] (follow_shortcuts): Boolean to follow shortcuts on the remote_folder_path
     Returns:
         None or Exception if exception is raised.
     """
     try:
-        local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder = args
+        local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder, client_auth, follow_shortcuts \
+            = args
         if dry_run:
             print("[Dry Run] Uploading {} to {}".format(
                 local_file_path, remote_folder_full_path))
             return
-        client = SolveClient()
+        # Provides the global host, token, token_type
+        client = SolveClient(*client_auth)
         remote_parent = Object.get_by_full_path(
             remote_folder_full_path,
             assert_type="folder",
+            follow_shortcuts=follow_shortcuts,
             client=client
         )
         Object.upload_file(
             local_file_path,
             remote_parent.path,
-            vault_path,
+            remote_parent.vault.full_path,
             archive_folder=archive_folder,
+            follow_shortcuts=follow_shortcuts,
             client=client
         )
         return
@@ -370,10 +400,12 @@ def upload(args):
     # Assert the vault exists and is accessible
     vault = Vault.get_by_full_path(path_dict["vault_full_path"])
 
+    follow_shortcuts = True if args.follow_shortcuts else False
+
     # If not the vault root, validate remote path exists and is a folder
     if path_dict["path"] != "/":
         try:
-            Object.get_by_full_path(base_remote_path, assert_type="folder")
+            Object.get_by_full_path(base_remote_path, assert_type="folder", follow_shortcuts=follow_shortcuts)
         except:
             if not args.create_full_path:
                 raise
@@ -428,7 +460,8 @@ def upload(args):
                 exclude_paths=exclude_paths,
                 dry_run=args.dry_run,
                 num_processes=args.num_processes,
-                archive_folder=args.archive_folder
+                archive_folder=args.archive_folder,
+                follow_shortcuts=follow_shortcuts
             )
         else:
             if args.dry_run:
@@ -574,6 +607,8 @@ def download(args):
         excludes=args.exclude,
         includes=args.include,
         delete=args.delete,
+        follow_shortcuts=args.follow_shortcuts,
+        num_processes=args.num_processes,
     )
 
 
@@ -585,6 +620,8 @@ def _download(
     excludes=[],
     includes=[],
     delete=False,
+    follow_shortcuts=False,
+    num_processes=None,
 ):
     """
     Given a folder or file, download all the files contained
@@ -602,13 +639,21 @@ def _download(
 
     if recursive:
         _download_recursive(
-            full_path, local_folder_path, dry_run, excludes, includes, delete
+            full_path,
+            local_folder_path,
+            dry_run,
+            excludes,
+            includes,
+            delete,
+            follow_shortcuts,
+            num_processes
         )
         return
 
     # API will determine depth based on number of "/" in the glob
     # Add */** to match in any vault (recursive)
     files = Object.all(glob=full_path, limit=1000, object_type="file")
+    shortcuts = Object.all(glob=full_path, limit=1000, object_type="shortcut")
     if not files:
         print(
             "No file(s) found at --full-path {}\nIf attempting to download "
@@ -626,9 +671,42 @@ def _download(
             )
         )
 
+    if not follow_shortcuts:
+        return
+
+    for shortcut_ in shortcuts:
+        if not shortcut_["target"]:
+            print(
+                "None target for shortcut: {} nothing to download.".format(
+                    shortcut_.filename
+                )
+            )
+            continue
+        if shortcut_["target"]["object_type"] != 'file':
+            continue
+
+        if not dry_run:
+            target = shortcut_.get_target()
+            if not target:
+                continue
+            target.filename = shortcut_.filename
+            target.download(local_folder_path)
+            print(
+                "Downloaded from shortcut: {} to {}/{}".format(
+                    shortcut_.full_path, local_folder_path, shortcut_.filename
+                )
+            )
+
 
 def _download_recursive(
-    full_path, local_folder_path, dry_run=False, excludes=[], includes=[], delete=False
+    full_path,
+    local_folder_path,
+    dry_run=False,
+    excludes=[],
+    includes=[],
+    delete=False,
+    follow_shortcuts=False,
+    num_processes=None,
 ):
 
     if "**" in full_path:
@@ -636,16 +714,19 @@ def _download_recursive(
             "Paths containing ** are not compatible with the --recursive flag."
         )
 
-    full_path, parts = Object.validate_full_path(full_path)
-    results = GlobalSearch().filter(path__prefix=full_path)
+    results = list(_resolve_shortcuts_and_get_files(full_path=full_path,
+                                                    follow_shortcuts=follow_shortcuts))
+
     num_files = len([x for x in results if x.get("object_type") == "file"])
     print("Found {} files to download.".format(num_files))
+
     if num_files == 0:
-        if full_path.endswith("/*"):
-            print(
-                "Folder names ending with '/*' are not supported with "
-                "the --recursive flag, try again with only the folder name."
-            )
+        print("No files found on path.")
+        if follow_shortcuts:
+            num_shortcuts = len([x for x in results if x.get("object_type") == "shortcut"])
+            print("{} shortcuts found on path. Use --follow-shortcuts flag to download.".format(num_shortcuts)) \
+                if num_shortcuts > 0 \
+                else print("No shortcuts found on path.")
         return
 
     remote_objects = []
@@ -654,10 +735,12 @@ def _download_recursive(
         file_obj.depth = depth
         # MD5 not retrieved by GlobalSearch so
         # separate API call is needed
-        if file_obj.class_name() == "Vault":
+        if file_obj.class_name() == "Vault" or file_obj.is_shortcut:
             continue
         if file_obj.is_file and not file_obj.get('md5'):
-            file_obj = Object.retrieve(file_obj.id)
+            file_object = Object.retrieve(file_obj.id)
+            file_object.path = file_obj.path
+            file_obj = file_object
         file_obj.depth = depth
         remote_objects.append(file_obj)
 
@@ -670,6 +753,7 @@ def _download_recursive(
 
     downloaded_files = set()
 
+    files_to_download = []
     remote_files = [x for x in remote_objects if x.get("object_type") == "file"]
     for remote_file in remote_files:
         rel_parts = remote_file.path.split("/")[base_folder_depth:]
@@ -699,7 +783,17 @@ def _download_recursive(
         if not dry_run:
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
-            remote_file.download(local_path)
+            if num_processes is not None:
+                file = {
+                    "path": local_path,
+                    "file": remote_file
+                }
+                files_to_download.append(file)
+            else:
+                remote_file.download(local_path)
+
+    if num_processes is not None:
+        _download_in_parallel(files_to_download, num_processes)
 
     if not delete:
         return
@@ -726,6 +820,116 @@ def _download_recursive(
                     )
                 )
                 os.rmdir(local_abs_path)
+
+
+def _download_in_parallel(files_to_download, num_processes):
+    def _download_worker(file_info):
+        try:
+            print("downloading to: " + file_info['path'])
+            file_info.get('file').download(file_info.get('path'))
+        except Exception as e:
+            print("Error occurred while downloading file: ({}).".format(file_info.get('path')))
+            raise e
+
+    if num_processes <= 0:
+        num_processes = os.cpu_count()
+        print("[Warning] num-processes cannot be less than 1. Defaulting to CPU count: ({})". format(num_processes))
+
+    print("Downloading in parallel with {} processes.".format(num_processes))
+
+    with ThreadPoolExecutor(max_workers=num_processes) as executor:
+        try:
+            for result in executor.map(_download_worker, files_to_download):
+                pass
+        except concurrent.futures.CancelledError as e:
+            print("Exception in worker thread:", e)
+        except KeyboardInterrupt:
+            print("KeyboardInterrupt: Cancelling remaining tasks.")
+            executor._threads.clear()
+            concurrent.futures.thread._thread_queues.clear()
+        except Exception as e:
+            print("Exception in worker thread: ", e)
+
+
+def _resolve_shortcuts_and_get_files(full_path, download_path=None, follow_shortcuts=False):
+    full_path, parts = Object.validate_full_path(full_path)
+    if not download_path:
+        download_path = full_path
+    if not download_path.endswith('/'):
+        download_path += '/'
+
+    results = GlobalSearch().filter(path__prefix=full_path)
+
+    if full_path.endswith("/*"):
+        print(
+            "Folder names ending with '/*' are not supported with "
+            "the --recursive flag, try again with only the folder name."
+        )
+        return set()
+
+    if not follow_shortcuts:
+        return [r for r in results if r.class_name() != "Vault" and not r.is_shortcut]
+
+    files = []
+    for x in results:
+        x.path = download_path + _get_relative_download_path(base_path=full_path,
+                                                             path_to_object=x.full_path,
+                                                             filename=x.name)
+        files.append(x)
+
+    shortcuts = [o for o in files if o.class_name() != "Vault" and o.is_shortcut]
+
+    resolved_shortcuts = []
+    for shortcut in shortcuts:
+        # Global search doesn't return target in the response.
+        # Directly accessing target will always return None.
+        # Call Object.retrieve() to get the full object.
+        shortcut_object = Object.retrieve(shortcut.id)
+        try:
+            target_object = shortcut_object.get_target()
+        except NotFoundError:
+            print(
+                "[WARNING] The target object for shortcut: ({}) "
+                "has been moved, deleted or you don't have permissions to view it."
+                .format(shortcut.full_path))
+            continue
+
+        if not target_object:
+            print("Couldn't find target object for shortcut: {}".format(shortcut.full_path))
+            continue
+        elif shortcut_object.target.object_type == "url":
+            print("Found URL shortcut at: ({}) skipping download.".format(shortcut_object.full_path))
+            continue
+        elif shortcut_object.target.object_type == "vault":
+            print("Following shortcut to vault: ({})".format(target_object.name))
+            resolved_shortcuts += _resolve_shortcuts_and_get_files(
+                full_path=target_object.full_path + ":/",
+                download_path=shortcut.path + "/" + target_object.name + "/",
+                follow_shortcuts=follow_shortcuts
+            )
+        elif target_object.is_folder:
+            # todo # implement circular shortcut avoiding
+            #      # note: it isn't as simple as skipping over already visited folders
+            resolved_shortcuts += _resolve_shortcuts_and_get_files(
+                full_path=target_object.full_path,
+                download_path=shortcut.path + "/",
+                follow_shortcuts=follow_shortcuts
+            )
+        else:
+            # set filename and path for download - keep shortcut structure
+            target_object.path = shortcut.path
+            resolved_shortcuts.append(target_object)
+
+    return resolved_shortcuts + files
+
+
+def _get_relative_download_path(base_path, path_to_object, filename):
+    relative_path = os.path.relpath(path_to_object, base_path).strip()
+    dirname = os.path.dirname(relative_path)
+    if dirname:
+        return dirname + "/" + filename
+    else:
+        return filename
 
 
 def ls(args):

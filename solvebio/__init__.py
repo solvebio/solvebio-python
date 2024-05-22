@@ -26,7 +26,12 @@ except:
 api_key = _os.environ.get('SOLVEBIO_API_KEY', None)
 # OAuth2 access tokens
 access_token = _os.environ.get('SOLVEBIO_ACCESS_TOKEN', None)
-api_host = _os.environ.get('SOLVEBIO_API_HOST', 'https://api.solvebio.com')
+if access_token is None:
+    access_token = _os.environ.get('EDP_ACCESS_TOKEN', None)
+
+api_host = _os.environ.get('SOLVEBIO_API_HOST', None)
+if api_host is None:
+    api_host = _os.environ.get('EDP_API_HOST', 'https://api.solvebio.com')
 
 
 def help():

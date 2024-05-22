@@ -364,6 +364,40 @@ class ObjectTests(SolveBioTestCase):
         file.delete(force=True)
         VaultTests.clean_up_after_vault_versioning(vault, versioning_status)
 
+    @unittest.skip("Skip because API Host on GH pipelines doesn't support shortcuts.")
+    def test_shortcuts(self):
+        vault = self.client.Vault.get_personal_vault()
+
+        folder_name = "{}-test-folder".format(str(uuid.uuid4()))
+        folder = self.client.Object.create(filename=folder_name,
+                                           object_type='folder',
+                                           vault_id=vault.id)
+
+        file = self.client.Object.create(filename='shorcut-test.txt',
+                                         object_type='file',
+                                         vault_id=vault.id)
+
+        shortcut_folder_full_path = vault.full_path + ":/{}-test-shortcut-folder".format(get_uuid_str())
+        shortcut_folder = folder.create_shortcut(shortcut_folder_full_path)
+        self.assertTrue(shortcut_folder.is_shortcut)
+        self.assertEqual(shortcut_folder.get_target().id, folder.id)
+
+        shortcut_file_full_path = vault.full_path + ":/{}-test-shortcut-file".format(get_uuid_str())
+        shortcut_file = file.create_shortcut(shortcut_file_full_path)
+        self.assertTrue(shortcut_file.is_shortcut)
+        self.assertEqual(shortcut_file.get_target().id, file.id)
+
+        shortcut_url_name = "{}-test-shortcut-url".format(get_uuid_str())
+        shortcut_url = self.client.Object.create(filename=shortcut_url_name,
+                                                 object_type='shortcut',
+                                                 vault_id=vault.id,
+                                                 target={
+                                                     'url': 'www.google.com',
+                                                     'object_type': 'url',
+                                                 })
+        self.assertTrue(shortcut_url.is_shortcut)
+        self.assertEqual(shortcut_url.get_target(), 'www.google.com')
+
 
 class ObjectUploadTests(SolveBioTestCase):
 
