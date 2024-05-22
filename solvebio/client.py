@@ -261,7 +261,7 @@ class SolveClient(object):
         }
 
         # For internal API endpoints, don't verify SSL certs
-        if self._host.endwith('.svc.cluster.local'):
+        if self._host.endswith('.svc.cluster.local'):
             opts['verify'] = False
 
         raw = kwargs.pop('raw', False)
