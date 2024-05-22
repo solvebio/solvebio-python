@@ -53,7 +53,8 @@ def get_recipe_by_name_from_yml(all_recipes, name):
 
 def load_recipes_from_yaml(yml_file):
     with open(yml_file, 'r') as yml:
-        all_recipes = yaml.load(yml)
+        y = yaml.YAML()
+        all_recipes = y.load(yml)
     return all_recipes['recipes']
 
 
