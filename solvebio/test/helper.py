@@ -20,6 +20,7 @@ class SolveBioTestCase(unittest.TestCase):
     TEST_DATASET_FULL_PATH_2 = 'quartzbio:Public:/ClinVar/5.2.0-20210110/Variants-GRCH38'
     # 'solvebio:public:/HGNC/3.3.0-2020-10-29/hgnc_1000_rows.txt'
     TEST_FILE_FULL_PATH = 'quartzbio:Public:/HGNC/3.3.1-2021-08-25/HGNC-3-3-1-2021-08-25-HGNC-1904014068027535892-20230418174248.json.gz'  # noqa
+    TEST_LARGE_TSV_FULL_PATH = ''
 
     def setUp(self):
         super(SolveBioTestCase, self).setUp()
