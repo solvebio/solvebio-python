@@ -288,6 +288,11 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "action": "store_true",
                 },
                 {
+                    "flags": "--follow-shortcuts",
+                    "help": "Resolves shortcuts when listing.",
+                    "action": "store_true",
+                },
+                {
                     "name": "full_path",
                     "help": "The full path where the files and folders should "
                     "be listed from, defaults to the root of your personal vault",
