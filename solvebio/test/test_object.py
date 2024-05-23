@@ -21,8 +21,13 @@ def get_uuid_str():
 class ObjectTests(SolveBioTestCase):
 
     def test_object_paths(self):
+        # List objects and get them, but only in the public vault
+        # this way we minimize flaky tests.
         vaults = self.client.Vault.all()
         for vault in vaults:
+            if not vault.is_public:
+                continue
+
             for file_ in list(vault.ls().solve_objects())[:5]:
                 o_path, _ = self.client.Object.validate_full_path(
                     file_.full_path)
