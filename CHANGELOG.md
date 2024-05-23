@@ -1,5 +1,17 @@
 # Changelog
 
+## [v2.27.0](https://github.com/solvebio/solvebio-python/tree/v2.27.0) (2024-05-23)
+
+- Fix MemoryError when querying files (#453) (EDPDEV-1195)
+- Add Python 3.11 and 3.12 to test matrix (#455) (EDPDEV-1660)
+- Add Connect to Client Retry Configuration (#447) (EDPDEV-1175)
+- Switch API endpoint and datasets used for tests (#438) (EDPDEV-1117)
+- Don't verify SSL for internal connections (#454) (EDPDEV-1696)
+- Add --follow-shortcuts to `ls` command (#448)
+- Add helper script to upgrade templates to Python 3 (#451)
+- Fix issue with YAML loading in recipe sync helper (#456)
+
+
 ## [v2.26.0](https://github.com/solvebio/solvebio-python/tree/v2.26.0) (2023-12-01)
 
 - Add support for recursive uploads and downloads with shortcuts (EDPDEV-898)

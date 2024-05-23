@@ -1,0 +1,99 @@
+commit 18139f9c225868cccf9447e53848bd308dbd15f4
+Author: David Caplan <david.caplan@precisionformedicine.com>
+Date:   Thu May 23 10:15:40 2024 -0400
+
+    Fix EDPDEV-1696: don't verify SSL for internal connections (#454)
+    
+    * Fix EDPDEV-1696: don't verify SSL for internal connections
+    
+    * fix typo
+
+commit 463d11ad23037d76628540b53132b1fe7317e8e9
+Author: David Caplan <david.caplan@precisionformedicine.com>
+Date:   Thu May 23 10:08:39 2024 -0400
+
+    Add helper script to upgrade templates to Python 3 (#451)
+    
+    * add script to upgrade templates to python 3
+    
+    * add usage instructions and fix saving
+
+commit fe92634c4fa743f7f66870a121bc982c9e324406
+Author: David Caplan <dcaplan@solvebio.com>
+Date:   Thu May 23 09:22:27 2024 -0400
+
+    fix issue with yaml loading in recipe sync helper (#456)
+
+commit f34ad5fbf3fb66bd8713128505ec7a892009c882
+Author: nrasulicpfm <122993108+nrasulicpfm@users.noreply.github.com>
+Date:   Thu May 23 15:21:35 2024 +0200
+
+    EDPDEV-1195 Handle Big Objects (#453)
+    
+    * add tests
+    
+    * handle len() in __repr__() and next()
+    
+    * lint
+    
+    * update syntax for py2
+
+commit d651c5e93ff9769c2664630fe1eca84e854eed56
+Author: nrasulicpfm <122993108+nrasulicpfm@users.noreply.github.com>
+Date:   Thu May 23 11:13:58 2024 +0200
+
+    Add --follow-shortcuts to ls Command (#448)
+    
+    * add follow-shortcuts to ls command
+    
+    * lint
+    
+    * remove redundant code and rephrase message
+
+commit 72902867b701b2e76fcc8bf7e4e51cbbd4a3c978
+Author: David Caplan <dcaplan@solvebio.com>
+Date:   Thu May 23 04:20:14 2024 -0400
+
+    EDPDEV-1660 add Python 3.11 and 3.12 to test matrix (#455)
+    
+    * add 3.11 and 3.12 to test matrix
+    
+    * replace locale.format with locale.format_string
+    
+    * try to minimize flaky tests
+
+commit dcd95b4d432e6b454dbec61041cb55795e0c3060
+Author: David Caplan <dcaplan@solvebio.com>
+Date:   Wed May 22 13:31:56 2024 -0400
+
+    EDPDEV-1117 Switch API endpoint and datasets used for tests (#438)
+    
+    * switch datasets used for tests
+    
+    * update to use new secrets
+    
+    * try hard-coding
+    
+    * fix flake8
+
+commit 65fcf30c2f7ee04c6d76db7a2e6d5cdf57e19a2c
+Author: nrasulicpfm <122993108+nrasulicpfm@users.noreply.github.com>
+Date:   Mon Mar 11 09:55:11 2024 +0100
+
+    Add Connect to Client Retry Configuration (#447)
+    
+    * add connect to client retry configuration
+    
+    * add allowed methods
+    
+    * toggle aggressive retries with environment variable
+    
+    * update log message & increase backoff factor & wrap env var in bool
+    
+    * add retry_all to client init
+    
+    * update readme
+    
+    * fix readme formatting
+    
+    * fix readme formatting
