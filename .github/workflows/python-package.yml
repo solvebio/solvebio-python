@@ -1,16 +1,17 @@
 name: SolveBio Python Package
 
-on: [push, pull_request]
+# on: [push, pull_request]
+on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, '3.10', pypy2, pypy3]
+        python-version: [3.6, 3.7, 3.8, '3.10', '3.11', '3.12', pypy2, pypy3]
     env:
-      SOLVEBIO_API_HOST: ${{ secrets.SOLVEBIO_API_HOST }}
-      SOLVEBIO_API_KEY: ${{ secrets.SOLVEBIO_API_KEY }}
+      SOLVEBIO_API_HOST: ${{ secrets.QUARTZBIO_API_HOST }}
+      SOLVEBIO_API_KEY: ${{ secrets.QUARTZBIO_API_KEY }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -40,8 +41,8 @@ jobs:
   build_py27:
     runs-on: ubuntu-20.04
     env:
-      SOLVEBIO_API_HOST: ${{ secrets.SOLVEBIO_API_HOST }}
-      SOLVEBIO_API_KEY: ${{ secrets.SOLVEBIO_API_KEY }}
+      SOLVEBIO_API_HOST: ${{ secrets.QUARTZBIO_API_HOST }}
+      SOLVEBIO_API_KEY: ${{ secrets.QUARTZBIO_API_KEY }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
