@@ -818,15 +818,19 @@ class Query(QueryBase):
         # Prefer explicitly passed-in values before query values.
         target_fields = kwargs.pop('target_fields', None) or \
             params.pop('target_fields', None)
+        if target_fields:
+            kwargs['target_fields'] = target_fields
+
         annotator_params = kwargs.pop('annotator_params', None) or \
+            params.pop('annotator_params', None)
+        if annotator_params:
+            kwargs['annotator_params'] = annotator_params
             params.pop('annotator_params', None)
 
         export = DatasetExport.create(
             dataset_id=self._dataset_id,
             format=format,
             params=params,
-            target_fields=target_fields,
-            annotator_params=annotator_params,
             client=self._client,
             **kwargs
         )
@@ -866,21 +870,27 @@ class Query(QueryBase):
         params = self._build_query(limit=limit)
         params.pop('offset', None)
         params.pop('ordering', None)
+        # Remove null limit if it is null
+        if limit is None:
+            params.pop('limit', None)
 
         # target_fields and annotator_params must be passed
         # directly into the migration.
         # Prefer explicitly passed-in values before query values.
         target_fields = kwargs.pop('target_fields', None) or \
             params.pop('target_fields', None)
+        if target_fields:
+            kwargs['target_fields'] = target_fields
+
         annotator_params = kwargs.pop('annotator_params', None) or \
             params.pop('annotator_params', None)
+        if annotator_params:
+            kwargs['annotator_params'] = annotator_params
 
         migration_resp = DatasetMigration.create(
             source_id=self._dataset_id,
             target_id=target_id,
             source_params=params,
-            target_fields=target_fields,
-            annotator_params=annotator_params,
             client=self._client,
             **kwargs)
 
