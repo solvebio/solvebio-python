@@ -107,7 +107,7 @@ If not specified the default log level will be WARN.
 If the file does not exist it will be created. 
 If not specified '~/.solvebio/solvebio.log' will be used by default.
 
-`SOLEVBIO_RETRY_ALL`      
+`SOLVEBIO_RETRY_ALL`
 - Flag for enabling aggressive retries for failed requests to the API.
 When truthy, the client will attempt to retry a failed request regardless of the type of operation.
 This includes idempotent and nonidempotent operations:
