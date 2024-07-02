@@ -24,7 +24,7 @@ class Dataset(CreateableAPIResource,
     Datasets are access points to data. Dataset names are unique
     within a vault folder.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/datasets'
 
     LIST_FIELDS = (
         ('id', 'ID'),

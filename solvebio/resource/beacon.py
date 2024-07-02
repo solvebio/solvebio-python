@@ -12,7 +12,7 @@ class Beacon(CreateableAPIResource,
     Beacons provide entity-based search endpoints for datasets. Beacons
     must be created within Beacon Sets.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/beacons'
 
     LIST_FIELDS = (
         ('id', 'ID'),

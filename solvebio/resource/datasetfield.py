@@ -5,6 +5,8 @@ from .apiresource import ListableAPIResource
 from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
 
+from ..annotate import Expression
+
 
 class DatasetField(CreateableAPIResource,
                    ListableAPIResource,
@@ -15,7 +17,7 @@ class DatasetField(CreateableAPIResource,
     which can be used as filters. Dataset field resources provide
     users with documentation about each field.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/dataset_fields'
 
     def facets(self, **params):
         response = self._client.get(self.facets_url, params)
@@ -23,3 +25,10 @@ class DatasetField(CreateableAPIResource,
 
     def help(self):
         return self.facets()
+
+    def evaluate(self):
+        if not self.get('expression'):
+            return None
+
+        return Expression(self['expression'], client=self._client).evaluate(
+            data_type=self.get('data_type', 'string'))
