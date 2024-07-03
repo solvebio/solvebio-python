@@ -5,6 +5,7 @@ import base64
 import binascii
 import mimetypes
 import sys
+import time
 from datetime import datetime
 
 import requests
@@ -522,14 +523,31 @@ class Object(CreateableAPIResource,
             total=max_retries,
             read=max_retries,
             connect=max_retries,
-            backoff_factor=0.3,
-            status_forcelist=(500, 502, 504, 400),
+            backoff_factor=2,
+            status_forcelist=(500, 502, 503, 504, 400),
+            allowed_methods=["HEAD", "OPTIONS", "GET", "PUT", "POST"]
         )
         session.mount(
             'https://', requests.adapters.HTTPAdapter(max_retries=retry))
-        upload_resp = session.put(upload_url,
-                                  data=open(local_path, 'rb'),
-                                  headers=headers)
+
+        # Handle retries when upload fails due to an exception such as SSLError
+        n_retries = 0
+        while True:
+            try:
+                upload_resp = session.put(upload_url,
+                                          data=open(local_path, 'rb'),
+                                          headers=headers)
+            except Exception as e:
+                if n_retries == max_retries:
+                    obj.delete(force=True)
+                    raise FileUploadError(str(e))
+
+                n_retries += 1
+                print('WARNING: Retrying ({}/{}) failed upload for {}: {}'.format(
+                    n_retries, max_retries, local_path, e))
+                time.sleep(2 * n_retries)
+            else:
+                break
 
         if upload_resp.status_code != 200:
             print('WARNING: Upload status code for {0} was {1}'.format(
