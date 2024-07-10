@@ -9,7 +9,7 @@ from .task import Task
 class ObjectCopyTask(CreateableAPIResource,
                      ListableAPIResource,
                      UpdateableAPIResource):
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/object_copy_tasks'
 
     LIST_FIELDS = (
         ('id', 'ID'),
