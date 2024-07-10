@@ -1,5 +1,11 @@
 # Changelog
 
+## [v2.28.0](https://github.com/solvebio/solvebio-python/tree/v2.28.0) (2024-07-10)
+
+- Add additional retry mechanism for S3 uploads (#461) (EDPDEV-1175)
+- Revert: Don't verify SSL for internal connections (#454) (EDPDEV-1696)
+
+
 ## [v2.27.0](https://github.com/solvebio/solvebio-python/tree/v2.27.0) (2024-05-23)
 
 - Fix MemoryError when querying files (#453) (EDPDEV-1195)
