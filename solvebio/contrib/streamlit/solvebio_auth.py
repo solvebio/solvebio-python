@@ -16,6 +16,7 @@ class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):
     SOLVEBIO_URL = os.environ.get('SOLVEBIO_URL', 'https://my.solvebio.com')
     OAUTH2_TOKEN_URL = "/v1/oauth2/token"
     OAUTH2_REVOKE_TOKEN_URL = "/v1/oauth2/revoke_token"
+    OAUTH2_REVOKE_TOKEN_AUTH = "client_secret_post"
 
     def __init__(self, client_id, client_secret, name="solvebio"):
         super().__init__(
@@ -26,6 +27,7 @@ class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):
             revoke_token_endpoint=urljoin(
                 solvebio.api_host, self.OAUTH2_REVOKE_TOKEN_URL
             ),
+            revocation_endpoint_auth_method=OAUTH2_REVOKE_TOKEN_AUTH,
             name=name,
         )
 

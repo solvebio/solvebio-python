@@ -12,7 +12,7 @@ class SolveBioStreamlit:
 
     # App settings loaded from environment variables or .env file
     CLIENT_ID = os.environ.get("CLIENT_ID", "Application (client) Id")
-    CLIENT_SECRET = os.environ.get("CLIENT_SECRET", "Application (client) secret")
+    CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
     APP_URL = os.environ.get("APP_URL", "http://localhost:5000")
 
     def solvebio_login_component(self, authorization_url):
@@ -61,11 +61,11 @@ class SolveBioStreamlit:
             # User is not authrized to use the app
             try:
                 # Trying to get the authorization token from the url if successfully authorized
-                code = st.experimental_get_query_params()["code"]
+                code = st.get_query_params()["code"]
 
                 # Remove authorization token from the url params
                 params = {}
-                st.experimental_set_query_params(**params)
+                st.set_query_params(**params)
 
             except:
                 # Display SolveBio login until user is successfully authorized
