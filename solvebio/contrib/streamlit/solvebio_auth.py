@@ -8,6 +8,9 @@ import solvebio
 
 from httpx_oauth.oauth2 import BaseOAuth2
 
+import logging
+logger = logging.getLogger('solvebio')
+
 
 class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):
     """Class implementing OAuth2 for SolveBio API"""
@@ -16,7 +19,7 @@ class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):
     SOLVEBIO_URL = os.environ.get('SOLVEBIO_URL', 'https://my.solvebio.com')
     OAUTH2_TOKEN_URL = "/v1/oauth2/token"
     OAUTH2_REVOKE_TOKEN_URL = "/v1/oauth2/revoke_token"
-    OAUTH2_REVOKE_TOKEN_AUTH = "client_secret_post"
+    OAUTH2_REVOKE_TOKEN_AUTH = "client_secret_basic"
 
     def __init__(self, client_id, client_secret, name="solvebio"):
         super().__init__(
@@ -27,7 +30,7 @@ class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):
             revoke_token_endpoint=urljoin(
                 solvebio.api_host, self.OAUTH2_REVOKE_TOKEN_URL
             ),
-            revocation_endpoint_auth_method=OAUTH2_REVOKE_TOKEN_AUTH,
+            revocation_endpoint_auth_method=self.OAUTH2_REVOKE_TOKEN_AUTH,
             name=name,
         )
 
@@ -40,4 +43,5 @@ class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):
             "redirect_uri": redirect_uri,
         }
 
-        return "{}/authorize?{}".format(self.authorize_endpoint, urlencode(params))
+        auth_url = "{}/authorize?{}".format(self.authorize_endpoint, urlencode(params))
+        return auth_url

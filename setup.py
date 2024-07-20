@@ -49,7 +49,7 @@ if sys.version_info < (3, 0):
     # solvebio-recipes only available in python3
     extras_requires = {}
 else:
-    extra['use_2to3'] = True
+    extra['use_2to3'] = False
 
 with open('README.md') as f:
     long_description = f.read()

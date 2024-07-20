@@ -4,7 +4,10 @@ import os
 import streamlit as st
 import solvebio
 
-from solvebio_auth import SolveBioOAuth2
+from .solvebio_auth import SolveBioOAuth2
+
+import logging
+logger = logging.getLogger('solvebio')
 
 
 class SolveBioStreamlit:
@@ -16,16 +19,16 @@ class SolveBioStreamlit:
     APP_URL = os.environ.get("APP_URL", "http://localhost:5000")
 
     def solvebio_login_component(self, authorization_url):
-        """Streamlit component for logging into SolveBio"""
+        """Streamlit component for logging into QuartzBio"""
 
         st.title("Secure Streamlit App")
         st.write(
             """
             <h4>
-                <a target="_self" href="{}">Log in to SolveBio to continue</a>
+                <a target="_self" href="{}">Log in to QuartzBio EDP to continue</a>
             </h4>
-            This app requires a SolveBio account. <br>
-            <a href="mailto:support@solvebio.com">Contact Support</a>
+            This app requires a QuartzBio account. <br>
+            <a href="qb-help@precisionformedicine.com">Contact Support</a>
             """.format(
                 authorization_url
             ),
@@ -48,6 +51,8 @@ class SolveBioStreamlit:
     def wrap(self, streamlit_app):
         """SolveBio OAuth2 wrapper around streamlit app"""
 
+        logger.info("Wrapping streamlit application")
+
         # SolveBio OAuth2 client
         oauth_client = SolveBioOAuth2(self.CLIENT_ID, self.CLIENT_SECRET)
         authorization_url = oauth_client.get_authorization_url(
@@ -56,17 +61,16 @@ class SolveBioStreamlit:
 
         # Authorization token from Streamlit session state
         oauth_token = self.get_token_from_session()
+        logger.debug(f"{oauth_token[:4] if oauth_token else None}")
 
         if oauth_token is None:
             # User is not authrized to use the app
             try:
                 # Trying to get the authorization token from the url if successfully authorized
-                code = st.get_query_params()["code"]
+                code = st.query_params.get("code")
 
                 # Remove authorization token from the url params
-                params = {}
-                st.set_query_params(**params)
-
+                st.query_params.clear()
             except:
                 # Display SolveBio login until user is successfully authorized
                 self.solvebio_login_component(authorization_url)
@@ -76,9 +80,10 @@ class SolveBioStreamlit:
                     oauth_token = asyncio.run(
                         oauth_client.get_access_token(code, self.APP_URL)
                     )
-                except:
+                except Exception as e:
                     st.error(
-                        "This account is not allowed or page was refreshed. Please login again."
+                        "This account is not allowed or page was refreshed. Please login again.",
+                        e
                     )
                     self.solvebio_login_component(authorization_url)
                 else:
