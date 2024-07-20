@@ -61,7 +61,7 @@ class SolveBioStreamlit:
 
         # Authorization token from Streamlit session state
         oauth_token = self.get_token_from_session()
-        debug_message = oauth_token[:4] if oauth_token else ""
+        debug_message = str(oauth_token)[:4] if oauth_token else ""
         logger.debug("OAuth token: " + debug_message)
 
         if oauth_token is None:
