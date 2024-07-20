@@ -84,8 +84,8 @@ class SolveBioStreamlit:
                 except Exception as e:
                     st.error(
                         "This account is not allowed or page was refreshed. Please login again.",
-                        e
                     )
+                    st.error(e)
                     self.solvebio_login_component(authorization_url)
                 else:
                     # Check if token has expired:
