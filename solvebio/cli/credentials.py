@@ -105,9 +105,7 @@ def get_credentials():
             return ("https://" + h,) + netrc_obj.authenticators(h)
 
     # Return the first available
-    hosts = list(netrc_obj.hosts.keys())
-    if hosts:
-        host = hosts[0]
+    for host in netrc_obj.hosts:
         return ("https://" + host,) + netrc_obj.authenticators(host)
 
     return None
