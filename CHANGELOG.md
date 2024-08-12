@@ -1,5 +1,10 @@
 # Changelog
 
+## [v2.29.0](https://github.com/solvebio/solvebio-python/tree/v2.29.0) (2024-08-12)
+
+- Add automatic API host redirection from solvebio.com to quartz.bio (#465) (IM-1765)
+
+
 ## [v2.28.0](https://github.com/solvebio/solvebio-python/tree/v2.28.0) (2024-07-10)
 
 - Add additional retry mechanism for S3 uploads (#461) (EDPDEV-1175)
