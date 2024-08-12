@@ -1,5 +1,11 @@
 # Changelog
 
+
+## [v2.29.1](https://github.com/solvebio/solvebio-python/tree/v2.29.1) (2024-08-12)
+
+- Fix issue occurring with empty credentials files (#464) (EDPDEV-1957)
+
+
 ## [v2.29.0](https://github.com/solvebio/solvebio-python/tree/v2.29.0) (2024-08-12)
 
 - Add automatic API host redirection from solvebio.com to quartz.bio (#465) (IM-1765)
