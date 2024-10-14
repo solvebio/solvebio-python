@@ -162,7 +162,7 @@ class SolveClient(object):
         # If the domain ends with .solvebio.com, determine if
         # we are being redirected. If so, update the url with the new host
         # and log a warning.
-        if self._host and self._host.rstrip('/').endswith('.solvebio.com'):
+        if self._host and self._host.rstrip('/').endswith('.api.solvebio.com'):
             old_host = self._host.rstrip('/')
             response = requests.head(old_host, allow_redirects=True)
             # Strip the port number from the host for comparison
