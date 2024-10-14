@@ -9,7 +9,7 @@ from .task import Task
 class VaultSyncTask(CreateableAPIResource,
                     ListableAPIResource,
                     UpdateableAPIResource):
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/vault_sync_tasks'
 
     LIST_FIELDS = (
         ('id', 'ID'),

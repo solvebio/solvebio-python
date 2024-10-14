@@ -126,8 +126,7 @@ from .resource import (
 
 
 def login(**kwargs):
-    """
-    Sets up the auth credentials using the provided key/token,
+    """Sets up the auth credentials using the provided key/token,
     or checks the credentials file (if no token provided).
 
     Lookup order:

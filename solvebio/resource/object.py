@@ -45,7 +45,7 @@ class Object(CreateableAPIResource,
     An object is a resource in a Vault.  It has three possible types,
     though more may be added later: folder, file, and SolveBio Dataset.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/objects'
 
     LIST_FIELDS = (
         ('id', 'ID'),

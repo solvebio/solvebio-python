@@ -30,6 +30,7 @@ def convert_to_solve_object(resp, **kwargs):
 class SolveObject(dict):
     """Base class for all SolveBio API resource objects"""
     ID_ATTR = 'id'
+    RESOURCE = None
 
     # Allows pre-setting a SolveClient
     _client = None
@@ -44,6 +45,9 @@ class SolveObject(dict):
 
         if id:
             self[self.ID_ATTR] = id
+
+        for k, v in list(params.items()):
+            self[k] = v
 
     def __setattr__(self, k, v):
         if k[0] == '_' or k in self.__dict__:

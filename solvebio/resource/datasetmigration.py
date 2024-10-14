@@ -17,7 +17,7 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
     For interactive use, DatasetMigration can be "followed" to watch
     the progression of the task.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/dataset_migrations'
 
     LIST_FIELDS = (
         ('id', 'ID'),
@@ -55,9 +55,8 @@ class DatasetMigration(CreateableAPIResource, ListableAPIResource,
                 processed_records = self.metadata\
                     .get('progress', {})\
                     .get('processed_records', 0)
-                print("Migration '{0}' is {1}: {2}/{3} records migrated"
+                print("Migration '{}' is running: {}/{} records migrated"
                       .format(self.id,
-                              self.status,
                               processed_records,
                               self.documents_count))
 
