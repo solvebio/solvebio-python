@@ -1,5 +1,8 @@
 # Changelog
 
+## [v2.29.2](https://github.com/solvebio/solvebio-python/tree/v2.29.2) (2024-10-14)
+
+- Fix issue occurring on "import solvebio" (#471)
 
 ## [v2.29.1](https://github.com/solvebio/solvebio-python/tree/v2.29.1) (2024-08-12)
 
