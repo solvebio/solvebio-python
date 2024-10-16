@@ -955,6 +955,10 @@ def ls(args):
 
 
 def _ls(full_path, recursive=False, follow_shortcuts=False):
+
+    if follow_shortcuts:
+        full_path = full_path[:-1] if full_path.endswith("*") else full_path
+
     files = list(Object.all(glob=full_path, limit=1000))
 
     for file_ in files:
@@ -962,14 +966,29 @@ def _ls(full_path, recursive=False, follow_shortcuts=False):
             shortcut = file_.full_path
             try:
                 resolved_file = file_.get_target()
-                print(
-                    "{}  {}  {}  from shortcut: {}".format(
-                        resolved_file.last_modified,
-                        resolved_file.object_type.ljust(8),
-                        resolved_file.full_path.ljust(50),
-                        shortcut
+                resolved_file_data = resolved_file[0] if isinstance(resolved_file, tuple) else resolved_file
+
+                if resolved_file_data['class_name'] == "Vault":
+                    print(
+                        "{} {} from shortcut: {}".format(
+                            resolved_file_data.updated_at,
+                            resolved_file_data.full_path.ljust(50),
+                            shortcut
+                        )
                     )
-                )
+                    if recursive and resolved_file_data['class_name'] == "Vault":
+                        _ls(resolved_file_data.full_path + "/*", recursive=True, follow_shortcuts=follow_shortcuts)
+                else:
+                    print(
+                        "{}  {}  {}  from shortcut: {}".format(
+                            resolved_file_data.last_modified,
+                            resolved_file_data.object_type.ljust(8),
+                            resolved_file_data.full_path.ljust(50),
+                            shortcut
+                        )
+                    )
+                    if recursive and resolved_file_data.object_type == "folder":
+                        _ls(resolved_file_data.full_path + "/*", recursive=True, follow_shortcuts=follow_shortcuts)
             except NotFoundError:
                 print(
                     "Shortcut {} could not be resolved: "
@@ -979,12 +998,12 @@ def _ls(full_path, recursive=False, follow_shortcuts=False):
             resolved_file = file_
             print(
                 "{}  {}  {}".format(
-                    resolved_file.last_modified, resolved_file.object_type.ljust(8), resolved_file.full_path
+                    resolved_file.last_modified,
+                    resolved_file.object_type.ljust(8), resolved_file.full_path
                 )
             )
-
-        if recursive and resolved_file.object_type == "folder":
-            _ls(resolved_file.full_path + "/*", recursive=True)
+            if recursive and resolved_file.object_type == "folder":
+                _ls(resolved_file.full_path + "/*", recursive=True)
 
     return files
 
