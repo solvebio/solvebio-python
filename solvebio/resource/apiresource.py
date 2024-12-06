@@ -227,7 +227,9 @@ class DownloadableAPIResource(APIResource):
                 # Don't automatically decompress gzipped files
                 shutil.copyfileobj(response.raw, fileobj)
             else:
-                fileobj.write(response._content)
+                for chunk in response.iter_content(chunk_size=1024 * 8):
+                    if chunk:
+                        fileobj.write(chunk)
 
         return path
 
