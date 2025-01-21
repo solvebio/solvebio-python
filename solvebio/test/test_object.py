@@ -291,8 +291,8 @@ class ObjectTests(SolveBioTestCase):
         folder.metadata = []
         folder.save()
 
-        # Test that 'metadata' is an empty list
-        self.assertTrue(folder.metadata == [])
+        # Test that 'metadata' is still an empty dict
+        self.assertTrue(folder.metadata == {})
 
         folder.delete(force=True)
 
