@@ -3,6 +3,7 @@ import time
 from .apiresource import ListableAPIResource
 from .apiresource import CreateableAPIResource
 from .apiresource import UpdateableAPIResource
+from .apiresource import DownloadableAPIResource
 from .solveobject import convert_to_solve_object
 from .task import Task
 
@@ -34,7 +35,7 @@ def follow_commits(task, sleep_seconds):
 
 
 class DatasetCommit(CreateableAPIResource, ListableAPIResource,
-                    UpdateableAPIResource):
+                    UpdateableAPIResource, DownloadableAPIResource):
     """
     DatasetCommits represent a change made to a Dataset.
     """

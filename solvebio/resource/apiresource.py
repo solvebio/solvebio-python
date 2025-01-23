@@ -8,6 +8,7 @@ from six.moves import input as raw_input
 import os
 import requests
 import tempfile
+import shutil
 
 try:
     from urllib import quote_plus
@@ -213,7 +214,8 @@ class DownloadableAPIResource(APIResource):
             path = os.path.join(tempfile.gettempdir(), filename)
 
         try:
-            response = requests.request(method='get', url=download_url)
+            # use streaming to prevent automatic decompression
+            response = requests.request(method='get', url=download_url, stream=True)
         except Exception as e:
             _handle_request_error(e)
 
@@ -221,7 +223,13 @@ class DownloadableAPIResource(APIResource):
             _handle_api_error(response)
 
         with open(path, 'wb') as fileobj:
-            fileobj.write(response._content)
+            if filename.endswith('.gz'):
+                # Don't automatically decompress gzipped files
+                shutil.copyfileobj(response.raw, fileobj)
+            else:
+                for chunk in response.iter_content(chunk_size=1024 * 8):
+                    if chunk:
+                        fileobj.write(chunk)
 
         return path
 
