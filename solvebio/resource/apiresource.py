@@ -46,16 +46,10 @@ class APIResource(SolveObject):
                 'actions on its subclasses (e.g. Vault, Object, Dataset)')
         return str(quote_plus(cls.__name__))
 
-    @classmethod
-    def class_url(cls):
-        """Returns a versioned URI string for this class"""
-        base = 'v{0}'.format(getattr(cls, 'RESOURCE_VERSION', '1'))
-        return "/{0}/{1}".format(base, class_to_api_name(cls.class_name()))
-
     def instance_url(self):
         """Get instance URL by ID"""
         id_ = self.get(self.ID_ATTR)
-        base = self.class_url()
+        base = self.RESOURCE
 
         if id_:
             return '/'.join([base, six.text_type(id_)])
@@ -69,7 +63,7 @@ class APIResource(SolveObject):
 class ListObject(SolveObject):
 
     def all(self, **params):
-        """Lists all items in a class that you have access to"""
+        """Lists all resources that you have access to"""
         return self.request('get', self['url'], params=params)
 
     def create(self, **params):
@@ -143,18 +137,8 @@ class SingletonAPIResource(APIResource):
         _client = kwargs.pop('client', None) or cls._client or client
         return super(SingletonAPIResource, cls).retrieve(None, client=_client)
 
-    @classmethod
-    def class_url(cls):
-        """
-        Returns a versioned URI string for this class,
-        and don't pluralize the class name.
-        """
-        base = 'v{0}'.format(getattr(cls, 'RESOURCE_VERSION', '1'))
-        return "/{0}/{1}".format(base, class_to_api_name(
-            cls.class_name(), pluralize=False))
-
     def instance_url(self):
-        return self.class_url()
+        return self.RESOURCE
 
 
 class CreateableAPIResource(APIResource):
@@ -162,8 +146,7 @@ class CreateableAPIResource(APIResource):
     @classmethod
     def create(cls, **params):
         _client = params.pop('client', None) or cls._client or client
-        url = cls.class_url()
-        response = _client.post(url, data=params)
+        response = _client.post(cls.RESOURCE, data=params)
         return convert_to_solve_object(response, client=_client)
 
 
@@ -253,8 +236,7 @@ class ListableAPIResource(APIResource):
     @classmethod
     def all(cls, **params):
         _client = params.pop('client', None) or cls._client or client
-        url = cls.class_url()
-        response = _client.get(url, params)
+        response = _client.get(cls.RESOURCE, params)
         results = convert_to_solve_object(response, client=_client)
 
         # If the object has LIST_FIELDS, setup tabulate
@@ -268,8 +250,7 @@ class ListableAPIResource(APIResource):
     @classmethod
     def _retrieve_helper(cls, model_name, field_name, error_value, **params):
         _client = params.pop('client', None) or cls._client or client
-        url = cls.class_url()
-        response = _client.get(url, params)
+        response = _client.get(cls.RESOURCE, params)
         results = convert_to_solve_object(response, client=_client)
         objects = results.data
         allow_multiple = params.pop('allow_multiple', None)
@@ -300,8 +281,7 @@ class SearchableAPIResource(APIResource):
     def search(cls, query='', **params):
         _client = params.pop('client', None) or cls._client or client
         params.update({'q': query})
-        url = cls.class_url()
-        response = _client.get(url, params)
+        response = _client.get(cls.RESOURCE, params)
         results = convert_to_solve_object(response, client=_client)
 
         # If the object has LIST_FIELDS, setup tabulate
@@ -317,8 +297,14 @@ class SearchableAPIResource(APIResource):
 class UpdateableAPIResource(APIResource):
 
     def save(self):
-        self.refresh_from(self.request('patch', self.instance_url(),
-                                       data=self.serialize(self)))
+        # If the class is "createable" and has no ID, try to create it
+        if self.get(self.ID_ATTR) is None and getattr(self, 'create'):
+            self.refresh_from(self.request('post', self.RESOURCE,
+                                           data=self.serialize(self)))
+        else:
+            self.refresh_from(self.request('patch', self.instance_url(),
+                                           data=self.serialize(self)))
+
         return self
 
     def serialize(self, obj):

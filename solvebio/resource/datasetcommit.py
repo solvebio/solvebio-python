@@ -39,7 +39,7 @@ class DatasetCommit(CreateableAPIResource, ListableAPIResource,
     """
     DatasetCommits represent a change made to a Dataset.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/dataset_commits'
 
     LIST_FIELDS = (
         ('id', 'ID'),
