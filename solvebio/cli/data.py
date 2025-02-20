@@ -746,9 +746,11 @@ def _download_recursive(
 
     min_depth = min([x.depth for x in remote_objects])
     num_at_min_depth = len([x for x in remote_objects if x.depth == min_depth])
-    if num_at_min_depth == 1:
+    if num_at_min_depth == 1 and not _is_single_file(remote_objects):
+        # when downloading from folder
         base_folder_depth = min_depth
     else:
+        # when downloading from vault root or singular file
         base_folder_depth = min_depth - 1
 
     downloaded_files = set()
@@ -930,6 +932,10 @@ def _get_relative_download_path(base_path, path_to_object, filename):
         return dirname + "/" + filename
     else:
         return filename
+
+
+def _is_single_file(objects):
+    return len(objects) == 1 and objects[0].get("object_type") == "file"
 
 
 def ls(args):
