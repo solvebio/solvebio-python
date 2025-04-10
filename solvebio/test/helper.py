@@ -26,8 +26,6 @@ class SolveBioTestCase(unittest.TestCase):
         super(SolveBioTestCase, self).setUp()
         api_key = os.environ.get('SOLVEBIO_API_KEY', None)
         api_host = os.environ.get('SOLVEBIO_API_HOST', None)
-        print(api_host)
-
         self.client = solvebio.SolveClient(host=api_host, token=api_key)
 
     def check_response(self, response, expect, msg):
