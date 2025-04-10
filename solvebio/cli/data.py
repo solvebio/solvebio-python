@@ -151,8 +151,11 @@ def _upload_folder(
     for abs_local_parent_path, folders, files in os.walk(base_local_path):
         # Strips off the local path and adds the parent directory at
         # each phase of the loop
+        base_local_path_dirname = os.path.dirname(base_local_path)
+        if os.name == "nt":
+            base_local_path_dirname = re.escape(os.path.dirname(base_local_path))
         local_parent_path = re.sub(
-            "^" + os.path.dirname(base_local_path), "", abs_local_parent_path
+            "^" + base_local_path_dirname, "", abs_local_parent_path
         ).lstrip("/")
 
         if should_exclude(abs_local_parent_path, exclude_paths, dry_run=dry_run):
