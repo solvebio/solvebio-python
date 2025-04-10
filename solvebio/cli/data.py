@@ -164,7 +164,7 @@ def _upload_folder(
         remote_folder_full_path = os.path.join(base_remote_path, local_parent_path)
 
         if os.name == "nt":
-            remote_folder_full_path = os.path.join(base_remote_path, local_parent_path.replace("\\", "/"))
+            remote_folder_full_path = base_remote_path + "/" + local_parent_path.lstrip("\\").replace("\\", "/")
 
         # Create folders
         for folder in folders:
