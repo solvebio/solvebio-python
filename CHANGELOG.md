@@ -1,12 +1,14 @@
 # Changelog
 
+## [v2.30.1](https://github.com/solvebio/solvebio-python/tree/v2.30.1) (2025-04-11)
+
+- Escape Path on Windows in Upload Command (#478)
 
 ## [v2.30.0](https://github.com/solvebio/solvebio-python/tree/v2.30.0) (2025-01-24)
 
 - EDPDEV-1535 add commit download support (#474)
 - Fix issue with `upload_file` where the nested client was not used (#475)
 - Fix failing test around empty metadata (#476)
-
 
 ## [v2.29.2](https://github.com/solvebio/solvebio-python/tree/v2.29.2) (2024-10-14)
 
