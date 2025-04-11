@@ -3,4 +3,4 @@ from .apiresource import SingletonAPIResource
 
 
 class User(SingletonAPIResource):
-    pass
+    RESOURCE = '/v1/user'
