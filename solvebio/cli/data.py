@@ -197,7 +197,8 @@ def _upload_folder(
     for folder in all_folder_parts:
         print("{}Creating folder {}".format(
             "[Dry Run] " if dry_run else "", folder))
-        Object.create_folder(vault, folder)
+        if not dry_run:
+            Object.create_folder(vault, folder)
 
     # Create files in parallel
     # Signal handling allows for graceful exit upon KeyboardInterrupt
@@ -752,9 +753,11 @@ def _download_recursive(
 
     min_depth = min([x.depth for x in remote_objects])
     num_at_min_depth = len([x for x in remote_objects if x.depth == min_depth])
-    if num_at_min_depth == 1:
+    if num_at_min_depth == 1 and not _is_single_file(remote_objects):
+        # when downloading from folder
         base_folder_depth = min_depth
     else:
+        # when downloading from vault root or singular file
         base_folder_depth = min_depth - 1
 
     downloaded_files = set()
@@ -993,6 +996,10 @@ def _ls(full_path, recursive=False, follow_shortcuts=False):
             _ls(resolved_file.full_path + "/*", recursive=True)
 
     return files
+
+
+def _is_single_file(objects):
+    return len(objects) == 1 and objects[0].get("object_type") == "file"
 
 
 def should_tag_by_object_type(args, object_):

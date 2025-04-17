@@ -202,7 +202,7 @@ class GlobalSearch(Query):
 
         # Executes a query to get a full API response which contains subjects list
         gs = self.limit(0)
-        gs.execute(include_subjects=True)
+        gs.execute(include_subjects=True, include_all_subjects=True)
 
         return gs._response.get('subjects')
 
