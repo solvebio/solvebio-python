@@ -195,9 +195,16 @@ def _upload_folder(
     # be populated
     all_folder_parts = sorted(all_folder_parts, key=lambda x: len(x.split("/")))
     for folder in all_folder_parts:
-        print("{}Creating folder {}".format(
-            "[Dry Run] " if dry_run else "", folder))
-        if not dry_run:
+        if dry_run:
+            try:
+                f = Object.get_by_full_path(folder)
+                if not f.is_folder:
+                    print("[Dry Run] {} is not a folder - this will cause an error on upload.".format(folder))
+                else:
+                    print("[Dry Run] Folder {} already exists - skipping creation".format(folder))
+            except NotFoundError:
+                print("[Dry Run] Creating folder {}".format(folder))
+        else:
             Object.create_folder(vault, folder)
 
     # Create files in parallel
@@ -235,18 +242,32 @@ def _create_file_job(args):
     try:
         local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder, client_auth, follow_shortcuts \
             = args
-        if dry_run:
-            print("[Dry Run] Uploading {} to {}".format(
-                local_file_path, remote_folder_full_path))
-            return
+
         # Provides the global host, token, token_type
         client = SolveClient(*client_auth)
-        remote_parent = Object.get_by_full_path(
-            remote_folder_full_path,
-            assert_type="folder",
-            follow_shortcuts=follow_shortcuts,
-            client=client
-        )
+
+        remote_parent = None
+        try: 
+            remote_parent = Object.get_by_full_path(
+                remote_folder_full_path,
+                assert_type="folder",
+                follow_shortcuts=follow_shortcuts,
+                client=client
+            )
+        except NotFoundError as e:
+            if not dry_run:
+                raise e
+
+        if dry_run:
+            if not _object_exists(remote_parent, local_file_path, client):
+                print("[Dry Run] Uploading {} to {}".format(
+                    local_file_path, remote_folder_full_path))
+                return
+            else:
+                print("[Dry Run] File {} already exists at {} - skipping upload".format(
+                    local_file_path, remote_folder_full_path))
+                return
+
         Object.upload_file(
             local_file_path,
             remote_parent.path,
@@ -261,6 +282,26 @@ def _create_file_job(args):
     except Exception as e:
         return e
 
+def _object_exists(remote_parent, local_path, _client):
+    if remote_parent is None:
+        return False
+    full_path, path_dict = Object.validate_full_path(
+            os.path.join('{}:{}'.format(remote_parent.vault.full_path, remote_parent.path),
+                         os.path.basename(local_path)), client=_client)
+    try:
+        obj = Object.get_by_full_path(full_path, client=_client)
+        if not obj.is_file:
+            return False
+        else:
+            # Check if the md5sum matches
+            local_md5 = md5sum(local_path)[0]
+            remote_md5 = obj.get("md5")
+            if remote_md5 and remote_md5 == local_md5:
+                return True
+            else:
+                return False
+    except NotFoundError:
+        return False
 
 def _create_template_from_file(template_file, dry_run=False):
     mode = "r"
