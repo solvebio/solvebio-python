@@ -1,5 +1,11 @@
 # Changelog
 
+## [v2.31.0](https://github.com/solvebio/solvebio-python/tree/v2.31.0) (2025-05-06)
+
+- Fix upload command for nested folders when dry-run flag is active (#481)
+- Fix subjects retrieval in GlobalSearch module
+- Enhance solvebio download command to support one file download even if --recursive flag is active
+
 ## [v2.30.1](https://github.com/solvebio/solvebio-python/tree/v2.30.1) (2025-04-11)
 
 - Escape Path on Windows in Upload Command (#478)
