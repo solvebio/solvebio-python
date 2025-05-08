@@ -20,7 +20,7 @@ class DatasetImport(CreateableAPIResource, ListableAPIResource,
     For interactive use, DatasetImport can be "followed" to watch
     the progression of an import job.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/dataset_imports'
 
     LIST_FIELDS = (
         ('id', 'ID'),

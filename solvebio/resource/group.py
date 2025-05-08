@@ -10,7 +10,7 @@ class Group(CreateableAPIResource, ListableAPIResource,
     """
     A Group represents a group of users with shared permissions for a vault.
     """
-    RESOURCE_VERSION = 1
+    RESOURCE = '/v1/groups'
 
     LIST_FIELDS = (
         ('id', 'ID'),
@@ -47,7 +47,7 @@ class Group(CreateableAPIResource, ListableAPIResource,
     def datasets(self, **params):
         from . import Object
         vaults = self._get_vaults(**params)
-        objects_url = Object.class_url() + '?object_type=dataset&' + \
+        objects_url = Object.RESOURCE + '?object_type=dataset&' + \
             '&'.join(['vault_id={0}'.format(v.id) for v in vaults])
         response = self._client.get(objects_url, params)
         datasets = convert_to_solve_object(response, client=self._client)

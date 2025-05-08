@@ -7,7 +7,7 @@ class Task(ListableAPIResource, UpdateableAPIResource):
     """
     Tasks are operations on datasets or vaults.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/tasks'
 
     LIST_FIELDS = (
         ('id', 'ID'),

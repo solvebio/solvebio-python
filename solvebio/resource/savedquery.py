@@ -14,7 +14,7 @@ class SavedQuery(CreateableAPIResource, ListableAPIResource,
     with ease. A dataset is said to be compatible with a saved query
     if it contains all the fields found in said saved query.
     """
-    RESOURCE_VERSION = 2
+    RESOURCE = '/v2/saved_queries'
 
     LIST_FIELDS = (
         ('id', 'ID'),
