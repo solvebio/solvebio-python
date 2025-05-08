@@ -982,6 +982,10 @@ def _get_relative_download_path(base_path, path_to_object, filename):
         return filename
 
 
+def _is_single_file(objects):
+    return len(objects) == 1 and objects[0].get("object_type") == "file"
+
+
 def ls(args):
     """
     Given a SolveBio remote path, list the files and folders
