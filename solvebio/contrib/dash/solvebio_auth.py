@@ -48,7 +48,7 @@ class SolveBioAuth(OAuthBase):
         # Handle optional parameters
         self._solvebio_url = \
             kwargs.get('solvebio_url') or self.DEFAULT_SOLVEBIO_URL
-        self._api_host = kwargs.get('api_host') or solvebio.api_host
+        self._api_host = kwargs.get('api_host') or solvebio.get_api_host()
         self._oauth_client_secret = kwargs.get('client_secret')
         self._oauth_grant_type = \
             kwargs.get('grant_type') or self.DEFAULT_GRANT_TYPE

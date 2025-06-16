@@ -51,9 +51,6 @@ class SolveBioDash(dash.Dash):
             self.auth = None
             print("WARNING: No SolveBio client ID found. "
                   "Your app (but not your data) will be publicly accessible.")
-            if solvebio.api_key:
-                print("SolveBio API key detected. All users of this app will "
-                      "use this API key.")
 
         @server.before_request
         def set_solve_client():

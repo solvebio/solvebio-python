@@ -7,6 +7,7 @@ import copy
 import argparse
 
 import solvebio
+from solvebio.errors import SolveError
 
 from . import auth
 from . import data
@@ -505,23 +506,26 @@ class SolveArgumentParser(argparse.ArgumentParser):
         return super(SolveArgumentParser, self).parse_args(args, namespace)
 
     def api_host_url(self, value):
+        if not value:
+            raise SolveError("No QuartzBio API host is set")
+        
         validate_api_host_url(value)
         return value
 
 
-def main(argv=sys.argv[1:]):
+def main(argv):
     """Main entry point for SolveBio CLI"""
     parser = SolveArgumentParser()
     args = parser.parse_solvebio_args(argv)
 
     solvebio.login(
-        api_host=args.api_host or solvebio.api_host,
-        api_key=args.api_key or solvebio.api_key,
-        access_token=args.access_token or solvebio.access_token,
+        api_host=args.api_host,
+        api_key=args.api_key,
+        access_token=args.access_token,
     )
 
     return args.func(args)
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

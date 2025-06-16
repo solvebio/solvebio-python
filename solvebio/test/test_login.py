@@ -24,13 +24,13 @@ def nostdout():
 
 class TestLogin(unittest.TestCase):
     def setUp(self):
-        self.api_host = solvebio.api_host
+        self.api_host = solvebio.get_api_host()
         # temporarily replace with dummy methods for testing
         self.delete_credentials = auth.delete_credentials
         auth.delete_credentials = lambda: None
 
     def tearDown(self):
-        solvebio.api_host = self.api_host
+        solvebio.client._host = self.api_host
         auth.delete_credentials = self.delete_credentials
 
     def test_bad_login(self):
@@ -39,7 +39,7 @@ class TestLogin(unittest.TestCase):
                              'Invalid login')
 
             # Test invalid host
-            solvebio.api_host = 'https://some.fake.domain.foobar'
+            solvebio.client._host = 'https://some.fake.domain.foobar'
             self.assertEqual(auth.login_and_save_credentials(), None,
                              'Invalid login')
 

@@ -10,18 +10,18 @@ import solvebio
 
 from .version import VERSION
 from .errors import SolveError
-from .utils.validators import validate_api_host_url
+from .auth import authenticate, SolveBioTokenAuth
 
 import platform
 import requests
 import textwrap
 import logging
 
-from requests import Session
-from requests import codes
-from requests.auth import AuthBase
-from requests.adapters import HTTPAdapter
+from requests import Session, codes, adapters
 from requests.packages.urllib3.util.retry import Retry
+
+import ssl
+import sys
 
 from six.moves.urllib.parse import urljoin
 
@@ -29,10 +29,20 @@ from six.moves.urllib.parse import urljoin
 # Requires: pip install pyopenssl ndg-httpsclient pyasn1
 # See http://urllib3.readthedocs.org/en/latest/contrib.html#module-urllib3.contrib.pyopenssl  # noqa
 try:
-    import urllib3.contrib.pyopenssl
-    urllib3.contrib.pyopenssl.inject_into_urllib3()
+    import urllib3
+
+    if sys.version_info <= (3, 9):
+        import urllib3.contrib.pyopenssl
+    else:
+        # Python 3.10+ automatically handles SSL; no need for inject_into_urllib3()
+        pass
 except ImportError:
     pass
+
+# Ensure SSL/TLS support is available
+if not ssl.HAS_TLSv1_2:
+    raise RuntimeError("TLS 1.2 support is required but not available.")
+
 
 logger = logging.getLogger('solvebio')
 
@@ -53,7 +63,14 @@ def _handle_request_error(e):
                "issue locally.\nIf this problem persists, let us "
                "know at support@solvebio.com.")
         err = "A %s was raised" % (type(e).__name__,)
-        if str(e):
+        if isinstance(e, (urllib3.exceptions.SSLError, ssl.SSLError)) or sys.version_info >= (3, 12):
+            err += ("\n\nThis is an SSLError. If you're using python 3.12, "
+                    "it could be because of stricter SSL requirements:\n"
+                    "https://docs.python.org/3/whatsnew/3.12.html\n"
+                    "https://docs.python.org/3/whatsnew/3.12.html\n"
+                    "Try upgrading urllib3 and certifi:\n"
+                    "  pip install --upgrade urllib3 certifi\n\n")
+        elif str(e):
             err += " with error message %s" % (str(e),)
         else:
             err += " with no error message"
@@ -61,42 +78,15 @@ def _handle_request_error(e):
     raise SolveError(message=msg)
 
 
-class SolveTokenAuth(AuthBase):
-    """Custom auth handler for SolveBio API token authentication"""
-
-    def __init__(self, token=None, token_type='Token'):
-        self.token = token
-        self.token_type = token_type
-
-        if not self.token:
-            # Prefer the OAuth2 access token over the API key.
-            if solvebio.access_token:
-                self.token_type = 'Bearer'
-                self.token = solvebio.access_token
-            elif solvebio.api_key:
-                self.token_type = 'Token'
-                self.token = solvebio.api_key
-
-    def __call__(self, r):
-        if self.token:
-            r.headers['Authorization'] = '{0} {1}'.format(self.token_type,
-                                                          self.token)
-        return r
-
-    def __repr__(self):
-        if self.token:
-            return self.token_type
-        else:
-            return 'Anonymous'
-
-
 class SolveClient(object):
     """A requests-based HTTP client for SolveBio API resources"""
 
+    _host: str = None
+    _auth: SolveBioTokenAuth = None
+
     def __init__(self, host=None, token=None, token_type='Token',
                  include_resources=True, retry_all=None):
-        self.set_host(host)
-        self.set_token(token, token_type)
+        self._host, self._auth = authenticate(host, token, token_type)
         self._headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -144,7 +134,7 @@ class SolveClient(object):
 
         # Use a session with a retry policy to handle
         # intermittent connection errors.
-        adapter = HTTPAdapter(max_retries=retries)
+        adapter = adapters.HTTPAdapter(max_retries=retries)
         self._session = Session()
         self._session.mount(self._host, adapter)
 
@@ -156,26 +146,6 @@ class SolveClient(object):
                     continue
                 subclass = type(name, (class_,), {'_client': self})
                 setattr(self, name, subclass)
-
-    def set_host(self, host=None):
-        self._host = validate_api_host_url(host or solvebio.api_host)
-        # If the domain ends with .solvebio.com, determine if
-        # we are being redirected. If so, update the url with the new host
-        # and log a warning.
-        if self._host and self._host.rstrip('/').endswith('.api.solvebio.com'):
-            old_host = self._host.rstrip('/')
-            response = requests.head(old_host, allow_redirects=True)
-            # Strip the port number from the host for comparison
-            new_host = validate_api_host_url(response.url).rstrip('/').replace(':443', '')
-            if old_host != new_host:
-                logger.warn(
-                    'API host redirected from "{}" to "{}", '
-                    'please update your local credentials file'
-                    .format(old_host, new_host))
-                self._host = new_host
-
-    def set_token(self, token=None, token_type='Token'):
-        self._auth = SolveTokenAuth(token, token_type)
 
     def set_user_agent(self, name=None, version=None):
         ua = 'solvebio-python-client/{} python-requests/{} {}/{}'.format(
