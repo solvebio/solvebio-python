@@ -7,12 +7,13 @@ import copy
 import argparse
 
 import solvebio
+from solvebio.errors import SolveError
 
 from . import auth
 from . import data
 from .tutorial import print_tutorial
 from .ipython import launch_ipython_shell
-from ..utils.validators import validate_api_host_url
+from ..auth import validate_api_host_url
 from ..utils.files import get_home_dir
 
 
@@ -59,6 +60,14 @@ class SolveArgumentParser(argparse.ArgumentParser):
         "login": {
             "func": auth.login_and_save_credentials,
             "help": "Login and save credentials",
+            "arguments": [
+                {
+                    "flags": "--debug",
+                    "action": "store_true",
+                    "default": False,
+                    "help": "Shows the source of the user credentials",
+                },
+            ]
         },
         "logout": {"func": auth.logout, "help": "Logout and delete saved credentials"},
         "whoami": {"func": auth.whoami, "help": "Show your SolveBio email address"},
@@ -505,19 +514,22 @@ class SolveArgumentParser(argparse.ArgumentParser):
         return super(SolveArgumentParser, self).parse_args(args, namespace)
 
     def api_host_url(self, value):
+        if not value:
+            raise SolveError("No QuartzBio API host is set")
+
         validate_api_host_url(value)
         return value
 
 
-def main(argv=sys.argv[1:]):
+def main():
     """Main entry point for SolveBio CLI"""
     parser = SolveArgumentParser()
-    args = parser.parse_solvebio_args(argv)
+    args = parser.parse_quartzbio_args(sys.argv[1:])
 
     solvebio.login(
-        api_host=args.api_host or solvebio.api_host,
-        api_key=args.api_key or solvebio.api_key,
-        access_token=args.access_token or solvebio.access_token,
+        api_host=args.api_host,
+        api_key=args.api_key,
+        access_token=args.access_token,
     )
 
     return args.func(args)

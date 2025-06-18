@@ -307,7 +307,7 @@ class ObjectTests(SolveBioTestCase):
         self.assertEqual(res, {'metadata': {'hello': 'world'}, 'name': 'test'})
 
     @mock.patch('solvebio.resource.Object.create')
-    @mock.patch('solvebio.client.SolveClient.post')
+    @mock.patch('solvebio.SolveClient.post')
     def test_object_query(self, SolveClientPost, ObjectCreate):
         ObjectCreate.side_effect = fake_object_create
         valid_response = {

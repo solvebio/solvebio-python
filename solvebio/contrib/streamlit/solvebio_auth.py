@@ -22,9 +22,9 @@ class SolveBioOAuth2(BaseOAuth2[Dict[str, Any]]):
             client_id,
             client_secret,
             self.SOLVEBIO_URL,
-            urljoin(solvebio.api_host, self.OAUTH2_TOKEN_URL),
+            urljoin(solvebio.get_api_host(), self.OAUTH2_TOKEN_URL),
             revoke_token_endpoint=urljoin(
-                solvebio.api_host, self.OAUTH2_REVOKE_TOKEN_URL
+                solvebio.get_api_host(), self.OAUTH2_REVOKE_TOKEN_URL
             ),
             name=name,
         )

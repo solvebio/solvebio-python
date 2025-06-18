@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from __future__ import absolute_import
+from collections import namedtuple
 import six
 
 import solvebio
@@ -73,7 +74,12 @@ class CredentialsError(BaseException):
     pass
 
 
-def get_credentials():
+ApiCredentials = namedtuple(
+    "ApiCredentials", ["api_host", "email", "token_type", "token"]
+)
+
+
+def get_credentials(api_host: str = None) -> ApiCredentials:
     """
     Returns the user's stored API key if a valid credentials file is found.
     Raises CredentialsError if no valid credentials file is found.
@@ -86,28 +92,33 @@ def get_credentials():
     except (IOError, TypeError, NetrcParseError) as e:
         raise CredentialsError("Could not open credentials file: " + str(e))
 
-    host = as_netrc_machine(solvebio.api_host)
-    if host in netrc_obj.hosts:
-        proto = "http://" if "http://" in solvebio.api_host else "https://"
-        return (proto + host,) + netrc_obj.authenticators(host)
+    netrc_host: str = None
 
-    # If the preferred host is not the global default, don't try
-    # to select any other.
-    if host != "api.solvebio.com":
-        return None
+    # if user provides a host, then find its token in the credentials file
+    if api_host is not None:
+        api_host = api_host.removeprefix("https://")
+        if api_host in netrc_obj.hosts:
+            netrc_host = api_host
+        else:
+            # login has failed for the requested host,
+            # the rest of the credentials file is ignored
+            return None
+    else:
+        # If there are no stored credentials for the default host,
+        # but there are other stored credentials, use the first
+        # available option that ends with '.api.quartzbio.com',
+        netrc_host = next(
+            filter(lambda h: h.endswith(".api.quartzbio.com"), netrc_obj.hosts), None
+            )
 
-    # If there are no stored credentials for the default host,
-    # but there are other stored credentials, use the first
-    # available option that ends with '.api.solvebio.com',
     # Otherwise use the first available.
-    for h in netrc_obj.hosts:
-        if h.endswith(".api.solvebio.com"):
-            return ("https://" + h,) + netrc_obj.authenticators(h)
+    if netrc_host is None:
+        netrc_host = next(iter(netrc_obj.hosts))
 
-    # Return the first available
-    for host in netrc_obj.hosts:
-        return ("https://" + host,) + netrc_obj.authenticators(host)
-
+    if netrc_host is not None:
+        return ApiCredentials(
+            "https://" + netrc_host, *netrc_obj.authenticators(netrc_host)
+        )
     return None
 
 
@@ -119,7 +130,7 @@ def delete_credentials():
         raise CredentialsError("Could not open netrc file: " + str(e))
 
     try:
-        del rc.hosts[as_netrc_machine(solvebio.api_host)]
+        del rc.hosts[as_netrc_machine(solvebio.get_api_host())]
     except KeyError:
         pass
     else:
@@ -127,7 +138,7 @@ def delete_credentials():
 
 
 def save_credentials(email, token, token_type="Token", api_host=None):
-    api_host = api_host or solvebio.api_host
+    api_host = api_host or solvebio.get_api_host()
 
     try:
         netrc_path = netrc.path()

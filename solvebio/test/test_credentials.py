@@ -28,11 +28,11 @@ class TestCredentials(unittest.TestCase):
     def setUp(self):
         self.solvebiodir = os.path.join(os.path.dirname(__file__),
                                         'data', '.solvebio')
-        self.api_host = solvebio.api_host
-        solvebio.api_host = 'https://api.solvebio.com'
+        self.api_host = solvebio.get_api_host()
+        solvebio.client._host = 'https://api.solvebio.com'
 
     def tearDown(self):
-        solvebio.api_host = self.api_host
+        solvebio.client._host = self.api_host
         if os.path.isdir(self.solvebiodir):
             shutil.rmtree(self.solvebiodir)
 
@@ -58,26 +58,26 @@ class TestCredentials(unittest.TestCase):
         auths = creds.get_credentials()
         self.assertTrue(auths is not None, 'Should find credentials')
 
-        solvebio.api_host = 'https://example.com'
+        solvebio.client._host = 'https://example.com'
 
         auths = creds.get_credentials()
         self.assertEqual(auths, None,
                          'Should not find credentials for host {0}'
                          .format(solvebio.api_host))
 
-        solvebio.api_host = 'https://api.solvebio.com'
+        solvebio.client._host = 'https://api.solvebio.com'
         creds.delete_credentials()
         auths = creds.get_credentials()
         self.assertEqual(auths, None,
                          'Should not find removed credentials for '
-                         'host {0}'.format(solvebio.api_host))
+                         'host {0}'.format(solvebio.get_api_host()))
 
         pair = ('testagain@solvebio.com', 'b00b00',)
         creds.save_credentials(*pair)
         auths = creds.get_credentials()
         self.assertTrue(auths is not None,
                         'Should get newly set credentials for '
-                        'host {0}'.format(solvebio.api_host))
+                        'host {0}'.format(solvebio.get_api_host()))
 
-        expected = (solvebio.api_host, pair[0], 'Token', pair[1])
+        expected = (solvebio.get_api_host(), pair[0], 'Token', pair[1])
         self.assertEqual(auths, expected, 'Should get back creds we saved')

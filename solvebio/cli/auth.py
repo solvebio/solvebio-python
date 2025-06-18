@@ -9,34 +9,33 @@ from .credentials import save_credentials
 from .credentials import delete_credentials
 
 
-def login_and_save_credentials(*args, **kwargs):
+def login_and_save_credentials(*args):
     """
-    Domain, email and password are used to get the user's API key.
+    CLI command to login and persist credentials to a file
     """
-    if args and args[0].api_key:
-        # Handle command-line arguments if provided.
-        logged_in = solvebio.login(api_key=args[0].api_key,
-                                   api_host=solvebio.api_host)
-    elif args and args[0].access_token:
-        # Handle command-line arguments if provided.
-        logged_in = solvebio.login(access_token=args[0].access_token,
-                                   api_host=solvebio.api_host)
-    elif solvebio.login(**kwargs):
-        logged_in = True
-    else:
-        logged_in = False
+    args = args[0]
 
-    if logged_in:
-        # Print information about the current user
-        user = client.whoami()
-        print_user(user)
-        save_credentials(
-            user['email'].lower(), client._auth.token,
-            client._auth.token_type, solvebio.api_host)
-        print('Updated local credentials file.')
-    else:
-        print('You are not logged-in. Visit '
-              'https://docs.solvebio.com/#authentication to get started.')
+    solvebio.login(
+        api_host=args.api_host,
+        api_key=args.api_key,
+        access_token=args.access_token,
+        # name=args.name,
+        # version=args.version,
+        debug=args.debug,
+    )
+
+    # Print information about the current user
+    user = client.whoami()
+    print_user(user)
+
+    # fixme: how to detect if login was successful
+    save_credentials(
+        user["email"].lower(),
+        client._auth.token,
+        client._auth.token_type,
+        solvebio.get_api_host(),
+    )
+    print("Updated local credentials file.")
 
 
 def logout(*args):
@@ -69,5 +68,5 @@ def print_user(user):
     """
     email = user['email']
     domain = user['account']['domain']
-    print('You are logged-in to the "{}" domain as {} (server: {}).'
-          .format(domain, email, solvebio.api_host))
+    print(f'You are logged-in to the "{domain}" domain as {email}'
+        f' (server: {solvebio.get_api_host()}).')

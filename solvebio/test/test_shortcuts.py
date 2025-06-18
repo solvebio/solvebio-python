@@ -9,7 +9,6 @@ import mock
 
 from .helper import SolveBioTestCase
 
-import solvebio
 from solvebio.cli import main
 from solvebio import DatasetTemplate
 from solvebio import Vault
@@ -38,9 +37,6 @@ def upload_path(*args, **kwargs):
 class CLITests(SolveBioTestCase):
     def setUp(self):
         super(CLITests, self).setUp()
-        # Set the global key for CLI tests only
-        solvebio.api_key = os.environ.get("SOLVEBIO_API_KEY", None)
-        solvebio.api_host = os.environ.get("SOLVEBIO_API_HOST", None)
 
 
 class CreateDatasetTests(CLITests):
