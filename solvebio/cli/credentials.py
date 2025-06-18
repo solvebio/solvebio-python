@@ -93,10 +93,17 @@ def get_credentials(api_host: str = None) -> ApiCredentials:
         raise CredentialsError("Could not open credentials file: " + str(e))
 
     netrc_host: str = None
-    if api_host is not None and api_host in netrc_obj.hosts:
-        netrc_host = api_host
 
-    if netrc_host is None:
+    # if user provides a host, then find its token in the credentials file
+    if api_host is not None:
+        api_host = api_host.removeprefix("https://")
+        if api_host in netrc_obj.hosts:
+            netrc_host = api_host
+        else:
+            # login has failed for the requested host,
+            # the rest of the credentials file is ignored
+            return None
+    else:
         # If there are no stored credentials for the default host,
         # but there are other stored credentials, use the first
         # available option that ends with '.api.quartzbio.com',

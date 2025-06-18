@@ -9,31 +9,19 @@ from .credentials import save_credentials
 from .credentials import delete_credentials
 
 
-def login_and_save_credentials(
-    *args,
-    api_host: str = None,
-    api_key: str = None,
-    access_token: str = None,
-    name: str = None,
-    version: str = None,
-):
+def login_and_save_credentials(*args):
     """
     CLI command to login and persist credentials to a file
     """
-    if args and args[0].access_token:
-        access_token = args[0].access_token
-    elif args and args[0].api_key:
-        api_key = args[0].api_key
-
-    if args and args[0].api_host:
-        api_host = args[0].api_host
+    args = args[0]
 
     solvebio.login(
-        api_host=api_host,
-        api_key=api_key,
-        access_token=access_token,
-        name=name,
-        version=version,
+        api_host=args.api_host,
+        api_key=args.api_key,
+        access_token=args.access_token,
+        # name=args.name,
+        # version=args.version,
+        debug=args.debug,
     )
 
     # Print information about the current user

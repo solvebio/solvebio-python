@@ -40,7 +40,8 @@ def authenticate(
     token: str,
     token_type: Literal["Bearer", "Token"],
     *,
-    raise_on_missing=True,
+    raise_on_missing: bool = True,
+    debug: bool = False
 ) -> Tuple[str, SolveBioTokenAuth]:
     """
     Sets login credentials for SolveBio API authentication.
@@ -50,26 +51,29 @@ def authenticate(
     :param str token_type: API token type. `Bearer` is used for access tokens, while `Token` is used for API Keys.
     :param bool raise_on_missing: Raise an exception if no credentials are available.
     """
+    # used for debugging
+    source_host = None
+    source_token = None
 
     # Find credentials from environment variables
     if not host:
         host = (
-            os.environ.get("SOLVEBIO_API_HOST", None)
-            or os.environ.get("SOLVEBIO_API_HOST", None)
+            os.environ.get("QUARTZBIO_API_HOST", None)
             or os.environ.get("EDP_API_HOST", None)
+            or os.environ.get("SOLVEBIO_API_HOST", None)
         )
 
     if not token:
         api_key = (
-            os.environ.get("SOLVEBIO_API_KEY", None)
-            or os.environ.get("SOLVEBIO_API_KEY", None)
+            os.environ.get("QUARTZBIO_API_KEY", None)
             or os.environ.get("EDP_API_KEY", None)
+            or os.environ.get("SOLVEBIO_API_KEY", None)
         )
 
         access_token = (
-            os.environ.get("SOLVEBIO_ACCESS_TOKEN", None)
-            or os.environ.get("SOLVEBIO_ACCESS_TOKEN", None)
+            os.environ.get("QUARTZ_ACCESS_TOKEN", None)
             or os.environ.get("EDP_ACCESS_TOKEN", None)
+            or os.environ.get("SOLVEBIO_ACCESS_TOKEN", None)
         )
 
         if access_token:
@@ -78,6 +82,11 @@ def authenticate(
         elif api_key:
             token = api_key
             token_type = "Token"
+
+        if token:
+            source_token = 'envvars'
+    else:
+        source_token = 'params'
 
     # Find credentials from local credentials file
     if not token:
@@ -90,8 +99,36 @@ def authenticate(
                 # but the credentials file still contains login credentials
                 host = creds.api_host
 
-    if not host and raise_on_missing:
-        raise SolveError("No SolveBio API host is set")
+                if host:
+                    source_host = 'creds'
+            if token:
+                source_token = 'creds'
+
+    if (not host and raise_on_missing) or debug:
+        # this will tell the user where QB Client found the credentials from
+        creds_path = netrc.path()
+        print('\n'.join([
+            "Login Debug:",
+            f"--> Host: {host}\n    (source: {source_host})",
+            f"--> Token Type: {token_type}\n    (source: {source_token})",
+            "\n1) source: params",
+            "   Means that you've passed this through the login CLI command:",
+            "   quartzbio login --host <EDP_HOST> --access_token <EDP_TOKEN>",
+            "\n   or the quartzbio.login function:",
+            "   import quartzbio",
+            "   quartzbio.login(debug=True)",
+            "\n2) source: creds",
+            "   Means that the QB client has saved your credentials in:",
+            f"   {creds_path}",
+            "\n3) source: envvars",
+            "   Means that you've set your credentials through environment variables:",
+            "   QUARTZBIO_API_HOST",
+            "   QUARTZBIO_ACCESS_TOKEN",
+            "   QUARTZBIO_API_KEY",
+        ]))
+
+        if not debug:
+            raise SolveError("No SolveBio API host is set")
 
     host = validate_api_host_url(host)
 

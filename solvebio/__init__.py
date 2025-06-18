@@ -121,6 +121,7 @@ def login(
     access_token: str = None,
     name: str = None,
     version: str = None,
+    debug: bool = False,
 ):
     """
     Function to login to the QuartzBio/EDP API when using EDP in a python script.
@@ -148,14 +149,22 @@ def login(
                 api_key=YOUR_API_KEY
             )
     """
-    if access_token:
-        client._host, client._auth = authenticate(
-            api_host, access_token, token_type="Bearer"
-        )
-    elif api_key:
-        client._host, client._auth = authenticate(api_host, api_key, token_type="Token")
+    token_type = None
+    token = None
 
-    client.set_user_agent(name=name, version=version)    
+    if access_token:
+        token_type = "Bearer"
+        token = access_token
+    elif api_key:
+        token_type = "Token"
+        token = api_key
+
+    if api_host or token or debug:
+        client._host, client._auth = authenticate(
+            api_host, token, token_type=token_type, debug=debug
+        )
+
+    client.set_user_agent(name=name, version=version)
 
 
 def whoami():
