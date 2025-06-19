@@ -11,7 +11,7 @@ from requests.auth import AuthBase
 import requests
 
 from solvebio import SolveError
-from solvebio.cli.credentials import get_credentials
+from solvebio.cli.credentials import get_credentials, netrc
 
 logger = logging.getLogger("solvebio")
 
