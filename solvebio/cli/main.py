@@ -524,7 +524,7 @@ class SolveArgumentParser(argparse.ArgumentParser):
 def main():
     """Main entry point for SolveBio CLI"""
     parser = SolveArgumentParser()
-    args = parser.parse_quartzbio_args(sys.argv[1:])
+    args = parser.parse_solvebio_args(sys.argv[1:])
 
     solvebio.login(
         api_host=args.api_host,
