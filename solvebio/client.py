@@ -5,6 +5,7 @@ import json
 import time
 import inspect
 import os
+from typing import Literal
 
 import solvebio
 
@@ -84,59 +85,30 @@ class SolveClient(object):
     _host: str = None
     _auth: SolveBioTokenAuth = None
 
-    def __init__(self, host=None, token=None, token_type='Token',
-                 include_resources=True, retry_all=None):
-        self._host, self._auth = authenticate(host, token, token_type)
+    def __init__(
+        self,
+        host=None,
+        token=None,
+        token_type: Literal["Bearer", "Token"] = "Token",
+        include_resources=True,
+        retry_all: bool = None,
+    ):
+        self._host: str = None
+        self._auth: SolveBioTokenAuth = None
+        self._session: Session = None
+
         self._headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Accept-Encoding': 'gzip,deflate'
         }
+        self.retry_all = bool(retry_all)
+        if self.retry_all is None:
+            self.retry_all = bool(os.environ.get("SOLVEBIO_RETRY_ALL"))
+
+        # this class is created before any commands, so it shouldn't raise a missing host exception
+        self.set_credentials(host, token, token_type, raise_on_missing=False)
         self.set_user_agent()
-
-        if retry_all is None:
-            retry_all = bool(os.environ.get("SOLVEBIO_RETRY_ALL"))
-
-        if bool(retry_all):
-            logger.info("Retries enabled for all API requests")
-            allowed_methods = frozenset([
-                "HEAD",
-                "GET",
-                "PUT",
-                "POST",
-                "PATCH",
-                "DELETE",
-                "OPTIONS",
-                "TRACE"
-            ])
-
-            retries = Retry(
-                total=5,
-                backoff_factor=2,
-                status_forcelist=[
-                    codes.bad_gateway,
-                    codes.service_unavailable,
-                    codes.gateway_timeout
-                ],
-                allowed_methods=allowed_methods
-            )
-        else:
-            logger.info("Retries enabled for read-only API requests")
-            retries = Retry(
-                total=5,
-                backoff_factor=2,
-                status_forcelist=[
-                    codes.bad_gateway,
-                    codes.service_unavailable,
-                    codes.gateway_timeout
-                ]
-            )
-
-        # Use a session with a retry policy to handle
-        # intermittent connection errors.
-        adapter = adapters.HTTPAdapter(max_retries=retries)
-        self._session = Session()
-        self._session.mount(self._host, adapter)
 
         # Import all resources into the client
         if include_resources:
@@ -165,6 +137,44 @@ class SolveClient(object):
                 ua = '{} {}'.format(name, ua)
 
         self._headers['User-Agent'] = ua
+
+    def set_credentials(
+        self, host: str, token: str, token_type: Literal["Bearer", "Token"],
+        *, debug: bool = False, raise_on_missing: bool = True
+    ):
+        self._host, self._auth = authenticate(
+            host, token, token_type, debug=debug, raise_on_missing=raise_on_missing
+        )
+
+        if self._host:
+            retry_kwargs = {}
+            if self.retry_all:
+                logger.info("Retries enabled for all API requests")
+                retry_kwargs["allow_redirects"] = frozenset(
+                    ["HEAD", "GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS", "TRACE"]
+                )
+            else:
+                logger.info("Retries enabled for read-only API requests")
+
+            retries = Retry(
+                total=5,
+                backoff_factor=2,
+                status_forcelist=[
+                    codes.bad_gateway,
+                    codes.service_unavailable,
+                    codes.gateway_timeout,
+                ],
+                **retry_kwargs
+            )
+
+            # Use a session with a retry policy to handle
+            # intermittent connection errors.
+            adapter = adapters.HTTPAdapter(max_retries=retries)
+            self._session = Session()
+            self._session.mount(self._host, adapter)
+
+    def is_logged_in(self):
+        return bool(self._host and self._auth and self._session)
 
     def whoami(self):
         return self.get('/v1/user', {})
@@ -284,8 +294,26 @@ class SolveClient(object):
         try:
             return response.json()
         except Exception:
-            raise SolveError("Could not parse JSON response: {}"
-                             .format(response.content))
+            if b"<!DOCTYPE html>" in response.content[:40]:
+                helper_msg = self._host
+                if suggested_host := self.validate_host_is_www_url(self._host):
+                    helper_msg = f"Provided API host is: `{self._host}`. Did you perhaps mean `{suggested_host}`?"
+
+                html_response = response.text[:20].strip("\n")
+                raise SolveError(
+                    f"QuartzBio error: HTML response received from API. {html_response}...\n"
+                    "  Please confirm that API Host doesn't point to EDP's Web URL:\n"
+                    f"  {helper_msg}"
+                )
+
+            raise SolveError(
+                f"Could not parse JSON response: {response.content}"
+            )
+
+    def validate_host_is_www_url(self, host):
+        # returns corrected API's URL, if it suspects that host is a WWW url, not API
+        if ".api.edp" not in host and ".edp" in host:
+            return host.replace(".edp", ".api.edp")
 
     def _log_raw_request(self, method, url, **kwargs):
         from requests import Request, Session
