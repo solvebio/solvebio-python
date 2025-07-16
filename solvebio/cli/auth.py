@@ -29,12 +29,12 @@ def login_and_save_credentials(*args):
         print("login: client is not logged in!")
 
         # Verify if user has provided the wrong credentials file
-        if suggested_host := client.validate_host_is_www_url(client._host):
-            print(
-                f"Provided API host is: `{client._host}`. "
-                f"Did you perhaps mean `{suggested_host}`?"
-            )
-
+        if client._host:
+            if suggested_host := client.validate_host_is_www_url(client._host):
+                print(
+                    f"Provided API host is: `{client._host}`. "
+                    f"Did you perhaps mean `{suggested_host}`?"
+                )
         return
 
     user = client.whoami()

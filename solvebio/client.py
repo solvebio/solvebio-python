@@ -242,6 +242,8 @@ class SolveClient(object):
         repsonse if valid the object will be JSON encoded. Otherwise
         it will be the request.reposne object.
         """
+        if not self.is_logged_in():
+            raise SolveError("HTTP request: client is not logged in!")
 
         opts = {
             'allow_redirects': True,
@@ -299,12 +301,15 @@ class SolveClient(object):
                 if suggested_host := self.validate_host_is_www_url(self._host):
                     helper_msg = f"Provided API host is: `{self._host}`. Did you perhaps mean `{suggested_host}`?"
 
-                html_response = response.text[:20].strip("\n")
+                html_response = response.text[:30].replace("\n", "")
                 raise SolveError(
                     f"QuartzBio error: HTML response received from API. {html_response}...\n"
                     "  Please confirm that API Host doesn't point to EDP's Web URL:\n"
                     f"  {helper_msg}"
                 )
+            elif self._host is None:
+                # shouldn't happen, maybe in rare race conditions
+                raise SolveError("No EDP API host was set!")
 
             raise SolveError(
                 f"Could not parse JSON response: {response.content}"

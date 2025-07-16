@@ -104,7 +104,7 @@ def authenticate(
             if token:
                 source_token = 'creds'
 
-    if not host or debug:
+    if debug:
         # this will tell the user where QB Client found the credentials from
         creds_path = netrc.path()
         print('\n'.join([
