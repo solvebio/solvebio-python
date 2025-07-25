@@ -1,5 +1,10 @@
 # Changelog
 
+## [v2.31.1](https://github.com/solvebio/solvebio-python/tree/v2.31.1) (2025-07-25)
+
+- Fix login issues (#484)
+- Fix annotator-params default to empty dict instead of None (#488)
+
 ## [v2.31.0](https://github.com/solvebio/solvebio-python/tree/v2.31.0) (2025-05-06)
 
 - Fix upload command for nested folders when dry-run flag is active (#481)
