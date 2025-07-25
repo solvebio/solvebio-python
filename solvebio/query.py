@@ -818,8 +818,8 @@ class Query(QueryBase):
         # Prefer explicitly passed-in values before query values.
         target_fields = kwargs.pop('target_fields', None) or \
             params.pop('target_fields', None)
-        annotator_params = kwargs.pop('annotator_params', None) or \
-            params.pop('annotator_params', None)
+        annotator_params = kwargs.pop('annotator_params', {}) or \
+            params.pop('annotator_params', {})
 
         export = DatasetExport.create(
             dataset_id=self._dataset_id,
@@ -872,8 +872,8 @@ class Query(QueryBase):
         # Prefer explicitly passed-in values before query values.
         target_fields = kwargs.pop('target_fields', None) or \
             params.pop('target_fields', None)
-        annotator_params = kwargs.pop('annotator_params', None) or \
-            params.pop('annotator_params', None)
+        annotator_params = kwargs.pop('annotator_params', {}) or \
+            params.pop('annotator_params', {})
 
         migration_resp = DatasetMigration.create(
             source_id=self._dataset_id,
