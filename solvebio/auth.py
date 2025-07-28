@@ -158,7 +158,8 @@ def authenticate(
 
     # TODO: warn user if WWW url is provided in edp_login!
 
-    # @TODO: remove references to solvebio.api_host, etc...
+    from solvebio import _set_cached_api_host
+    _set_cached_api_host(host)
 
     return host, auth
 

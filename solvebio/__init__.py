@@ -84,6 +84,19 @@ def _init_logging():
 
 _init_logging()
 
+
+"""
+This is a cached value of client._host, and is kept in for backwards compatibility
+Use this with caution, as you should prefer relying on get_api_host() instead
+"""
+api_host = None
+
+
+def _set_cached_api_host(host):
+    global api_host
+    api_host = host
+
+
 from .version import VERSION  # noqa
 from .errors import SolveError
 from .query import Query, BatchQuery, Filter, GenomicFilter
@@ -178,7 +191,13 @@ def whoami():
 
 
 def get_api_host():
+    global api_host
+    api_host = client._host
+
     return client._host
+
+
+get_api_host()
 
 
 __all__ = [
