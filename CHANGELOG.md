@@ -1,5 +1,9 @@
 # Changelog
 
+## [v2.31.2](https://github.com/solvebio/solvebio-python/tree/v2.31.2) (2025-07-28)
+
+- Add api_host to the module (#490)
+
 ## [v2.31.1](https://github.com/solvebio/solvebio-python/tree/v2.31.1) (2025-07-25)
 
 - Fix login issues (#484)
