@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: [3.8, '3.10', '3.11', '3.12', pypy]
+        python-version: [3.8, '3.10', '3.11', '3.12']
     env:
       SOLVEBIO_API_HOST: ${{ secrets.QUARTZBIO_API_HOST }}
       SOLVEBIO_API_KEY: ${{ secrets.QUARTZBIO_API_KEY }}
