@@ -288,7 +288,7 @@ def _object_exists(remote_parent, local_path, _client):
         return False
     full_path, path_dict = Object.validate_full_path(
         os.path.join('{}:{}'.format(remote_parent.vault.full_path, remote_parent.path),
-        os.path.basename(local_path)), client=_client)
+                     os.path.basename(local_path)), client=_client)
     try:
         obj = Object.get_by_full_path(full_path, client=_client)
         if not obj.is_file:
