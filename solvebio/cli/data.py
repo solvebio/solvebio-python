@@ -52,7 +52,7 @@ def should_exclude(path, exclude_paths, dry_run=False, print_logs=True):
         # An exclude path may be a directory, strip trailing slash and add /*
         # if not already there.
         if not exclude_path.endswith("/*") and fnmatch(
-            path, exclude_path.rstrip("/") + "/*"
+                path, exclude_path.rstrip("/") + "/*"
         ):
             if print_logs:
                 print(
@@ -119,16 +119,16 @@ def _check_uploaded_folders(base_remote_path, local_start, all_folders, follow_s
 
 
 def _upload_folder(
-    domain,
-    vault,
-    base_remote_path,
-    base_local_path,
-    local_start,
-    exclude_paths=None,
-    dry_run=False,
-    num_processes=1,
-    archive_folder=None,
-    follow_shortcuts=False
+        domain,
+        vault,
+        base_remote_path,
+        base_local_path,
+        local_start,
+        exclude_paths=None,
+        dry_run=False,
+        num_processes=1,
+        archive_folder=None,
+        follow_shortcuts=False
 ):
     all_folders = []
     all_files = []
@@ -247,7 +247,7 @@ def _create_file_job(args):
         client = SolveClient(*client_auth)
 
         remote_parent = None
-        try: 
+        try:
             remote_parent = Object.get_by_full_path(
                 remote_folder_full_path,
                 assert_type="folder",
@@ -282,12 +282,13 @@ def _create_file_job(args):
     except Exception as e:
         return e
 
+
 def _object_exists(remote_parent, local_path, _client):
     if remote_parent is None:
         return False
     full_path, path_dict = Object.validate_full_path(
-            os.path.join('{}:{}'.format(remote_parent.vault.full_path, remote_parent.path),
-                         os.path.basename(local_path)), client=_client)
+        os.path.join('{}:{}'.format(remote_parent.vault.full_path, remote_parent.path),
+        os.path.basename(local_path)), client=_client)
     try:
         obj = Object.get_by_full_path(full_path, client=_client)
         if not obj.is_file:
@@ -302,6 +303,7 @@ def _object_exists(remote_parent, local_path, _client):
                 return False
     except NotFoundError:
         return False
+
 
 def _create_template_from_file(template_file, dry_run=False):
     mode = "r"
@@ -661,15 +663,15 @@ def download(args):
 
 
 def _download(
-    full_path,
-    local_folder_path,
-    dry_run=False,
-    recursive=False,
-    excludes=[],
-    includes=[],
-    delete=False,
-    follow_shortcuts=False,
-    num_processes=None,
+        full_path,
+        local_folder_path,
+        dry_run=False,
+        recursive=False,
+        excludes=[],
+        includes=[],
+        delete=False,
+        follow_shortcuts=False,
+        num_processes=None,
 ):
     """
     Given a folder or file, download all the files contained
@@ -747,16 +749,15 @@ def _download(
 
 
 def _download_recursive(
-    full_path,
-    local_folder_path,
-    dry_run=False,
-    excludes=[],
-    includes=[],
-    delete=False,
-    follow_shortcuts=False,
-    num_processes=None,
+        full_path,
+        local_folder_path,
+        dry_run=False,
+        excludes=[],
+        includes=[],
+        delete=False,
+        follow_shortcuts=False,
+        num_processes=None,
 ):
-
     if "**" in full_path:
         raise Exception(
             "Paths containing ** are not compatible with the --recursive flag."
@@ -812,7 +813,7 @@ def _download_recursive(
 
         # Skip over files that are excluded (not recovered by include)
         if should_exclude(
-            local_path, excludes, print_logs=False
+                local_path, excludes, print_logs=False
         ) and not should_exclude(local_path, includes, print_logs=False):
             continue
 
@@ -883,7 +884,7 @@ def _download_in_parallel(files_to_download, num_processes):
 
     if num_processes <= 0:
         num_processes = os.cpu_count()
-        print("[Warning] num-processes cannot be less than 1. Defaulting to CPU count: ({})". format(num_processes))
+        print("[Warning] num-processes cannot be less than 1. Defaulting to CPU count: ({})".format(num_processes))
 
     print("Downloading in parallel with {} processes.".format(num_processes))
 
