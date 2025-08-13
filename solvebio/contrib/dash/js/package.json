@@ -31,5 +31,8 @@
     "react": "^15.5.4",
     "react-dom": "^15.5.4"
   },
+  "resolutions": {
+    "form-data": "2.5.5"
+  },
   "main": "server.js"
 }
