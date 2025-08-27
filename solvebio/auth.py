@@ -58,9 +58,9 @@ def authenticate(
     # Find credentials from environment variables
     if not host:
         host = (
-            os.environ.get("QUARTZBIO_API_HOST", None)
-            or os.environ.get("EDP_API_HOST", None)
-            or os.environ.get("SOLVEBIO_API_HOST", None)
+            os.environ.get("QUARTZBIO_API_HOST", None) or
+            os.environ.get("EDP_API_HOST", None) or
+            os.environ.get("SOLVEBIO_API_HOST", None)
         )
 
     if not token:
@@ -71,9 +71,9 @@ def authenticate(
         )
 
         access_token = (
-            os.environ.get("QUARTZ_ACCESS_TOKEN", None)
-            or os.environ.get("EDP_ACCESS_TOKEN", None)
-            or os.environ.get("SOLVEBIO_ACCESS_TOKEN", None)
+            os.environ.get("QUARTZ_ACCESS_TOKEN", None) or
+            os.environ.get("EDP_ACCESS_TOKEN", None) or
+            os.environ.get("SOLVEBIO_ACCESS_TOKEN", None)
         )
 
         if access_token:
