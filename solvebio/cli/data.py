@@ -1044,10 +1044,6 @@ def _ls(full_path, recursive=False, follow_shortcuts=False):
     return files
 
 
-def _is_single_file(objects):
-    return len(objects) == 1 and objects[0].get("object_type") == "file"
-
-
 def should_tag_by_object_type(args, object_):
     """Returns True if object matches object type requirements"""
     valid = True
