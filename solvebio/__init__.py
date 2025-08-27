@@ -103,7 +103,6 @@ from .query import Query, BatchQuery, Filter, GenomicFilter
 from .global_search import GlobalSearch
 from .annotate import Annotator, Expression
 from .client import client, SolveClient
-from .auth import authenticate
 from .resource import (
     Application,
     Beacon,
