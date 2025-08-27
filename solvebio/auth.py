@@ -65,9 +65,9 @@ def authenticate(
 
     if not token:
         api_key = (
-            os.environ.get("QUARTZBIO_API_KEY", None)
-            or os.environ.get("EDP_API_KEY", None)
-            or os.environ.get("SOLVEBIO_API_KEY", None)
+            os.environ.get("QUARTZBIO_API_KEY", None) or
+            os.environ.get("EDP_API_KEY", None) or
+            os.environ.get("SOLVEBIO_API_KEY", None)
         )
 
         access_token = (
