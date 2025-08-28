@@ -109,7 +109,7 @@ def get_credentials(api_host: str = None) -> ApiCredentials:
         # available option that ends with '.api.quartzbio.com',
         netrc_host = next(
             filter(lambda h: h.endswith(".api.quartzbio.com"), netrc_obj.hosts), None
-            )
+        )
 
     # Otherwise use the first available.
     if netrc_host is None:

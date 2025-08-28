@@ -81,4 +81,4 @@ def print_user(user):
     email = user['email']
     domain = user['account']['domain']
     print(f'You are logged-in to the "{domain}" domain as {email}'
-        f' (server: {solvebio.get_api_host()}).')
+          f' (server: {solvebio.get_api_host()}).')
