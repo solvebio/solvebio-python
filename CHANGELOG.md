@@ -1,5 +1,11 @@
 # Changelog
 
+## [v2.32.0](https://github.com/solvebio/solvebio-python/tree/v2.32.0) (2025-08-28)
+
+- Add support for upload of files bigger than 5GB (#498)
+- Dropped support for Python versions earlier than 3.8. (#497)
+- Upgraded form-data to version 2.5.4+ to address a security issue related to predictable multipart boundaries. (#492)
+
 ## [v2.31.2](https://github.com/solvebio/solvebio-python/tree/v2.31.2) (2025-07-28)
 
 - Add api_host to the module (#490)
