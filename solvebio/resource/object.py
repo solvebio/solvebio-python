@@ -29,6 +29,75 @@ from .apiresource import UpdateableAPIResource
 from .apiresource import DeletableAPIResource
 from .apiresource import DownloadableAPIResource
 
+
+class UploadProgressTracker:
+    """Simple progress tracking for multipart uploads."""
+
+    def __init__(self, total_parts, total_size):
+        self.total_parts = total_parts
+        self.total_size = total_size
+        self.completed_parts = 0
+        self.completed_bytes = 0
+        self.start_time = time.time()
+        self.progress_line_active = False
+
+    def update_progress(self, part_size, part_duration=None):
+        """Update progress with new part completion - overwrites same line"""
+        self.completed_parts += 1
+        self.completed_bytes += part_size
+
+        # Calculate metrics
+        elapsed = time.time() - self.start_time
+        avg_speed = self.completed_bytes / elapsed if elapsed > 0 else 0
+        remaining_bytes = self.total_size - self.completed_bytes
+        eta = remaining_bytes / avg_speed if avg_speed > 0 else 0
+
+        # Format bytes for display
+        completed_mb = self.completed_bytes / 1024 / 1024
+        total_mb = self.total_size / 1024 / 1024
+        speed_mb = avg_speed / 1024 / 1024
+
+        # Create simple progress message
+        progress_msg = f"{self.completed_parts}/{self.total_parts} parts uploaded"
+        progress_msg += f" ({completed_mb:.1f}MB/{total_mb:.1f}MB)"
+
+        if avg_speed > 0:
+            progress_msg += f" [{speed_mb:.1f}MB/s"
+            if eta > 0:
+                progress_msg += f", ETA: {eta:.0f}s"
+            progress_msg += "]"
+
+        # Use \r to overwrite the same line (like Unix downloads)
+        print(f"\r{progress_msg}", end="", flush=True)
+        self.progress_line_active = True
+
+        # Print newline only when complete
+        if self.completed_parts >= self.total_parts:
+            print()  # Final newline
+            self.progress_line_active = False
+
+    def get_completion_percentage(self):
+        """Get completion percentage"""
+        return (
+            (self.completed_bytes / self.total_size) * 100 if self.total_size > 0 else 0
+        )
+
+    def get_elapsed_time(self):
+        """Get total elapsed time"""
+        return time.time() - self.start_time
+
+    def get_average_speed(self):
+        """Get average upload speed in bytes/second"""
+        elapsed = time.time() - self.start_time
+        return self.completed_bytes / elapsed if elapsed > 0 else 0
+
+    def notify_error(self):
+        """Notify that an error message will be printed - move to new line"""
+        if self.progress_line_active:
+            print()  # Move to new line before error message
+            self.progress_line_active = False
+
+
 if sys.version_info >= (3, 9, 0):
     from collections.abc import Iterable
 else:
@@ -589,107 +658,355 @@ class Object(CreateableAPIResource,
         return obj
 
     @classmethod
-    def _upload_multipart(cls, obj, local_path, local_md5, **kwargs):
-        """Handle multipart upload for larger files"""
+    def refresh_presigned_urls(cls, upload_id, key, total_size, part_numbers, **kwargs):
+        """Refresh presigned URLs for multipart upload
+
+        Args:
+            upload_id (str): The upload ID from the multipart upload
+            key (str): The upload key/identifier
+            total_size (int): Total size of the file being uploaded
+            part_numbers (list[int]): List of part numbers to refresh URLs for
+            **kwargs: Additional parameters including client
+
+        Returns:
+            list: List of presigned URL objects with part information
+        """
         _client = kwargs.get("client") or cls._client or client
-        print(f"Notice: Upload ID {obj.upload_id}")
+
+        payload = {
+            "upload_id": upload_id,
+            "key": key,
+            "total_size": total_size,
+            "part_numbers": part_numbers,
+        }
+
         try:
-            # Get presigned URLs from the object
+            response = _client.post("/v2/presigned_urls", payload)
+
+            if "presigned_urls" in response:
+                return response["presigned_urls"]
+            else:
+                raise FileUploadError(
+                    "Invalid response from presigned URLs API: missing 'presigned_urls' key"
+                )
+        except Exception as e:
+            raise FileUploadError(f"Failed to refresh presigned URLs: {str(e)}")
+
+    @classmethod
+    def _upload_multipart(cls, obj, local_path, local_md5, **kwargs):
+        """Enhanced multipart upload with parallel parts and presigned URL refresh"""
+        _client = kwargs.get("client") or cls._client or client
+        num_processes = kwargs.get("num_processes", 1)
+        max_retries = kwargs.get("max_retries", 3)
+
+        try:
+            # Get initial presigned URLs
             presigned_urls = obj.presigned_urls
+            total_parts = len(presigned_urls)
 
             print(
-                "Notice: Starting multipart upload with {} parts...".format(
-                    len(presigned_urls)
-                )
+                f"Starting multipart upload with {total_parts} parts using {num_processes} worker(s)..."
             )
 
-            # Step 2: Upload each part using presigned URLs
-            parts = []
-            with open(local_path, "rb") as f:
-                for part_info in presigned_urls:
-                    part_number = part_info.part_number
-                    start_byte = part_info.start_byte
-                    end_byte = part_info.end_byte
-                    part_size = part_info.size
-                    upload_url = part_info.upload_url
+            # Initialize progress tracker
+            progress_tracker = UploadProgressTracker(total_parts, obj.size)
 
-                    print(
-                        "Notice: Uploading part {}/{}... (bytes {}-{})".format(
-                            part_number, len(presigned_urls), start_byte, end_byte
-                        )
-                    )
-
-                    # Seek to start position and read the exact part size
-                    f.seek(start_byte)
-                    chunk_data = f.read(part_size)
-                    if not chunk_data:
-                        break
-
-                    # Upload part with retry logic
-                    session = requests.Session()
-                    retry = Retry(
-                        total=3,
-                        backoff_factor=2,
-                        status_forcelist=(500, 502, 503, 504),
-                        allowed_methods=["PUT"],
-                    )
-                    session.mount(
-                        "https://", requests.adapters.HTTPAdapter(max_retries=retry)
-                    )
-
-                    headers = {
-                        "Content-Length": str(len(chunk_data)),
+            # Prepare part upload tasks
+            part_tasks = []
+            for i, part_info in enumerate(presigned_urls):
+                part_tasks.append(
+                    {
+                        "part_number": part_info.part_number,
+                        "start_byte": part_info.start_byte,
+                        "end_byte": part_info.end_byte,
+                        "part_size": part_info.size,
+                        "upload_url": part_info.upload_url,
+                        "part_index": i,
+                        "max_retries": max_retries,
+                        "upload_id": obj.upload_id,
+                        "upload_key": obj.upload_key,
                     }
-
-                    upload_resp = session.put(
-                        upload_url, data=chunk_data, headers=headers
-                    )
-
-                    if upload_resp.status_code != 200:
-                        raise FileUploadError(
-                            "Failed to upload part {}: {}".format(
-                                part_number, upload_resp.content
-                            )
-                        )
-
-                    # Get ETag from response
-                    etag = upload_resp.headers.get("ETag", "").strip('"')
-                    parts.append({"part_number": part_number, "etag": etag})
-
-            # Step 3: Complete multipart upload
-            print("Notice: Completing multipart upload....")
-            complete_data = {
-                "upload_id": obj.upload_id,
-                "physical_object_id": obj.upload_key,
-                "parts": parts,
-            }
-
-            print(f"Notice: {complete_data}")
-
-            complete_resp = _client.post("/v2/complete_multi_part", complete_data)
-
-            if "message" in complete_resp:
-                print(
-                    "Notice: Successfully uploaded {0} to {1} with multipart upload.".format(
-                        local_path, obj.path
-                    )
                 )
-                return obj
+
+            # Upload parts in parallel or sequential
+            if num_processes > 1:
+                parts = cls._upload_parts_parallel(
+                    local_path,
+                    part_tasks,
+                    obj,
+                    _client,
+                    num_processes,
+                    progress_tracker,
+                )
             else:
-                raise Exception(complete_resp)
+                parts = cls._upload_parts_sequential(
+                    local_path, part_tasks, obj, _client, progress_tracker
+                )
+
+            # Complete multipart upload
+            return cls._complete_multipart_upload(obj, parts, _client, local_path)
 
         except Exception as e:
-            # Clean up failed upload - best effort cleanup
-            try:
-                _client.delete(
-                    obj.instance_url() + "/multipart-upload",
-                    {},
-                )
-            except Exception:
-                pass  # Best effort cleanup
-
-            obj.delete(force=True)
+            cls._cleanup_failed_upload(obj, _client)
             raise FileUploadError("Multipart upload failed: {}".format(str(e)))
+
+    @classmethod
+    def _upload_parts_parallel(
+        cls, local_path, part_tasks, obj, _client, num_processes, progress_tracker
+    ):
+        """Upload parts in parallel using ThreadPoolExecutor"""
+
+        parts = [None] * len(part_tasks)  # Pre-allocate array for ordered results
+
+        failed_parts = cls._upload_parts_with_threadpool(
+            local_path,
+            part_tasks,
+            obj,
+            _client,
+            parts,
+            progress_tracker,
+            num_processes,
+        )
+
+        # Retry failed parts
+        if failed_parts:
+            print(f"Retrying {len(failed_parts)} failed parts in parallel...")
+            for task in failed_parts:
+                task["max_retries"] = 3
+            retry_failed = cls._upload_parts_with_threadpool(
+                local_path,
+                failed_parts,
+                obj,
+                _client,
+                parts,
+                progress_tracker,
+                num_processes,
+            )
+            if retry_failed:
+                raise Exception(
+                    f"Failed to upload {len(retry_failed)} parts after retry"
+                )
+
+        return [part for part in parts if part is not None]
+
+    @classmethod
+    def _upload_parts_with_threadpool(
+        cls,
+        local_path,
+        part_tasks,
+        obj,
+        _client,
+        parts,
+        progress_tracker,
+        num_processes,
+    ):
+        """Common method for uploading parts with ThreadPoolExecutor"""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        failed_parts = []
+
+        with ThreadPoolExecutor(max_workers=num_processes) as executor:
+            # Submit all part upload tasks with worker assignment
+            future_to_part = {}
+            for i, task in enumerate(part_tasks):
+                # Assign worker ID to task
+                task["worker_id"] = f"Worker-{i % num_processes + 1}"
+                future_to_part[
+                    executor.submit(
+                        cls._upload_single_part,
+                        local_path,
+                        task,
+                        obj,
+                        _client,
+                        progress_tracker,
+                    )
+                ] = task
+
+            # Collect results as they complete
+            for future in as_completed(future_to_part):
+                task = future_to_part[future]
+                try:
+                    part_result = future.result()
+                    parts[task["part_index"]] = part_result
+                    # Update progress with part size
+                    progress_tracker.update_progress(task["part_size"])
+                except Exception as e:
+                    # Notify progress tracker about error and print error message
+                    progress_tracker.notify_error()
+                    print(
+                        f"ERROR: {task['worker_id']} failed part {task['part_number']}: {e}"
+                    )
+                    failed_parts.append(task)
+
+        return failed_parts
+
+    @classmethod
+    def _upload_parts_sequential(
+        cls, local_path, part_tasks, obj, _client, progress_tracker
+    ):
+        """Upload parts sequentially with retry logic for failed parts"""
+        parts = [None] * len(part_tasks)  # Pre-allocate for consistency
+        failed_parts = []
+
+        with open(local_path, "rb") as f:
+            for i, task in enumerate(part_tasks):
+                try:
+                    part_result = cls._upload_single_part(
+                        local_path, task, obj, _client, progress_tracker, file_handle=f
+                    )
+                    parts[i] = part_result
+                    # Update progress with part size
+                    progress_tracker.update_progress(task["part_size"])
+                except Exception as e:
+                    # Notify progress tracker about error and print error message
+                    progress_tracker.notify_error()
+                    print(
+                        f"ERROR: Sequential worker failed part {task['part_number']}: {e}"
+                    )
+                    failed_parts.append(task)
+
+        # Retry failed parts sequentially
+        if failed_parts:
+            print(f"Retrying {len(failed_parts)} failed parts sequentially...")
+            for task in failed_parts:
+                try:
+                    part_result = cls._upload_single_part(
+                        local_path, task, obj, _client, progress_tracker
+                    )
+                    parts[task["part_index"]] = part_result
+                    # Update progress with part size
+                    progress_tracker.update_progress(task["part_size"])
+                except Exception as e:
+                    # Notify progress tracker about error and print error message
+                    progress_tracker.notify_error()
+                    print(
+                        f"FINAL ERROR: Sequential worker part {task['part_number']} failed after all retries: {e}"
+                    )
+                    raise e
+
+        return [part for part in parts if part is not None]
+
+    @classmethod
+    def _upload_single_part(
+        cls, local_path, task, obj, _client, progress_tracker=None, file_handle=None
+    ):
+        """Upload a single part with retry logic and presigned URL refresh"""
+        part_number = task["part_number"]
+        start_byte = task["start_byte"]
+        part_size = task["part_size"]
+        max_retries = task["max_retries"]
+        upload_id = task["upload_id"]
+        upload_key = task["upload_key"]
+        worker_id = task.get("worker_id", "Sequential worker")
+
+        for attempt in range(max_retries):
+            try:
+                # Get fresh presigned URL if this is a retry
+                if attempt > 0:
+                    print(
+                        f"{worker_id} retrying part {part_number} (attempt {attempt + 1}/{max_retries})"
+                    )
+                    # Refresh presigned URLs for this specific part
+                    fresh_urls = cls.refresh_presigned_urls(
+                        upload_id=upload_id,
+                        key=upload_key,
+                        total_size=obj.size,
+                        part_numbers=[part_number],
+                        client=_client,
+                    )
+                    upload_url = fresh_urls[0]["upload_url"]
+                else:
+                    upload_url = task["upload_url"]
+
+                # Read part data
+                if file_handle:
+                    # Use provided file handle (sequential mode)
+                    file_handle.seek(start_byte)
+                    chunk_data = file_handle.read(part_size)
+                else:
+                    # Open file for this part (parallel mode)
+                    with open(local_path, "rb") as f:
+                        f.seek(start_byte)
+                        chunk_data = f.read(part_size)
+
+                if not chunk_data:
+                    break
+
+                # Upload without requests-level retry (let our custom retry handle it)
+                session = requests.Session()
+
+                headers = {"Content-Length": str(len(chunk_data))}
+
+                # Calculate timeout based on part size
+                part_size_mb = len(chunk_data) / (1024 * 1024)
+                # Timeout scaling for large parts (5MB to 1GB+)
+                # Formula: 3min base + 10s per MB
+                base_timeout = 180  # 3 minutes base
+                scaling_factor = 10  # 10 seconds per 1MB
+                read_timeout = base_timeout + part_size_mb * scaling_factor
+                connect_timeout = 30
+
+                upload_resp = session.put(
+                    upload_url,
+                    data=chunk_data,
+                    headers=headers,
+                    timeout=(connect_timeout, read_timeout),
+                )
+
+                if upload_resp.status_code == 200:
+                    etag = upload_resp.headers.get("ETag", "").strip('"')
+                    return {"part_number": part_number, "etag": etag}
+                else:
+                    raise FileUploadError(
+                        f"{worker_id} failed part {part_number}: {upload_resp.status_code} - {upload_resp.content}"
+                    )
+
+            except Exception as e:
+                if attempt == max_retries - 1:  # Last attempt
+                    raise FileUploadError(
+                        f"{worker_id} part {part_number} failed after {max_retries} attempts: {e}"
+                    )
+
+                # Wait before retry (exponential backoff)
+                wait_time = 2**attempt
+                if progress_tracker:
+                    progress_tracker.notify_error()
+                print(
+                    f"{worker_id} part {part_number} failed \
+                    (attempt {attempt + 1}/{max_retries}): {str(e)}, retrying in {wait_time}s..."
+                )
+                time.sleep(wait_time)
+
+    @classmethod
+    def _complete_multipart_upload(cls, obj, parts, _client, local_path):
+        """Complete the multipart upload"""
+        print("Completing multipart upload...")
+        complete_data = {
+            "upload_id": obj.upload_id,
+            "physical_object_id": obj.upload_key,
+            "parts": parts,
+        }
+        complete_resp = _client.post("/v2/complete_multi_part", complete_data)
+
+        if "message" in complete_resp:
+            print(
+                f"Successfully uploaded {local_path} to {obj.path} with multipart upload using {len(parts)} parts."
+            )
+            return obj
+        else:
+            raise Exception(complete_resp)
+
+    @classmethod
+    def _cleanup_failed_upload(cls, obj, _client):
+        """Clean up failed upload - best effort cleanup"""
+        try:
+            _client.delete(
+                obj.instance_url() + "/multipart-upload",
+                {},
+            )
+        except Exception:
+            pass  # Best effort cleanup
+        obj.delete(force=True)
 
     def _object_list_helper(self, **params):
         """Helper method to get objects within"""
