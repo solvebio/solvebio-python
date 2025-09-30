@@ -13,6 +13,7 @@ __docformat__ = 'restructuredtext'
 
 import os as _os
 import logging as _logging
+import warnings
 from typing import Literal
 from .help import open_help as _open_help
 
@@ -101,39 +102,41 @@ from .version import VERSION  # noqa
 from .errors import SolveError
 
 
-_deprecation_notice_shown = False
+_deprecation_warning_shown = False
 
 
 def print_deprecation_notice():
     """
-    Prints the deprecation notice for the SolveBio Python client.
+    Shows the deprecation warning for the SolveBio Python client.
     Only shows once per session to avoid repetition.
     """
-    global _deprecation_notice_shown
+    global _deprecation_warning_shown
 
-    if _deprecation_notice_shown:
+    if _deprecation_warning_shown:
         return
 
-    _deprecation_notice_shown = True
+    _deprecation_warning_shown = True
 
-    print(
-        """
+    message = """
         !!! Deprecation Notice
 
         The SolveBio Python client is deprecated and will no longer be maintained after March 31, 2026.
 
         We recommend migrating to the QuartzBio python client:
         https://github.com/quartzbio/quartzbio-python
+
         """
-    )
 
     if api_host is not None:
-        print(
-            f"""
-        Or using the QuartzBio REST API:
-        {api_host.replace(".api","")}/swagger
-        """
-        )
+        message += f"\nOr using the QuartzBio REST API: {api_host.replace('.api', '')}/swagger"
+
+    # Show warning and also print to ensure visibility
+    warnings.warn(
+        message,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    print(f"{message}")
 
 
 from .query import Query, BatchQuery, Filter, GenomicFilter
