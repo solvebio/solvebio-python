@@ -32,6 +32,7 @@ from solvebio import DatasetRestoreTask  # noqa
 from solvebio import DatasetSnapshotTask  # noqa
 from solvebio import GlobalSearch  # noqa
 from solvebio import Group  # noqa
+from solvebio import print_deprecation_notice  # noqa
 from solvebio.utils.printing import pager  # noqa
 
 # Add some convenience functions to the interactive shell
@@ -39,4 +40,6 @@ from solvebio.cli.auth import logout  # noqa
 from solvebio.cli.auth import whoami  # noqa
 from solvebio.cli.auth import get_credentials  # noqa
 
+# Show deprecation notice when starting IPython shell
+print_deprecation_notice()
 whoami()
