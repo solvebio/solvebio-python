@@ -242,8 +242,8 @@ def _create_file_job(args):
         None or Exception if exception is raised.
     """
     try:
-        local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder, client_auth, follow_shortcuts, max_retries \
-            = args
+        (local_file_path, remote_folder_full_path, vault_path, dry_run,
+         archive_folder, client_auth, follow_shortcuts, max_retries) = args
 
         # Provides the global host, token, token_type
         client = SolveClient(*client_auth)
