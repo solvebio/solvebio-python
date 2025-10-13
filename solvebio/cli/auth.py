@@ -27,6 +27,7 @@ def login_and_save_credentials(*args):
     # Print information about the current user
     if not client.is_logged_in():
         print("login: client is not logged in!")
+        solvebio.print_deprecation_notice()
 
         # Verify if user has provided the wrong credentials file
         if client._host:
@@ -56,9 +57,10 @@ def logout(*args):
     """
     if get_credentials():
         delete_credentials()
-        print('You have been logged out.')
+        print("You have been logged out.")
     else:
-        print('You are not logged-in.')
+        print("You are not logged-in.")
+    solvebio.print_deprecation_notice()
 
 
 def whoami(*args, **kwargs):
@@ -69,7 +71,7 @@ def whoami(*args, **kwargs):
     try:
         user = client.whoami()
     except Exception as e:
-        print(u'{} (code: {})'.format(e.message, e.status_code))
+        print("{} (code: {})".format(e.message, e.status_code))
     else:
         print_user(user)
 
@@ -78,7 +80,9 @@ def print_user(user):
     """
     Prints information about the current user.
     """
-    email = user['email']
-    domain = user['account']['domain']
-    print(f'You are logged-in to the "{domain}" domain as {email}'
-          f' (server: {solvebio.get_api_host()}).')
+    email = user["email"]
+    domain = user["account"]["domain"]
+    print(
+        f'You are logged-in to the "{domain}" domain as {email}'
+        f" (server: {solvebio.get_api_host()})."
+    )

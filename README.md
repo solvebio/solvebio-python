@@ -4,6 +4,16 @@
 SolveBio Python Client
 ======================
 
+# This package is deprecated. Please install and use quartzbio instead:
+
+```bash
+pip install quartzbio
+```
+
+**This package will no longer be maintained after March 31, 2026.**
+
+**Migration guide: [https://github.com/quartzbio/quartzbio-python](https://github.com/quartzbio/quartzbio-python)**
+
 This is the SolveBio Python package and command-line interface (CLI).
 This module is tested against Python 2.7, 3.6, 3.7, 3.8, 3.10, PyPy and PyPy3.
 

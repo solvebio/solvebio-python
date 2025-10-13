@@ -55,7 +55,7 @@ with open('README.md') as f:
 setup(
     name='solvebio',
     version=VERSION,
-    description='The SolveBio Python client',
+    description='The SolveBio Python client (DEPRECATED)',
     long_description=long_description,
     long_description_content_type='text/markdown',
     python_requires='>=3.8',
@@ -74,6 +74,7 @@ setup(
                             'solvebio-recipes = recipes.sync_recipes:sync_recipes']
     },
     classifiers=[
+        'Development Status :: 7 - Inactive',
         'Intended Audience :: Science/Research',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
