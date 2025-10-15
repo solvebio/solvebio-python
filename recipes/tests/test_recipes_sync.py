@@ -34,7 +34,6 @@ def mock_user_retrieve(monkeypatch):
         return usr
     monkeypatch.setattr(sync_recipes.sb.User, "retrieve", retrieve)
 
-@pytest.mark.skipif(sys.version_info < (3,0), reason="requires python3")
 def test_sync_recipe(mock_dataset_template_retrieve,
                      mock_user_retrieve):
     with pytest.raises(SystemExit) as e:

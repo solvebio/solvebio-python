@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-import six
-from six.moves import zip
-from six.moves.urllib.parse import unquote
-from six.moves import input as raw_input
+
+from urllib.parse import unquote
 
 import os
 import requests
@@ -58,7 +55,7 @@ class APIResource(SolveObject):
         base = self.class_url()
 
         if id_:
-            return '/'.join([base, six.text_type(id_)])
+            return '/'.join([base, str(id_)])
         else:
             raise Exception(
                 'Could not determine which URL to request: %s instance '
@@ -173,8 +170,8 @@ class DeletableAPIResource(APIResource):
         printable_name = class_to_api_name(
             self.class_name(), pluralize=False).replace('_', ' ')
         if not params.pop('force', False):
-            res = raw_input('Are you sure you want to delete this %s? '
-                            '[y/N] ' % printable_name)
+            res = input('Are you sure you want to delete this %s? '
+                        '[y/N] ' % printable_name)
             if res.strip().lower() != 'y':
                 print('Not performing deletion.')
                 return

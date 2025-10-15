@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import mock
 
 from solvebio.test.client_mocks import fake_export_create

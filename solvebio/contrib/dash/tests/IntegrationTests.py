@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from selenium import webdriver
 import multiprocessing
 import requests

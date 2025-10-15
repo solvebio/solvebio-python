@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from collections import namedtuple
-import six
 
 import solvebio
 
@@ -55,11 +52,11 @@ class netrc(_netrc):
         for host in self.hosts.keys():
             attrs = self.hosts[host]
             rep = (
-                rep + "machine " + host + "\n\tlogin " + six.text_type(attrs[0]) + "\n"
+                rep + "machine " + host + "\n\tlogin " + str(attrs[0]) + "\n"
             )
             if attrs[1]:
-                rep = rep + "\taccount " + six.text_type(attrs[1]) + "\n"
-            rep = rep + "\tpassword " + six.text_type(attrs[2]) + "\n"
+                rep = rep + "\taccount " + str(attrs[1]) + "\n"
+            rep = rep + "\tpassword " + str(attrs[2]) + "\n"
 
         f = open(path, "w")
         f.write(rep)

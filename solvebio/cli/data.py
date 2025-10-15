@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import print_function
 
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
-
-from six.moves import input as raw_input
 
 import os
 import re
@@ -1119,7 +1115,7 @@ def tag(args):
     if not args.no_input:
 
         print("")
-        res = raw_input(
+        res = input(
             "Are you sure you want to apply the above changes to "
             "{} object(s) in {} vault(s)? [y/N] ".format(
                 len(taggable_objects), len(seen_vaults.keys())

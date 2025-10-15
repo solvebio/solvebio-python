@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
 import dash
 import flask
 
@@ -23,6 +20,7 @@ class SolveBioDash(dash.Dash):
 
         app_url = kwargs.pop('app_url', self.APP_URL)
         solvebio_url = kwargs.pop('solvebio_url', self.SOLVEBIO_URL)
+        api_host = kwargs.pop('api_host', None)  # Extract api_host before passing to Dash
 
         # OAuth2 credentials
         client_id = kwargs.pop('client_id',
@@ -46,7 +44,8 @@ class SolveBioDash(dash.Dash):
                 salt=salt,
                 client_secret=client_secret,
                 grant_type=grant_type,
-                solvebio_url=solvebio_url)
+                solvebio_url=solvebio_url,
+                api_host=api_host)
         else:
             self.auth = None
             print("WARNING: No SolveBio client ID found. "

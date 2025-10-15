@@ -1,13 +1,9 @@
-from __future__ import absolute_import
-
 import unittest
 
 from solvebio.query import Filter
 from solvebio import SolveError
 
 from .helper import SolveBioTestCase
-from six.moves import map
-from six.moves import range
 
 
 class BaseQueryTest(SolveBioTestCase):
