@@ -614,14 +614,26 @@ class Object(CreateableAPIResource,
         # Use a session with a retry policy to handle connection errors.
         session = requests.Session()
         max_retries = 5
-        retry = Retry(
-            total=max_retries,
-            read=max_retries,
-            connect=max_retries,
-            backoff_factor=2,
-            status_forcelist=(500, 502, 503, 504, 400),
-            allowed_methods=["HEAD", "OPTIONS", "GET", "PUT", "POST"]
-        )
+
+        # Handle backward compatibility for urllib3 versions
+        # allowed_methods was introduced in urllib3 1.26.0, replacing method_whitelist
+        retry_kwargs = {
+            'total': max_retries,
+            'read': max_retries,
+            'connect': max_retries,
+            'backoff_factor': 2,
+            'status_forcelist': (500, 502, 503, 504, 400),
+        }
+
+        # Try allowed_methods first (urllib3 >= 1.26.0), fallback to method_whitelist
+        try:
+            retry_kwargs['allowed_methods'] = ["HEAD", "OPTIONS", "GET", "PUT", "POST"]
+            retry = Retry(**retry_kwargs)
+        except TypeError:
+            # Fallback for older urllib3 versions
+            retry_kwargs.pop('allowed_methods', None)
+            retry_kwargs['method_whitelist'] = ["HEAD", "OPTIONS", "GET", "PUT", "POST"]
+            retry = Retry(**retry_kwargs)
         session.mount(
             'https://', requests.adapters.HTTPAdapter(max_retries=retry))
 
