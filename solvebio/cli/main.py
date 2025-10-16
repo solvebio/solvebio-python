@@ -281,6 +281,13 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "action": "store_true",
                 },
                 {
+                    "flags": "--max-retries",
+                    "help": "Maximum number of retries per upload part for multipart uploads. "
+                    "Defaults to 3.",
+                    "default": 3,
+                    "type": int,
+                },
+                {
                     "name": "local_path",
                     "help": "The path to the local file or directory " "to upload",
                     "nargs": "+",
