@@ -1,32 +1,17 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
 from setuptools import setup, find_packages
 
 import sys
 import warnings
 
 VERSION = 'undefined'
-install_requires = ['six', 'pyprind']
+install_requires = ['pyprind', 'requests>=2.0.0', 'urllib3>=1.26.0']
 extra = {}
 
 with open('solvebio/version.py') as f:
     for row in f.readlines():
         if row.startswith('VERSION'):
             exec(row)
-
-if sys.version_info < (2, 6):
-    warnings.warn(
-        'Python 2.5 is no longer officially supported by SolveBio. '
-        'If you have any questions, please file an issue on GitHub or '
-        'contact us at support@solvebio.com.',
-        DeprecationWarning)
-    install_requires.append('requests >= 0.8.8, < 0.10.1')
-    install_requires.append('ssl')
-elif sys.version_info < (2, 7):
-    install_requires.append('ordereddict')
-else:
-    install_requires.append('requests>=2.0.0')
-
 
 # solvebio-recipes requires additional packages
 recipes_requires = [
@@ -37,17 +22,6 @@ recipes_requires = [
 extras_requires = {
     "recipes": recipes_requires
 }
-
-# Adjustments for Python 2 vs 3
-if sys.version_info < (3, 0):
-    # Get simplejson if we don't already have json
-    try:
-        import json  # noqa
-    except ImportError:
-        install_requires.append('simplejson')
-
-    # solvebio-recipes only available in python3
-    extras_requires = {}
 
 with open('README.md') as f:
     long_description = f.read()

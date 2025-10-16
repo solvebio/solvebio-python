@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-import six
 
 import sys
 
@@ -18,7 +16,7 @@ def convert_to_solve_object(resp, **kwargs):
     elif isinstance(resp, dict) and not isinstance(resp, SolveObject):
         resp = resp.copy()
         klass_name = resp.get('class_name')
-        if isinstance(klass_name, six.string_types):
+        if isinstance(klass_name, str):
             klass = types.get(klass_name, SolveObject)
         else:
             klass = SolveObject
@@ -75,7 +73,7 @@ class SolveObject(dict):
         self.clear()
         self._unsaved_values = set()
 
-        for k, v in six.iteritems(values):
+        for k, v in values.items():
             super(SolveObject, self).__setitem__(
                 k, convert_to_solve_object(v, client=self._client))
 
@@ -84,7 +82,7 @@ class SolveObject(dict):
         return convert_to_solve_object(response, client=self._client)
 
     def __repr__(self):
-        if isinstance(self.get('class_name'), six.string_types):
+        if isinstance(self.get('class_name'), str):
             ident_parts = [self.get('class_name')]
         else:
             ident_parts = [type(self).__name__]

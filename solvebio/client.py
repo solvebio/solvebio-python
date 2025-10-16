@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
 import json
 import time
@@ -24,7 +23,7 @@ from requests.packages.urllib3.util.retry import Retry
 import ssl
 import sys
 
-from six.moves.urllib.parse import urljoin
+from urllib.parse import urljoin
 
 # Try using pyopenssl if available.
 # Requires: pip install pyopenssl ndg-httpsclient pyasn1

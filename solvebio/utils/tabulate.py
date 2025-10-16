@@ -22,34 +22,17 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-from __future__ import print_function
-from __future__ import absolute_import
-
-from six.moves import map
-from six.moves import range
-from six.moves import zip
-from six import string_types
-
 from collections import namedtuple
-from platform import python_version_tuple
 import re
 from .printing import TTY_COLS
+from itertools import zip_longest
+from functools import reduce
 
-if python_version_tuple()[0] < "3":
-    from itertools import izip_longest
-    _none_type = type(None)
-    _int_type = int
-    _float_type = float
-    _text_type = str
-    _binary_type = str
-else:
-    from itertools import zip_longest as izip_longest
-    from functools import reduce
-    _none_type = type(None)
-    _int_type = int
-    _float_type = float
-    _text_type = str
-    _binary_type = bytes
+_none_type = type(None)
+_int_type = int
+_float_type = float
+_text_type = str
+_binary_type = bytes
 
 
 __all__ = ["tabulate"]
@@ -166,7 +149,7 @@ def _isint(string):
     """
     return type(string) is int or \
         (isinstance(string, _binary_type) or
-         isinstance(string, string_types)) and \
+         isinstance(string, str)) and \
         _isconvertible(int, string)
 
 
@@ -423,7 +406,7 @@ def _normalize_tabular_data(tabular_data, headers, sort=True):
             # likely a conventional dict
             keys = list(tabular_data.keys())
             # columns have to be transposed
-            rows = list(izip_longest(*list(tabular_data.values())))
+            rows = list(zip_longest(*list(tabular_data.values())))
         elif hasattr(tabular_data, "index"):
             # values is a property, has .index then
             # it's likely a pandas.DataFrame (pandas 0.11.0)

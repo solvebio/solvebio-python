@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
 from abc import ABCMeta
 
-import six
 import json
 import uuid
 
@@ -221,8 +219,7 @@ class GenomicFilter(Filter):
         return '<GenomicFilter {0}>'.format(self.filters)
 
 
-@six.add_metaclass(ABCMeta)
-class QueryBase(object):
+class QueryBase(object, metaclass=ABCMeta):
     """
     A helper abstract mixin class that contains
     common methods for Query and QueryFile classes.
@@ -364,7 +361,7 @@ class QueryBase(object):
         :Parameters:
         - `key`: The requested slice range or index.
         """
-        if not isinstance(key, (slice,) + six.integer_types):
+        if not isinstance(key, (slice, int)):
             raise TypeError
 
         if isinstance(key, slice):
@@ -681,7 +678,7 @@ class Query(QueryBase):
             raise AttributeError('Faceting requires at least one field')
 
         for f in facets.keys():
-            if not isinstance(f, six.string_types):
+            if not isinstance(f, str):
                 raise AttributeError('Facet field arguments must be strings')
 
         q = self._clone()

@@ -1,14 +1,7 @@
-from __future__ import absolute_import
-import six
-
 import os
 import re
 import sys
-
-if (sys.version_info >= (2, 7, 0)):
-    import unittest   # NOQA
-else:
-    import unittest2 as unittest  # NOQA
+import unittest
 
 import solvebio
 
@@ -41,7 +34,7 @@ class SolveBioTestCase(unittest.TestCase):
             if regexp is None:
                 return True
 
-            if isinstance(regexp, six.string_types):
+            if isinstance(regexp, str):
                 regexp = re.compile(regexp)
             if not regexp.search(str(err)):
                 raise self.failureException('\'%s\' does not match \'%s\'' %

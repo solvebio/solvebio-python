@@ -1,21 +1,11 @@
-from __future__ import absolute_import
 import unittest
 import dash
 import dash_html_components as html
 import time
-import six
-from six.moves import http_cookies
-from six import iteritems
+from http import cookies
+from unittest import mock
 
 from solvebio.contrib.dash import SolveBioAuth
-
-from .credentials import OAUTH_CLIENT_ID
-from .credentials import OAUTH_TOKEN
-
-if six.PY3:
-    from unittest import mock
-else:
-    import mock  # noqa
 
 endpoints = {
     'protected': {
@@ -46,7 +36,7 @@ def get_cookie(res, cookie_name):
         print(set_cookie_strings)
         raise e
 
-    cookie = http_cookies.SimpleCookie(cookie_string)
+    cookie = cookies.SimpleCookie(cookie_string)
     access_granted_cookie = cookie[list(cookie.keys())[0]].value
     return access_granted_cookie
 
@@ -147,7 +137,7 @@ class ProtectedViewsTest(unittest.TestCase):
     def test_protected_endpoints_with_auth_cookie(self):
         apps, auths = create_apps(self._oauth_client_id)
 
-        for app_name, app in iteritems(apps):
+        for app_name, app in apps.items():
             if app_name != 'unregistered':
                 app.layout = html.Div()
                 self.check_endpoints(
