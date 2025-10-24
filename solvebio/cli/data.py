@@ -26,7 +26,7 @@ from solvebio import Dataset
 from solvebio import DatasetImport
 from solvebio import DatasetTemplate
 from solvebio import GlobalSearch
-from solvebio.utils.files import check_gzip_path
+from solvebio.utils.files import check_gzip_path, edp_path_join, edp_path
 from solvebio.utils.md5sum import md5sum
 from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
@@ -85,37 +85,14 @@ def _check_uploaded_folders(base_remote_path, local_start, all_folders, follow_s
             not already exist.
 
     """
-
-    def _folder_exists(folder_full_path, remote_folders_existing, follow_shortcuts):
-        if follow_shortcuts:
-            # When following shortcuts we cannot determine which folders exist based on global search.
-            # Each folder has to be checked separately.
-            try:
-                Object.get_by_full_path(full_path=folder_full_path, follow_shortcuts=True)
-            except NotFoundError:
-                return False
-            return True
-        else:
-            return folder_full_path in remote_folders_existing
-
     upload_root_path, _ = Object.validate_full_path(
-        os.path.join(base_remote_path, local_start)
+        edp_path_join(base_remote_path, local_start)
     )
     results = GlobalSearch().filter(path__prefix=upload_root_path, type="folder")
-    remote_folders_existing = set([x.full_path for x in results])
-    all_folder_parts = set()
-    for vault, remote_folder_path in all_folders:
-        subfolders = remote_folder_path.lstrip("/").split("/")
-        parent_folder_path = subfolders[0]
-        # Split each folder into parts and check if these exist
-        # Skip root folder as we don't need to create this
-        for folder in subfolders[1:]:
-            folder_full_path = os.path.join(parent_folder_path, folder)
-            if not _folder_exists(folder_full_path, remote_folders_existing, follow_shortcuts):
-                all_folder_parts.add(folder_full_path)
-            parent_folder_path = folder_full_path
+    remote_folders_existing = {edp_path(x.full_path) for x in results}
+    all_folders = {edp_path(f) for vault, f in all_folders}
 
-    return all_folder_parts
+    return {f for f in all_folders if f not in remote_folders_existing}
 
 
 def _upload_folder(

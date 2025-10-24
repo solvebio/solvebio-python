@@ -1,5 +1,6 @@
 import mimetypes
 import os
+import pathlib
 
 COMPRESSIONS = ('.gz', '.gzip', '.bz2', '.z', '.zip', '.bgz')
 
@@ -43,3 +44,20 @@ def get_home_dir():
     except:
         from os.path import expanduser
         return expanduser("~")
+
+
+def edp_path_join(*edp_paths):
+    p = str(pathlib.PurePosixPath(*edp_paths))
+
+    if not p.endswith("/"):
+        p += "/"
+
+    return p
+
+
+def edp_path(path: str):
+    """normalize OS path to EDP remote path"""
+
+    win_path = pathlib.PureWindowsPath(path)
+    posix_path = pathlib.PurePosixPath('/', *win_path.parts)
+    return posix_path.as_posix()
