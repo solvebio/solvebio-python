@@ -951,18 +951,18 @@ class Object(CreateableAPIResource,
 
                 # Calculate timeout based on part size
                 part_size_mb = len(chunk_data) / (1024 * 1024)
-                # Timeout scaling for large parts (5MB to 1GB+)
-                # Formula: 3min base + 10s per MB
-                base_timeout = 180  # 3 minutes base
-                scaling_factor = 10  # 10 seconds per 1MB
-                read_timeout = base_timeout + part_size_mb * scaling_factor
-                connect_timeout = 30
+                # Timeout scaling for large parts
+                # Formula: 20min base + 30s per MB to handle very large parts
+                # This ensures adequate timeout even with slow connections
+                base_timeout = 1200  # 20 minutes base
+                scaling_factor = 30  # 30 seconds per 1MB
+                total_timeout = base_timeout + part_size_mb * scaling_factor
 
                 upload_resp = session.put(
                     upload_url,
                     data=chunk_data,
                     headers=headers,
-                    timeout=(connect_timeout, read_timeout),
+                    timeout=total_timeout,
                 )
 
                 if upload_resp.status_code == 200:
