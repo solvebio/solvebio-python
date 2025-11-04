@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 import os
 import sys
 import copy
@@ -279,6 +278,13 @@ class SolveArgumentParser(argparse.ArgumentParser):
                     "flags": "--follow-shortcuts",
                     "help": "Resolves shortcuts when Uploading.",
                     "action": "store_true",
+                },
+                {
+                    "flags": "--max-retries",
+                    "help": "Maximum number of retries per upload part for multipart uploads. "
+                    "Defaults to 3.",
+                    "default": 3,
+                    "type": int,
                 },
                 {
                     "name": "local_path",

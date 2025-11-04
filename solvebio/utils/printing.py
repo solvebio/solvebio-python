@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
 import os
 import sys
@@ -63,10 +62,7 @@ else:
 
 
 def pretty_int(num):
-    if sys.version_info[0] == 2 or (sys.version_info[0] == 3 and sys.version_info[1] < 7):
-        return locale.format("%d", int(num), grouping=True)
-    else:
-        return locale.format_string("%d", int(num), grouping=True)
+    return locale.format_string("%d", int(num), grouping=True)
 
 
 # Basic color support

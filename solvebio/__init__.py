@@ -7,11 +7,10 @@ This is the Python client & library for the SolveBio API.
 
 Have questions or comments? email us at: support@solvebio.com
 """
-from __future__ import absolute_import
-from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import os as _os
+import errno
 import logging as _logging
 import warnings
 from typing import Literal
@@ -62,7 +61,7 @@ def _init_logging():
                 _os.makedirs(logdir)
             except OSError as err:
                 # Re-raise anything other than 'File exists'.
-                if err[1] != 'File exists':
+                if err.errno != errno.EEXIST:
                     raise err
 
         file_handler = _logging.FileHandler(logfile_path)
@@ -75,7 +74,6 @@ def _init_logging():
     try:
         base_logger.addHandler(_logging.NullHandler())
     except:
-        # supports Python < 2.7
         class NullHandler(_logging.Handler):
             def emit(self, record):
                 pass

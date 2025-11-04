@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import print_function
 
 import os
 import glob
 
-from six.moves.urllib.parse import urlparse
+from urllib.parse import urlparse
 
 import solvebio
 

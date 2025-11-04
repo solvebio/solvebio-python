@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import print_function
 
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
-
-from six.moves import input as raw_input
 
 import os
 import re
@@ -128,7 +124,8 @@ def _upload_folder(
         dry_run=False,
         num_processes=1,
         archive_folder=None,
-        follow_shortcuts=False
+        follow_shortcuts=False,
+        max_retries=3,
 ):
     all_folders = []
     all_files = []
@@ -183,7 +180,7 @@ def _upload_folder(
             if should_exclude(local_file_path, exclude_paths, dry_run=dry_run):
                 continue
             all_files.append((local_file_path, remote_folder_full_path, vault.full_path,
-                              dry_run, archive_folder, client_auth, follow_shortcuts))
+                              dry_run, archive_folder, client_auth, follow_shortcuts, max_retries))
 
     if num_processes > 1:
         # Only perform optimization if parallelization is requested by the user
@@ -236,12 +233,13 @@ def _create_file_job(args):
         args[4] (archive_folder): An archive folder to move existing files into
         args[5] (client_auth): Tuple containing API host, token, and token type
         args[6] (follow_shortcuts): Boolean to follow shortcuts on the remote_folder_path
+        args[7] (max_retries): Maximum number of retries per upload part
     Returns:
         None or Exception if exception is raised.
     """
     try:
-        local_file_path, remote_folder_full_path, vault_path, dry_run, archive_folder, client_auth, follow_shortcuts \
-            = args
+        (local_file_path, remote_folder_full_path, vault_path, dry_run,
+         archive_folder, client_auth, follow_shortcuts, max_retries) = args
 
         # Provides the global host, token, token_type
         client = SolveClient(*client_auth)
@@ -274,6 +272,8 @@ def _create_file_job(args):
             remote_parent.vault.full_path,
             archive_folder=archive_folder,
             follow_shortcuts=follow_shortcuts,
+            num_processes=1,  # Default for single file uploads in parallel processing
+            max_retries=max_retries,
             client=client
         )
         return
@@ -511,7 +511,8 @@ def upload(args):
                 dry_run=args.dry_run,
                 num_processes=args.num_processes,
                 archive_folder=args.archive_folder,
-                follow_shortcuts=follow_shortcuts
+                follow_shortcuts=follow_shortcuts,
+                max_retries=args.max_retries,
             )
         else:
             if args.dry_run:
@@ -519,7 +520,14 @@ def upload(args):
                     "[Dry Run] Uploading {} to {}".format(local_path, path_dict["path"])
                 )
             else:
-                Object.upload_file(local_path, path_dict["path"], vault.full_path, archive_folder=args.archive_folder)
+                Object.upload_file(
+                    local_path,
+                    path_dict["path"],
+                    vault.full_path,
+                    archive_folder=args.archive_folder,
+                    num_processes=args.num_processes,
+                    max_retries=args.max_retries,
+                )
 
 
 def import_file(args):
@@ -1107,7 +1115,7 @@ def tag(args):
     if not args.no_input:
 
         print("")
-        res = raw_input(
+        res = input(
             "Are you sure you want to apply the above changes to "
             "{} object(s) in {} vault(s)? [y/N] ".format(
                 len(taggable_objects), len(seen_vaults.keys())
