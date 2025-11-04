@@ -1,5 +1,11 @@
 # Changelog
 
+## [v2.33.0](https://github.com/solvebio/solvebio-python/tree/v2.33.0) (2025-11-06)
+
+- Minor Python version compatibility updates (#502)
+- Deprecation message in favor of new Quartzbio python client for EDP (#501)
+- Enhance upload mechanism by introducing retries on network failures and upload token expiration (#500)
+
 ## [v2.32.0](https://github.com/solvebio/solvebio-python/tree/v2.32.0) (2025-08-28)
 
 - Add support for upload of files bigger than 5GB (#498)
