@@ -86,7 +86,7 @@ def export_recipes_to_yaml(recipes, yml_file):
         class RecipeDumper(yaml.Dumper):
             pass
 
-        class literal(unicode):
+        class literal(str):
             pass
 
         def _dict_representer(dumper, data):
@@ -100,17 +100,9 @@ def export_recipes_to_yaml(recipes, yml_file):
         RecipeDumper.add_representer(dict, _dict_representer)
         RecipeDumper.add_representer(literal, _literal_representer)
 
-        # Needed for python2,
-        # otherwise: 'item': !!python/unicode "some string" is dumped
-        if sys.version_info < (3,0):
-            def represent_unicode(dumper, data):
-                return dumper.represent_scalar(u'tag:yaml.org,2002:str', data)
-
-            RecipeDumper.add_representer(unicode, represent_unicode)
-
         yaml_recipes = []
         for r in recipes:
-            recipe_expression = literal(unicode(dict(r)['fields'][0]['expression']))
+            recipe_expression = literal(str(dict(r)['fields'][0]['expression']))
             dict(r)['fields'][0]['expression'] = recipe_expression
             recipe_details = {
                 "name": dict(r)['name'],

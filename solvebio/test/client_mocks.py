@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
 from solvebio.resource.solveobject import convert_to_solve_object
 

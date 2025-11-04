@@ -9,8 +9,7 @@ import time
 from datetime import datetime
 
 import requests
-import six
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 
 from solvebio.errors import SolveError
 from solvebio.errors import NotFoundError
@@ -615,25 +614,16 @@ class Object(CreateableAPIResource,
         session = requests.Session()
         max_retries = 5
 
-        # Handle backward compatibility for urllib3 versions
-        # allowed_methods was introduced in urllib3 1.26.0, replacing method_whitelist
         retry_kwargs = {
             'total': max_retries,
             'read': max_retries,
             'connect': max_retries,
             'backoff_factor': 2,
             'status_forcelist': (500, 502, 503, 504, 400),
+            'allowed_methods': ["HEAD", "OPTIONS", "GET", "PUT", "POST"]
         }
 
-        # Try allowed_methods first (urllib3 >= 1.26.0), fallback to method_whitelist
-        try:
-            retry_kwargs['allowed_methods'] = ["HEAD", "OPTIONS", "GET", "PUT", "POST"]
-            retry = Retry(**retry_kwargs)
-        except TypeError:
-            # Fallback for older urllib3 versions
-            retry_kwargs.pop('allowed_methods', None)
-            retry_kwargs['method_whitelist'] = ["HEAD", "OPTIONS", "GET", "PUT", "POST"]
-            retry = Retry(**retry_kwargs)
+        retry = Retry(**retry_kwargs)
         session.mount(
             'https://', requests.adapters.HTTPAdapter(max_retries=retry))
 
@@ -1161,7 +1151,7 @@ class Object(CreateableAPIResource,
         def is_iterable_non_string(arg):
             """python2/python3 compatible way to check if arg is an iterable but not string"""
 
-            return isinstance(arg, Iterable) and not isinstance(arg, six.string_types)
+            return isinstance(arg, Iterable) and not isinstance(arg, (str, bytes))
 
         if not is_iterable_non_string(tags):
             tags = [str(tags)]
