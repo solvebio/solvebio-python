@@ -60,4 +60,5 @@ def edp_path(path: str):
 
     win_path = pathlib.PureWindowsPath(path)
     posix_path = pathlib.PurePosixPath('/', *win_path.parts)
-    return posix_path.as_posix()
+    return posix_path.as_posix().removeprefix("/")
+
