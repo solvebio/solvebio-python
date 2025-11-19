@@ -502,11 +502,7 @@ class Object(CreateableAPIResource,
         # Get vault
         vault = Vault.get_by_full_path(vault_full_path, client=_client)
 
-        # Get MD5 and check if multipart upload is needed
-        multipart_threshold = kwargs.get(
-            "multipart_threshold", 64 * 1024 * 1024
-        )  # 64MB default
-        local_md5, _ = md5sum(local_path, multipart_threshold=multipart_threshold)
+        local_md5, _ = md5sum(local_path, None)
 
         # Get a mimetype of file
         mime_tuple = mimetypes.guess_type(local_path)
