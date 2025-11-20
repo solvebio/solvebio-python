@@ -36,4 +36,4 @@ def md5sum(path, multipart_threshold=MULTIPART_THRESHOLD,
             for block in _read_chunks(f, multipart_chunksize):
                 md5.update(block)
 
-    return md5.hexdigest(), block_count
+    return f"{md5.hexdigest()}-{block_count}" if block_count else md5.hexdigest()
