@@ -1,5 +1,9 @@
 # Changelog
 
+## [v2.33.1rc0](https://github.com/solvebio/solvebio-python/tree/v2.33.1rc0) (2025-11-25)
+
+- Fix the issue with the incorrectly calculated md5 for file uploads (#503)
+
 ## [v2.33.0](https://github.com/solvebio/solvebio-python/tree/v2.33.0) (2025-11-06)
 
 - Minor Python version compatibility updates (#502)
