@@ -1,5 +1,10 @@
 # Changelog
 
+## [v2.34.0](https://github.com/solvebio/solvebio-python/tree/v2.34.0) (2025-12-16)
+
+- Removed file upload threshold in order to fix the Dataset Imports using manifest URLs (#506)
+- Fixed EDP file paths for Windows file upload command (#503)
+
 ## [v2.33.0](https://github.com/solvebio/solvebio-python/tree/v2.33.0) (2025-11-06)
 
 - Minor Python version compatibility updates (#502)
