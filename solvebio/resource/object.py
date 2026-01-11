@@ -1024,20 +1024,39 @@ class Object(CreateableAPIResource,
         items = self.all(client=self._client, **params)
         return items
 
-    def files(self, **params):
+    def files(self, query='', **params):
+        if query:
+            params['query'] = query
+        params.pop('object_type', None)
         return self._object_list_helper(object_type='file', **params)
 
-    def folders(self, **params):
+    def folders(self, query='', **params):
+        if query:
+            params['query'] = query
+        params.pop('object_type', None)
         return self._object_list_helper(object_type='folder', **params)
 
-    def datasets(self, **params):
+    def datasets(self, query='', **params):
+        if query:
+            params['query'] = query
+        params.pop('object_type', None)
         return self._object_list_helper(object_type='dataset', **params)
 
-    def objects(self, **params):
+    def objects(self, query='', **params):
+        if query:
+            params['query'] = query
         return self._object_list_helper(**params)
 
-    def ls(self, **params):
-        return self.objects(**params)
+    def ls(self, query='', **params):
+        query = query or params.pop('query', '')
+        return self.objects(query=query, **params)
+
+    def search(self, query='', **params):
+        query = query or params.pop('query', '')
+        # TODO
+        params['ancestor_id'] = self.id
+        params['limit'] = 1000
+        return super(Object, self).search(query, **params)
 
     def __getattr__(self, name):
         """Shortcut to access attributes of the underlying Dataset resource"""
