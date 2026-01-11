@@ -8,11 +8,10 @@ __version__ = '1.0.0'
 @click.group()
 @click.option('--access-token', help='Manually provide a SolveBio Access Token')
 @click.option('--api-host', help='Override the default SolveBio API host')
-@click.option('--api-key', help='Manually provide a SolveBio API key')
 @click.pass_context
-def sync_recipes(ctx, api_key=None, access_token=None, api_host=None):
+def sync_recipes(ctx, access_token=None, api_host=None):
 
-    sb.login(api_key=api_key, access_token=access_token, api_host=api_host,
+    sb.login(access_token=access_token, api_host=api_host,
              version=__version__, name="SolveBio Recipes")
     user = sb.User.retrieve()
 
