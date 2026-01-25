@@ -995,7 +995,8 @@ def ls(args):
 
 
 def _ls(full_path, recursive=False, follow_shortcuts=False):
-    files = list(Object.all(glob=full_path, limit=1000))
+    escaped_path = re.sub(r'([\[\](){}])', r'[\1]', full_path)
+    files = list(Object.all(glob=escaped_path, limit=1000))
 
     for file_ in files:
         if follow_shortcuts and file_.is_shortcut:
