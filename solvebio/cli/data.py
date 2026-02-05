@@ -272,7 +272,7 @@ def _object_exists(remote_parent, local_path, _client):
             return False
         else:
             # Check if the md5sum matches
-            local_md5 = md5sum(local_path)[0]
+            local_md5 = md5sum(local_path)
             remote_md5 = obj.get("md5")
             if remote_md5 and remote_md5 == local_md5:
                 return True
@@ -808,7 +808,7 @@ def _download_recursive(
         # Skip over files that match remote md5 checksum
         if os.path.exists(local_path):
             remote_md5 = remote_file.get("md5")
-            if remote_md5 and remote_md5 == md5sum(local_path)[0]:
+            if remote_md5 and remote_md5 == md5sum(local_path):
                 print("Skipping {} already in sync".format(local_path))
                 continue
 

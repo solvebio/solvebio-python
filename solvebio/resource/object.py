@@ -596,7 +596,7 @@ class Object(CreateableAPIResource,
         size = os.path.getsize(local_path)
 
         # Get MD5 for single part upload
-        local_md5, _ = md5sum(local_path, multipart_threshold=None)
+        local_md5 = md5sum(local_path, multipart_threshold=None)
 
         upload_url = obj.upload_url
 
@@ -930,10 +930,16 @@ class Object(CreateableAPIResource,
                 if not chunk_data:
                     break
 
+                def md5_base64(data):
+                    import hashlib
+                    md5 = hashlib.md5(data).digest()
+                    return base64.b64encode(md5).decode("utf-8")
+
                 # Upload without requests-level retry (let our custom retry handle it)
                 session = requests.Session()
 
-                headers = {"Content-Length": str(len(chunk_data))}
+                headers = {"Content-Length": str(len(chunk_data)),
+                           "ContentMD5": md5_base64(chunk_data)}
 
                 # Calculate timeout based on part size
                 part_size_mb = len(chunk_data) / (1024 * 1024)
