@@ -1,5 +1,10 @@
 # Changelog
 
+## [v2.35.0](https://github.com/solvebio/solvebio-python/tree/v2.35.0) (2026-02-12)
+
+- Drop API key auth path: remove CLI --api-key.
+- Default auth handler/client token type switched to Bearer to align with access tokens only.
+
 ## [v2.34.0](https://github.com/solvebio/solvebio-python/tree/v2.34.0) (2025-12-16)
 
 - Removed file upload threshold in order to fix the Dataset Imports using manifest URLs (#506)
