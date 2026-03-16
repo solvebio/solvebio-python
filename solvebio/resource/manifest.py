@@ -33,9 +33,9 @@ class Manifest(object):
             'name': file_.filename,
             'md5': file_.md5,
             'size': file_.size,
-            'reader_params': kwargs.get('reader_params'),
-            'entity_params': kwargs.get('entity_params'),
-            'validation_params': kwargs.get('validation_params')
+            'reader_params': kwargs.get('reader_params', {}),
+            'entity_params': kwargs.get('entity_params', {}),
+            'validation_params': kwargs.get('validation_params', {})
         })
 
     def add_url(self, url, **kwargs):
